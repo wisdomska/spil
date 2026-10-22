@@ -81,6 +81,36 @@ jobs:
         run: supabase db reset
       - name: pgTAP tests
         run: supabase test db
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Point the app at local Supabase
+        run: |
+          supabase status -o env > /tmp/sb.env
+          . /tmp/sb.env
+          {
+            echo "APP_ENV=local"
+            echo "NEXT_PUBLIC_SITE_URL=http://localhost:3000"
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+            echo "CRON_SECRET=ci-cron-secret"
+          } >> "$GITHUB_ENV"
+      - name: Build and start the app
+        run: |
+          pnpm build
+          pnpm start > /tmp/next.log 2>&1 &
+          for i in $(seq 1 60); do curl -fsS http://localhost:3000/api/health && break; sleep 2; done
+      - name: API integration tests
+        run: pnpm test:api
+        env:
+          API_BASE_URL: http://localhost:3000
+      - name: App log on failure
+        if: failure()
+        run: tail -100 /tmp/next.log || true
       - name: Stop local Supabase
         if: always()
         run: supabase stop --no-backup

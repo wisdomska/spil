@@ -1,0 +1,107 @@
+// Shared API contract between route handlers and the client (docs/TECH_SPEC.md section 12).
+import type { AnswerValue, AwardId, LabelId, PlayerStatus, RoomStatus } from "@/lib/game";
+
+export type HeatLevel = "spicy" | "explicit" | "intense";
+export type PackTone = "accent" | "inverse" | "raised";
+
+export type PackSummary = {
+  id: string;
+  name: string;
+  icon: string;
+  isAdult: boolean;
+  heat: HeatLevel | null;
+};
+
+export type Pack = PackSummary & {
+  blurb: string;
+  tone: PackTone;
+  region: string | null;
+  questionCount: number;
+  sortOrder: number;
+};
+
+export type PublicRoom = {
+  code: string;
+  status: RoomStatus;
+  pack: PackSummary;
+  hostNickname: string | null;
+  playerCount: number;
+  maxPlayers: number;
+};
+
+export type StatePlayer = {
+  id: string;
+  nickname: string;
+  avatar: number;
+  rotationSeed: number;
+  isHost: boolean;
+  isBot: boolean;
+  status: PlayerStatus;
+  /** Answers saved this round (count only; never the values). */
+  answered: number;
+  answersSubmitted: boolean;
+  guessesSubmitted: boolean;
+};
+
+export type ResultRow = {
+  playerId: string;
+  nickname: string;
+  avatar: number;
+  score: number;
+  label: LabelId;
+  avgGuessAbout: number;
+  mindReader: number;
+  rank: number;
+};
+
+export type AwardRow = {
+  award: AwardId;
+  playerId: string;
+  reason: string;
+  position: number;
+};
+
+export type QuestionStatRow = {
+  questionId: string;
+  text: string;
+  yes: number;
+  answered: number;
+  spillNames: string[];
+};
+
+export type RoomState = {
+  room: {
+    code: string;
+    status: RoomStatus;
+    round: number;
+    pack: PackSummary;
+    questionCount: number;
+    revealedAt?: string;
+    settings: { minPlayers: number; maxPlayers: number };
+    testPlayers: boolean;
+    pollingOnly: boolean;
+    /** Realtime channel id (room:{id}). */
+    channel: string;
+  };
+  me: {
+    id: string;
+    nickname: string;
+    avatar: number;
+    isHost: boolean;
+    status: PlayerStatus;
+    ageConfirmed: boolean;
+    answersSubmitted: boolean;
+    guessesSubmitted: boolean;
+    spillMode: boolean;
+    hideNameOnCard: boolean;
+  };
+  players: StatePlayer[];
+  /** Only while answering, for this round. */
+  questions?: Array<{ id: string; text: string }>;
+  myAnswers?: Record<string, AnswerValue>;
+  myGuesses?: Record<string, number>;
+  /** Only when revealed. */
+  results?: { rows: ResultRow[]; awards: AwardRow[]; questionStats: QuestionStatRow[] };
+};
+
+export type ApiErrorBody = { error: { code: string; message: string } };

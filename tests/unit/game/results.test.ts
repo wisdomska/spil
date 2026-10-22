@@ -173,7 +173,7 @@ describe("sat_out and departed players", () => {
     expect(r.awards.every((a) => a.playerId === "ama" || a.playerId === "zainab")).toBe(true);
   });
 
-  it("sat out for answers: no score, not a guess target, guesses ignored", () => {
+  it("sat out for answers: no score, not a guess target, but their guesses still count", () => {
     const input = room();
     input.players = input.players.map((p) =>
       p.id === "yaw"
@@ -188,8 +188,9 @@ describe("sat_out and departed players", () => {
     );
     const r = computeResults(input);
     expect(r.rows.map((x) => x.playerId)).not.toContain("yaw");
-    // Ama's guess about Yaw no longer counts toward her Mind Reader; Yaw's guess about Ama is ignored.
-    expect(row(r, "ama").avgGuessAbout).toBe(50);
+    // Ama's guess about Yaw no longer counts toward her Mind Reader (Yaw has no score), but Yaw
+    // can still guess: their 0 joins Kofi's and Zainab's 50s in the room's guess about Ama.
+    expect(row(r, "ama").avgGuessAbout).toBe(Math.round((50 + 50 + 0) / 3));
     expect(row(r, "ama").mindReader).toBe(Math.round((100 - 20 + 100) / 2));
     expect(countAnswers(input).every((c) => c.answered === 3)).toBe(true);
   });

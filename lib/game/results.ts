@@ -131,10 +131,14 @@ export function computeResults(input: ResultsInput): Results {
   const ps = participants(input);
   const byId = new Map(ps.map((p) => [p.player.id, p]));
 
+  // Players who sat out answering have no score but can still guess ("They can still guess."),
+  // so their guesses count toward the room's guess about everyone else.
+  const guessers = input.players.filter((g) => g.status === "active" || g.status === "sat_out");
+
   const stats = ps.map((p) => {
-    const about = ps
-      .filter((o) => o !== p)
-      .map((o) => o.player.guesses[p.player.id])
+    const about = guessers
+      .filter((o) => o.id !== p.player.id)
+      .map((o) => o.guesses[p.player.id])
       .filter(validGuess)
       .map(clampGuess);
     const accuracy: number[] = [];

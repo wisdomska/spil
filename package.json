@@ -13,7 +13,8 @@
     "format:check": "prettier --check .",
     "check:copy": "node scripts/check-copy.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:api": "vitest run --config vitest.api.config.mts"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

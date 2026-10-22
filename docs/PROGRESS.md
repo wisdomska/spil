@@ -8,9 +8,9 @@ Milestones follow docs/TECH_SPEC.md section 22.
 | 1   | Scaffold                       | done        | Next.js 16.4, React 19.3, Tailwind v4, pnpm. Authorship guards (hook + settings + CI).                                         |
 | 2   | Design foundation              | done        |                                                                                                                                |
 | 3   | Components                     | in progress |                                                                                                                                |
-| 4   | Database                       | pending     |                                                                                                                                |
-| 5   | Game logic                     | pending     |                                                                                                                                |
-| 6   | API                            | pending     |                                                                                                                                |
+| 4   | Database                       | done        |                                                                                                                                |
+| 5   | Game logic                     | done        |                                                                                                                                |
+| 6   | API                            | done        | All section 12 endpoints, rate limits, Turnstile hook, 19 integration tests (local Supabase in CI, spil-preview locally)       |
 | 7   | Static and entry screens       | pending     |                                                                                                                                |
 | 8   | Room flow                      | pending     |                                                                                                                                |
 | 9   | Reveal and results             | pending     |                                                                                                                                |

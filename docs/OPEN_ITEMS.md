@@ -9,3 +9,5 @@
 | 5   | Confirm `max_players` default 12 vs SRS 20 after beta                                                                                                    | PO           |
 | 6   | Confirm questions-per-game default (12) after beta play-tests                                                                                            | PO           |
 | 7   | Upgrade Vercel to Pro and Supabase to Pro before payments (v1.1)                                                                                         | PO / DevOps  |
+| 8   | Custom SMTP (free tier: Brevo or Resend) so the admin reset email can show the 6-digit code from the design; until then the default reset link is used   | Owner        |
+| 9   | Cloudflare Turnstile site and secret keys (free) for production and preview                                                                              | Owner        |
