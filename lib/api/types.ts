@@ -27,6 +27,8 @@ export type PublicRoom = {
   hostNickname: string | null;
   playerCount: number;
   maxPlayers: number;
+  /** True when the caller already plays in this room. */
+  joined: boolean;
 };
 
 export type StatePlayer = {

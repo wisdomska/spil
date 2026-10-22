@@ -9,8 +9,9 @@ import {
   AwardBadge,
   AwardSticker,
   LabelSticker,
-  labelFor,
+  type LabelName,
 } from "@/components/brand/Stickers";
+import { labelFor } from "@/lib/game";
 import { Vessel } from "@/components/brand/Vessel";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { Button } from "@/components/ui/Button";
@@ -191,7 +192,11 @@ export function KitchenSink() {
       <Section title="Stickers">
         <div className="flex flex-wrap gap-4 p-2">
           {[9, 30, 50, 64, 88].map((s, i) => (
-            <LabelSticker key={s} label={labelFor(s)} rotate={[-4, 3, -2, 2, -3][i]} />
+            <LabelSticker
+              key={s}
+              label={labelFor(s).name as LabelName}
+              rotate={[-4, 3, -2, 2, -3][i]}
+            />
           ))}
         </div>
         <div className="flex flex-wrap gap-4 p-2">

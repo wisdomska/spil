@@ -49,14 +49,6 @@ const LABEL_LOOK: Record<
   },
 };
 
-export function labelFor(score: number): LabelName {
-  if (score <= 15) return "Fresh Out The Box";
-  if (score <= 35) return "Mostly Innocent";
-  if (score <= 55) return "Been Around";
-  if (score <= 75) return "Main Character";
-  return "Legendary Menace";
-}
-
 /** Style for a score label sticker at a given font size, port of the prototype's stk(). */
 export function labelStickerStyle(
   label: LabelName,

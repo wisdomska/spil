@@ -26,6 +26,6 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     // Skip static assets, images, OG images and the health/cron endpoints.
-    "/((?!_next/static|_next/image|favicon.ico|og|api/health|api/cron|.*\\.(?:svg|png|jpg|jpeg|gif|webp|woff2?)$).*)",
+    "/((?!_next/|favicon.ico|og|api/health|api/cron|.*\\.(?:svg|png|jpg|jpeg|gif|webp|woff2?)$).*)",
   ],
 };

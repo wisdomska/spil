@@ -53,3 +53,6 @@ supabase/.branches/
 
 # agent worktrees
 .claude/worktrees/
+
+# local dev logs
+.local/

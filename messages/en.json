@@ -108,7 +108,8 @@
       "ariaGuess": "Your guess for {name}",
       "ariaRevealed": "{name} scored {score}",
       "reveal": "Reveal the score",
-      "next": "Next player"
+      "next": "Next player",
+      "you": "You"
     }
   },
   "join": {

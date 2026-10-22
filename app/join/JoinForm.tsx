@@ -1,0 +1,115 @@
+"use client";
+
+import { ClipboardTextIcon, WarningCircleIcon } from "@phosphor-icons/react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { CodeInput, cleanCode } from "@/components/ui/CodeInput";
+import { api, ClientApiError } from "@/lib/api/client";
+import type { PublicRoom } from "@/lib/api/types";
+
+type JoinError = "invalid" | "expired" | "full" | "started" | "offline";
+
+export function JoinForm() {
+  const t = useTranslations("join");
+  const c = useTranslations("common");
+  const router = useRouter();
+  const params = useSearchParams();
+  const [code, setCode] = useState(() => cleanCode(params.get("code") ?? ""));
+  const [error, setError] = useState<JoinError | null>(null);
+  const [max, setMax] = useState(12);
+  const [busy, setBusy] = useState(false);
+  const ready = code.length === 4;
+
+  const submit = async () => {
+    if (!ready || busy) return;
+    setBusy(true);
+    try {
+      const room = await api<PublicRoom>("GET", `/rooms/${code}`);
+      setMax(room.maxPlayers);
+      if (room.status !== "lobby") return setError("started");
+      if (room.playerCount >= room.maxPlayers) return setError("full");
+      router.push(`/r/${code}/me`);
+    } catch (e) {
+      const code = e instanceof ClientApiError ? e.code : "";
+      setError(code === "ROOM_EXPIRED" ? "expired" : code === "OFFLINE" ? "offline" : "invalid");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const message =
+    error === "full"
+      ? t("full", { max })
+      : error === "offline"
+        ? c("tryAgain")
+        : error
+          ? t(error)
+          : null;
+
+  return (
+    <main className="mx-auto box-border flex w-full max-w-[480px] flex-1 flex-col gap-[22px] px-5 pt-4 pb-7">
+      <h1 className="m-0 font-display text-display-l font-extrabold tracking-display">
+        {t("title")}
+      </h1>
+      <p className="m-0 text-[17px] leading-[1.5] text-text-muted">{t("lede")}</p>
+      <div className="grid gap-3">
+        <label htmlFor="spil-code" className="text-[14px] leading-none font-semibold">
+          {t("label")}
+        </label>
+        <CodeInput
+          id="spil-code"
+          value={code}
+          onChange={(v) => {
+            setCode(v);
+            setError(null);
+          }}
+          onSubmit={submit}
+          invalid={Boolean(error)}
+          describedBy="spil-code-msg"
+          autoFocus
+        />
+        <div id="spil-code-msg" role="alert" className="min-h-[22px]">
+          {message && (
+            <span className="flex items-start gap-2 text-[15px] leading-[1.4] font-medium text-error">
+              <WarningCircleIcon size={20} aria-hidden className="shrink-0" />
+              {message}
+            </span>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={async () => {
+            let text = "";
+            try {
+              text = (await navigator.clipboard.readText()) ?? "";
+            } catch {
+              // clipboard blocked; nothing to paste
+            }
+            setCode(cleanCode(text));
+            setError(null);
+          }}
+          className="-ml-2 flex h-12 items-center gap-2 justify-self-start rounded-pill border-0 bg-transparent px-4 text-[15px] leading-none font-semibold whitespace-nowrap text-text hover:bg-surface-raised"
+        >
+          <ClipboardTextIcon size={20} aria-hidden />
+          {t("paste")}
+        </button>
+      </div>
+      <div className="mt-auto grid gap-2.5">
+        {error === "expired" && (
+          <Link
+            href="/create"
+            className="flex h-14 items-center justify-center rounded-pill border-[1.5px] border-text text-[17px] leading-none font-semibold text-text no-underline hover:bg-surface-raised hover:text-text"
+          >
+            {c("startRoom")}
+          </Link>
+        )}
+        <Button block softDisabled={!ready} loading={busy} onClick={submit}>
+          {t("submit")}
+        </Button>
+      </div>
+    </main>
+  );
+}
