@@ -65,3 +65,22 @@ jobs:
           if grep -rl "SUPABASE_SERVICE_ROLE_KEY\|service_role" .next/static; then
             echo "::error::service role reference found in client bundle"; exit 1
           fi
+
+  db:
+    name: db
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - name: Start local Supabase
+        run: supabase start -x imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor,storage-api
+      - name: Reset database (migrations + seed)
+        run: supabase db reset
+      - name: pgTAP tests
+        run: supabase test db
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup
