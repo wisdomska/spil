@@ -1,26 +1,48 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, getTranslations } from "next-intl/server";
+import { fontVariables } from "./fonts";
+import { Grain } from "@/components/brand/Grain";
+import { Providers } from "./providers";
+import { THEME_COLOR, themeScript } from "@/lib/theme/theme-script";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://spil-party.vercel.app";
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("meta");
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: { default: t("title"), template: "%s · SPIL" },
+    description: t("description"),
+    applicationName: "SPIL",
+    openGraph: { type: "website", siteName: "SPIL", images: ["/og"] },
+    twitter: { card: "summary_large_image" },
+    formatDetection: { telephone: false },
+  };
+}
 
-export const metadata: Metadata = {
-  title: "SPIL",
-  description: "The party game where everyone finds out who has done more.",
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: THEME_COLOR.dark,
+  colorScheme: "dark light",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const messages = await getMessages();
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+    <html lang="en" data-theme="dark" className={fontVariables} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body>
+        <NextIntlClientProvider messages={messages}>
+          <Providers>{children}</Providers>
+        </NextIntlClientProvider>
+        <Grain />
+      </body>
     </html>
   );
 }

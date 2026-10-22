@@ -1,15 +1,93 @@
 @import "tailwindcss";
 @import "./styles/tokens.css";
 @import "./styles/spil-theme.css";
+@import "./styles/spil-extras.css";
+
+/* next/font exposes the loaded families as variables; the tokens point at them. */
+:root {
+  --font-display: var(--font-bricolage), "Bricolage Grotesque", system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), "Geist", system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), "Geist Mono", ui-monospace, monospace;
+}
 
 html {
   font-synthesis: none;
   background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+  accent-color: var(--accent);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
   font-family: var(--font-sans);
   font-size: var(--text-body);
+  line-height: 1.5;
+}
+
+@layer base {
+  button {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      transform 160ms var(--ease-out),
+      background-color 150ms ease,
+      color 150ms ease,
+      border-color 150ms ease,
+      box-shadow 150ms ease,
+      filter 150ms ease;
+  }
+  button[aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+  a {
+    color: var(--accent-ink);
+    text-underline-offset: 3px;
+  }
+  a:hover {
+    color: var(--text);
+  }
+  input,
+  textarea,
+  select {
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-muted);
+  }
+  :where(input, textarea, select):not(:disabled):hover {
+    border-color: var(--text-muted);
+  }
+  :where(input, textarea, select):focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  :where(input, textarea)[aria-invalid="true"] {
+    border-color: var(--error);
+  }
+  :where(input, textarea, select):disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  ::selection {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-property: opacity, color, background-color, border-color !important;
+  }
 }

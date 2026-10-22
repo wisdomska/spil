@@ -5,9 +5,9 @@ Milestones follow docs/TECH_SPEC.md section 22.
 | #   | Milestone                      | Status      | Notes                                                                                                                          |
 | --- | ------------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | 0   | Skills, tooling, design import | done        | All 7 skill sources installed into `.claude/skills`. Design unzipped to `/design`; SRS converted to `docs/SRS.md` with pandoc. |
-| 1   | Scaffold                       | in progress | Next.js 16.4, React 19.3, Tailwind v4, pnpm. Authorship guards (hook + settings + CI).                                         |
-| 2   | Design foundation              | pending     |                                                                                                                                |
-| 3   | Components                     | pending     |                                                                                                                                |
+| 1   | Scaffold                       | done        | Next.js 16.4, React 19.3, Tailwind v4, pnpm. Authorship guards (hook + settings + CI).                                         |
+| 2   | Design foundation              | done        |                                                                                                                                |
+| 3   | Components                     | in progress |                                                                                                                                |
 | 4   | Database                       | pending     |                                                                                                                                |
 | 5   | Game logic                     | pending     |                                                                                                                                |
 | 6   | API                            | pending     |                                                                                                                                |

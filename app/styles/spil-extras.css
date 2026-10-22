@@ -1,0 +1,213 @@
+/* Fixed colours the design uses on top of the theme tokens. They do not change
+   with the theme: avatar faces, adult pack tiles and the 18+ badge are printed
+   objects, like stickers. Values copied from design/SPIL App.dc.html. */
+
+:root {
+  /* avatar face plate and ink */
+  --avatar-ink: #15161a;
+  --avatar-plate: #f3f1ec;
+  --avatar-edge: rgb(0 0 0 / 0.12);
+
+  /* pack tiles: non-adult, non-classic tiles are a paper card in both themes */
+  --tile-paper: #f3f1ec;
+  --tile-on-paper: #101114;
+  --tile-night: #0b0c0f;
+  --tile-on-night: #f3f1ec;
+  --tile-night-glyph-ink: #101114;
+  --tile-info-edge: rgb(243 241 236 / 0.4);
+  --tile-info-hover: rgb(243 241 236 / 0.12);
+
+  /* adult heat */
+  --adult-badge: #e0321c;
+  --adult-badge-ink: #ffffff;
+  --adult-badge-edge: #f3f1ec;
+  --heat-spicy: #1c1d24;
+  --heat-on-spicy: #f3f1ec;
+  --heat-explicit: #3a1510;
+  --heat-on-explicit: #f7ece8;
+  --heat-intense: #7e1a0b;
+  --heat-on-intense: #fff3ee;
+
+  /* press highlight laid over accent buttons on hover */
+  --press-glow: rgb(255 255 255 / 0.14);
+
+  /* z-index scale, spec section 6.5 */
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-sheet: 40;
+  --z-toast: 50;
+  --z-grain: 60;
+
+  /* motion curves from HANDOFF.md */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-return: cubic-bezier(0.34, 1.3, 0.64, 1);
+  --ease-switch: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --ease-tick: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@theme inline {
+  --color-avatar-ink: var(--avatar-ink);
+  --color-avatar-plate: var(--avatar-plate);
+  --color-tile-paper: var(--tile-paper);
+  --color-tile-on-paper: var(--tile-on-paper);
+  --color-tile-night: var(--tile-night);
+  --color-tile-on-night: var(--tile-on-night);
+  --color-adult-badge: var(--adult-badge);
+  --color-adult-badge-ink: var(--adult-badge-ink);
+  --color-adult-badge-edge: var(--adult-badge-edge);
+  --color-shadow: var(--shadow);
+  --color-halftone: var(--halftone);
+  --ease-out: var(--ease-out);
+  --ease-in-out: var(--ease-in-out);
+  --ease-drawer: var(--ease-drawer);
+}
+
+@theme {
+  --animate-tick: tick 260ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-lobby-drop: lobby-drop 420ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  --animate-rise: rise 240ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  --animate-fade: fade 200ms ease both;
+  --animate-sheet-up: sheet-up 400ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  --animate-modal-pop: modal-pop 200ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  --animate-icon-in: icon-in 240ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  --animate-nudge: nudge 1.4s ease-in-out infinite;
+  --animate-shake: shake 420ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  --animate-slap-quick: slap 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-slap-award: slap 520ms cubic-bezier(0.25, 1.6, 0.45, 1) both;
+
+  @keyframes tick {
+    from {
+      transform: scale(0.6) rotate(-20deg);
+      opacity: 0;
+    }
+  }
+  @keyframes lobby-drop {
+    from {
+      transform: translateY(-24px) scale(1.12);
+      opacity: 0;
+    }
+  }
+  @keyframes rise {
+    from {
+      transform: translateY(8px);
+      opacity: 0;
+    }
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes sheet-up {
+    from {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes modal-pop {
+    from {
+      transform: scale(0.96);
+      opacity: 0;
+    }
+  }
+  @keyframes icon-in {
+    from {
+      transform: rotate(-70deg) scale(0.6);
+      opacity: 0;
+    }
+  }
+  @keyframes nudge {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-3px);
+    }
+  }
+  @keyframes shake {
+    20%,
+    60% {
+      transform: translateX(-6px);
+    }
+    40%,
+    80% {
+      transform: translateX(6px);
+    }
+  }
+}
+
+/* Reduced motion: every keyframe falls back to a fade (HANDOFF.md). */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes slap {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes drop {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes lobby-drop {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes tick {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes sheet-up {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes modal-pop {
+    from {
+      opacity: 0;
+      transform: none;
+    }
+  }
+  @keyframes icon-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes wave {
+    to {
+      transform: none;
+    }
+  }
+  @keyframes nudge {
+    to {
+      transform: none;
+    }
+  }
+  @keyframes shake {
+    to {
+      transform: none;
+    }
+  }
+}
+
+/* Vessel wave: a 26 px strip on a translateX loop (HANDOFF "wave"). */
+@keyframes spil-wave {
+  to {
+    transform: translateX(26px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  @keyframes spil-wave {
+    to {
+      transform: none;
+    }
+  }
+}

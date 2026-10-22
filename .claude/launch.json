@@ -1,0 +1,7 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "design", "runtimeExecutable": "npx", "runtimeArgs": ["-y", "serve@14.2.4", "design", "-l", "4500"], "port": 4500 },
+    { "name": "app", "runtimeExecutable": "pnpm", "runtimeArgs": ["dev"], "port": 3000 }
+  ]
+}
