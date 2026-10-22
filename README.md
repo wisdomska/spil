@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SPIL
 
-## Getting Started
+A mobile-first party game. A host starts a private room and shares the link, friends join with a nickname, everyone privately answers "Have you ever..." questions, guesses each other's Spill Score, then watches an animated reveal with awards and shares a result card.
 
-First, run the development server:
+- Production: https://spil-party.vercel.app (admin at `/admin`)
+- Staging: https://spil-party-preview.vercel.app
+
+## Stack
+
+Next.js (App Router) + React 19 + TypeScript strict, Tailwind v4 on the SPIL design tokens, Radix primitives, Motion, TanStack Query, zustand, zod, Supabase (Postgres, RLS, anonymous and email auth, Realtime), Vitest, Playwright, pgTAP. Hosted on Vercel Hobby and Supabase Free.
+
+Docs: [technical spec](docs/TECH_SPEC.md), [requirements](docs/SRS.md), [decisions](docs/DECISIONS.md), [progress](docs/PROGRESS.md), [open items](docs/OPEN_ITEMS.md). Visual reference lives in [`design/`](design/) (open the `.dc.html` files in a browser; serve with `npx serve design`).
+
+## Local setup
+
+Requires Node 24 (`.nvmrc`), pnpm 10 and the Supabase CLI.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+cp .env.example .env.local   # fill from the spil-preview project, see below
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`.env.local` values: Supabase URL and keys from the `spil-preview` project (Dashboard, Project Settings, API keys), or pull them with `vercel env pull .env.local --environment preview`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Script                              | What it does                                                       |
+| ----------------------------------- | ------------------------------------------------------------------ |
+| `pnpm dev`                          | Dev server on http://localhost:3000                                |
+| `pnpm build` / `pnpm start`         | Production build and server                                        |
+| `pnpm typecheck`                    | Route type generation + `tsc --noEmit`                             |
+| `pnpm lint`                         | ESLint                                                             |
+| `pnpm format` / `pnpm format:check` | Prettier                                                           |
+| `pnpm check:copy`                   | Fails on em/en dashes in copy and hex colours outside `app/styles` |
 
-## Learn More
+## Environment variables
 
-To learn more about Next.js, take a look at the following resources:
+See [`.env.example`](.env.example) and spec section 21. Never commit values. Vercel holds production values (`spil-prod`) and preview values (`spil-preview`); `scripts/sync-env.mjs` copies Supabase keys into Vercel without printing them.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy flow
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Feature branch → PR into `preview` (deploys to the staging URL) → PR `preview` → `main` (deploys to production). Migrations are applied by CI to the matching Supabase project. See [CONTRIBUTING.md](CONTRIBUTING.md) for the squash and rebase-merge rules that keep authorship clean.
