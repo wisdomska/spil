@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Geist+Mono:wght@400..700&family=Geist:wght@400..700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<style>body{margin:0;background:#101114}</style>
+</helmet>
+<div style="{{ outer }}">
+<div style="{{ inner }}">
+  <div style="position:absolute;inset:0;background-image:radial-gradient(var(--halftone) 1.7px, transparent 1.9px);background-size:10px 10px;pointer-events:none"></div>
+
+  <sc-if value="{{ isStory }}" hint-placeholder-val="{{ true }}">
+    <div style="position:absolute;inset:0;padding:96px;box-sizing:border-box;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span role="img" aria-label="SPIL" style="display:inline-flex;align-items:baseline;font:800 104px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em;color:var(--text)"><span aria-hidden="true" style="display:inline-block;transform:rotate(-8deg) translateY(.03em)">S</span><span aria-hidden="true" style="display:inline-block;transform:rotate(5deg) translateY(-.05em);margin-left:-.01em">P</span><span aria-hidden="true" style="position:relative;display:inline-block;color:var(--accent);font-stretch:75%;transform:rotate(14deg);transform-origin:50% 90%;margin:0 .14em 0 -.03em">I<span style="position:absolute;top:-.17em;right:-.2em;width:.13em;height:.13em;background:var(--accent);border-radius:0 50% 50% 50%"></span><span style="position:absolute;top:-.3em;right:.02em;width:.07em;height:.07em;background:var(--accent);border-radius:50%"></span></span><span aria-hidden="true" style="display:inline-block;transform:rotate(-4deg) translateY(.02em)">L</span></span>
+        <span style="font:500 32px/1 'Geist Mono',monospace;color:var(--text-muted);letter-spacing:.06em">{{ roomLine }}</span>
+      </div>
+      <div style="margin-top:120px;display:flex;align-items:center;gap:32px">
+        <sc-if value="{{ showAvatar }}" hint-placeholder-val="{{ true }}">
+          <dc-import name="SPIL Avatar" n="{{ avatar }}" size="128" hint-size="128px,128px"></dc-import>
+        </sc-if>
+        <div style="display:grid;gap:10px">
+          <span style="font:500 44px/1 Geist,sans-serif;color:var(--text-muted)">{{ ownerLine }}</span>
+          <span style="font:800 100px/.92 'Bricolage Grotesque',sans-serif;letter-spacing:-.035em">Spill Score</span>
+        </div>
+      </div>
+      <div style="position:relative;margin-top:72px;height:880px;border-radius:56px;background:var(--surface-raised);overflow:hidden">
+        <div style="position:absolute;inset:0;display:grid;place-items:center;font:600 420px/1 'Geist Mono',monospace;letter-spacing:-.07em;color:var(--text)">{{ score }}</div>
+        <div style="position:absolute;left:0;right:0;bottom:0;height:{{ fill }};background:var(--accent);overflow:hidden">
+          <div style="position:absolute;left:0;right:0;bottom:0;height:880px;display:grid;place-items:center;font:600 420px/1 'Geist Mono',monospace;letter-spacing:-.07em;color:var(--on-accent)">{{ score }}</div>
+        </div>
+        <div style="position:absolute;left:0;right:0;bottom:{{ fill }};height:30px;background:radial-gradient(circle at 50% 100%, var(--accent) 62%, transparent 64%) 0 0/80px 30px repeat-x"></div>
+      </div>
+      <div style="position:relative;height:0">
+        <span style="position:absolute;left:40px;top:-110px;display:inline-flex;align-items:center;padding:22px 40px;background:var(--inverse);color:var(--on-inverse);border:10px solid var(--sticker-edge);border-radius:999px;box-shadow:0 0 0 3px var(--sticker-ring),0 18px 30px -14px var(--shadow);font:800 64px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em;transform:rotate(-4deg);white-space:nowrap">{{ label }}</span>
+        <span style="position:absolute;right:24px;top:-930px;width:250px;height:250px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--accent);color:var(--on-accent);border:10px solid var(--sticker-edge);border-radius:50%;box-shadow:0 0 0 3px var(--sticker-ring),0 18px 30px -14px var(--shadow);font:800 40px/1 'Bricolage Grotesque',sans-serif;text-align:center;transform:rotate(6deg)"><i class="{{ awardIcon }}" style="font-size:72px"></i><span style="max-width:190px">{{ award }}</span></span>
+      </div>
+      <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;gap:40px">
+        <span style="font:800 60px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em;max-width:560px">Think you know me? Guess my score.</span>
+        <span style="font:600 38px/1 'Geist Mono',monospace;color:var(--accent-ink)">spil.party</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isSquare }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;padding:72px;box-sizing:border-box;display:flex;flex-direction:column;gap:36px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span role="img" aria-label="SPIL" style="display:inline-flex;align-items:baseline;font:800 76px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em"><span aria-hidden="true" style="display:inline-block;transform:rotate(-8deg) translateY(.03em)">S</span><span aria-hidden="true" style="display:inline-block;transform:rotate(5deg) translateY(-.05em);margin-left:-.01em">P</span><span aria-hidden="true" style="position:relative;display:inline-block;color:var(--accent);font-stretch:75%;transform:rotate(14deg);transform-origin:50% 90%;margin:0 .14em 0 -.03em">I<span style="position:absolute;top:-.17em;right:-.2em;width:.13em;height:.13em;background:var(--accent);border-radius:0 50% 50% 50%"></span><span style="position:absolute;top:-.3em;right:.02em;width:.07em;height:.07em;background:var(--accent);border-radius:50%"></span></span><span aria-hidden="true" style="display:inline-block;transform:rotate(-4deg) translateY(.02em)">L</span></span>
+        <span style="font:500 28px/1 'Geist Mono',monospace;color:var(--text-muted);letter-spacing:.06em">{{ roomLine }}</span>
+      </div>
+      <span style="font:800 72px/.95 'Bricolage Grotesque',sans-serif;letter-spacing:-.035em">Tunde topped the room.</span>
+      <div style="display:grid;grid-template-columns:400px 1fr;gap:56px;flex:1;min-height:0">
+        <div style="position:relative;border-radius:44px;background:var(--surface-raised);overflow:hidden">
+          <div style="position:absolute;inset:0;display:grid;place-items:center;font:600 220px/1 'Geist Mono',monospace;letter-spacing:-.07em">88</div>
+          <div style="position:absolute;left:0;right:0;bottom:0;height:88%;background:var(--accent);overflow:hidden">
+            <div style="position:absolute;left:0;right:0;bottom:0;height:648px;display:grid;place-items:center;font:600 220px/1 'Geist Mono',monospace;letter-spacing:-.07em;color:var(--on-accent)">88</div>
+          </div>
+          <div style="position:absolute;left:0;right:0;bottom:88%;height:24px;background:radial-gradient(circle at 50% 100%, var(--accent) 62%, transparent 64%) 0 0/64px 24px repeat-x"></div>
+          <span style="position:absolute;left:24px;bottom:32px;display:inline-flex;padding:14px 26px;background:var(--inverse);color:var(--on-inverse);border:7px solid var(--sticker-edge);border-radius:14px;box-shadow:0 0 0 2px var(--sticker-ring);font:800 38px/1 'Bricolage Grotesque',sans-serif;font-stretch:80%;transform:rotate(-4deg);white-space:nowrap">Legendary Menace</span>
+        </div>
+        <div style="display:flex;flex-direction:column;justify-content:space-between">
+          <sc-for list="{{ board }}" as="p" hint-placeholder-count="6">
+            <div style="display:flex;align-items:center;gap:22px;padding:10px 0;border-bottom:2px solid var(--line)">
+              <span style="font:500 30px/1 'Geist Mono',monospace;color:var(--text-muted);width:36px">{{ p.rank }}</span>
+              <dc-import name="SPIL Avatar" n="{{ p.av }}" size="68" hint-size="68px,68px"></dc-import>
+              <span style="flex:1;font:700 42px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">{{ p.name }}</span>
+              <span style="font:600 44px/1 'Geist Mono',monospace;font-variant-numeric:tabular-nums">{{ p.score }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="display:inline-flex;align-items:center;gap:14px;padding:14px 28px;background:var(--accent);color:var(--on-accent);border:7px solid var(--sticker-edge);border-radius:999px;box-shadow:0 0 0 2px var(--sticker-ring);font:800 36px/1 'Bricolage Grotesque',sans-serif;transform:rotate(3deg)"><i class="ph ph-eye" style="font-size:40px"></i>Mind Reader: Zainab</span>
+        <span style="font:600 34px/1 'Geist Mono',monospace;color:var(--accent-ink)">spil.party</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isOg }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;padding:64px;box-sizing:border-box;display:grid;grid-template-columns:1fr 340px;gap:64px">
+      <div style="display:flex;flex-direction:column;justify-content:space-between">
+        <span role="img" aria-label="SPIL" style="display:inline-flex;align-items:baseline;font:800 96px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em"><span aria-hidden="true" style="display:inline-block;transform:rotate(-8deg) translateY(.03em)">S</span><span aria-hidden="true" style="display:inline-block;transform:rotate(5deg) translateY(-.05em);margin-left:-.01em">P</span><span aria-hidden="true" style="position:relative;display:inline-block;color:var(--accent);font-stretch:75%;transform:rotate(14deg);transform-origin:50% 90%;margin:0 .14em 0 -.03em">I<span style="position:absolute;top:-.17em;right:-.2em;width:.13em;height:.13em;background:var(--accent);border-radius:0 50% 50% 50%"></span><span style="position:absolute;top:-.3em;right:.02em;width:.07em;height:.07em;background:var(--accent);border-radius:50%"></span></span><span aria-hidden="true" style="display:inline-block;transform:rotate(-4deg) translateY(.02em)">L</span></span>
+        <span style="font:800 70px/.95 'Bricolage Grotesque',sans-serif;letter-spacing:-.035em;text-wrap:balance">Your friends think they know you. <span style="font-stretch:75%;color:var(--accent-ink)">Prove it.</span></span>
+        <span style="font:600 30px/1 'Geist Mono',monospace;color:var(--text-muted)">spil.party</span>
+      </div>
+      <div style="position:relative;border-radius:36px;background:var(--surface-raised);overflow:hidden">
+        <div style="position:absolute;inset:0;display:grid;place-items:center;font:600 180px/1 'Geist Mono',monospace;letter-spacing:-.07em">{{ score }}</div>
+        <div style="position:absolute;left:0;right:0;bottom:0;height:{{ fill }};background:var(--accent);overflow:hidden">
+          <div style="position:absolute;left:0;right:0;bottom:0;height:502px;display:grid;place-items:center;font:600 180px/1 'Geist Mono',monospace;letter-spacing:-.07em;color:var(--on-accent)">{{ score }}</div>
+        </div>
+        <div style="position:absolute;left:0;right:0;bottom:{{ fill }};height:20px;background:radial-gradient(circle at 50% 100%, var(--accent) 62%, transparent 64%) 0 0/54px 20px repeat-x"></div>
+        <span style="position:absolute;left:18px;bottom:28px;display:inline-flex;padding:12px 22px;background:var(--inverse);color:var(--on-inverse);border:6px solid var(--sticker-edge);border-radius:999px;box-shadow:0 0 0 2px var(--sticker-ring);font:800 30px/1 'Bricolage Grotesque',sans-serif;transform:rotate(-4deg);white-space:nowrap">{{ label }}</span>
+        <span style="position:absolute;right:16px;top:18px;display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:var(--accent);color:var(--on-accent);border:6px solid var(--sticker-edge);border-radius:12px;box-shadow:0 0 0 2px var(--sticker-ring);font:800 24px/1 'Bricolage Grotesque',sans-serif;transform:rotate(4deg)"><i class="{{ awardIcon }}" style="font-size:28px"></i>{{ award }}</span>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:340,&quot;height&quot;:600},&quot;format&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;story&quot;,&quot;square&quot;,&quot;og&quot;],&quot;default&quot;:&quot;story&quot;,&quot;tsType&quot;:&quot;'story'|'square'|'og'&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;'dark'|'light'&quot;},&quot;name&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Ama&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;score&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;min&quot;:0,&quot;max&quot;:100,&quot;default&quot;:72,&quot;tsType&quot;:&quot;number&quot;},&quot;award&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Top Spiller&quot;,&quot;Saint of the Room&quot;,&quot;Mind Reader&quot;,&quot;Dark Horse&quot;,&quot;Open Book&quot;,&quot;Clueless&quot;],&quot;default&quot;:&quot;Open Book&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;avatar&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;min&quot;:0,&quot;max&quot;:23,&quot;default&quot;:0,&quot;tsType&quot;:&quot;number&quot;},&quot;hideName&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;scale&quot;:{&quot;editor&quot;:&quot;float&quot;,&quot;min&quot;:0.1,&quot;max&quot;:1,&quot;step&quot;:0.05,&quot;default&quot;:0.3,&quot;tsType&quot;:&quot;number&quot;}}">
+const SPIL_THEMES = {
+  dark: {'--bg':'#101114','--surface':'#17181D','--surface-raised':'#1F2027','--line':'#2C2E36','--line-strong':'#6E707B','--text':'#F3F1EC','--text-muted':'#A3A3AD','--accent':'#FF5B3A','--accent-ink':'#FF5B3A','--on-accent':'#101114','--accent-soft':'rgba(255,91,58,.14)','--inverse':'#F3F1EC','--on-inverse':'#101114','--sticker-edge':'#F3F1EC','--sticker-ring':'rgba(0,0,0,.5)','--error':'#F0938A','--success':'#8CCBA2','--scrim':'rgba(8,9,11,.72)','--shadow':'rgba(0,0,0,.5)','--halftone':'rgba(243,241,236,.05)','--skeleton':'#23242B'},
+  light: {'--bg':'#F1F2F4','--surface':'rgba(255,255,255,.92)','--surface-raised':'#FFFFFF','--line':'#D9DBE1','--line-strong':'#868994','--text':'#15161A','--text-muted':'#5D5F69','--accent':'#D63D1D','--accent-ink':'#B8321A','--on-accent':'#FFFFFF','--accent-soft':'rgba(214,61,29,.1)','--inverse':'#15161A','--on-inverse':'#F3F1EC','--sticker-edge':'#FBFAF7','--sticker-ring':'#C4C7CF','--error':'#B3362B','--success':'#2F7A4C','--scrim':'rgba(21,22,26,.45)','--shadow':'rgba(21,22,26,.16)','--halftone':'rgba(21,22,26,.06)','--skeleton':'#E3E5EA'}
+};
+const LABEL = s => s <= 15 ? 'Fresh Out The Box' : s <= 35 ? 'Mostly Innocent' : s <= 55 ? 'Been Around' : s <= 75 ? 'Main Character' : 'Legendary Menace';
+const AWARD_ICON = {'Top Spiller':'ph ph-drop','Saint of the Room':'ph ph-hands-praying','Mind Reader':'ph ph-eye','Dark Horse':'ph ph-horse','Open Book':'ph ph-book-open','Clueless':'ph ph-question'};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const fmt = p.format ?? 'story';
+    const [W, H] = fmt === 'square' ? [1080,1080] : fmt === 'og' ? [1200,630] : [1080,1920];
+    const sc = Number(p.scale ?? 0.3) || 0.3;
+    const theme = SPIL_THEMES[p.theme === 'light' ? 'light' : 'dark'];
+    const score = Math.max(0, Math.min(100, Number(p.score ?? 72)));
+    const hide = p.hideName === true || p.hideName === 'true';
+    const name = p.player ?? 'Ama';
+    const award = p.award ?? 'Open Book';
+    return {
+      outer: { width: W * sc, height: H * sc, position: 'relative', overflow: 'hidden', flexShrink: 0, borderRadius: Math.max(6, 28 * sc) },
+      inner: { ...theme, position: 'absolute', left: 0, top: 0, width: W, height: H, transform: `scale(${sc})`, transformOrigin: '0 0', background: 'var(--bg)', color: 'var(--text)', fontFamily: 'Geist, sans-serif', overflow: 'hidden' },
+      isStory: fmt === 'story', isSquare: fmt === 'square', isOg: fmt === 'og',
+      score, fill: `${score}%`, label: p.label ?? LABEL(score), award, awardIcon: AWARD_ICON[award] ?? 'ph ph-drop',
+      ownerLine: hide ? 'My' : `${name}'s`, showAvatar: !hide, avatar: Number(p.avatar ?? 0),
+      board: Array.isArray(p.board) ? p.board.slice(0, 7) : [['Tunde',14,88],['Ama',0,72],['Chidi',18,57],['Kofi',5,41],['Zainab',9,18],['Efua',3,9]].map(([name,av,score],i)=>({rank:i+1,name,av,score})), roomLine: 'ROOM ' + (p.room || 'K7QX')
+    };
+  }
+}
+</script>
+</body>
+</html>

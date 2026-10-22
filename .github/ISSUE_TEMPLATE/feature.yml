@@ -1,0 +1,20 @@
+name: Feature
+description: Propose a change or addition
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Who is this for and what are they trying to do?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+  - type: input
+    id: refs
+    attributes:
+      label: Requirement IDs
+      description: FR-* or NFR-* from docs/SRS.md, if any.

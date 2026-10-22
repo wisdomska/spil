@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Geist+Mono:wght@400..700&family=Geist:wght@400..700&display=swap">
+<style>body{margin:0;background:#08090B;-webkit-font-smoothing:antialiased} a{color:#FF5B3A} a:hover{color:#F3F1EC}</style>
+</helmet>
+<div style="padding:64px;display:grid;gap:80px;color:#F3F1EC;font-family:Geist,sans-serif;width:max-content">
+  <header style="display:grid;gap:12px;max-width:860px">
+    <span style="font:800 72px/.9 'Bricolage Grotesque',sans-serif;letter-spacing:-.04em">Share cards</span>
+    <span style="font:400 18px/1.5 Geist,sans-serif;color:#A3A3AD">Personal 1080 x 1920 for Stories and Status, group 1080 x 1080, Open Graph 1200 x 630. Each carries halftone, the liquid score, one label sticker, one award and the wordmark with link. Shown scaled; export at 1x from the same component.</span>
+  </header>
+  <sc-for list="{{ rows }}" as="r" hint-placeholder-count="2">
+    <section style="display:grid;gap:24px">
+      <span style="font:800 40px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em;border-bottom:1px solid #2C2E36;padding-bottom:14px">{{ r.title }}</span>
+      <div style="display:flex;gap:40px;align-items:flex-start">
+        <figure style="margin:0;display:grid;gap:10px"><figcaption style="font:500 13px/1 'Geist Mono',monospace;color:#A3A3AD">Personal story, 1080 x 1920</figcaption><dc-import name="SPIL Share Card" format="story" theme="{{ r.theme }}" player="Ama" score="72" award="Open Book" avatar="0" scale="0.36" hint-size="389px,691px"></dc-import></figure>
+        <figure style="margin:0;display:grid;gap:10px"><figcaption style="font:500 13px/1 'Geist Mono',monospace;color:#A3A3AD">Hide my name on</figcaption><dc-import name="SPIL Share Card" format="story" theme="{{ r.theme }}" hide-name="true" score="88" award="Top Spiller" avatar="14" scale="0.36" hint-size="389px,691px"></dc-import></figure>
+        <div style="display:grid;gap:40px">
+          <figure style="margin:0;display:grid;gap:10px"><figcaption style="font:500 13px/1 'Geist Mono',monospace;color:#A3A3AD">Group, 1080 x 1080</figcaption><dc-import name="SPIL Share Card" format="square" theme="{{ r.theme }}" scale="0.5" hint-size="540px,540px"></dc-import></figure>
+        </div>
+        <figure style="margin:0;display:grid;gap:10px"><figcaption style="font:500 13px/1 'Geist Mono',monospace;color:#A3A3AD">Open Graph, 1200 x 630</figcaption><dc-import name="SPIL Share Card" format="og" theme="{{ r.theme }}" score="72" award="Open Book" scale="0.6" hint-size="720px,378px"></dc-import></figure>
+      </div>
+    </section>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() { return { rows: [{ title: 'After Hours', theme: 'dark' }, { title: 'Daylight', theme: 'light' }] }; }
+}
+</script>
+</body>
+</html>

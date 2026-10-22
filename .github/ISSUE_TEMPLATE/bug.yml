@@ -1,0 +1,20 @@
+name: Bug
+description: Something is broken
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what you saw instead.
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      description: URL or screen, device and browser, theme.
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce

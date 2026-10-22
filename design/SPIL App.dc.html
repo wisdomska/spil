@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Geist+Mono:wght@400..700&family=Geist:wght@400..700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<style>
+body{margin:0;background:#0B0C0E;-webkit-font-smoothing:antialiased}
+*:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+a{color:var(--accent-ink);text-underline-offset:3px}
+a:hover{color:var(--text)}
+@keyframes spil-wave{to{transform:translateX(26px)}}
+@keyframes spil-tick{from{transform:scale(.6) rotate(-20deg);opacity:0}}
+@keyframes spil-icon{from{transform:rotate(-70deg) scale(.6);opacity:0}}
+@keyframes spil-rise{from{transform:translateY(8px);opacity:0}}
+@keyframes spil-rise-b{from{transform:translateY(8px);opacity:0}}
+@keyframes spil-nudge{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes spil-pop{from{transform:translate(-50%,-50%) scale(.96);opacity:0}}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform 160ms cubic-bezier(.23,1,.32,1),background-color 150ms ease,color 150ms ease,border-color 150ms ease,box-shadow 150ms ease,filter 150ms ease}
+button:not([aria-disabled="true"]):active{transform:scale(.97)}
+button[aria-disabled="true"]{cursor:not-allowed}
+input,textarea,select{transition:border-color 150ms ease,box-shadow 150ms ease}
+input::placeholder,textarea::placeholder{color:var(--text-muted)}
+input:not(:disabled):hover,textarea:not(:disabled):hover,select:not(:disabled):hover{border-color:var(--text-muted)!important}
+input:focus,textarea:focus,select:focus{outline:none!important;border-color:var(--accent)!important;box-shadow:0 0 0 3px var(--accent-soft)!important}
+input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:var(--error)!important}
+input:disabled,textarea:disabled,select:disabled{opacity:.5;cursor:not-allowed}
+@keyframes spil-drop{from{transform:translateY(-24px) scale(1.12);opacity:0}}
+@keyframes spil-slap{from{transform:scale(1.9) rotate(-14deg);opacity:0}}
+@keyframes spil-fade{from{opacity:0}}
+@keyframes spil-up{from{transform:translateY(100%)}}
+@keyframes spil-pulse{50%{opacity:.5}}
+@media (prefers-reduced-motion: reduce){@keyframes spil-drop{from{opacity:0}}@keyframes spil-slap{from{opacity:0}}@keyframes spil-up{from{opacity:0}}@keyframes spil-tick{from{opacity:0}}@keyframes spil-icon{from{opacity:0}}@keyframes spil-rise{from{opacity:0}}@keyframes spil-pop{from{opacity:0;transform:translate(-50%,-50%)}}@keyframes spil-wave{to{transform:none}}*,*::before,*::after{transition-property:opacity,color,background-color,border-color!important}}
+</style>
+<script src="./spil-store.js"></script>
+</helmet>
+<div style="{{ pageStyle }}">
+  <sc-if value="{{ showChrome }}" hint-placeholder-val="{{ false }}">
+    <div style="height:60px;flex-shrink:0;display:flex;align-items:center;gap:14px;padding:0 16px;border-bottom:1px solid #22232A;color:#A3A3AD;font:500 13px/1 'Geist Mono',monospace;background:#0B0C0E;overflow-x:auto;white-space:nowrap">
+      <span style="color:#F3F1EC">SPIL</span>
+      <div style="display:flex;gap:4px;padding:3px;border:1px solid #2C2E36;border-radius:999px">
+        <sc-for list="{{ deviceOpts }}" as="d" hint-placeholder-count="2"><button onClick="{{ d.on }}" style="{{ d.style }}">{{ d.label }}</button></sc-for>
+      </div>
+      <span style="color:#F3F1EC">{{ chromeRoom }}</span>
+      <button onClick="{{ openPlayerTab }}" style="height:36px;padding:0 14px;border-radius:999px;border:1px solid #2C2E36;background:transparent;color:#F3F1EC;font:500 13px/1 'Geist Mono',monospace;cursor:pointer;display:flex;gap:6px;align-items:center" style-hover="background:#1F2027"><i class="ph ph-user-plus" style="font-size:15px"></i>Open another player</button>
+      <a href="SPIL Admin.dc.html" target="_blank" style="height:36px;padding:0 14px;border-radius:999px;border:1px solid #2C2E36;color:#F3F1EC;font:500 13px/1 'Geist Mono',monospace;display:flex;gap:6px;align-items:center;text-decoration:none" style-hover="background:#1F2027"><i class="ph ph-shield-check" style="font-size:15px"></i>Admin</a>
+      <button onClick="{{ resetData }}" style="height:36px;padding:0 14px;border-radius:999px;border:1px solid #2C2E36;background:transparent;color:#A3A3AD;font:500 13px/1 'Geist Mono',monospace;cursor:pointer" style-hover="background:#1F2027">Reset data</button>
+      <span style="margin-left:auto">Swipe or press Y / N on questions</span>
+    </div>
+  </sc-if>
+  <div style="{{ stageStyle }}">
+  <div style="{{ frameStyle }}">
+    <div ref="{{ scrollRef }}" style="position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--line) transparent">
+
+      <sc-if value="{{ s.landing }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;min-height:100%">
+          <header style="position:sticky;top:12px;z-index:20;margin:12px auto 0;width:calc(100% - 24px);max-width:1160px;box-sizing:border-box;border-radius:999px;background:color-mix(in oklab, var(--surface-raised) 80%, transparent);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);border:1px solid var(--line);box-shadow:0 14px 32px -20px var(--shadow);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 6px 6px 20px">
+            <span role="img" aria-label="SPIL" style="display:inline-flex;align-items:baseline;font:800 30px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em;color:var(--text)"><span aria-hidden="true" style="display:inline-block;transform:rotate(-8deg) translateY(.03em)">S</span><span aria-hidden="true" style="display:inline-block;transform:rotate(5deg) translateY(-.05em);margin-left:-.01em">P</span><span aria-hidden="true" style="position:relative;display:inline-block;color:var(--accent);font-stretch:75%;transform:rotate(14deg);transform-origin:50% 90%;margin:0 .14em 0 -.03em">I<span style="position:absolute;top:-.17em;right:-.2em;width:.13em;height:.13em;background:var(--accent);border-radius:0 50% 50% 50%"></span><span style="position:absolute;top:-.3em;right:.02em;width:.07em;height:.07em;background:var(--accent);border-radius:50%"></span></span><span aria-hidden="true" style="display:inline-block;transform:rotate(-4deg) translateY(.02em)">L</span></span>
+            <div style="display:flex;align-items:center;gap:4px">
+              <button onClick="{{ goHowto }}" aria-label="How to play" aria-current="{{ howtoCur }}" style="{{ howtoNav }}" style-hover="background:var(--surface-raised)"><i class="ph ph-question" style="font-size:20px"></i><span style="{{ howtoText }}">How to play</span></button>
+              
+            </div>
+          </header>
+          <section style="display:flex;flex-wrap:wrap;align-items:center;gap:40px 64px;padding:20px 20px 64px;width:100%;max-width:1200px;margin:0 auto;box-sizing:border-box">
+            <div style="flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:22px">
+              <h1 style="margin:0;font:800 clamp(46px,7.2cqi,100px)/.92 'Bricolage Grotesque',sans-serif;letter-spacing:-.035em;text-wrap:balance">Your friends think they know you. <span style="font-stretch:75%;color:var(--accent-ink)">Prove it.</span></h1>
+              <p style="margin:0;font:400 18px/1.5 Geist,sans-serif;color:var(--text-muted);max-width:460px;text-wrap:pretty">Answer “Have you ever…” questions in private. Guess how many your friends said yes to. Then watch the scores spill.</p>
+              <div style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">
+                <button onClick="{{ startRoom }}" style="flex:1 1 200px;height:56px;padding:0 28px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 17px/1 Geist,sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer" style-hover="box-shadow:inset 0 0 0 99px rgba(255,255,255,.14)" style-active="transform:scale(.97)">Start a room</button>
+                <button onClick="{{ goJoin }}" style="flex:1 1 200px;height:56px;padding:0 24px;border:1.5px solid var(--text);border-radius:999px;background:transparent;color:var(--text);font:600 17px/1 Geist,sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer" style-hover="background:var(--surface-raised)" style-active="transform:scale(.97)">Join with code</button>
+              </div>
+              <span style="display:flex;gap:8px;align-items:center;font:500 14px/1.4 Geist,sans-serif;color:var(--text-muted)"><i class="ph ph-lock-simple" style="font-size:18px"></i>Only your score is shared. Your answers stay yours.</span>
+            </div>
+            <div style="flex:1 1 340px;min-width:0;display:flex;justify-content:center;position:relative;padding:16px 0 24px">
+              <div style="position:relative;width:280px;border-radius:44px;background:var(--surface);border:1px solid var(--line);padding:9px;box-sizing:border-box;box-shadow:0 50px 90px -50px var(--shadow)">
+                <div style="border-radius:36px;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;gap:12px;padding:22px 16px 20px;box-sizing:border-box">
+                  <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:500 11px/1 'Geist Mono',monospace;color:var(--accent-ink);letter-spacing:.06em;white-space:nowrap">{{ heroCounter }}</span><span style="font:500 11px/1 'Geist Mono',monospace;color:var(--text-muted);letter-spacing:.06em">TRY IT</span></div>
+                  <div style="{{ heroRow }}"><span role="img" aria-label="{{ heroAv.label }}" style="{{ heroAv.wrap }}"><span style="{{ heroAv.pat }}"></span><span style="{{ heroAv.plate }}"><span style="{{ heroAv.eyes }}"><span style="{{ heroAv.eyeL }}"></span><span style="{{ heroAv.eyeR }}"></span></span><span style="{{ heroAv.mouth }}"></span></span></span><div style="display:grid;gap:3px"><span style="font:500 12px/1 Geist,sans-serif;color:var(--text-muted)">{{ heroKicker }}</span><span style="font:800 26px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">{{ heroName }}</span></div></div>
+                  <div ref="{{ heroRef }}" role="slider" tabindex="0" aria-label="{{ heroAria }}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ heroVal }}" onPointerDown="{{ hDown }}" onPointerMove="{{ hMove }}" onPointerUp="{{ hUp }}" onPointerCancel="{{ hUp }}" onKeyDown="{{ hKey }}" style="{{ heroDrag }}">{{ heroVessel }}<sc-if value="{{ heroHint }}" hint-placeholder-val="{{ true }}"><span aria-hidden="true" style="position:absolute;right:10px;top:10px;display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:999px;background:var(--bg);color:var(--text);font:600 11px/1 Geist,sans-serif;pointer-events:none;animation:spil-nudge 1.4s ease-in-out infinite"><i class="ph ph-hand-pointing" style="font-size:14px"></i>Drag</span></sc-if></div>
+                  <span aria-live="polite" style="{{ heroCapStyle }}">{{ heroCaption }}</span>
+                  <button onClick="{{ heroAct }}" style="{{ heroBtn }}" style-hover="filter:brightness(1.08)">{{ heroBtnLabel }}</button>
+                </div>
+              </div>
+              {{ heroLabelEl }}
+              <sc-if value="{{ heroRev }}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="position:absolute;left:calc(50% + 58px);top:40px;width:96px;height:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;box-sizing:border-box;background:var(--accent);color:var(--on-accent);border:5px solid var(--sticker-edge);border-radius:50%;box-shadow:0 0 0 1.5px var(--sticker-ring),0 10px 20px -10px var(--shadow);font:800 12px/1.05 'Bricolage Grotesque',sans-serif;text-align:center;transform:rotate(7deg);animation:spil-slap 480ms cubic-bezier(.25,1.6,.45,1) both"><i class="{{ heroAwardIcon }}" style="font-size:22px"></i>{{ heroAward }}</span></sc-if>
+              <span style="position:absolute;left:calc(50% + 70px);bottom:40px;display:inline-flex;align-items:center;gap:8px;padding:4px 14px 4px 4px;border-radius:999px;background:var(--surface-raised);border:3px solid var(--sticker-edge);box-shadow:0 0 0 1.5px var(--sticker-ring);transform:rotate(3deg)"><span role="img" aria-label="{{ avAma32.label }}" style="{{ avAma32.wrap }}"><span style="{{ avAma32.pat }}"></span><span style="{{ avAma32.plate }}"><span style="{{ avAma32.eyes }}"><span style="{{ avAma32.eyeL }}"></span><span style="{{ avAma32.eyeR }}"></span></span><span style="{{ avAma32.mouth }}"></span></span></span><span style="font:700 15px/1 'Bricolage Grotesque',sans-serif">You</span></span>
+            </div>
+          </section>
+          <section style="border-top:1px solid var(--line);width:100%;max-width:1200px;margin:0 auto;padding:48px 20px;box-sizing:border-box;display:grid;gap:28px">
+            <h2 style="margin:0;font:800 36px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em">How a round goes</h2>
+            <ol style="list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0 32px">
+              <li style="border-top:2px solid var(--text);padding:18px 0 28px;display:grid;gap:10px;align-content:start"><span style="font:800 56px/.9 'Bricolage Grotesque',sans-serif;font-stretch:75%;letter-spacing:-.02em">Answer.</span><p style="margin:0;font:400 17px/1.5 Geist,sans-serif;color:var(--text-muted)">Yes or no questions, alone on your phone. Swipe right for yes, left for no. The host picks how many.</p></li>
+              <li style="border-top:2px solid var(--text);padding:18px 0 28px;display:grid;gap:10px;align-content:start"><span style="font:800 56px/.9 'Bricolage Grotesque',sans-serif;font-stretch:75%;letter-spacing:-.02em">Guess.</span><p style="margin:0;font:400 17px/1.5 Geist,sans-serif;color:var(--text-muted)">Slide a number for each friend. 0 is a saint, 100 is a menace. Close guesses earn Mind Reader points.</p></li>
+              <li style="border-top:2px solid var(--accent);padding:18px 0 28px;display:grid;gap:10px;align-content:start"><span style="font:800 56px/.9 'Bricolage Grotesque',sans-serif;font-stretch:75%;letter-spacing:-.02em;color:var(--accent-ink)">Spill.</span><p style="margin:0;font:400 17px/1.5 Geist,sans-serif;color:var(--text-muted)">The host hits reveal. Scores pour in from lowest to highest, then the awards land.</p></li>
+            </ol>
+          </section>
+          <section style="border-top:1px solid var(--line);width:100%;max-width:1200px;margin:0 auto;padding:56px 20px;box-sizing:border-box;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:40px 56px;align-items:center">
+            <div style="display:grid;gap:20px;align-content:center">
+              <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--accent-ink);letter-spacing:.08em">SHARE CARDS</span>
+              <h2 style="margin:0;font:800 clamp(36px,5cqi,52px)/.95 'Bricolage Grotesque',sans-serif;letter-spacing:-.035em;text-wrap:balance">Made for your <span style="font-stretch:75%;color:var(--accent-ink)">Status.</span></h2>
+              <p style="margin:0;font:400 17px/1.55 Geist,sans-serif;color:var(--text-muted);max-width:440px;text-wrap:pretty">Every player gets a card sized for Instagram Stories and WhatsApp Status. Your score, your label, one award. The group card ranks the whole room.</p>
+              <div style="display:grid;gap:12px;max-width:420px;padding:16px;border-radius:20px;background:var(--surface);border:1px solid var(--line)">
+                <div role="radiogroup" aria-label="Card format" style="display:flex;gap:4px;padding:4px;border-radius:999px;background:var(--bg)">
+                  <sc-for list="{{ lpFmts }}" as="f" hint-placeholder-count="2"><button role="radio" aria-checked="{{ f.sel }}" onClick="{{ f.on }}" style="{{ f.style }}" style-hover="color:var(--text)"><i class="{{ f.icon }}" style="font-size:18px"></i>{{ f.label }}</button></sc-for>
+                </div>
+                <button role="switch" aria-checked="{{ lpHideStr }}" onClick="{{ lpToggleHide }}" style="display:flex;align-items:center;gap:14px;width:100%;min-height:48px;padding:4px 4px 4px 8px;border:0;border-radius:14px;background:transparent;color:var(--text);text-align:left;cursor:pointer" style-hover="background:var(--surface-raised)"><i class="ph ph-eye-slash" style="font-size:20px;color:var(--text-muted)"></i><span style="flex:1;font:600 15px/1.3 Geist,sans-serif">Hide my name</span><span style="{{ lpTrack }}"><span style="{{ lpKnob }}"></span></span></button>
+              </div>
+              <sc-if value="{{ lpHasLast }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+                  <button onClick="{{ lpDownload }}" style="height:56px;padding:0 22px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 17px/1 Geist,sans-serif;display:flex;align-items:center;gap:8px;cursor:pointer" style-hover="filter:brightness(1.08)"><i class="ph ph-download-simple" style="font-size:18px"></i>Download PNG</button>
+                  <span style="font:500 13px/1.4 Geist,sans-serif;color:var(--text-muted)">{{ lpLastLine }}</span>
+                </div>
+              </sc-if>
+              <sc-if value="{{ lpNoLast }}" hint-placeholder-val="{{ true }}">
+                <span style="display:flex;gap:8px;align-items:center;font:500 13px/1.4 Geist,sans-serif;color:var(--text-muted)"><i class="ph ph-info" style="font-size:16px"></i>This is a sample. Finish a game and your own card shows up here, ready to download.</span>
+              </sc-if>
+            </div>
+            <div style="position:relative;min-height:560px;display:grid;place-items:center;border-radius:28px;background:var(--surface);border:1px solid var(--line);overflow:hidden;background-image:radial-gradient(var(--halftone) 1.4px, transparent 1.6px);background-size:10px 10px">
+              <div aria-hidden="true" style="position:absolute;width:62%;aspect-ratio:1;border-radius:50%;background:var(--accent);opacity:.14;filter:blur(60px)"></div>
+              <div style="{{ lpCardWrap }}">
+                <dc-import name="SPIL Share Card" format="{{ lpFmt }}" theme="{{ themeResolved }}" player="{{ lpName }}" hide-name="{{ lpHide }}" score="{{ lpScore }}" award="{{ lpAward }}" avatar="{{ lpAv }}" room="{{ lpRoom }}" board="{{ lpBoard }}" scale="{{ lpScale }}" hint-size="270px,480px"></dc-import>
+              </div>
+            </div>
+          </section>
+          <footer style="border-top:1px solid var(--line);width:100%;max-width:1200px;margin:0 auto;padding:28px 20px 40px;box-sizing:border-box;display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px"><span role="img" aria-label="SPIL" style="display:inline-flex;align-items:baseline;font:800 24px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em"><span aria-hidden="true" style="display:inline-block;transform:rotate(-8deg) translateY(.03em)">S</span><span aria-hidden="true" style="display:inline-block;transform:rotate(5deg) translateY(-.05em);margin-left:-.01em">P</span><span aria-hidden="true" style="position:relative;display:inline-block;color:var(--accent);font-stretch:75%;transform:rotate(14deg);transform-origin:50% 90%;margin:0 .14em 0 -.03em">I<span style="position:absolute;top:-.17em;right:-.2em;width:.13em;height:.13em;background:var(--accent);border-radius:0 50% 50% 50%"></span><span style="position:absolute;top:-.3em;right:.02em;width:.07em;height:.07em;background:var(--accent);border-radius:50%"></span></span><span aria-hidden="true" style="display:inline-block;transform:rotate(-4deg) translateY(.02em)">L</span></span><a href="https://wisdomska.site" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;min-height:44px;font:500 14px/1.4 Geist,sans-serif;color:var(--text-muted);text-decoration:none;text-underline-offset:3px" style-hover="color:var(--text);text-decoration:underline">Designed &amp; Developed by Senya<i class="ph ph-arrow-up-right" style="font-size:14px"></i></a></div>
+            <nav aria-label="Footer" style="display:flex;flex-wrap:wrap;gap:0 4px;margin-left:-14px">
+              <sc-for list="{{ footerLinks }}" as="l" hint-placeholder-count="4"><button onClick="{{ l.on }}" style="height:48px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:var(--text-muted);font:600 15px/1 Geist,sans-serif;cursor:pointer" style-hover="color:var(--text);background:var(--surface-raised)">{{ l.label }}</button></sc-for>
+            </nav>
+          </footer>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ preRoom }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;min-height:100%">
+          <header style="position:sticky;top:12px;z-index:20;margin:12px auto 0;width:calc(100% - 24px);max-width:1160px;box-sizing:border-box;border-radius:999px;background:color-mix(in oklab, var(--surface-raised) 80%, transparent);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);border:1px solid var(--line);box-shadow:0 14px 32px -20px var(--shadow);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:6px">
+            <span style="display:flex"><button aria-label="Back" onClick="{{ goBack }}" style="width:48px;height:48px;flex-shrink:0;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text);display:grid;place-items:center;cursor:pointer;font-size:22px" style-hover="background:var(--surface-raised)"><i class="ph ph-arrow-left"></i></button></span>
+            <span style="display:flex;justify-content:center"><span role="img" aria-label="SPIL" style="display:inline-flex;align-items:baseline;font:800 26px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em"><span aria-hidden="true" style="display:inline-block;transform:rotate(-8deg) translateY(.03em)">S</span><span aria-hidden="true" style="display:inline-block;transform:rotate(5deg) translateY(-.05em);margin-left:-.01em">P</span><span aria-hidden="true" style="position:relative;display:inline-block;color:var(--accent);font-stretch:75%;transform:rotate(14deg);transform-origin:50% 90%;margin:0 .14em 0 -.03em">I<span style="position:absolute;top:-.17em;right:-.2em;width:.13em;height:.13em;background:var(--accent);border-radius:0 50% 50% 50%"></span><span style="position:absolute;top:-.3em;right:.02em;width:.07em;height:.07em;background:var(--accent);border-radius:50%"></span></span><span aria-hidden="true" style="display:inline-block;transform:rotate(-4deg) translateY(.02em)">L</span></span></span>
+            <span style="display:flex;justify-content:flex-end"><button onClick="{{ goHowto }}" aria-label="How to play" aria-current="{{ howtoCur }}" style="{{ howtoNav }}" style-hover="background:var(--surface-raised)"><i class="ph ph-question" style="font-size:20px"></i><span style="{{ howtoText }}">How to play</span></button></span>
+          </header>
+
+          <sc-if value="{{ s.join }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;display:flex;flex-direction:column;gap:22px;padding:16px 20px 28px;width:100%;max-width:480px;margin:0 auto;box-sizing:border-box">
+              <h1 style="margin:0;font:800 44px/.96 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em">Got a code?</h1>
+              <p style="margin:0;font:400 17px/1.5 Geist,sans-serif;color:var(--text-muted)">Type the 4-character code from your host's invite, or open their link.</p>
+              <div style="display:grid;gap:12px">
+                <label for="spil-code" style="font:600 14px/1 Geist,sans-serif">Room code</label>
+                <div style="position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px">
+                  <sc-for list="{{ codeBoxes }}" as="b" hint-placeholder-count="4"><div aria-hidden="true" style="{{ b.style }}">{{ b.ch }}</div></sc-for>
+                  <input id="spil-code" value="{{ code }}" onKeyDown="{{ codeKey }}" onChange="{{ onCode }}" onFocus="{{ codeFocusOn }}" onBlur="{{ codeFocusOff }}" maxlength="4" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" aria-invalid="{{ joinErrStr }}" aria-describedby="spil-code-msg" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;font-size:16px;cursor:text">
+                </div>
+                <div id="spil-code-msg" role="alert" style="min-height:22px">
+                  <sc-if value="{{ hasJoinErr }}" hint-placeholder-val="{{ false }}"><span style="display:flex;gap:8px;align-items:flex-start;font:500 15px/1.4 Geist,sans-serif;color:var(--error)"><i class="ph ph-warning-circle" style="font-size:20px"></i>{{ joinErrMsg }}</span></sc-if>
+                </div>
+                <button onClick="{{ pasteCode }}" style="white-space:nowrap;justify-self:start;height:48px;padding:0 16px;margin-left:-8px;border:0;border-radius:999px;background:transparent;color:var(--text);font:600 15px/1 Geist,sans-serif;display:flex;gap:8px;align-items:center;cursor:pointer" style-hover="background:var(--surface-raised)"><i class="ph ph-clipboard-text" style="font-size:20px"></i>Paste code</button>
+              </div>
+              <div style="margin-top:auto;display:grid;gap:10px">
+                <sc-if value="{{ joinExpired }}" hint-placeholder-val="{{ false }}"><button onClick="{{ startRoom }}" style="height:56px;border:1.5px solid var(--text);border-radius:999px;background:transparent;color:var(--text);font:600 17px/1 Geist,sans-serif;cursor:pointer" style-hover="background:var(--surface-raised)">Start a room</button></sc-if>
+                <button onClick="{{ submitCode }}" aria-disabled="{{ joinDisabledStr }}" style="{{ joinBtn }}" style-hover="filter:brightness(1.08)">Join with code</button>
+                <span style="font:500 12px/1.4 'Geist Mono',monospace;color:var(--text-muted)">Testing alone? Use Open another player in the bar above, then join with your room code.</span>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ s.packs }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;display:flex;flex-direction:column;gap:20px;padding:16px 20px 28px;width:100%;max-width:880px;margin:0 auto;box-sizing:border-box">
+              <h1 style="margin:0;font:800 44px/.96 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em">Pick your poison.</h1>
+              <p style="margin:0;font:400 17px/1.5 Geist,sans-serif;color:var(--text-muted)">One pack per room. You can change it from the lobby before the game starts.</p>
+              <div role="radiogroup" aria-label="Question pack" ref="{{ packGridRef }}" style="{{ packGrid }}">
+                <sc-for list="{{ packs }}" as="p" hint-placeholder-count="6">
+                  <div data-pack="{{ p.id }}" style="{{ p.cell }}"><button role="radio" aria-checked="{{ p.checked }}" onClick="{{ p.pick }}" style="{{ p.style }}" style-active="transform:scale(.98)" style-hover="filter:brightness(1.08)">
+                    <div style="display:flex;flex-direction:column;align-items:flex-start;gap:12px;width:100%">
+                      <span style="{{ p.glyph }}"><i class="{{ p.icon }}" style="font-size:24px"></i></span>
+                      <span style="display:flex;flex-wrap:wrap;gap:6px">
+                        <sc-if value="{{ p.adult }}" hint-placeholder-val="{{ false }}"><span style="height:28px;padding:0 10px;display:inline-flex;align-items:center;border-radius:999px;background:#E0321C;color:#FFFFFF;border:1.5px solid #F3F1EC;font:700 12px/1 'Geist Mono',monospace;white-space:nowrap">{{ p.badge }}</span></sc-if>
+                      </span>
+                    </div>
+                    <sc-if value="{{ p.sel }}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="position:absolute;right:-10px;top:-12px;width:40px;height:40px;border-radius:50%;background:var(--accent);color:var(--on-accent);border:3px solid var(--sticker-edge);box-shadow:0 0 0 1.5px var(--sticker-ring);display:grid;place-items:center;transform:rotate(8deg);animation:spil-tick 260ms cubic-bezier(.34,1.56,.64,1) both"><i class="ph ph-check" style="font-size:20px"></i></span></sc-if>
+                    <div style="display:grid;gap:6px;text-align:left;width:100%">
+                      <span style="{{ p.nameStyle }}">{{ p.name }}</span>
+                      <span style="font:400 14px/1.35 Geist,sans-serif;opacity:.85;text-wrap:pretty">{{ p.blurb }}</span>
+                      <span style="font:500 13px/1 'Geist Mono',monospace;opacity:.85;margin-top:4px">{{ p.count }} questions</span>
+                    </div>
+                  </button><sc-if value="{{ p.hasInfo }}" hint-placeholder-val="{{ false }}"><button aria-label="{{ p.infoLabel }}" onClick="{{ p.info }}" style="{{ p.infoBtn }}" style-hover="background:rgba(243,241,236,.12)"><i class="ph ph-info" style="font-size:20px"></i><sc-if value="{{ p.infoText }}" hint-placeholder-val="{{ false }}"><span>How it works</span></sc-if></button></sc-if></div>
+                </sc-for>
+              </div>
+              <div style="{{ packFoot }}">
+              <div style="{{ qnBox }}">
+                <span id="spil-qn" style="grid-column:1;font:600 15px/1 Geist,sans-serif">How many questions?</span>
+                <div role="radiogroup" aria-labelledby="spil-qn" style="grid-column:1;grid-row:2;display:flex;flex-wrap:wrap;gap:8px">
+                  <sc-for list="{{ qnOpts }}" as="o" hint-placeholder-count="4"><button role="radio" aria-checked="{{ o.sel }}" onClick="{{ o.on }}" style="{{ o.style }}" style-hover="border-color:var(--text)">{{ o.label }}</button></sc-for>
+                </div>
+                <span style="grid-column:1;font:400 14px/1.4 Geist,sans-serif;color:var(--text-muted)">{{ qnHint }}</span>
+                <sc-if value="{{ selHasInfo }}" hint-placeholder-val="{{ false }}"><button onClick="{{ openSelInfo }}" style="grid-column:1;justify-self:start;height:44px;padding:0 14px 0 10px;margin-left:-10px;border:0;border-radius:999px;background:transparent;color:var(--accent-ink);font:600 14px/1 Geist,sans-serif;display:flex;align-items:center;gap:6px;cursor:pointer" style-hover="background:var(--surface-raised)"><i class="ph ph-info" style="font-size:18px"></i>How scoring works for this pack</button></sc-if>
+              </div>
+              <div style="{{ packCtaWrap }}">
+                <button onClick="{{ goProfile }}" style="width:100%;height:48px;padding:0 28px;white-space:nowrap;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 15px/1 Geist,sans-serif;cursor:pointer" style-hover="box-shadow:inset 0 0 0 99px rgba(255,255,255,.14)" style-active="transform:scale(.97)">{{ packCta }}</button>
+              </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ s.profile }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;display:flex;flex-direction:column;gap:22px;padding:16px 20px 28px;width:100%;max-width:480px;margin:0 auto;box-sizing:border-box">
+              <h1 style="margin:0;font:800 40px/.96 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em">What should we call you?</h1>
+              <div style="display:grid;gap:8px">
+                <label for="spil-nick" style="font:600 14px/1 Geist,sans-serif">Nickname</label>
+                <input id="spil-nick" value="{{ nick }}" onKeyDown="{{ nickKey }}" autocomplete="nickname" onChange="{{ onNick }}" maxlength="16" placeholder="Your name in this room" aria-invalid="{{ nickErrStr }}" aria-describedby="spil-nick-msg" style="{{ nickStyle }}">
+                <span id="spil-nick-msg" style="{{ nickMsgStyle }}"><sc-if value="{{ hasNickErr }}" hint-placeholder-val="{{ false }}"><i class="ph ph-warning-circle" style="font-size:18px"></i></sc-if>{{ nickMsg }}</span>
+              </div>
+              <fieldset style="border:0;margin:0;padding:0;display:grid;gap:12px">
+                <legend style="font:600 14px/1 Geist,sans-serif;padding:0;margin-bottom:12px">Pick your face</legend>
+                <div role="radiogroup" aria-label="Avatar" style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px 4px">
+                  <sc-for list="{{ avatars }}" as="a" hint-placeholder-count="24">
+                    <button role="radio" aria-checked="{{ a.checked }}" aria-label="{{ a.label }}" onClick="{{ a.pick }}" style="height:54px;border:0;border-radius:999px;background:transparent;display:grid;place-items:center;cursor:pointer;padding:0" style-hover="background:var(--surface-raised)"><span role="img" aria-label="{{ a.ax.label }}" style="{{ a.ax.wrap }}"><span style="{{ a.ax.pat }}"></span><span style="{{ a.ax.plate }}"><span style="{{ a.ax.eyes }}"><span style="{{ a.ax.eyeL }}"></span><span style="{{ a.ax.eyeR }}"></span></span><span style="{{ a.ax.mouth }}"></span></span></span></button>
+                  </sc-for>
+                </div>
+              </fieldset>
+              <sc-if value="{{ spicy }}" hint-placeholder-val="{{ false }}">
+                <button role="switch" aria-checked="{{ ageStr }}" onClick="{{ toggleAge }}" style="{{ ageRow }}" style-hover="filter:brightness(1.08)">
+                  <div style="flex:1;display:grid;gap:4px;text-align:left"><span style="font:700 17px/1.2 Geist,sans-serif">I'm 18 or older</span><span style="font:400 14px/1.4 Geist,sans-serif;color:var(--text-muted)">{{ packName }} has adult content. We don't store your age.</span></div>
+                  <span style="{{ ageTrack }}"><span style="{{ ageKnob }}"></span></span>
+                </button>
+              </sc-if>
+              <div style="margin-top:auto;display:grid;gap:10px">
+                <span style="display:flex;gap:8px;align-items:center;font:500 14px/1.4 Geist,sans-serif;color:var(--text-muted)"><i class="ph ph-lock-simple" style="font-size:18px"></i>No signup. This name lives in this room only.</span>
+                <button onClick="{{ submitProfile }}" aria-disabled="{{ profileDisabledStr }}" style="{{ profileBtn }}" style-hover="filter:brightness(1.08)">{{ profileCta }}</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ s.error }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:22px;padding:20px 20px 40px;width:100%;max-width:520px;margin:0 auto;box-sizing:border-box">
+              <sc-if value="{{ errHasSticker }}" hint-placeholder-val="{{ true }}"><span style="{{ errSticker }}">{{ errSt }}</span></sc-if>
+              <sc-if value="{{ errWaking }}" hint-placeholder-val="{{ false }}"><div>{{ wakeVessel }}</div></sc-if>
+              <h1 style="margin:0;font:800 44px/.96 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em;text-wrap:balance">{{ errH }}</h1>
+              <p style="margin:0;font:400 17px/1.5 Geist,sans-serif;color:var(--text-muted);text-wrap:pretty">{{ errP }}</p>
+              <sc-if value="{{ errHasCta }}" hint-placeholder-val="{{ true }}">
+                <div style="display:grid;gap:8px;margin-top:6px">
+                  <button onClick="{{ errGo }}" style="height:56px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 17px/1 Geist,sans-serif;cursor:pointer" style-hover="box-shadow:inset 0 0 0 99px rgba(255,255,255,.14)" style-active="transform:scale(.97)">{{ errCta }}</button>
+                  <sc-if value="{{ errHasAlt }}" hint-placeholder-val="{{ false }}"><button onClick="{{ errAltGo }}" style="height:48px;border:0;border-radius:999px;background:transparent;color:var(--text);font:600 16px/1 Geist,sans-serif;cursor:pointer" style-hover="background:var(--surface-raised)">{{ errAlt }}</button></sc-if>
+                </div>
+              </sc-if>
+              <sc-if value="{{ errWaking }}" hint-placeholder-val="{{ false }}">
+                <div aria-hidden="true" style="display:grid;gap:14px;animation:spil-pulse 1.8s ease-in-out infinite">
+                  <div style="width:96px;height:12px;border-radius:999px;background:var(--skeleton)"></div>
+                  <div style="width:220px;height:56px;border-radius:14px;background:var(--skeleton)"></div>
+                  <div style="display:flex;gap:10px"><div style="width:120px;height:50px;border-radius:999px;background:var(--skeleton);transform:rotate(-3deg)"></div><div style="width:100px;height:50px;border-radius:999px;background:var(--skeleton);transform:rotate(2deg)"></div></div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ s.page }}" hint-placeholder-val="{{ false }}">
+            <div style="width:100%;max-width:720px;margin:0 auto;padding:4px 20px 56px;box-sizing:border-box">
+              <nav role="tablist" aria-label="Pages" style="{{ pageTabBar }}">
+                <sc-for list="{{ pageTabs }}" as="t" hint-placeholder-count="4"><button role="tab" aria-selected="{{ t.sel }}" onClick="{{ t.on }}" style="{{ t.style }}" style-hover="color:var(--text);background:var(--surface-raised)">{{ t.label }}</button></sc-for>
+              </nav>
+              <sc-if value="{{ pg.howto }}" hint-placeholder-val="{{ true }}">
+                <article style="display:grid;gap:18px;font:400 18px/1.65 Geist,sans-serif">
+                  <h1 style="margin:0;font:800 52px/.95 'Bricolage Grotesque',sans-serif;letter-spacing:-.035em">How to play</h1>
+                  <p style="margin:0;font-size:20px;color:var(--text-muted)">A round takes about 15 minutes. You need {{ minPlayers }} or more people and a phone each.</p>
+                  <div style="display:flex;flex-wrap:wrap;gap:10px">
+                    <button onClick="{{ startRoom }}" style="height:48px;padding:0 20px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 15px/1 Geist,sans-serif;cursor:pointer" style-hover="filter:brightness(1.08)">Start a room</button>
+                    <button onClick="{{ goJoin }}" style="height:48px;padding:0 20px;border:1.5px solid var(--text);border-radius:999px;background:transparent;color:var(--text);font:600 15px/1 Geist,sans-serif;cursor:pointer" style-hover="background:var(--surface-raised)">Join with code</button>
+                  </div>
+                  <h2 style="margin:16px 0 0;font:800 26px/1.1 'Bricolage Grotesque',sans-serif">Start or join a room</h2>
+                  <p style="margin:0">The host taps Start a room, picks a pack and shares the link or the four character code. Everyone else taps Join with code. No account, just a nickname and a face.</p>
+                  <h2 style="margin:16px 0 0;font:800 26px/1.1 'Bricolage Grotesque',sans-serif">Answer in private</h2>
+                  <p style="margin:0">The host picks how many “Have you ever…” questions to play. Swipe right for yes, left for no, or use the buttons. Nobody sees your answers unless you switch on Spill Mode at the end.</p>
+                  <h2 style="margin:16px 0 0;font:800 26px/1.1 'Bricolage Grotesque',sans-serif">Guess everyone's score</h2>
+                  <p style="margin:0">Your Spill Score runs from 0 to 100. The more you've done, the higher it goes. Slide to guess each friend's score. The closer you land, the more Mind Reader points you earn.</p>
+                  <h2 style="margin:16px 0 0;font:800 26px/1.1 'Bricolage Grotesque',sans-serif">The reveal</h2>
+                  <p style="margin:0">The host starts the reveal. Scores pour in from lowest to highest, labels land, then the awards. Share your card to your Status before the group chat does it for you.</p>
+                  <h2 style="margin:16px 0 0;font:800 26px/1.1 'Bricolage Grotesque',sans-serif">House rules</h2>
+                  <p style="margin:0">Laugh with people, not at them. If a question isn't right for your group, skip it.</p>
+                  <div style="margin-top:20px;padding:24px;border-radius:20px;background:var(--surface-raised);display:grid;gap:14px">
+                    <span style="font:800 28px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Ready to spill?</span>
+                    <div style="display:flex;flex-wrap:wrap;gap:10px">
+                      <button onClick="{{ startRoom }}" style="flex:1 1 200px;height:56px;padding:0 24px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 17px/1 Geist,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer" style-hover="filter:brightness(1.08)"><i class="ph ph-plus-circle" style="font-size:20px"></i>Start a room</button>
+                      <button onClick="{{ goJoin }}" style="flex:1 1 200px;height:56px;padding:0 24px;border:1.5px solid var(--text);border-radius:999px;background:transparent;color:var(--text);font:600 17px/1 Geist,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer" style-hover="background:var(--surface)"><i class="ph ph-door-open" style="font-size:20px"></i>Join with code</button>
+                    </div>
+                  </div>
+                </article>
+              </sc-if>
+              <sc-if value="{{ pg.privacy }}" hint-placeholder-val="{{ false }}">
+                <article style="display:grid;gap:18px;font:400 18px/1.65 Geist,sans-serif">
+                  <h1 style="margin:0;font:800 52px/.95 'Bricolage Grotesque',sans-serif;letter-spacing:-.035em">Privacy</h1>
+                  <p style="margin:0;font-size:20px;color:var(--text-muted)">Short version: only your score is shared. Your answers stay yours.</p>
+                  <h2 style="margin:16px 0 0;font:800 26px/1.1 'Bricolage Grotesque',sans-serif">What we collect</h2>
+                  <p style="margin:0">A nickname, the avatar you pick, your answers and your guesses, all tied to one room. No email, no phone number, no contacts.</p>
+                  <h2 style="margin:16px 0 0;font:800 26px/1.1 'Bricolage Grotesque',sans-serif">Who sees what</h2>
+                  <p style="margin:0">Other players see your nickname, avatar, score, label and awards. Your yes and no answers are never shown unless you switch on Spill Mode, and then only to that room.</p>
+                  <h2 style="margin:16px 0 0;font:800 26px/1.1 'Bricolage Grotesque',sans-serif">Question stats</h2>
+                  <p style="margin:0">We only show how many people said yes to a question when 3 or more people answered it, so no single answer points back to you.</p>
+                  <h2 style="margin:16px 0 0;font:800 26px/1.1 'Bricolage Grotesque',sans-serif">How long we keep it</h2>
+                  <p style="margin:0">Rooms close 24 hours after they open. We keep anonymous counts to improve the packs.</p>
+                  
+                </article>
+              </sc-if>
+              <sc-if value="{{ pg.terms }}" hint-placeholder-val="{{ false }}">
+                <article style="display:grid;gap:18px;font:400 18px/1.65 Geist,sans-serif">
+                  <h1 style="margin:0;font:800 52px/.95 'Bricolage Grotesque',sans-serif;letter-spacing:-.035em">Terms</h1>
+                  <p style="margin:0;font-size:20px;color:var(--text-muted)">The rules for using SPIL. Plain English, no traps.</p>
+                  <h2 style="margin:16px 0 0;font:800 26px/1.1 'Bricolage Grotesque',sans-serif">Play fair</h2>
+                  <p style="margin:0">Don't use SPIL to bully, out or pressure anyone. Hosts can remove players, and we can close rooms that break these rules.</p>
+                  <h2 style="margin:16px 0 0;font:800 26px/1.1 'Bricolage Grotesque',sans-serif">Nicknames</h2>
+                  <p style="margin:0">No impersonating real people, no slurs. We filter the obvious ones and you can report the rest.</p>
+                  <h2 style="margin:16px 0 0;font:800 26px/1.1 'Bricolage Grotesque',sans-serif">Sharing</h2>
+                  <p style="margin:0">Your card is yours to post. Ask before you post someone else's.</p>
+                  <h2 style="margin:16px 0 0;font:800 26px/1.1 'Bricolage Grotesque',sans-serif">It's a game</h2>
+                  <p style="margin:0">Scores are for fun. They say nothing official about anyone.</p>
+                  
+                </article>
+              </sc-if>
+              <sc-if value="{{ pg.contact }}" hint-placeholder-val="{{ false }}">
+                <article style="display:grid;gap:18px;font:400 18px/1.65 Geist,sans-serif">
+                  <h1 style="margin:0;font:800 52px/.95 'Bricolage Grotesque',sans-serif;letter-spacing:-.035em">Contact</h1>
+                  <p style="margin:0;font-size:20px;color:var(--text-muted)">Found a bug, a bad question or a better idea? Tell us. To report a question mid game, use the flag on the card.</p>
+                  <div style="display:grid;gap:8px"><label for="spil-mail" style="font:600 14px/1 Geist,sans-serif">Email, if you want a reply</label><input id="spil-mail" type="email" autocomplete="email" value="{{ cMail }}" onChange="{{ onCMail }}" placeholder="you@example.com" style="height:56px;border-radius:14px;border:1.5px solid var(--line-strong);background:var(--surface);color:var(--text);padding:0 16px;font:500 17px/1 Geist,sans-serif"></div>
+                  <div style="display:grid;gap:8px"><label for="spil-msg" style="font:600 14px/1 Geist,sans-serif">Message</label><textarea id="spil-msg" rows="5" value="{{ cMsg }}" onChange="{{ onCMsg }}" style="border-radius:14px;border:1.5px solid var(--line-strong);background:var(--surface);color:var(--text);padding:14px 16px;font:400 17px/1.5 Geist,sans-serif;resize:vertical"></textarea></div>
+                  <button onClick="{{ sendMsg }}" style="height:56px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 17px/1 Geist,sans-serif;cursor:pointer" style-hover="filter:brightness(1.08)">Send message</button>
+                  <p style="margin:0;color:var(--text-muted)">Or email <a href="mailto:wisdomska@gmail.com">wisdomska@gmail.com</a></p>
+                </article>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ inShell }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;min-height:100%">
+          <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ false }}">
+            <aside style="width:340px;flex-shrink:0;border-right:1px solid var(--line);background:var(--surface);padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:24px;position:sticky;top:0;height:100%;min-height:800px">
+              <span role="img" aria-label="SPIL" style="display:inline-flex;align-items:baseline;font:800 32px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em"><span aria-hidden="true" style="display:inline-block;transform:rotate(-8deg) translateY(.03em)">S</span><span aria-hidden="true" style="display:inline-block;transform:rotate(5deg) translateY(-.05em);margin-left:-.01em">P</span><span aria-hidden="true" style="position:relative;display:inline-block;color:var(--accent);font-stretch:75%;transform:rotate(14deg);transform-origin:50% 90%;margin:0 .14em 0 -.03em">I<span style="position:absolute;top:-.17em;right:-.2em;width:.13em;height:.13em;background:var(--accent);border-radius:0 50% 50% 50%"></span><span style="position:absolute;top:-.3em;right:.02em;width:.07em;height:.07em;background:var(--accent);border-radius:50%"></span></span><span aria-hidden="true" style="display:inline-block;transform:rotate(-4deg) translateY(.02em)">L</span></span>
+              <div style="display:grid;gap:8px;padding:18px;border-radius:20px;background:var(--surface-raised)">
+                <span style="font:600 13px/1 Geist,sans-serif;color:var(--text-muted)">Room code</span>
+                <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:600 44px/1 'Geist Mono',monospace;letter-spacing:.06em">{{ roomCode }}</span><button aria-label="Copy link" onClick="{{ copyLink }}" style="width:48px;height:48px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text);display:grid;place-items:center;cursor:pointer;font-size:20px" style-hover="background:var(--surface-raised)"><i class="{{ copyIcon }}"></i></button></div>
+                <span style="font:500 14px/1.3 Geist,sans-serif;color:var(--text-muted)">{{ packLine }}</span>
+              </div>
+              <div style="display:grid;gap:4px">
+                <span style="font:600 13px/1 Geist,sans-serif;color:var(--text-muted);margin-bottom:6px">Players</span>
+                <sc-for list="{{ sideRows }}" as="r" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:center;gap:12px;padding:6px 0"><span role="img" aria-label="{{ r.ax.label }}" style="{{ r.ax.wrap }}"><span style="{{ r.ax.pat }}"></span><span style="{{ r.ax.plate }}"><span style="{{ r.ax.eyes }}"><span style="{{ r.ax.eyeL }}"></span><span style="{{ r.ax.eyeR }}"></span></span><span style="{{ r.ax.mouth }}"></span></span></span><span style="flex:1;font:600 15px/1 Geist,sans-serif">{{ r.name }}</span><span style="font:500 13px/1 'Geist Mono',monospace;color:var(--text-muted)">{{ r.status }}</span></div>
+                </sc-for>
+              </div>
+              <div style="margin-top:auto;display:grid;gap:12px">
+                <div role="radiogroup" aria-label="Theme" style="display:flex;padding:4px;gap:2px;border-radius:999px;border:1px solid var(--line)">
+                  <sc-for list="{{ themeOpts }}" as="o" hint-placeholder-count="3"><button role="radio" aria-checked="{{ o.checked }}" onClick="{{ o.on }}" style="{{ o.pill }}" style-hover="color:var(--text);background:var(--surface-raised)"><i class="{{ o.icon }}" style="font-size:16px"></i>{{ o.label }}</button></sc-for>
+                </div>
+                <button onClick="{{ openLeave }}" style="height:48px;border:0;border-radius:999px;background:transparent;color:var(--text-muted);font:600 15px/1 Geist,sans-serif;display:flex;align-items:center;gap:8px;justify-content:center;cursor:pointer" style-hover="background:var(--surface-raised);color:var(--text)"><i class="ph ph-sign-out"></i>Leave room</button>
+              </div>
+            </aside>
+          </sc-if>
+          <main style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center">
+            <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ true }}">
+              <div style="position:sticky;top:12px;z-index:20;margin:12px auto 0;width:calc(100% - 24px);max-width:1160px;box-sizing:border-box;border-radius:999px;background:color-mix(in oklab, var(--surface-raised) 80%, transparent);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);border:1px solid var(--line);box-shadow:0 14px 32px -20px var(--shadow);display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 6px 6px 18px">
+                <span role="img" aria-label="SPIL" style="display:inline-flex;align-items:baseline;font:800 24px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em"><span aria-hidden="true" style="display:inline-block;transform:rotate(-8deg) translateY(.03em)">S</span><span aria-hidden="true" style="display:inline-block;transform:rotate(5deg) translateY(-.05em);margin-left:-.01em">P</span><span aria-hidden="true" style="position:relative;display:inline-block;color:var(--accent);font-stretch:75%;transform:rotate(14deg);transform-origin:50% 90%;margin:0 .14em 0 -.03em">I<span style="position:absolute;top:-.17em;right:-.2em;width:.13em;height:.13em;background:var(--accent);border-radius:0 50% 50% 50%"></span><span style="position:absolute;top:-.3em;right:.02em;width:.07em;height:.07em;background:var(--accent);border-radius:50%"></span></span><span aria-hidden="true" style="display:inline-block;transform:rotate(-4deg) translateY(.02em)">L</span></span>
+                <div style="display:flex;gap:6px;align-items:center">
+                  <button aria-label="Leave room" onClick="{{ openLeave }}" style="width:48px;height:48px;flex-shrink:0;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text);display:grid;place-items:center;cursor:pointer;font-size:20px" style-hover="background:var(--surface-raised)"><i class="ph ph-sign-out"></i></button><button onClick="{{ copyLink }}" aria-label="Room {{ roomCode }}, copy link" style="height:48px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text);font:600 15px/1 'Geist Mono',monospace;letter-spacing:.06em;cursor:pointer;display:flex;gap:8px;align-items:center" style-hover="background:var(--surface-raised)">{{ roomCode }}<i class="{{ copyIcon }}" style="font-size:16px"></i></button>
+                  
+                </div>
+              </div>
+            </sc-if>
+            <div style="{{ mainCol }}">
+
+              <sc-if value="{{ s.lobby }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:26px;flex:1">
+                  <sc-if value="{{ lobbyLoading }}" hint-placeholder-val="{{ false }}">
+                    <div aria-label="Loading room" style="display:grid;gap:16px;animation:spil-pulse 1.8s ease-in-out infinite">
+                      <div style="width:90px;height:12px;border-radius:999px;background:var(--skeleton)"></div>
+                      <div style="width:240px;height:72px;border-radius:14px;background:var(--skeleton)"></div>
+                      <div style="display:flex;gap:8px"><div style="flex:1;height:52px;border-radius:999px;background:var(--skeleton)"></div><div style="width:52px;height:52px;border-radius:999px;background:var(--skeleton)"></div><div style="width:52px;height:52px;border-radius:999px;background:var(--skeleton)"></div></div>
+                      <div style="width:140px;height:22px;border-radius:999px;background:var(--skeleton);margin-top:12px"></div>
+                      <div style="display:flex;flex-wrap:wrap;gap:14px 10px"><div style="width:120px;height:52px;border-radius:999px;background:var(--skeleton);transform:rotate(-3deg)"></div><div style="width:104px;height:52px;border-radius:999px;background:var(--skeleton);transform:rotate(2deg)"></div><div style="width:130px;height:52px;border-radius:999px;background:var(--skeleton);transform:rotate(-1deg)"></div></div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ lobbyReady }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:grid;gap:10px">
+                      <span style="font:600 14px/1 Geist,sans-serif;color:var(--text-muted)">Room code</span>
+                      <span style="font:600 76px/1 'Geist Mono',monospace;letter-spacing:.06em">{{ roomCode }}</span>
+                      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+                        <button onClick="{{ shareWA }}" style="grid-column:1 / -1;height:56px;padding:0 18px;border:1.5px solid var(--text);border-radius:999px;background:transparent;color:var(--text);font:600 17px/1 Geist,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;cursor:pointer" style-hover="background:var(--surface-raised)"><i class="ph ph-whatsapp-logo" style="font-size:22px"></i>Invite on WhatsApp</button>
+                        <button onClick="{{ shareNative }}" style="display:flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text);font:600 15px/1 Geist,sans-serif;white-space:nowrap;cursor:pointer" style-hover="background:var(--surface-raised)"><i class="ph ph-share-network" style="font-size:18px"></i>More options</button>
+                        <button onClick="{{ copyLink }}" style="display:flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text);font:600 15px/1 Geist,sans-serif;white-space:nowrap;cursor:pointer" style-hover="background:var(--surface-raised)"><i class="{{ copyIcon }}" style="font-size:18px"></i>{{ copyLabel }}</button>
+                      </div>
+                    </div>
+                    <div style="display:grid;gap:14px">
+                      <div style="display:flex;justify-content:space-between;align-items:baseline"><h2 style="margin:0;font:800 26px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">In the room</h2><span style="font:500 14px/1 'Geist Mono',monospace;color:var(--text-muted)">{{ lobbyCount }} / 12</span></div>
+                      <div aria-live="polite" style="display:flex;flex-wrap:wrap;gap:16px 10px;padding:6px 2px;min-height:130px;align-content:flex-start">
+                        <sc-for list="{{ lobbyPlayers }}" as="p" hint-placeholder-count="4">
+                          <span style="{{ p.style }}"><span role="img" aria-label="{{ p.ax.label }}" style="{{ p.ax.wrap }}"><span style="{{ p.ax.pat }}"></span><span style="{{ p.ax.plate }}"><span style="{{ p.ax.eyes }}"><span style="{{ p.ax.eyeL }}"></span><span style="{{ p.ax.eyeR }}"></span></span><span style="{{ p.ax.mouth }}"></span></span></span><span style="font:700 18px/1 'Bricolage Grotesque',sans-serif">{{ p.name }}</span><sc-if value="{{ p.host }}" hint-placeholder-val="{{ false }}"><i class="ph ph-crown-simple" aria-label="Host" style="font-size:18px"></i></sc-if><sc-if value="{{ p.removable }}" hint-placeholder-val="{{ false }}"><button aria-label="{{ p.removeLabel }}" onClick="{{ p.remove }}" style="width:48px;height:48px;margin:-6px -10px -6px -4px;border-radius:999px;border:0;background:transparent;color:inherit;display:grid;place-items:center;cursor:pointer" style-hover="background:var(--surface-raised)"><span style="width:30px;height:30px;border-radius:999px;background:var(--bg);color:var(--text);display:grid;place-items:center"><i class="ph ph-x" style="font-size:15px"></i></span></button></sc-if></span>
+                        </sc-for>
+                      </div>
+                      <sc-if value="{{ lobbyAlone }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font:400 17px/1.5 Geist,sans-serif;color:var(--text-muted)">It's just you so far. Share the invite link so your friends can join.</p></sc-if>
+                    </div>
+                    <div style="margin-top:auto;display:grid;gap:10px">
+                      <sc-if value="{{ isHost }}" hint-placeholder-val="{{ true }}">
+                        <span style="font:500 15px/1.4 Geist,sans-serif;color:var(--text-muted);display:flex;gap:8px;align-items:center"><i class="{{ startIcon }}" style="font-size:18px"></i>{{ startHint }}</span>
+                        <button onClick="{{ startGame }}" aria-disabled="{{ startDisabledStr }}" style="{{ startBtn }}" style-hover="filter:brightness(1.08)">Start the game</button>
+                        <button onClick="{{ addBot }}" style="height:48px;border:0;border-radius:999px;background:transparent;color:var(--text);font:600 15px/1 Geist,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer" style-hover="background:var(--surface-raised)" style-active="transform:scale(.97)"><i class="ph ph-robot" style="font-size:18px"></i>Add a test player</button>
+                        <button onClick="{{ changePack }}" style="height:48px;border:0;border-radius:999px;background:transparent;color:var(--text-muted);font:600 15px/1 Geist,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer" style-hover="background:var(--surface-raised);color:var(--text)"><i class="ph ph-swap" style="font-size:18px"></i>Change pack: {{ packName }}</button>
+                      </sc-if>
+                      <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ false }}">
+                        <div role="status" style="display:flex;gap:14px;align-items:center;padding:16px;border-radius:20px;background:var(--surface);border:1px solid var(--line)"><span role="img" aria-label="{{ avHost44.label }}" style="{{ avHost44.wrap }}"><span style="{{ avHost44.pat }}"></span><span style="{{ avHost44.plate }}"><span style="{{ avHost44.eyes }}"><span style="{{ avHost44.eyeL }}"></span><span style="{{ avHost44.eyeR }}"></span></span><span style="{{ avHost44.mouth }}"></span></span></span><span style="font:500 16px/1.4 Geist,sans-serif">Waiting for {{ hostName }} to start. Grab a drink.</span></div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ s.question }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:18px;flex:1">
+                  <sc-if value="{{ offline }}" hint-placeholder-val="{{ false }}"><div role="status" style="display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:var(--surface-raised);border:1px solid var(--line);font:500 15px/1.4 Geist,sans-serif"><i class="ph ph-wifi-slash" style="font-size:20px;color:var(--error)"></i><span>You're offline. Keep going, your answers send when you're back.</span></div></sc-if>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <button aria-label="Previous question" onClick="{{ prevQ }}" style="width:48px;height:48px;flex-shrink:0;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text);display:grid;place-items:center;cursor:pointer;font-size:20px" style-hover="background:var(--surface-raised)"><i class="ph ph-arrow-left"></i></button>
+                    <div role="progressbar" aria-label="Questions answered" aria-valuemin="0" aria-valuemax="{{ qTotal }}" aria-valuenow="{{ qi }}" style="position:relative;flex:1;height:12px;border-radius:999px;background:var(--surface-raised)"><div style="{{ pourFill }}"></div><div style="{{ pourDrip }}"><span style="position:absolute;right:1px;top:7px;width:9px;height:12px;border-radius:50% 50% 50% 50% / 40% 40% 60% 60%;background:var(--accent)"></span></div></div>
+                    <span style="font:500 14px/1 'Geist Mono',monospace;font-variant-numeric:tabular-nums;min-width:48px;text-align:right">{{ qLabel }}</span>
+                    <button onClick="{{ skipQ }}" style="height:48px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:var(--text);font:600 15px/1 Geist,sans-serif;cursor:pointer" style-hover="background:var(--surface-raised)" aria-label="Skip this question">Skip</button><button aria-label="Report this question" onClick="{{ openReport }}" style="width:48px;height:48px;flex-shrink:0;border-radius:999px;border:0;background:transparent;color:var(--text-muted);display:grid;place-items:center;cursor:pointer;font-size:20px" style-hover="background:var(--surface-raised);color:var(--text)" style-active="transform:scale(.92)"><i class="ph ph-flag"></i></button>
+                  </div>
+                  <div style="position:relative;flex:1;min-height:330px;max-height:430px;margin:4px 0 14px">
+                    <div aria-hidden="true" style="position:absolute;inset:0;border-radius:20px;background:var(--surface);border:1px solid var(--line);transform:translateY(16px) scale(.93)"></div>
+                    <div role="group" aria-label="{{ qAria }}" onPointerDown="{{ pd }}" onPointerMove="{{ pm }}" onPointerUp="{{ pu }}" onPointerCancel="{{ pu }}" style="{{ cardStyle }}">
+                      <span aria-hidden="true" style="{{ yesStamp }}">YES</span>
+                      <span aria-hidden="true" style="{{ noStamp }}">NO</span>
+                      <div style="display:grid;gap:12px"><span style="font:600 15px/1 Geist,sans-serif;color:var(--text-muted)">Have you ever</span><span style="font:800 29px/1.05 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em;text-wrap:pretty">{{ qText }}</span></div>
+                      <div style="display:flex;justify-content:space-between;align-items:center;font:500 13px/1 'Geist Mono',monospace;color:var(--text-muted)"><span>{{ qCode }}</span><span style="display:flex;gap:6px;align-items:center;white-space:nowrap"><i class="ph ph-hand-swipe-right" style="font-size:18px"></i>Swipe to answer</span></div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:10px">
+                    <button onClick="{{ answerNo }}" aria-disabled="{{ savingStr }}" style="{{ noBtn }}" style-active="transform:scale(.97)" style-hover="filter:brightness(1.08)"><i class="ph ph-x" style="font-size:22px"></i>No</button>
+                    <button onClick="{{ answerYes }}" aria-disabled="{{ savingStr }}" style="{{ yesBtn }}" style-active="transform:scale(.97)" style-hover="filter:brightness(1.08)"><i class="ph ph-check" style="font-size:22px"></i>Yes</button>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:22px">
+                    <span style="display:flex;gap:6px;align-items:center;font:500 14px/1.3 Geist,sans-serif;color:var(--text-muted)"><i class="ph ph-lock-simple" style="font-size:16px"></i>Changed your mind? Go back to fix an answer until you finish the last one.</span>
+                    <sc-if value="{{ saving }}" hint-placeholder-val="{{ false }}"><span role="status" style="display:flex;gap:6px;align-items:center;font:500 13px/1 'Geist Mono',monospace;color:var(--text-muted)"><span style="width:22px;height:6px;border-radius:999px;border:1.5px solid currentColor;overflow:hidden;display:inline-flex"><span style="width:60%;background:currentColor"></span></span>{{ savingLabel }}</span></sc-if>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ s.waiting }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:22px;flex:1">
+                  <div>{{ waitVessel }}</div>
+                  <div style="display:grid;gap:10px"><h1 aria-live="polite" style="margin:0;font:800 38px/.98 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em;text-wrap:balance">{{ waitTitle }}</h1><p style="margin:0;font:400 16px/1.5 Geist,sans-serif;color:var(--text-muted)">Everyone answers in private. Guessing starts when the last person finishes.</p></div>
+                  <ul style="list-style:none;margin:0;padding:0;display:grid">
+                    <sc-for list="{{ waitRows }}" as="r" hint-placeholder-count="6">
+                      <li style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)"><span role="img" aria-label="{{ r.ax.label }}" style="{{ r.ax.wrap }}"><span style="{{ r.ax.pat }}"></span><span style="{{ r.ax.plate }}"><span style="{{ r.ax.eyes }}"><span style="{{ r.ax.eyeL }}"></span><span style="{{ r.ax.eyeR }}"></span></span><span style="{{ r.ax.mouth }}"></span></span></span><span style="flex:1;font:600 16px/1 Geist,sans-serif">{{ r.name }}</span><span style="{{ r.statusStyle }}"><i class="{{ r.icon }}" style="font-size:16px"></i>{{ r.status }}</span></li>
+                    </sc-for>
+                  </ul>
+                  <sc-if value="{{ hostWaiting }}" hint-placeholder-val="{{ true }}">
+                    <div style="margin-top:auto;display:flex;gap:10px">
+                      <button onClick="{{ nudge }}" style="flex:1;height:56px;border:1.5px solid var(--text);border-radius:999px;background:transparent;color:var(--text);font:600 17px/1 Geist,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer" style-hover="background:var(--surface-raised)" style-active="transform:scale(.97)"><i class="ph ph-bell-ringing" style="font-size:20px"></i>{{ nudgeLabel }}</button>
+                      <button onClick="{{ openForce }}" style="height:56px;padding:0 20px;border:0;border-radius:999px;background:transparent;color:var(--text);font:600 16px/1 Geist,sans-serif;display:flex;align-items:center;gap:8px;cursor:pointer" style-hover="background:var(--surface-raised)"><i class="ph ph-skip-forward" style="font-size:20px"></i>Move on without them</button>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ s.guess }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:18px;flex:1">
+                  <span style="font:500 14px/1 'Geist Mono',monospace;color:var(--text-muted)">{{ guessCount }}</span>
+                  <span role="img" aria-label="{{ gAx.label }}" style="{{ gAx.wrap }}"><span style="{{ gAx.pat }}"></span><span style="{{ gAx.plate }}"><span style="{{ gAx.eyes }}"><span style="{{ gAx.eyeL }}"></span><span style="{{ gAx.eyeR }}"></span></span><span style="{{ gAx.mouth }}"></span></span></span>
+                  <h1 style="margin:0;font:800 38px/.98 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em;text-wrap:balance">How much has <span style="font-stretch:75%;color:var(--accent-ink)">{{ gName }}</span> done? Be honest.</h1>
+                  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;min-height:84px">
+                    <span aria-hidden="true" style="font:600 88px/.85 'Geist Mono',monospace;letter-spacing:-.05em;font-variant-numeric:tabular-nums">{{ gv }}</span>
+                    <span style="{{ gLabelStyle }}">{{ gLabel }}</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <button aria-label="Lower guess" onClick="{{ minus }}" style="width:48px;height:48px;flex-shrink:0;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text);display:grid;place-items:center;cursor:pointer;font-size:20px" style-active="transform:scale(.94)" style-hover="border-color:var(--text-muted)"><i class="ph ph-minus"></i></button>
+                    <div ref="{{ trackRef }}" onPointerDown="{{ sDown }}" onPointerMove="{{ sMove }}" onPointerUp="{{ sUp }}" style="position:relative;flex:1;height:48px;display:flex;align-items:center;touch-action:none;cursor:pointer">
+                      <div style="position:absolute;left:0;right:0;height:14px;border-radius:999px;background:var(--surface-raised);border:1px solid var(--line-strong)"></div>
+                      <div style="{{ sFill }}"></div>
+                      <div role="slider" tabindex="0" aria-label="{{ sliderAria }}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ gv }}" aria-valuetext="{{ gValText }}" onKeyDown="{{ sKey }}" style="{{ sThumb }}"></div>
+                    </div>
+                    <button aria-label="Raise guess" onClick="{{ plus }}" style="width:48px;height:48px;flex-shrink:0;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text);display:grid;place-items:center;cursor:pointer;font-size:20px" style-active="transform:scale(.94)" style-hover="border-color:var(--text-muted)"><i class="ph ph-plus"></i></button>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;padding:0 56px;font:500 13px/1 'Geist Mono',monospace;color:var(--text-muted);white-space:nowrap"><span>0 saint</span><span>100 menace</span></div>
+                  <button onClick="{{ lockGuess }}" style="margin-top:auto;height:56px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 17px/1 Geist,sans-serif;cursor:pointer" style-hover="box-shadow:inset 0 0 0 99px rgba(255,255,255,.14)" style-active="transform:scale(.97)">Lock it in</button>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ s.ready }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:20px;flex:1;justify-content:center">
+                  <div style="display:flex;flex-wrap:wrap;gap:14px 10px;padding:6px">
+                    <sc-for list="{{ readyStickers }}" as="p" hint-placeholder-count="7"><span style="{{ p.style }}"><span role="img" aria-label="{{ p.ax.label }}" style="{{ p.ax.wrap }}"><span style="{{ p.ax.pat }}"></span><span style="{{ p.ax.plate }}"><span style="{{ p.ax.eyes }}"><span style="{{ p.ax.eyeL }}"></span><span style="{{ p.ax.eyeR }}"></span></span><span style="{{ p.ax.mouth }}"></span></span></span><span style="font:700 16px/1 'Bricolage Grotesque',sans-serif">{{ p.name }}</span><i class="ph ph-check" aria-label="Locked in" style="font-size:16px"></i></span></sc-for>
+                  </div>
+                  <h1 style="margin:0;font:800 44px/.96 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em">Everyone's guessed. <span style="font-stretch:75%;color:var(--accent-ink)">Lights down.</span></h1>
+                  <p style="margin:0;font:400 17px/1.5 Geist,sans-serif;color:var(--text-muted)">{{ readyCopy }}</p>
+                  <sc-if value="{{ isHost }}" hint-placeholder-val="{{ true }}"><button onClick="{{ startReveal }}" style="margin-top:16px;height:56px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 17px/1 Geist,sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer" style-hover="box-shadow:inset 0 0 0 99px rgba(255,255,255,.14)" style-active="transform:scale(.97)"><i class="ph ph-play" style="font-size:20px"></i>Start the reveal</button></sc-if>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ s.results }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:22px">
+                  <div style="display:grid;grid-template-columns:minmax(0,1fr) 108px;gap:18px;align-items:end">
+                    <div style="display:grid;gap:10px"><h1 style="margin:0;font:800 36px/.98 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em;text-wrap:balance">You're a <span style="font-stretch:75%;color:var(--accent-ink)">{{ resHeadLabel }}.</span></h1><p style="margin:0;font:400 16px/1.45 Geist,sans-serif;color:var(--text-muted)">{{ resLine }}</p></div>
+                    <div style="position:relative">{{ resVessel }}<span style="position:absolute;left:-14px;bottom:-12px;display:inline-flex;padding:7px 10px;background:var(--accent);color:var(--on-accent);border:3px solid var(--sticker-edge);border-radius:999px;box-shadow:0 0 0 1.5px var(--sticker-ring);font:800 13px/1 'Bricolage Grotesque',sans-serif;font-stretch:80%;transform:rotate(-4deg);white-space:nowrap">{{ youLabel }}</span></div>
+                  </div>
+                  <div role="tablist" aria-label="Results" style="{{ resTabBar }}">
+                    <sc-for list="{{ resTabs }}" as="t" hint-placeholder-count="3"><button role="tab" aria-selected="{{ t.sel }}" onClick="{{ t.on }}" style="{{ t.style }}" style-hover="color:var(--text);background:var(--surface-raised)">{{ t.label }}</button></sc-for>
+                  </div>
+                  <sc-if value="{{ tabScores }}" hint-placeholder-val="{{ true }}">
+                    <ol style="list-style:none;margin:0;padding:0;display:grid">
+                      <sc-for list="{{ resultRows }}" as="r" hint-placeholder-count="7">
+                        <li style="{{ r.rowStyle }}">
+                          <span style="font:500 14px/1 'Geist Mono',monospace;color:var(--text-muted);width:18px">{{ r.rank }}</span>
+                          <span role="img" aria-label="{{ r.ax.label }}" style="{{ r.ax.wrap }}"><span style="{{ r.ax.pat }}"></span><span style="{{ r.ax.plate }}"><span style="{{ r.ax.eyes }}"><span style="{{ r.ax.eyeL }}"></span><span style="{{ r.ax.eyeR }}"></span></span><span style="{{ r.ax.mouth }}"></span></span></span>
+                          <div style="flex:1;min-width:0;display:grid;gap:8px">
+                            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font:700 19px/1 'Bricolage Grotesque',sans-serif">{{ r.name }}</span><span style="{{ r.labelStyle }}">{{ r.label }}</span></div>
+                            <span style="font:500 12.5px/1.2 'Geist Mono',monospace;color:var(--text-muted)">{{ r.sub }}</span>
+                          </div>
+                          <span style="font:600 30px/1 'Geist Mono',monospace;font-variant-numeric:tabular-nums">{{ r.score }}</span>
+                        </li>
+                      </sc-for>
+                    </ol>
+                  </sc-if>
+                  <sc-if value="{{ tabAwards }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:grid;gap:18px">
+                      <sc-for list="{{ awardRows }}" as="a" hint-placeholder-count="6">
+                        <div style="display:flex;gap:18px;align-items:center;padding:6px 0 14px;border-bottom:1px solid var(--line)">
+                          <span style="{{ a.sticker }}"><i class="{{ a.icon }}" style="font-size:24px"></i></span>
+                          <div style="flex:1;display:grid;gap:6px"><span style="font:800 20px/1 'Bricolage Grotesque',sans-serif">{{ a.name }}</span><span style="display:flex;align-items:center;gap:8px;font:600 15px/1 Geist,sans-serif"><span role="img" aria-label="{{ a.ax.label }}" style="{{ a.ax.wrap }}"><span style="{{ a.ax.pat }}"></span><span style="{{ a.ax.plate }}"><span style="{{ a.ax.eyes }}"><span style="{{ a.ax.eyeL }}"></span><span style="{{ a.ax.eyeR }}"></span></span><span style="{{ a.ax.mouth }}"></span></span></span>{{ a.who }}</span><span style="font:400 14px/1.4 Geist,sans-serif;color:var(--text-muted)">{{ a.why }}</span></div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ tabQuestions }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:grid;gap:16px">
+                      <p style="margin:0;font:400 14px/1.45 Geist,sans-serif;color:var(--text-muted)">Shows questions 3 or more people answered. Names only appear for players who switched on Spill Mode.</p>
+                      <sc-for list="{{ qStats }}" as="q" hint-placeholder-count="4">
+                        <div style="display:grid;gap:8px;padding-bottom:16px;border-bottom:1px solid var(--line)">
+                          <span style="font:700 18px/1.2 'Bricolage Grotesque',sans-serif">Have you ever {{ q.text }}</span>
+                          <div style="display:flex;align-items:center;gap:12px"><div style="flex:1;height:6px;border-radius:999px;background:var(--surface-raised)"><div style="{{ q.bar }}"></div></div><span style="font:500 14px/1 'Geist Mono',monospace">{{ q.count }}</span></div>
+                          <span style="font:500 14px/1.3 Geist,sans-serif;color:var(--text-muted)">{{ q.names }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <button role="switch" aria-checked="{{ spillStr }}" onClick="{{ toggleSpill }}" style="display:flex;align-items:center;gap:14px;width:100%;padding:16px;border-radius:20px;background:var(--surface);border:1px solid var(--line);color:var(--text);text-align:left;cursor:pointer" style-hover="border-color:var(--text-muted)">
+                    <div style="flex:1;display:grid;gap:4px"><span style="font:700 17px/1.2 Geist,sans-serif">Spill Mode</span><span style="font:400 14px/1.4 Geist,sans-serif;color:var(--text-muted)">{{ spillCopy }}</span></div>
+                    <span style="{{ spillTrack }}"><span style="{{ spillKnob }}"></span></span>
+                  </button>
+                  <div style="display:flex;gap:10px;padding-bottom:8px">
+                    <button onClick="{{ openShare }}" style="flex:1;height:56px;border:1.5px solid var(--text);border-radius:999px;background:transparent;color:var(--text);font:600 17px/1 Geist,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer" style-hover="background:var(--surface-raised)"><i class="ph ph-share-fat" style="font-size:20px"></i>Share my card</button>
+                    <sc-if value="{{ isHost }}" hint-placeholder-val="{{ true }}"><button onClick="{{ rematch }}" style="flex:1;height:56px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 17px/1 Geist,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer" style-hover="box-shadow:inset 0 0 0 99px rgba(255,255,255,.14)" style-active="transform:scale(.97)"><i class="ph ph-arrow-clockwise" style="font-size:20px"></i>Rematch</button></sc-if><sc-if value="{{ isGuest }}" hint-placeholder-val="{{ false }}"><span style="flex:1;min-height:56px;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 12px;border-radius:999px;border:1px dashed var(--line-strong);color:var(--text-muted);font:500 14px/1.3 Geist,sans-serif;text-align:center"><i class="ph ph-hourglass-medium" style="font-size:18px"></i>{{ hostName }} can start a rematch</span></sc-if>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </main>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s.reveal }}" hint-placeholder-val="{{ false }}">
+        <div style="min-height:100%;display:flex;flex-direction:column;gap:18px;padding:18px 20px 28px;box-sizing:border-box;width:100%;max-width:560px;margin:0 auto">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font:500 13px/1 'Geist Mono',monospace;color:var(--text-muted);letter-spacing:.06em;white-space:nowrap">{{ rvCounter }}</span>
+            <button onClick="{{ skipReveal }}" style="height:48px;padding:0 18px;border:1.5px solid var(--line);border-radius:999px;background:transparent;color:var(--text);font:600 15px/1 Geist,sans-serif;display:flex;align-items:center;gap:8px;cursor:pointer" style-hover="background:var(--surface-raised)"><i class="ph ph-fast-forward" style="font-size:18px"></i>Skip</button>
+          </div>
+          <sc-if value="{{ rvPlayerMode }}" hint-placeholder-val="{{ true }}">
+            <div aria-live="polite" style="display:flex;flex-direction:column;gap:18px;flex:1">
+              <div style="display:flex;align-items:center;gap:14px"><span role="img" aria-label="{{ rvAx.label }}" style="{{ rvAx.wrap }}"><span style="{{ rvAx.pat }}"></span><span style="{{ rvAx.plate }}"><span style="{{ rvAx.eyes }}"><span style="{{ rvAx.eyeL }}"></span><span style="{{ rvAx.eyeR }}"></span></span><span style="{{ rvAx.mouth }}"></span></span></span><div style="display:grid;gap:5px"><span style="font:500 14px/1 Geist,sans-serif;color:var(--text-muted)">{{ rvPlace }}</span><span style="font:800 42px/.95 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em">{{ rvName }}</span></div></div>
+              <div style="position:relative">{{ rvVessel }}<sc-if value="{{ rvShowLabel }}" hint-placeholder-val="{{ false }}"><span style="{{ rvLabelStyle }}">{{ rvLabel }}</span></sc-if></div>
+              <span style="font:500 16px/1.4 Geist,sans-serif;color:var(--text-muted);margin-top:10px;min-height:22px">{{ rvGuessLine }}</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ rvAwardMode }}" hint-placeholder-val="{{ false }}">
+            <div aria-live="polite" style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:24px;padding-bottom:40px">
+              <sc-if value="{{ rvAwardShow }}" hint-placeholder-val="{{ true }}">
+                <span style="{{ awStyle }}"><i class="{{ awIcon }}" style="font-size:56px"></i>{{ awName }}</span>
+                <div style="display:flex;align-items:center;gap:14px;animation:spil-rise 300ms 200ms cubic-bezier(.23,1,.32,1) both"><span role="img" aria-label="{{ awAx.label }}" style="{{ awAx.wrap }}"><span style="{{ awAx.pat }}"></span><span style="{{ awAx.plate }}"><span style="{{ awAx.eyes }}"><span style="{{ awAx.eyeL }}"></span><span style="{{ awAx.eyeR }}"></span></span><span style="{{ awAx.mouth }}"></span></span></span><span style="font:800 40px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em">{{ awWho }}</span></div>
+                <p style="margin:0;font:400 18px/1.5 Geist,sans-serif;color:var(--text-muted);animation:spil-rise 300ms 280ms cubic-bezier(.23,1,.32,1) both">{{ awWhy }}</p>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </div>
+
+
+    <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:var(--scrim);z-index:40;animation:spil-fade .2s"></div>
+      <div role="dialog" aria-modal="true" aria-label="{{ sheetLabel }}" style="{{ sheetBox }}">
+        <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ true }}"><span style="justify-self:center;width:40px;height:5px;border-radius:999px;background:var(--line)"></span></sc-if>
+        <sc-if value="{{ sheetAge }}" hint-placeholder-val="{{ false }}">
+          <h2 style="margin:0;font:800 28px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">This room is now 18+</h2>
+          <span style="font:400 16px/1.45 Geist,sans-serif;color:var(--text-muted)">{{ hostName }} switched to {{ packName }}. It has sexual content. Confirm you are 18 or older to stay in the room.</span>
+          <button onClick="{{ confirmAge }}" style="height:56px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 17px/1 Geist,sans-serif;cursor:pointer" style-hover="filter:brightness(1.08)">I am 18 or older</button>
+          <button onClick="{{ confirmLeave }}" style="height:56px;border:1.5px solid var(--text);border-radius:999px;background:transparent;color:var(--text);font:600 17px/1 Geist,sans-serif;cursor:pointer" style-hover="background:var(--surface-raised)">Leave room</button>
+        </sc-if>
+        <sc-if value="{{ sheetLeave }}" hint-placeholder-val="{{ false }}">
+          <h2 style="margin:0;font:800 28px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Leave this room?</h2>
+          <span style="font:400 16px/1.45 Geist,sans-serif;color:var(--text-muted)">{{ leaveCopy }}</span>
+          <button onClick="{{ confirmLeave }}" style="height:56px;border:0;border-radius:999px;background:var(--error);color:var(--bg);font:600 17px/1 Geist,sans-serif;cursor:pointer" style-hover="filter:brightness(1.08)">Leave room</button>
+          <button onClick="{{ closeSheet }}" style="height:56px;border:1.5px solid var(--text);border-radius:999px;background:transparent;color:var(--text);font:600 17px/1 Geist,sans-serif;cursor:pointer" style-hover="background:var(--surface-raised)">Stay</button>
+        </sc-if>
+        <sc-if value="{{ sheetInfo }}" hint-placeholder-val="{{ false }}">
+          <h2 style="margin:0;font:800 28px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">{{ infoTitle }}</h2>
+          <div style="display:grid;gap:16px;min-width:0">
+            <sc-for list="{{ infoSections }}" as="x" hint-placeholder-count="4"><div style="display:grid;gap:4px"><span style="font:700 15px/1.2 Geist,sans-serif">{{ x.h }}</span><span style="font:400 15px/1.5 Geist,sans-serif;color:var(--text-muted);text-wrap:pretty">{{ x.p }}</span></div></sc-for>
+          </div>
+          <button onClick="{{ closeSheet }}" style="height:56px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 17px/1 Geist,sans-serif;cursor:pointer" style-hover="filter:brightness(1.08)">Got it</button>
+        </sc-if>
+        <sc-if value="{{ sheetReport }}" hint-placeholder-val="{{ false }}">
+          <h2 style="margin:0;font:800 28px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Report this question</h2>
+          <span style="font:400 16px/1.45 Geist,sans-serif;color:var(--text-muted)">Have you ever {{ qText }}</span>
+          <div style="display:grid;gap:8px"><sc-for list="{{ reportReasons }}" as="r" hint-placeholder-count="4"><button onClick="{{ r.on }}" style="height:52px;padding:0 18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--text);font:600 16px/1 Geist,sans-serif;text-align:left;cursor:pointer" style-hover="border-color:var(--text)" style-active="transform:scale(.98)">{{ r.label }}</button></sc-for></div>
+          <button onClick="{{ closeSheet }}" style="height:52px;border:0;border-radius:999px;background:transparent;color:var(--text);font:600 16px/1 Geist,sans-serif;cursor:pointer" style-hover="background:var(--surface-raised)">Cancel</button>
+        </sc-if>
+        <sc-if value="{{ sheetForce }}" hint-placeholder-val="{{ false }}">
+          <span style="font:800 28px/1.02 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Move on without them?</span>
+          <span style="font:400 16px/1.45 Geist,sans-serif;color:var(--text-muted)">Their answers so far won't count toward their score. They can still guess.</span>
+          <div style="display:grid">
+            <sc-for list="{{ unfinished }}" as="u" hint-placeholder-count="2"><div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)"><span role="img" aria-label="{{ u.ax.label }}" style="{{ u.ax.wrap }}"><span style="{{ u.ax.pat }}"></span><span style="{{ u.ax.plate }}"><span style="{{ u.ax.eyes }}"><span style="{{ u.ax.eyeL }}"></span><span style="{{ u.ax.eyeR }}"></span></span><span style="{{ u.ax.mouth }}"></span></span></span><span style="flex:1;font:600 16px/1 Geist,sans-serif">{{ u.name }}</span><span style="font:500 13px/1 'Geist Mono',monospace;color:var(--text-muted)">{{ u.prog }}</span></div></sc-for>
+          </div>
+          <button onClick="{{ confirmForce }}" style="height:56px;border:0;border-radius:999px;background:var(--error);color:var(--bg);font:600 17px/1 Geist,sans-serif;cursor:pointer" style-active="transform:scale(.97)" style-hover="filter:brightness(1.08)">Move on without them</button>
+          <button onClick="{{ closeSheet }}" style="height:56px;border:1.5px solid var(--text);border-radius:999px;background:transparent;color:var(--text);font:600 17px/1 Geist,sans-serif;cursor:pointer" style-hover="background:var(--surface-raised)">Keep waiting</button>
+        </sc-if>
+        <sc-if value="{{ sheetShare }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:800 28px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Your card</span><button aria-label="Close" onClick="{{ closeSheet }}" style="width:48px;height:48px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text);display:grid;place-items:center;cursor:pointer;font-size:20px" style-hover="background:var(--surface-raised)"><i class="ph ph-x"></i></button></div>
+          <div role="tablist" aria-label="Card size" style="{{ fmtTabBar }}">
+            <sc-for list="{{ fmtTabs }}" as="t" hint-placeholder-count="2"><button role="tab" aria-selected="{{ t.sel }}" onClick="{{ t.on }}" style="{{ t.style }}" style-hover="color:var(--text);background:var(--surface-raised)">{{ t.label }}</button></sc-for>
+          </div>
+          <div style="display:flex;justify-content:center;padding:4px 0">
+            <sc-if value="{{ fmtStory }}" hint-placeholder-val="{{ true }}"><dc-import name="SPIL Share Card" format="story" theme="{{ themeResolved }}" player="{{ youName }}" hide-name="{{ hideName }}" score="{{ meScore }}" award="{{ meAward }}" room="{{ roomCode }}" avatar="{{ youAv }}" scale="0.2" hint-size="216px,384px"></dc-import></sc-if>
+            <sc-if value="{{ fmtGroup }}" hint-placeholder-val="{{ false }}"><dc-import name="SPIL Share Card" format="square" theme="{{ themeResolved }}" board="{{ shareBoard }}" room="{{ roomCode }}" scale="0.33" hint-size="356px,356px"></dc-import></sc-if>
+          </div>
+          <sc-if value="{{ fmtStory }}" hint-placeholder-val="{{ true }}">
+            <button role="switch" aria-checked="{{ hideStr }}" onClick="{{ toggleHide }}" style="display:flex;align-items:center;gap:14px;width:100%;min-height:56px;padding:8px 0;border:0;background:transparent;color:var(--text);text-align:left;cursor:pointer" style-hover="background:var(--surface-raised)"><span style="flex:1;font:600 16px/1.3 Geist,sans-serif">Hide my name</span><span style="{{ hideTrack }}"><span style="{{ hideKnob }}"></span></span></button>
+          </sc-if>
+          <div style="display:flex;gap:10px">
+            <button onClick="{{ saveImg }}" style="flex:1;height:56px;border:1.5px solid var(--text);border-radius:999px;background:transparent;color:var(--text);font:600 17px/1 Geist,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer" style-hover="background:var(--surface-raised)"><i class="ph ph-download-simple" style="font-size:20px"></i>Save image</button>
+            <button onClick="{{ shareImg }}" style="flex:1;height:56px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 17px/1 Geist,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer" style-active="transform:scale(.97)" style-hover="filter:brightness(1.08)"><i class="ph ph-share-fat" style="font-size:20px"></i>Share</button>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="{{ toastStyle }}"><i class="{{ toastIcon }}" style="{{ toastIconStyle }}"></i>{{ toast }}</div>
+    </sc-if>
+
+    <div aria-hidden="true" style="{{ grainStyle }}"></div>
+  </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;screen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;landing&quot;,&quot;join&quot;,&quot;packs&quot;,&quot;profile&quot;,&quot;lobby&quot;,&quot;question&quot;,&quot;waiting&quot;,&quot;guess&quot;,&quot;ready&quot;,&quot;reveal&quot;,&quot;results&quot;,&quot;error&quot;,&quot;page&quot;],&quot;default&quot;:&quot;landing&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;variant&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;device&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;mobile&quot;,&quot;desktop&quot;],&quot;default&quot;:&quot;mobile&quot;,&quot;tsType&quot;:&quot;'mobile'|'desktop'&quot;},&quot;embed&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const SPIL_THEMES = {
+  dark: {'--bg':'#101114','--surface':'#17181D','--surface-raised':'#1F2027','--line':'#2C2E36','--line-strong':'#6E707B','--text':'#F3F1EC','--text-muted':'#A3A3AD','--accent':'#FF5B3A','--accent-ink':'#FF5B3A','--on-accent':'#101114','--accent-soft':'rgba(255,91,58,.14)','--inverse':'#F3F1EC','--on-inverse':'#101114','--sticker-edge':'#F3F1EC','--sticker-ring':'rgba(0,0,0,.5)','--error':'#F0938A','--success':'#8CCBA2','--scrim':'rgba(8,9,11,.72)','--shadow':'rgba(0,0,0,.5)','--halftone':'rgba(243,241,236,.05)','--skeleton':'#23242B'},
+  light: {'--bg':'#F1F2F4','--surface':'rgba(255,255,255,.92)','--surface-raised':'#FFFFFF','--line':'#D9DBE1','--line-strong':'#868994','--text':'#15161A','--text-muted':'#5D5F69','--accent':'#D63D1D','--accent-ink':'#B8321A','--on-accent':'#FFFFFF','--accent-soft':'rgba(214,61,29,.1)','--inverse':'#15161A','--on-inverse':'#F3F1EC','--sticker-edge':'#FBFAF7','--sticker-ring':'#C4C7CF','--error':'#B3362B','--success':'#2F7A4C','--scrim':'rgba(21,22,26,.45)','--shadow':'rgba(21,22,26,.16)','--halftone':'rgba(21,22,26,.06)','--skeleton':'#E3E5EA'}
+};
+const ROSTER = [
+  {id:'ama',name:'Ama',av:0,score:72,guess:64,mr:212},
+  {id:'kofi',name:'Kofi',av:5,score:41,guess:55,mr:88},
+  {id:'zainab',name:'Zainab',av:9,score:18,guess:27,mr:268},
+  {id:'tunde',name:'Tunde',av:14,score:88,guess:71,mr:190},
+  {id:'efua',name:'Efua',av:3,score:9,guess:20,mr:174},
+  {id:'chidi',name:'Chidi',av:18,score:57,guess:31,mr:151},
+  {id:'yaw',name:'Yaw',av:21,score:33,guess:30,mr:120}
+];
+const ROT = [-3,2,-1.5,3.5,-4,1,2.5,-2];
+const LABEL = s => s <= 15 ? 'Fresh Out The Box' : s <= 35 ? 'Mostly Innocent' : s <= 55 ? 'Been Around' : s <= 75 ? 'Main Character' : 'Legendary Menace';
+const AWARDS = [
+  {name:'Top Spiller',icon:'ph ph-drop',who:'tunde',why:'Highest score in the room. 88 out of 100.',tone:'accent',shape:'50%'},
+  {name:'Saint of the Room',icon:'ph ph-hands-praying',who:'efua',why:'Scored 9. Either a saint or a very good liar.',tone:'inverse',shape:'40px'},
+  {name:'Mind Reader',icon:'ph ph-eye',who:'zainab',why:'Closest guesses all night. 268 points.',tone:'raised',shape:'50%'},
+  {name:'Dark Horse',icon:'ph ph-horse',who:'chidi',why:'The room guessed 31. Chidi scored 57.',tone:'inverse',shape:'50%'},
+  {name:'Open Book',icon:'ph ph-book-open',who:'ama',why:'The room guessed 64. Ama scored 72. Close enough.',tone:'accent',shape:'40px'},
+  {name:'Clueless',icon:'ph ph-question',who:'kofi',why:'Furthest guesses in the room. Kofi, really?',tone:'raised',shape:'50%'}
+];
+const QS = ['lied that you were "on your way" while still in bed?','checked an ex\'s new partner\'s profile at 2am?','gone to a party you weren\'t invited to?','pretended your data finished to dodge a call?','eaten someone else\'s food from the shared fridge?','cried at a Nollywood movie?','sent a voice note you instantly regretted?','borrowed money and "forgot" to pay it back?','sneaked out of your parents\' house at night?','read someone\'s messages over their shoulder?'];
+const PACKS = [
+  {id:'classic',name:'Classic',count:50,icon:'ph ph-cards',blurb:'The starter pack. Mild to medium.',tone:'accent'},
+  {id:'afterdark',name:'After Dark',count:50,icon:'ph ph-moon-stars',blurb:'For grown folks. Spicy, never cruel.',tone:'inverse',rows:2,adult:true},
+  {id:'campus',name:'Campus Life',count:45,icon:'ph ph-student',blurb:'Hostel nights and borrowed notes.',tone:'raised',rows:2},
+  {id:'work',name:'9 to 5',count:35,icon:'ph ph-briefcase',blurb:'Reply-all disasters and fake sick days.',tone:'accent',rows:2}
+];
+const PACK_INFO = {
+  purity: { title: 'How The Purity 100 works', sections: [
+    ['Where it comes from', 'The Rice Purity Test is a list of 100 yes or no questions. It started at Rice University in the 1920s so students could compare how sheltered they were.'],
+    ['How it goes', 'Questions run from mild to extreme: holding hands and kissing, then sex, then drinking, drugs and breaking rules.'],
+    ['The classic score', 'You tick everything you have done. Your score is 100 minus your ticks, so 100 is completely pure and 0 means you have done it all.'],
+    ['How SPIL flips it', 'Your Spill Score counts the yeses instead, so a purity score of 70 is a Spill Score of about 30. Higher means you have done more.'],
+    ['What makes it a game', 'Your friends guess your score before the reveal. Only the score is shared, unless you turn on Spill Mode.'],
+    ['Picking a length', 'Choose All 100 for the full test. 20 or 30 makes a quicker round with questions drawn at random from the pack.']
+  ] }
+};
+const HEAT = { spicy: { bg: '#1C1D24', fg: '#F3F1EC', badge: '18+' }, explicit: { bg: '#3A1510', fg: '#F7ECE8', badge: '18+ Explicit' }, intense: { bg: '#7E1A0B', fg: '#FFF3EE', badge: '18+ Intense' } };
+const TONES = {accent:['var(--accent)','var(--on-accent)'],inverse:['var(--inverse)','var(--on-inverse)'],raised:['var(--surface-raised)','var(--text)']};
+const QSTATS = [{q:5,yes:5,n:7,sp:['tunde']},{q:0,yes:6,n:7,sp:['tunde','ama']},{q:6,yes:3,n:6,sp:['ama']},{q:2,yes:2,n:7,sp:[]}];
+const ERRS = {
+  notfound:{st:'No room here',h:"We can't find that room.",p:'Check the link, or ask your host for the code.',cta:'Join with code',to:'join',alt:'Start a room',altTo:'packs'},
+  expired:{st:'Dried up',h:'This room has dried up.',p:'Start a fresh one. It takes ten seconds.',cta:'Start a room',to:'packs',alt:'Join with code',altTo:'join'},
+  full:{st:'Full house',h:'This room is full.',p:'Rooms hold 12 players. Start your own and pull the overflow in.',cta:'Start a room',to:'packs',alt:'Join with code',altTo:'join'},
+  started:{st:'Too late',h:'This game already started.',p:'Catch the rematch. Ask the host to send you the new link.',cta:'Back home',to:'landing'},
+  offline:{st:'No signal',h:"You're offline.",p:'Check your data or Wi-Fi. Anything you answered is saved on this phone.',cta:'Try again',to:'landing',tone:'accent'},
+  removed:{st:'Kicked out',h:'The host removed you from this room.',p:'No hard feelings. Start your own.',cta:'Start a room',to:'packs',alt:'Back home',altTo:'landing'},
+  waking:{h:'Waking the server up.',p:'First game in a while. Give it a few seconds.',waking:true}
+};
+const JUMPS = [['landing','Landing'],['join','Join with code'],['packs','Pack picker'],['profile','Profile setup'],['lobby','Lobby (host)'],['lobby:guest','Lobby (guest)'],['question','Question'],['waiting','Waiting'],['guess','Guess'],['ready','Reveal ready'],['reveal','Reveal (animated)'],['results','Results'],['results:share','Share sheet'],['error:notfound','Error: not found'],['error:expired','Error: expired'],['error:full','Error: full'],['error:started','Error: started'],['error:offline','Error: offline'],['error:waking','Server waking'],['page:howto','How to play'],['page:privacy','Privacy'],['page:terms','Terms'],['page:contact','Contact']];
+const GRAIN = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
+
+
+const AV = (n, s, sel, label) => {
+  n = ((n % 24) + 24) % 24;
+  const pals = [['var(--accent)','var(--bg)'],['var(--text)','var(--accent)'],['var(--surface-raised)','var(--accent)'],['var(--accent)','var(--text)']];
+  const [A, B] = pals[(n + (n >= 12 ? 2 : 0)) % 4];
+  const u = s / 6, z = s / 8, d = s / 4;
+  const zig = [135,225,315,45].map((a,i)=>`linear-gradient(${a}deg, ${B} 25%, transparent 25%) ${i<2?-z:0}px 0/${2*z}px ${2*z}px`).join(',');
+  const pats = [
+    `repeating-linear-gradient(0deg, ${A} 0 ${u}px, ${B} ${u}px ${2*u}px)`,
+    `repeating-linear-gradient(45deg, ${A} 0 ${u*.75}px, ${B} ${u*.75}px ${u*1.5}px)`,
+    `radial-gradient(circle, ${B} 26%, transparent 28%) 0 0/${d}px ${d}px, ${A}`,
+    `${zig}, ${A}`,
+    `linear-gradient(90deg, ${A} 50%, ${B} 50%)`,
+    `linear-gradient(135deg, ${A} 50%, ${B} 50%)`,
+    `repeating-radial-gradient(circle, ${A} 0 ${u*.7}px, ${B} ${u*.7}px ${u*1.4}px)`,
+    `conic-gradient(${A} 25%, ${B} 0 50%, ${A} 0 75%, ${B} 0) 0 0/${s/3}px ${s/3}px`,
+    `radial-gradient(circle at 50% 110%, ${A} 48%, ${B} 49%)`,
+    `conic-gradient(from 45deg, ${A} 0 25%, ${B} 0 50%, ${A} 0 75%, ${B} 0)`,
+    `repeating-linear-gradient(90deg, ${A} 0 ${u}px, ${B} ${u}px ${u*1.35}px, var(--bg) ${u*1.35}px ${u*1.7}px, ${B} ${u*1.7}px ${u*2.05}px)`,
+    `radial-gradient(circle, ${A} 22%, transparent 24%) 0 0/${d}px ${d}px, repeating-linear-gradient(0deg, ${B} 0 ${d/2}px, var(--surface-raised) ${d/2}px ${d}px)`
+  ];
+  const faceT = [1,2,0,3,1,3,2,0,3,1,0,2][(n + (n >= 12 ? 5 : 0)) % 12];
+  const ink = '#15161A', P = Math.round(s * .5), e = Math.max(2, Math.round(P * .13)), lw = Math.max(1.5, P * .09);
+  const eye = { width: e, height: e, borderRadius: 999, background: ink, display: 'block' };
+  let mouth = { display: 'block', width: P * .36, height: P * .16, borderBottom: `${lw}px solid ${ink}`, borderRadius: '0 0 999px 999px', boxSizing: 'border-box' };
+  if (faceT === 2) mouth = { display: 'block', width: e * 1.6, height: e * 1.6, border: `${Math.max(1.2, e * .45)}px solid ${ink}`, borderRadius: 999, boxSizing: 'border-box' };
+  return {
+    label: label || `Avatar ${n + 1}`,
+    wrap: { width: s, height: s, borderRadius: 999, position: 'relative', overflow: 'hidden', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: sel ? '0 0 0 3px var(--bg), 0 0 0 6px var(--accent)' : 'inset 0 0 0 1px rgba(0,0,0,.12)' },
+    pat: { position: 'absolute', inset: 0, background: pats[n % 12] },
+    plate: { position: 'relative', width: P, height: P, borderRadius: 999, background: '#F3F1EC', boxShadow: `0 0 0 ${Math.max(1, s * .03)}px ${ink}`, display: faceT ? 'flex' : 'none', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: P * .07 },
+    eyes: { display: 'flex', gap: Math.max(2, P * .2), alignItems: 'center' },
+    eyeL: eye, eyeR: faceT === 3 ? { ...eye, width: e * 1.7, height: Math.max(1.5, e * .5), marginTop: e * .3 } : eye, mouth
+  };
+};
+class Component extends DCLogic {
+  scrollRef = React.createRef();
+  packGridRef = React.createRef();
+  measurePacks() {
+    const g = this.packGridRef.current; if (!g) return;
+    const gap = parseFloat(getComputedStyle(g).columnGap) || 12, sp = {};
+    g.querySelectorAll('[data-pack]').forEach(el => { this.packRO && this.packRO.observe(el); sp[el.dataset.pack] = Math.ceil((el.offsetHeight + gap) / 4); });
+    const cur = this.state.packSpans || {};
+    if (Object.keys(sp).length && Object.keys(sp).some(k => sp[k] !== cur[k])) this.setState({ packSpans: sp });
+  }
+  componentDidUpdate() { if (this.packGridRef.current && this.packGridRef.current !== this.packObs) { this.packObs = this.packGridRef.current; this.packRO && this.packRO.observe(this.packObs); } this.measurePacks(); }
+  trackRef = React.createRef();
+  heroRef = React.createRef();
+  timers = [];
+  state = this.initState();
+  initState() {
+    let pid = '', room = '';
+    try { pid = sessionStorage.getItem('spil-pid') || ''; room = sessionStorage.getItem('spil-room') || ''; } catch (e) {}
+    if (!pid) { pid = Math.random().toString(36).slice(2, 10); try { sessionStorage.setItem('spil-pid', pid); } catch (e) {} }
+    return { screen: 'landing', variant: '', role: 'host', pack: '', nick: '', nickErr: '', avatar: Math.floor(Math.random() * 24), ageOk: false, ageErr: false,
+      code: '', codeFocus: false, joinErr: '', joinCode: '', loading: false, room, pid, rematch: false,
+      qi: 0, dx: 0, dragging: false, flying: 0, snap: false, saving: false, offline: typeof navigator !== 'undefined' && navigator.onLine === false,
+      sheet: '', menu: false, gi: 0, gv: 50, rv: { phase: 'intro', i: 0, count: 0, a: -1 }, tab: 'scores', spill: false, hideName: false, fmt: 'story', toast: '', pageTab: 'howto',
+      themePref: null, device: null, sysDark: true, cMail: '', cMsg: '', tick: 0, qn: 0, hero: { i: 0, g: 50, rev: false, drag: false, touched: false }, lp: { fmt: 'story', hide: false } };
+  }
+  embed() { return false; }
+  db() { return SpilStore.get(); }
+  room() { return (this.state.room && SpilStore.get().rooms[this.state.room]) || null; }
+  me() { const r = this.room(); return r ? r.players[this.state.pid] || null : null; }
+  packList(D) { return SpilStore.livePacks(D).map(p => ({ ...p, count: SpilStore.countFor(D, p.id) })); }
+
+  componentDidMount() {
+    if (window.ResizeObserver) this.packRO = new ResizeObserver(() => requestAnimationFrame(() => this.measurePacks()));
+    document.fonts && document.fonts.ready.then(() => this.measurePacks());
+    this.startIdle();
+    try { const ls = JSON.parse(localStorage.getItem('spil-last')); if (ls && ls.board) this.setState({ last: ls }); } catch (e) {}
+    this.rm = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    this.mqH = e => this.setState({ sysDark: e.matches });
+    mq.addEventListener && mq.addEventListener('change', this.mqH);
+    let pref = null; try { pref = localStorage.getItem('spil-theme'); } catch (e) {}
+    this.setState({ sysDark: mq.matches, themePref: pref });
+    this.onKey = e => {
+      if (e.key === 'Escape' && this.state.sheet) { if (this.state.sheet !== 'age') this.setState({ sheet: '' }); return; }
+      if (this.state.screen !== 'question' || this.state.sheet) return;
+      if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+      if (['ArrowRight','y','Y'].includes(e.key)) this.answer(true, true);
+      if (['ArrowLeft','n','N'].includes(e.key)) this.answer(false, true);
+    };
+    window.addEventListener('keydown', this.onKey);
+    this.onNet = () => this.setState({ offline: !navigator.onLine });
+    window.addEventListener('online', this.onNet); window.addEventListener('offline', this.onNet);
+    this.unsub = SpilStore.on(() => this.sync());
+    this.tickI = setInterval(() => { const r = this.room(); if (r && r.host === this.state.pid && (r.status === 'answering' || r.status === 'guessing')) SpilStore.tick(r.code); }, 900);
+    const j = new URLSearchParams(location.search).get('join');
+    if (j) { try { history.replaceState(null, '', location.pathname); } catch (e) {} }
+    if (j && !this.room()) this.setState({ screen: 'join', role: 'guest', code: j.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4) });
+    else if (this.room()) this.sync(true);
+    else if (this.state.room) this.leave();
+  }
+  componentWillUnmount() { this.clearT(); window.removeEventListener('keydown', this.onKey); window.removeEventListener('online', this.onNet); window.removeEventListener('offline', this.onNet); clearTimeout(this.tt); clearInterval(this.tickI); this.idleOn = false; clearTimeout(this.idleT); cancelAnimationFrame(this.hRaf); this.packRO && this.packRO.disconnect(); this.unsub && this.unsub(); }
+  after(ms, fn) { const t = setTimeout(fn, ms); this.timers.push(t); return t; }
+  clearT() { this.timers.forEach(clearTimeout); this.timers = []; cancelAnimationFrame(this.raf); }
+  toast(msg, kind) { this.setState({ toast: msg, toastKind: kind || 'ok' }); clearTimeout(this.tt); this.tt = setTimeout(() => this.setState({ toast: '' }), 2600); }
+
+  go(screen, extra = {}) {
+    this.clearT();
+    this.setState({ screen, menu: false, sheet: '', ...extra }, () => this.enter(screen));
+    if (this.scrollRef.current) this.scrollRef.current.scrollTop = 0;
+  }
+  enter(screen) {
+    const r = this.room(), me = this.me();
+    if (screen === 'question' && r && me) { const i = r.qids.findIndex(id => !(id in me.answers)); this.setState({ qi: i < 0 ? 0 : i, dx: 0, flying: 0, snap: false }); }
+    if (screen === 'guess') this.setState({ gi: this.firstGuess(), gv: 50 });
+    if (screen === 'reveal') this.runReveal();
+    if (screen === 'results') this.saveLast();
+  }
+  firstGuess() { const r = this.room(), me = this.me(); if (!r || !me) return 0; const o = SpilStore.active(r).filter(p => p.id !== me.id); const i = o.findIndex(p => me.guesses[p.id] == null); return i < 0 ? 0 : i; }
+  leave(err) { try { sessionStorage.removeItem('spil-room'); } catch (e) {} this.setState({ room: '', rematch: false }); this.go(err ? 'error' : 'landing', err ? { variant: err } : {}); }
+  want(r, me) {
+    switch (r.status) {
+      case 'lobby': return 'lobby';
+      case 'answering': return SpilStore.answersDone(r, me) ? 'waiting' : 'question';
+      case 'guessing': return SpilStore.guessesDone(r, me) ? 'waiting' : 'guess';
+      case 'ready': return 'ready';
+      case 'reveal': return this.revealed === r.round ? 'results' : 'reveal';
+      default: return 'results';
+    }
+  }
+  sync(force) {
+    this.setState(s => ({ tick: s.tick + 1 }));
+    if (!this.state.room) return;
+    const r = this.room();
+    if (!r || r.status === 'closed') return this.leave('expired');
+    const me = r.players[this.state.pid];
+    if (!me) return;
+    if (me.kicked) return this.leave('removed');
+    if (me.nudged && me.nudged !== this.seenNudge) { if (this.seenNudge !== undefined || Date.now() - me.nudged < 5000) this.toast(r.players[r.host].name + ' nudged you. Hurry up.'); this.seenNudge = me.nudged; }
+    if (this.state.spill !== !!me.spill) this.setState({ spill: !!me.spill });
+    const role = r.host === me.id ? 'host' : 'guest'; if (this.state.role !== role) this.setState({ role });
+    const pk = SpilStore.get().packs.find(p => p.id === r.pack);
+    const needAge = r.status === 'lobby' && !!pk && pk.adult && !me.adultOk && !me.bot;
+    const want = this.want(r, me), scr = this.state.screen;
+    const game = ['lobby','question','waiting','guess','ready','reveal','results'];
+    if (want !== scr && (force || game.includes(scr))) { this.go(want, needAge ? { sheet: 'age' } : {}); return; }
+    if (needAge && this.state.sheet !== 'age') this.setState({ sheet: 'age' });
+    if (!needAge && this.state.sheet === 'age') this.setState({ sheet: '' });
+  }
+
+  answer(yes, instant) {
+    if (this.state.flying || this.state.screen !== 'question') return;
+    const r = this.room(), me = this.me(); if (!r || !me) return;
+    const qid = r.qids[this.state.qi]; if (!qid) return;
+    navigator.vibrate && navigator.vibrate(10);
+    const still = instant || this.rm, pid = this.state.pid;
+    const commit = () => {
+      const ans = { ...me.answers, [qid]: yes };
+      let n = r.qids.findIndex(id => !(id in ans)); const last = n < 0; if (last) n = this.state.qi;
+      this.setState({ qi: n, flying: 0, dx: 0, dragging: false, snap: !still && !last, saving: true });
+      if (!still && !last) requestAnimationFrame(() => requestAnimationFrame(() => this.setState({ snap: false })));
+      SpilStore.update(db => { db.rooms[r.code].players[pid].answers[qid] = yes; db.rooms[r.code].updated = Date.now(); });
+      this.after(400, () => this.setState({ saving: false }));
+    };
+    if (still) return commit();
+    this.setState({ flying: yes === false ? -1 : 1, dragging: false });
+    this.after(200, commit);
+  }
+  lockGuess(others, target) {
+    const r = this.room(); if (!r || !target.id) return;
+    const gv = this.state.gv, pid = this.state.pid;
+    SpilStore.update(db => { db.rooms[r.code].players[pid].guesses[target.id] = gv; });
+    const me = this.me(); const i = others.findIndex(p => me.guesses[p.id] == null);
+    if (i >= 0) this.setState({ gi: i, gv: 50 });
+  }
+  kick(p) { const r = this.room(); SpilStore.update(db => { db.rooms[r.code].players[p.id].kicked = true; }); this.toast('Removed ' + p.name + '.'); }
+  addBot() {
+    const r = this.room(); if (!r) return;
+    const D = this.db(), act = SpilStore.active(r);
+    if (act.length >= D.settings.maxPlayers) return this.toast('This room is full. ' + D.settings.maxPlayers + ' players max.', 'err');
+    const used = act.map(p => p.name), name = ['Sam','Riley','Jordan','Alex','Kemi','Noor','Leo','Maya','Theo','Zara','Ivy','Remi'].find(n => !used.includes(n)) || 'Guest ' + act.length;
+    const id = SpilStore.uid();
+    SpilStore.update(db => { const x = db.rooms[r.code]; x.players[id] = { id, name, adultOk: true, av: Math.floor(Math.random() * 24), bot: true, joined: Date.now(), answers: {}, guesses: {}, spill: Math.random() < .5 }; x.order.push(id); db.joins.push(Date.now()); });
+  }
+  startGame() { const r = this.room(); SpilStore.update(db => { const x = db.rooms[r.code]; x.status = 'answering'; x.started = Date.now(); db.games.started++; db.plays[x.pack] = (db.plays[x.pack] || 0) + 1; }); }
+  nudge(list) { const r = this.room(); SpilStore.update(db => list.forEach(p => { db.rooms[r.code].players[p.id].nudged = Date.now(); })); this.toast('Nudged ' + list.map(p => p.name).join(' and ') + '. The pressure is on.'); }
+  force() {
+    const r = this.room();
+    SpilStore.update(db => { const x = db.rooms[r.code], A = SpilStore.active(x);
+      if (x.status === 'answering') x.status = 'guessing';
+      else if (x.status === 'guessing') { A.forEach(p => A.forEach(o => { if (o.id !== p.id && p.guesses[o.id] == null) p.guesses[o.id] = 50; })); x.status = 'ready'; } });
+    this.setState({ sheet: '' });
+  }
+  startReveal() { const r = this.room(); SpilStore.update(db => { const x = db.rooms[r.code]; SpilStore.finalize(db, x); x.status = 'reveal'; }); }
+  saveLast() {
+    const r = this.room(), me = this.me(); if (!r || !me) return;
+    const RES = SpilStore.results(this.db(), r), row = RES.rows.find(x => x.id === me.id); if (!row) return;
+    const aw = RES.awards.find(a => a.who === me.id), board = [...RES.rows].sort((a, b) => b.score - a.score).map((p, i) => ({ rank: i + 1, name: p.name, av: p.av, score: p.score }));
+    const last = { room: r.code, round: r.round, at: Date.now(), name: me.name, av: me.av, score: row.score, guess: row.guess, label: LABEL(row.score), award: aw ? aw.name : '', board };
+    try { localStorage.setItem('spil-last', JSON.stringify(last)); } catch (e) {}
+    this.setState({ last });
+  }
+  finishReveal() {
+    this.saveLast();
+    const r = this.room(); if (!r) return;
+    this.revealed = r.round;
+    if (r.host === this.state.pid && r.status === 'reveal') SpilStore.update(db => { db.rooms[r.code].status = 'results'; });
+    this.go('results', { tab: 'scores' });
+  }
+  rematch() { const r = this.room(); this.go('packs', { rematch: true, pack: r ? r.pack : '' }); }
+  afterPacks(pack) {
+    if (!pack) return this.toast('No packs are live right now.', 'err');
+    if (this.state.rematch) {
+      const r = this.room();
+      SpilStore.update(db => { const x = db.rooms[r.code]; x.pack = pack; x.qids = SpilStore.pickQs(db, pack, this.state.qn); x.round++; x.status = 'lobby'; x.final = null; Object.values(x.players).forEach(p => { p.answers = {}; p.guesses = {}; }); });
+      this.setState({ rematch: false, pack }, () => this.sync(true));
+      return;
+    }
+    this.go('profile', { pack, nickErr: '' });
+  }
+  submitCode(code) { const err = SpilStore.joinCheck(this.db(), code); if (err) return this.setState({ joinErr: err }); this.go('profile', { role: 'guest', joinCode: code, nickErr: '', ageOk: false }); }
+  submitProfile(spicy) {
+    const S = this.state, nm = (S.nick || '').trim();
+    if (nm.length < 2) return this.setState({ nickErr: 'Pick a nickname with 2 to 16 characters.' });
+    if (spicy && !S.ageOk) return this.setState({ ageErr: true });
+    const pid = S.pid, player = { id: pid, name: nm, av: S.avatar, bot: false, joined: Date.now(), answers: {}, guesses: {}, spill: false, adultOk: !!(spicy && S.ageOk) };
+    let code;
+    if (S.role === 'host') {
+      code = SpilStore.update(db => { const c = SpilStore.newCode(db); db.rooms[c] = { code: c, pack: S.pack, status: 'lobby', host: pid, created: Date.now(), updated: Date.now(), round: 1, final: null, qids: SpilStore.pickQs(db, S.pack, S.qn), players: { [pid]: player }, order: [pid] }; db.joins.push(Date.now()); return c; });
+    } else {
+      code = S.joinCode;
+      const D = this.db(), err = SpilStore.joinCheck(D, code);
+      if (err) return this.go('error', { variant: err === 'invalid' ? 'notfound' : err });
+      if (SpilStore.active(D.rooms[code]).some(p => p.name.toLowerCase() === nm.toLowerCase())) return this.setState({ nickErr: 'Someone in this room already has that name.' });
+      SpilStore.update(db => { const x = db.rooms[code]; x.players[pid] = player; if (!x.order.includes(pid)) x.order.push(pid); db.joins.push(Date.now()); });
+    }
+    try { sessionStorage.setItem('spil-room', code); } catch (e) {}
+    this.setState({ room: code }, () => this.sync(true));
+  }
+  leaveRoom() {
+    const r = this.room(), pid = this.state.pid;
+    if (r) SpilStore.update(db => {
+      const x = db.rooms[r.code]; if (!x || !x.players[pid]) return;
+      if (x.status === 'lobby') { delete x.players[pid]; x.order = x.order.filter(id => id !== pid); } else x.players[pid].kicked = true;
+      if (x.host === pid) { const next = SpilStore.active(x).find(p => !p.bot); if (next) x.host = next.id; else x.status = 'closed'; }
+    });
+    this.leave();
+    this.toast('You left the room.');
+  }
+  heroTween(key, from, to, dur, done) {
+    cancelAnimationFrame(this.hRaf);
+    if (this.rm || dur <= 0) { this.setState(s => ({ hero: { ...s.hero, [key]: to, tween: false } })); done && done(); return; }
+    const t0 = performance.now(), ease = k => key === 'shown' ? 1 - Math.pow(1 - k, 3) : (k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+    const step = now => {
+      const k = Math.min(1, (now - t0) / dur), v = Math.round(from + (to - from) * ease(k));
+      if (v !== this.state.hero[key] || !this.state.hero.tween) this.setState(s => ({ hero: { ...s.hero, [key]: v, tween: k < 1 } }));
+      if (k < 1) this.hRaf = requestAnimationFrame(step); else { this.setState(s => ({ hero: { ...s.hero, tween: false } })); done && done(); }
+    };
+    this.hRaf = requestAnimationFrame(step);
+  }
+  heroReveal() {
+    this.stopIdle();
+    const H = this.state.hero, p = this.heroP; if (!p || H.rev) return;
+    navigator.vibrate && navigator.vibrate(10);
+    this.setState(s => ({ hero: { ...s.hero, rev: true, shown: H.g, touched: true } }), () => this.heroTween('shown', H.g, p.score, 900 + Math.abs(p.score - H.g) * 6));
+  }
+  startIdle() {
+    if (this.rm || this.idleOn) return;
+    this.idleOn = true;
+    const seq = [68, 36, 50]; let n = 0;
+    const loop = () => {
+      if (!this.idleOn) return;
+      const H = this.state.hero;
+      if (H.touched || H.rev || this.state.screen !== 'landing') { this.idleOn = false; return; }
+      const to = seq[n++ % seq.length];
+      this.heroTween('g', H.g, to, 1100, () => { this.idleT = setTimeout(loop, 700); });
+    };
+    this.idleT = setTimeout(loop, 900);
+  }
+  stopIdle() { if (!this.idleOn && this.state.hero.touched) return; this.idleOn = false; clearTimeout(this.idleT); if (!this.state.hero.rev) cancelAnimationFrame(this.hRaf); if (!this.state.hero.touched || this.state.hero.tween) this.setState(s => ({ hero: { ...s.hero, touched: true, tween: false } })); }
+  heroVals() {
+    const HP = [{ name: 'Jordan', av: 14, score: 88, award: 'Top Spiller', icon: 'ph ph-drop' }, { name: 'Maya', av: 9, score: 18, award: 'Saint of the Room', icon: 'ph ph-hands-praying' }, { name: 'Leo', av: 5, score: 41, award: 'Dark Horse', icon: 'ph ph-horse' }];
+    const H = this.state.hero, p = HP[H.i % HP.length], lv = H.rev ? (H.shown == null ? p.score : H.shown) : H.g, off = Math.abs(H.g - p.score);
+    this.heroP = p;
+    const set = o => this.setState(s => ({ hero: { ...s.hero, ...o } }));
+    const fromY = y => { this.stopIdle(); const r = this.heroRef.current && this.heroRef.current.getBoundingClientRect(); if (!r) return; set({ g: Math.round(Math.max(0, Math.min(1, 1 - (y - r.top) / r.height)) * 100), touched: true }); };
+    const verdict = off <= 5 ? 'Mind reader.' : off <= 15 ? 'Close.' : off <= 30 ? 'Not bad.' : 'Way off.';
+    return {
+      heroVessel: this.vessel({ level: lv, num: lv, height: 250, fs: 104, transition: (H.drag || H.tween) ? 'none' : 'transform 180ms cubic-bezier(.23,1,.32,1)' }),
+      heroRow: { display: 'flex', alignItems: 'center', gap: 10, animation: this.rm ? 'none' : `${H.i % 2 ? 'spil-rise-b' : 'spil-rise'} 320ms cubic-bezier(.23,1,.32,1) both` },
+      heroCapStyle: { minHeight: 34, font: '500 13px/1.3 Geist, sans-serif', color: H.rev ? 'var(--text)' : 'var(--text-muted)', textWrap: 'pretty', transition: 'color 200ms ease' },
+      heroLabelEl: React.createElement('span', { key: LABEL(lv), 'aria-hidden': true, style: { ...this.stk(LABEL(lv), -5, 20), position: 'absolute', left: 'calc(50% - 168px)', top: 318, pointerEvents: 'none', zIndex: 2, animation: this.rm ? 'none' : 'spil-slap 380ms cubic-bezier(.34,1.56,.64,1) both' } }, LABEL(lv)),
+      heroRef: this.heroRef, heroVal: lv, heroRev: H.rev, heroHint: !H.touched && !H.rev,
+      heroAria: H.rev ? `${p.name} scored ${p.score}` : `Your guess for ${p.name}`,
+      heroCounter: `GUESS ${(H.i % HP.length) + 1} OF ${HP.length}`, heroName: p.name, heroAv: AV(p.av, 44, false, p.name),
+      heroKicker: H.rev ? (H.i % HP.length === 0 ? 'Top of the room' : 'Revealed') : 'How much has this one done?',
+      heroCaption: H.rev ? `${p.name} scored ${p.score}. You guessed ${H.g}. ${verdict}` : 'Drag the liquid up or down. 0 is a saint, 100 is a menace.',
+      heroLabel: LABEL(lv), heroAward: p.award, heroAwardIcon: p.icon,
+      heroLabelStyle: { ...this.stk(LABEL(lv), -5, 20), position: 'absolute', left: 'calc(50% - 175px)', bottom: 128, pointerEvents: 'none', transition: 'background-color 150ms ease, color 150ms ease' },
+      heroDrag: { position: 'relative', borderRadius: 20, touchAction: 'none', cursor: H.rev ? 'default' : H.drag ? 'grabbing' : 'grab', outlineOffset: 3 },
+      hDown: e => { if (H.rev) return; this.stopIdle(); e.currentTarget.setPointerCapture && e.currentTarget.setPointerCapture(e.pointerId); set({ drag: true }); fromY(e.clientY); },
+      hMove: e => { if (this.state.hero.drag) fromY(e.clientY); }, hUp: () => this.state.hero.drag && set({ drag: false }),
+      hKey: e => { if (H.rev) return; const m = { ArrowUp: 1, ArrowRight: 1, ArrowDown: -1, ArrowLeft: -1, PageUp: 10, PageDown: -10 }; if (e.key in m) { e.preventDefault(); this.stopIdle(); set({ g: Math.max(0, Math.min(100, H.g + m[e.key])), touched: true }); } if (e.key === 'Enter') this.heroReveal(); },
+      heroBtnLabel: H.rev ? 'Next player' : 'Reveal the score',
+      heroAct: () => H.rev ? set({ i: H.i + 1, g: 50, rev: false, shown: null }) : this.heroReveal(),
+      heroBtn: { height: 44, flexShrink: 0, border: H.rev ? '1.5px solid var(--text)' : 0, borderRadius: 999, background: H.rev ? 'transparent' : 'var(--accent)', color: H.rev ? 'var(--text)' : 'var(--on-accent)', font: '600 15px/1 Geist, sans-serif', cursor: 'pointer' }
+    };
+  }
+  lpVals() {
+    const L = this.state.lp, set = o => this.setState(s => ({ lp: { ...s.lp, ...o } }));
+    const [t, k] = this.sw(L.hide), sq = L.fmt === 'square';
+    return {
+      ...(() => {
+        const ls = this.state.last, sample = [['Jordan',14,88],['Alex',0,72],['Theo',18,57],['Leo',5,41],['Maya',9,18],['Ivy',3,9]].map(([name,av,score],i)=>({rank:i+1,name,av,score}));
+        const ago = ls ? (() => { const d = Math.floor((Date.now() - ls.at) / 86400000); return d < 1 ? 'today' : d === 1 ? 'yesterday' : d + ' days ago'; })() : '';
+        return {
+          lpHasLast: !!ls, lpNoLast: !ls, lpName: ls ? ls.name : 'Alex', lpScore: ls ? ls.score : 72, lpAward: ls ? (ls.award || 'Open Book') : 'Open Book', lpAv: ls ? ls.av : 0, lpRoom: ls ? ls.room : 'K7QX', lpBoard: ls ? ls.board : sample,
+          lpLastLine: ls ? `From room ${ls.room}, ${ago}. Full size, ready to post.` : '',
+          lpDownload: () => { if (!ls) return; this.saveImg({ fmt: L.fmt === 'square' ? 'group' : 'story', theme: 'dark', room: ls.room, name: ls.name, hide: L.hide, score: ls.score, label: ls.label || LABEL(ls.score), award: ls.award, board: ls.board }); }
+        };
+      })(),
+      lpFmt: L.fmt, lpHide: L.hide, lpHideStr: L.hide ? 'true' : 'false', lpToggleHide: () => set({ hide: !L.hide }), lpTrack: t, lpKnob: k,
+      lpScale: sq ? (this.isDesk ? 0.4 : 0.27) : (this.isDesk ? 0.25 : 0.22),
+      lpFmts: [['story', 'Story 9:16', 'ph ph-device-mobile'], ['square', 'Group 1:1', 'ph ph-square']].map(([v, label, icon]) => ({ label, icon, sel: L.fmt === v ? 'true' : 'false', on: () => set({ fmt: v }),
+        style: { flex: 1, height: 44, border: 0, borderRadius: 999, background: L.fmt === v ? 'var(--surface-raised)' : 'transparent', color: L.fmt === v ? 'var(--text)' : 'var(--text-muted)', font: '600 14px/1 Geist, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', boxShadow: L.fmt === v ? '0 1px 0 var(--line)' : 'none' } })),
+      lpCardWrap: { position: 'relative', transform: `rotate(${sq ? 2 : -3}deg)`, transition: 'transform 300ms cubic-bezier(.34,1.3,.64,1)', filter: 'drop-shadow(0 30px 40px var(--shadow))', lineHeight: 0 }
+    };
+  }
+  setSpill(v) { const r = this.room(), pid = this.state.pid; SpilStore.update(db => { db.rooms[r.code].players[pid].spill = v; }); }
+  link() { return location.origin + location.pathname + '?join=' + (this.state.room || ''); }
+  shareWA() { window.open('https://wa.me/?text=' + encodeURIComponent('Join my SPIL room. Code ' + this.state.room + ': ' + this.link()), '_blank'); }
+  async shareNative() {
+    const url = this.link();
+    if (navigator.share) { try { await navigator.share({ title: 'SPIL', text: 'Join my SPIL room. Code ' + this.state.room, url }); } catch (e) {} return; }
+    try { await navigator.clipboard.writeText(url); } catch (e) {}
+    this.toast('Link copied. Sharing is not available on this device.');
+  }
+  sendMsg() {
+    const S = this.state;
+    if (!S.cMsg.trim()) return this.toast('Write a message first.', 'err');
+    if (S.cMail && !/^\S+@\S+\.\S+$/.test(S.cMail.trim())) return this.toast('That email looks off.', 'err');
+    SpilStore.update(db => { db.messages.unshift({ id: SpilStore.uid(), at: Date.now(), email: S.cMail.trim(), text: S.cMsg.trim(), status: 'new' }); });
+    this.setState({ cMail: '', cMsg: '' }); this.toast('Sent. We read everything.');
+  }
+  report(reason) {
+    const r = this.room(), qid = r && r.qids[this.state.qi]; if (!qid) return;
+    SpilStore.update(db => { db.reports.unshift({ id: SpilStore.uid(), qid, reason, room: r.code, at: Date.now(), status: 'open' }); });
+    this.setState({ sheet: '' }); this.toast('Reported. We will take a look.');
+  }
+  drawCard(o) {
+    const sq = o.fmt === 'group', W = 1080, H = sq ? 1080 : 1920, c = document.createElement('canvas'); c.width = W; c.height = H;
+    const x = c.getContext('2d'), T = SPIL_THEMES[o.theme], F = (w, s, f) => w + ' ' + s + 'px ' + (f || '"Bricolage Grotesque", sans-serif');
+    x.fillStyle = T['--bg']; x.fillRect(0, 0, W, H);
+    x.fillStyle = T['--halftone']; for (let i = 0; i < W; i += 16) for (let j = 0; j < H; j += 16) { x.beginPath(); x.arc(i, j, 2.2, 0, 7); x.fill(); }
+    const rr = (X, Y, w, h, r) => { x.beginPath(); x.roundRect ? x.roundRect(X, Y, w, h, r) : x.rect(X, Y, w, h); };
+    x.fillStyle = T['--text']; x.font = F('800', 104); x.textBaseline = 'alphabetic'; x.fillText('SPIL', 80, 170);
+    x.fillStyle = T['--text-muted']; x.font = F('500', 32, '"Geist Mono", monospace'); x.textAlign = 'right'; x.fillText('ROOM ' + o.room, W - 80, 160); x.textAlign = 'left';
+    if (sq) {
+      x.fillStyle = T['--text']; x.font = F('800', 84); x.fillText('Room scores', 80, 300);
+      o.board.slice(0, 7).forEach((p, i) => { const y = 400 + i * 92; x.fillStyle = T['--text-muted']; x.font = F('500', 34, '"Geist Mono", monospace'); x.fillText(String(i + 1), 80, y); x.fillStyle = T['--text']; x.font = F('700', 46); x.fillText(p.name, 150, y); x.font = F('600', 48, '"Geist Mono", monospace'); x.textAlign = 'right'; x.fillText(String(p.score), W - 80, y); x.textAlign = 'left'; x.fillStyle = T['--line']; x.fillRect(80, y + 30, W - 160, 2); });
+    } else {
+      x.fillStyle = T['--text-muted']; x.font = F('500', 44, 'Geist, sans-serif'); x.fillText(o.hide ? 'My' : o.name + "'s", 80, 330);
+      x.fillStyle = T['--text']; x.font = F('800', 100); x.fillText('Spill Score', 80, 430);
+      const vy = 510, vh = 900; rr(80, vy, W - 160, vh, 48); x.save(); x.clip(); x.fillStyle = T['--surface-raised']; x.fillRect(80, vy, W - 160, vh);
+      x.fillStyle = T['--accent']; x.fillRect(80, vy + vh * (1 - o.score / 100), W - 160, vh); x.restore();
+      x.font = F('600', 340, '"Geist Mono", monospace'); x.textAlign = 'center'; x.fillStyle = o.score > 45 ? T['--on-accent'] : T['--text']; x.fillText(String(o.score), W / 2, vy + vh / 2 + 120); x.textAlign = 'left';
+      x.font = F('800', 52); const lw = x.measureText(o.label).width + 70; x.save(); x.translate(60, vy + vh - 20); x.rotate(-0.07); x.fillStyle = T['--sticker-edge']; rr(-8, -8, lw + 16, 112, 60); x.fill(); x.fillStyle = T['--inverse']; rr(0, 0, lw, 96, 52); x.fill(); x.fillStyle = T['--on-inverse']; x.fillText(o.label, 35, 66); x.restore();
+      x.fillStyle = T['--text']; x.font = F('800', 60); x.fillText('Think you know me?', 80, 1600); x.fillText('Guess my score.', 80, 1670);
+      if (o.award) { x.fillStyle = T['--text-muted']; x.font = F('600', 34, 'Geist, sans-serif'); x.fillText('Award: ' + o.award, 80, 1760); }
+      x.fillStyle = T['--accent-ink']; x.font = F('600', 38, '"Geist Mono", monospace'); x.textAlign = 'right'; x.fillText('spil.party', W - 80, 1840); x.textAlign = 'left';
+    }
+    return c;
+  }
+  saveImg(o, quiet) { const c = this.drawCard(o), a = document.createElement('a'); a.download = 'spil-' + (o.room || 'card') + '-' + o.fmt + '.png'; a.href = c.toDataURL('image/png'); document.body.appendChild(a); a.click(); a.remove(); if (!quiet) this.toast('Card saved.'); }
+  shareImg(o) {
+    this.drawCard(o).toBlob(async b => {
+      const f = new File([b], 'spil.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [f] })) { try { await navigator.share({ files: [f], text: 'Think you know me? Guess my score.' }); } catch (e) {} return; }
+      this.saveImg(o, true); this.toast('Sharing is not available here, so we saved it instead.');
+    });
+  }
+  runReveal() {
+    const r = this.room(); if (!r) return;
+    const RES = SpilStore.results(this.db(), r), order = [...RES.rows].sort((a, b) => a.score - b.score), A = RES.awards;
+    if (!order.length) return this.finishReveal();
+    const countUp = i => {
+      const target = order[i].score, dur = this.rm ? 0 : 1400, t0 = performance.now();
+      const tick = now => {
+        const k = dur ? Math.min(1, (now - t0) / dur) : 1, e = 1 - Math.pow(1 - k, 3);
+        this.setState({ rv: { phase: 'count', i, count: Math.round(target * e), a: -1 } });
+        if (k < 1) { this.raf = requestAnimationFrame(tick); return; }
+        this.after(150, () => {
+          this.setState({ rv: { phase: 'label', i, count: target, a: -1 } });
+          this.after(1200, () => {
+            if (i + 1 < order.length) { this.setState({ rv: { phase: 'intro', i: i + 1, count: 0, a: -1 } }); this.after(450, () => countUp(i + 1)); }
+            else awards(0);
+          });
+        });
+      };
+      this.raf = requestAnimationFrame(tick);
+    };
+    const awards = a => {
+      this.setState({ rv: { phase: 'beat', i: order.length - 1, count: 0, a } });
+      this.after(550, () => {
+        this.setState({ rv: { phase: 'award', i: order.length - 1, count: 0, a } });
+        this.after(1900, () => a + 1 < A.length ? awards(a + 1) : this.finishReveal());
+      });
+    };
+    this.setState({ rv: { phase: 'intro', i: 0, count: 0, a: -1 } });
+    this.after(700, () => countUp(0));
+  }
+  setTheme(p) { this.setState({ themePref: p, menu: false }); try { localStorage.setItem('spil-theme', p); } catch (e) {} }
+  setFromX(x) { const r = this.trackRef.current && this.trackRef.current.getBoundingClientRect(); if (!r) return; this.setState({ gv: Math.round(Math.max(0, Math.min(1, (x - r.left) / r.width)) * 100) }); }
+  bump(d) { this.setState(s => ({ gv: Math.max(0, Math.min(100, s.gv + d)) })); }
+
+  vessel({ level, num, height, fs, radius = 20, transition = 'none' }) {
+    const h = React.createElement, wave = !this.rm && !this.embed(), off = 100 - level;
+    const numStyle = { position: 'absolute', left: 0, right: 0, bottom: 0, height, display: 'grid', placeItems: 'center', font: `600 ${fs}px/1 "Geist Mono", monospace`, letterSpacing: '-.06em', fontVariantNumeric: 'tabular-nums' };
+    return h('div', { 'aria-hidden': true, style: { position: 'relative', width: '100%', height, borderRadius: radius, background: 'var(--surface-raised)', overflow: 'hidden' } },
+      num != null && h('div', { style: { ...numStyle, color: 'var(--text)' } }, num),
+      h('div', { style: { position: 'absolute', inset: 0, transform: `translateY(${off}%)`, transition, willChange: 'transform' } },
+        h('div', { style: { position: 'absolute', left: -26, top: -10, width: 'calc(100% + 26px)', height: 10, background: 'radial-gradient(circle at 50% 100%, var(--accent) 62%, transparent 64%) 0 0/26px 10px repeat-x', animation: wave ? 'spil-wave 1.6s linear infinite' : 'none', opacity: level > 0 && level < 100 ? 1 : 0, transition: 'opacity 200ms ease' } }),
+        h('div', { style: { position: 'absolute', inset: 0, background: 'var(--accent)', overflow: 'hidden' } },
+          num != null && h('div', { style: { ...numStyle, color: 'var(--on-accent)', transform: `translateY(-${off}%)`, transition } }, num))));
+  }
+  stk(label, rot, fs = 18) {
+    const t = {'Fresh Out The Box':['var(--inverse)','var(--on-inverse)',10,100],'Mostly Innocent':['var(--surface-raised)','var(--text)',999,100],'Been Around':['var(--accent)','var(--on-accent)','4px 16px 4px 16px',100],'Main Character':['var(--accent)','var(--on-accent)',999,80],'Legendary Menace':['var(--inverse)','var(--on-inverse)',10,75]}[label];
+    return { display: 'inline-flex', alignItems: 'center', padding: `${Math.round(fs * .5)}px ${Math.round(fs * .8)}px`, background: t[0], color: t[1], border: `${Math.max(3, Math.round(fs * .2))}px solid var(--sticker-edge)`, borderRadius: t[2], boxShadow: '0 0 0 1.5px var(--sticker-ring), 0 8px 16px -10px var(--shadow)', font: `800 ${fs}px/1 "Bricolage Grotesque", sans-serif`, fontStretch: `${t[3]}%`, textTransform: label === 'Legendary Menace' ? 'uppercase' : 'none', transform: `rotate(${rot}deg)`, whiteSpace: 'nowrap' };
+  }
+  sw(on) {
+    return [{ width: 52, height: 32, flexShrink: 0, borderRadius: 999, background: on ? 'var(--accent)' : 'var(--line)', position: 'relative', transition: 'background-color 150ms ease' },
+      { position: 'absolute', top: 3, left: 3, width: 26, height: 26, borderRadius: 999, background: on ? 'var(--on-accent)' : 'var(--text)', transform: `translateX(${on ? 20 : 0}px)`, transition: 'transform 200ms cubic-bezier(.34,1.4,.64,1), background-color 150ms ease', display: 'block' }];
+  }
+
+  renderVals() {
+    const S = this.state, P = this.props, embed = this.embed();
+    const device = embed ? (P.device === 'desktop' ? 'desktop' : 'mobile') : (S.device || P.device || 'mobile');
+    const isDesktop = device === 'desktop'; this.isDesk = isDesktop;
+    const pref = embed ? (P.theme || 'dark') : (S.themePref || P.theme || 'dark');
+    const resolved = 'dark';
+    const vars = SPIL_THEMES[resolved];
+    const D = this.db(), room = this.room(), youId = S.pid, hostId = room ? room.host : '';
+    const R = room ? SpilStore.active(room) : [];
+    const me = (room && room.players[youId]) || null, hostP = (room && room.players[hostId]) || { name: '', av: 0 };
+    const nameOf = p => p.name, avOf = p => p.av;
+    const RES = room ? SpilStore.results(D, room) : { rows: [], awards: [], qstats: [] };
+    const scr = S.screen;
+    const s = {}; ['landing','join','packs','profile','lobby','question','waiting','guess','ready','reveal','results','error','page'].forEach(k => s[k] = scr === k);
+    const inShell = ['lobby','question','waiting','guess','ready','results'].includes(scr);
+    const preRoom = ['join','packs','profile','error','page'].includes(scr);
+
+    let pageStyle, stageStyle, frameStyle;
+    const fBase = { ...vars, position: 'relative', overflow: 'hidden', background: 'var(--bg)', color: 'var(--text)', fontFamily: 'Geist, sans-serif', containerType: 'inline-size' };
+    if (embed) {
+      const W = isDesktop ? 1280 : 390, H = isDesktop ? 800 : 844;
+      pageStyle = { width: W, height: H }; stageStyle = { width: W, height: H }; frameStyle = { ...fBase, width: W, height: H };
+    } else {
+      pageStyle = { minHeight: '100vh', background: '#0B0C0E', display: 'flex', flexDirection: 'column' };
+      stageStyle = isDesktop ? { flex: 1, display: 'flex', minHeight: 0 } : { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' };
+      frameStyle = isDesktop ? { ...fBase, width: '100%', height: 'calc(100vh - 60px)' } : { ...fBase, width: 390, height: 844, maxHeight: 'calc(100vh - 108px)', borderRadius: 40, boxShadow: '0 0 0 10px #1A1B20, 0 40px 80px rgba(0,0,0,.6)' };
+    }
+    const btnP = { width: '100%', height: 56, border: 0, borderRadius: 999, background: 'var(--accent)', color: 'var(--on-accent)', font: '600 17px/1 Geist, sans-serif', cursor: 'pointer' };
+    const btnOff = { ...btnP, background: 'var(--surface-raised)', color: 'var(--text-muted)', cursor: 'not-allowed' };
+    const segBar = n => ({ display: 'grid', gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))`, gap: 2, padding: 4, borderRadius: 999, background: 'var(--surface)', border: '1px solid var(--line)', width: isDesktop ? 'fit-content' : '100%', maxWidth: '100%', boxSizing: 'border-box' });
+    const segTab = sel => ({ height: 44, minWidth: 0, padding: isDesktop ? '0 20px' : '0 6px', borderRadius: 999, border: 0, background: sel ? 'var(--surface-raised)' : 'transparent', color: sel ? 'var(--text)' : 'var(--text-muted)', boxShadow: sel ? '0 1px 0 var(--line)' : 'none', font: `600 ${isDesktop ? 15 : 14}px/1 Geist, sans-serif`, whiteSpace: 'nowrap', cursor: 'pointer' });
+    const pill = sel => ({ height: 48, padding: '0 18px', flexShrink: 0, borderRadius: 999, border: `1px solid ${sel ? 'var(--line)' : 'transparent'}`, background: sel ? 'var(--surface-raised)' : 'transparent', color: sel ? 'var(--text)' : 'var(--text-muted)', font: '600 15px/1 Geist, sans-serif', cursor: 'pointer', whiteSpace: 'nowrap' });
+
+    const themeOpts = [['dark','Dark','ph ph-moon'],['light','Light','ph ph-sun'],['system','System','ph ph-device-mobile']].map(([k, label, icon]) => {
+      const sel = pref === k;
+      return { label, icon, sel, checked: sel ? 'true' : 'false', on: () => this.setTheme(k),
+        row: { height: 48, display: 'flex', alignItems: 'center', gap: 12, padding: '0 14px', border: 0, borderRadius: 999, background: sel ? 'var(--accent-soft)' : 'transparent', color: 'var(--text)', font: '600 15px/1 Geist, sans-serif', cursor: 'pointer' },
+        pill: { flex: 1, height: 44, border: 0, borderRadius: 999, background: sel ? 'var(--text)' : 'transparent', color: sel ? 'var(--bg)' : 'var(--text-muted)', font: '600 13px/1 Geist, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer' } };
+    });
+
+    // join
+    const code = S.code || '';
+    const codeBoxes = [0,1,2,3].map(i => ({ ch: code[i] || '', style: { height: 76, borderRadius: 14, border: `1.5px solid ${S.joinErr ? 'var(--error)' : (S.codeFocus && i === Math.min(code.length, 3)) ? 'var(--accent)' : 'var(--line-strong)'}`, boxShadow: (S.codeFocus && !S.joinErr && i === Math.min(code.length, 3)) ? '0 0 0 3px var(--accent-soft)' : 'none', background: 'var(--surface)', display: 'grid', placeItems: 'center', font: '600 36px/1 "Geist Mono", monospace', color: 'var(--text)' } }));
+    const joinMsgs = { invalid: 'No room with that code. Check it with your host.', expired: 'This room has dried up. Start a fresh one.', full: 'This room is full. 12 players max.', started: 'This game already started. Ask the host for the rematch link.' };
+    const joinOk = code.length === 4;
+
+    // packs
+    const PACKS = this.packList(D), selPack = S.pack || (PACKS[0] && PACKS[0].id) || '';
+    const packs = PACKS.map((p, i) => {
+      const ht = p.adult ? (HEAT[p.heat] || HEAT.spicy) : null;
+      const isClassic = p.id === 'classic';
+      const sel = selPack === p.id, [bg, fg] = ht ? ['#0B0C0F', '#F3F1EC'] : isClassic ? ['var(--accent)', 'var(--on-accent)'] : ['#F3F1EC', '#101114'];
+      const gTone = ht ? ['#E0321C', '#FFFFFF'] : isClassic ? ['#101114', '#F3F1EC'] : ['var(--accent)', '#101114'];
+      const feat = i === 0;
+      const infoPad = PACK_INFO[p.id] ? { paddingBottom: 76 } : {};
+      return { ...p, cell: { gridColumn: feat ? '1 / -1' : 'auto', gridRowEnd: `span ${(S.packSpans || {})[p.id] || 50}`, position: 'relative', alignSelf: 'start', display: 'grid' }, hasInfo: !!PACK_INFO[p.id], infoLabel: `How ${p.name} works`, infoText: isDesktop, infoBtn: { position: 'absolute', left: 16, bottom: 16, height: 44, width: isDesktop ? 'auto' : 44, padding: isDesktop ? '0 16px 0 12px' : 0, boxSizing: 'border-box', borderRadius: 999, border: '1px solid rgba(243,241,236,.4)', background: 'transparent', color: '#F3F1EC', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', font: '600 14px/1 Geist, sans-serif', whiteSpace: 'nowrap', zIndex: 3 }, info: () => this.setState({ sheet: 'packinfo', infoPack: p.id }), sel, adult: !!p.adult, badge: ht ? ht.badge : '', checked: sel ? 'true' : 'false', pick: () => this.setState({ pack: p.id }),
+        style: { position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', alignSelf: 'start', gap: 16, padding: feat ? 20 : 16, minWidth: 0, boxSizing: 'border-box', borderRadius: 20, background: bg, color: fg, border: `1px solid ${ht ? 'var(--line)' : 'transparent'}`, boxShadow: sel ? '0 0 0 3px var(--bg), 0 0 0 6px var(--accent)' : 'none', transform: sel ? 'translateY(-2px)' : 'none', transition: 'box-shadow 180ms cubic-bezier(.23,1,.32,1), transform 180ms cubic-bezier(.23,1,.32,1), filter 150ms ease', cursor: 'pointer', textAlign: 'left', font: 'inherit', ...infoPad },
+        nameStyle: { font: `800 ${feat ? 36 : 24}px/1 "Bricolage Grotesque", sans-serif`, letterSpacing: '-.02em', textWrap: 'balance' },
+        glyph: { width: feat ? 60 : isDesktop ? 52 : 44, height: feat ? 60 : isDesktop ? 52 : 44, flexShrink: 0, borderRadius: '50%', background: gTone[0], color: gTone[1], display: 'grid', placeItems: 'center', transform: `rotate(${i % 2 ? 6 : -6}deg)` } };
+    });
+    const packGrid = { display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(3, minmax(0, 1fr))' : 'repeat(2, minmax(0, 1fr))', gridAutoRows: '4px', gridAutoFlow: 'row dense', alignItems: 'start', columnGap: isDesktop ? 14 : 12, rowGap: 0, padding: 8 };
+    const curPack = room ? room.pack : (S.role === 'guest' && D.rooms[S.joinCode] ? D.rooms[S.joinCode].pack : selPack);
+    const pk = D.packs.find(p => p.id === curPack), packObj = pk ? { ...pk, count: room ? room.qids.length : Math.min(SpilStore.countFor(D, pk.id), D.settings.questionsPerGame) } : { name: '', count: 0, adult: false };
+
+    // profile
+    const spicy = !!packObj.adult;
+    const nickBad = !!S.nickErr;
+    const profileOk = (S.nick || '').trim().length >= 2 && (!spicy || S.ageOk);
+    const [aT, aK] = this.sw(S.ageOk);
+
+    // lobby
+    const inLobby = R;
+    const lobbyPlayers = inLobby.map((p, i) => {
+      const you = p.id === youId, removable = youId === hostId && p.id !== hostId;
+      return { name: nameOf(p), av: avOf(p), ax: AV(avOf(p), 40, false, nameOf(p)), host: p.id === hostId, removable, removeLabel: `Remove ${p.name}`, remove: () => this.kick(p),
+        style: { display: 'inline-flex', alignItems: 'center', gap: 10, padding: removable ? '5px 6px 5px 5px' : '5px 18px 5px 5px', borderRadius: 999, background: you ? 'var(--accent)' : 'var(--surface-raised)', color: you ? 'var(--on-accent)' : 'var(--text)', border: '3px solid var(--sticker-edge)', boxShadow: '0 0 0 1.5px var(--sticker-ring), 0 8px 16px -10px var(--shadow)', transform: `rotate(${ROT[i % 8]}deg)`, animation: (embed || this.rm) ? 'none' : 'spil-drop 420ms cubic-bezier(.34,1.4,.64,1) both' } };
+    });
+    const adultPack = !!(pk && pk.adult), unconfirmed = adultPack ? R.filter(p => !p.adultOk) : [];
+    const n = inLobby.length, canStart = n >= D.settings.minPlayers && !unconfirmed.length;
+
+    // question
+    const qids = room ? room.qids : [], total = Math.max(1, qids.length), qi = Math.min(S.qi, total - 1);
+    const qObj = D.questions.find(q => q.id === qids[qi]), qTxt = qObj ? qObj.text : '';
+    const x = S.flying ? S.flying * 520 : S.dx;
+    const cardTransform = S.snap ? 'translateY(10px) scale(.96)' : `translateX(${x}px) rotate(${Math.max(-12, Math.min(12, x / 14))}deg)`;
+    const cardTrans = (S.snap || S.dragging) ? 'none' : S.flying ? 'transform 200ms cubic-bezier(.23,1,.32,1), opacity 200ms ease-out' : 'transform 320ms cubic-bezier(.34,1.3,.64,1), opacity 180ms ease-out';
+    const yO = S.flying > 0 ? 1 : Math.max(0, Math.min(1, S.dx / 96)), nO = S.flying < 0 ? 1 : Math.max(0, Math.min(1, -S.dx / 96));
+    const stamp = { position: 'absolute', top: 18, padding: '8px 14px', borderRadius: 999, border: '4px solid var(--sticker-edge)', font: '800 22px/1 "Bricolage Grotesque", sans-serif', pointerEvents: 'none', boxShadow: '0 0 0 1.5px var(--sticker-ring)' };
+    const ansBase = { flex: 1, height: 64, borderRadius: 999, font: '700 18px/1 Geist, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', transition: 'transform 160ms cubic-bezier(.23,1,.32,1)' };
+
+    // waiting
+    const phase = room ? room.status : '';
+    const isDone = p => !room ? false : phase === 'guessing' ? SpilStore.guessesDone(room, p) : SpilStore.answersDone(room, p);
+    const progOf = p => phase === 'guessing' ? 'Guessing' : room ? SpilStore.answeredN(room, p) + '/' + qids.length : '';
+    const waitRows = R.map(p => { const d = isDone(p); return { name: nameOf(p) + (p.id === youId ? ' (you)' : ''), av: avOf(p), ax: AV(avOf(p), 36, false, nameOf(p)), status: d ? 'Done' : progOf(p), icon: d ? 'ph ph-check' : 'ph ph-hourglass-medium', statusStyle: { display: 'flex', alignItems: 'center', gap: 6, font: d ? '600 14px/1 Geist, sans-serif' : '500 14px/1 "Geist Mono", monospace', color: d ? 'var(--text)' : 'var(--text-muted)' } }; });
+    const unfinishedP = R.filter(p => !isDone(p));
+    const doneN = R.length - unfinishedP.length;
+    const waitTitle = unfinishedP.length === 0 ? "Everyone's done. Here we go." : unfinishedP.length === 1 ? `Waiting on ${unfinishedP[0].name}. Typical.` : `Waiting on ${unfinishedP.slice(0, -1).map(p => p.name).join(', ')} and ${unfinishedP[unfinishedP.length - 1].name}. Typical.`;
+
+    // guess
+    const others = R.filter(p => p.id !== youId);
+    const target = others[S.gi % Math.max(1, others.length)] || { id: '', name: '', av: 0 };
+    const gLabel = LABEL(S.gv);
+
+    // reveal
+    const order = [...RES.rows].sort((a, b) => a.score - b.score); if (!order.length) order.push({ id: '', name: '', av: 0, score: 0, guess: 0, mr: 0 });
+    const rv = S.rv, rp = order[Math.min(rv.i, order.length - 1)];
+    const awardMode = rv.phase === 'beat' || rv.phase === 'award';
+    const AW = RES.awards.length ? RES.awards : [{ name: '', icon: 'ph ph-drop', tone: 'accent', shape: '50%', who: order[0].id, why: '' }];
+    const aw = AW[Math.max(0, rv.a)] || AW[0];
+    const awP = RES.rows.find(p => p.id === aw.who) || order[0];
+    const awT = TONES[aw.tone];
+    const ord = k => k === 1 ? 'Top of the room' : `${k}${k === 2 ? 'nd' : k === 3 ? 'rd' : 'th'} place`;
+
+    // results
+    const sorted = [...RES.rows].sort((a, b) => b.score - a.score);
+    const meR = RES.rows.find(r => r.id === youId) || { score: 0, guess: 0 }, gap = Math.abs(meR.score - meR.guess);
+    const myAward = RES.awards.find(a => a.who === youId);
+    const resultRows = sorted.map((p, i) => ({ rank: i + 1, name: nameOf(p), av: avOf(p), ax: AV(avOf(p), 44, false, nameOf(p)), score: p.score, label: LABEL(p.score), labelStyle: this.stk(LABEL(p.score), ROT[i % 8] * .6, 12),
+      sub: `Guessed ${p.guess} · ${p.mr} pts`,
+      rowStyle: { display: 'flex', alignItems: 'center', gap: 12, padding: '12px 10px', margin: '0 -10px', borderRadius: 14, borderBottom: '1px solid var(--line)', background: p.id === youId ? 'var(--accent-soft)' : 'transparent' } }));
+    const awardRows = RES.awards.map((a, i) => { const p = RES.rows.find(r => r.id === a.who) || order[0], t = TONES[a.tone]; return { name: a.name, icon: a.icon, why: a.why, who: nameOf(p), av: avOf(p), ax: AV(avOf(p), 24, false, nameOf(p)), sticker: { width: 60, height: 60, flexShrink: 0, display: 'grid', placeItems: 'center', background: t[0], color: t[1], border: '4px solid var(--sticker-edge)', borderRadius: a.shape === '50%' ? '50%' : 16, boxShadow: '0 0 0 1.5px var(--sticker-ring)', transform: `rotate(${ROT[i]}deg)` } }; });
+    const qStats = RES.qstats.filter(q => q.n >= Math.min(3, R.length)).map(q => ({ text: q.text, count: `${q.yes} of ${q.n} said yes`, bar: { width: `${q.n ? q.yes / q.n * 100 : 0}%`, height: 6, borderRadius: 999, background: 'var(--text)' }, names: q.spill.length ? `Spill Mode yes: ${q.spill.join(', ')}` : 'Nobody in Spill Mode said yes' }));
+    const [spT, spK] = this.sw(S.spill), [hT, hK] = this.sw(S.hideName);
+
+    const sideStatus = p => {
+      if (scr === 'lobby') return p.id === hostId ? 'Host' : p.bot ? 'Test' : '';
+      if (scr === 'question' || scr === 'waiting' || scr === 'guess') return isDone(p) ? 'Done' : progOf(p);
+      if (scr === 'ready') return 'Locked';
+      if (scr === 'results') { const x = RES.rows.find(y => y.id === p.id); return x ? String(x.score) : ''; }
+      return '';
+    };
+    const sidePlayers = scr === 'results' ? sorted : R;
+
+    const cardO = { fmt: S.fmt, theme: resolved, room: S.room, name: me ? me.name : '', hide: S.hideName, score: meR.score, label: LABEL(meR.score), award: myAward ? myAward.name : '', board: sorted };
+    const sheetOpen = !!S.sheet;
+    const sheetBox = isDesktop
+      ? { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 440, maxHeight: '90%', overflowY: 'auto', zIndex: 41, padding: 24, boxSizing: 'border-box', borderRadius: 20, background: 'var(--surface-raised)', border: '1px solid var(--line)', display: 'grid', gap: 16, animation: embed ? 'none' : 'spil-pop 200ms cubic-bezier(.23,1,.32,1)' }
+      : { position: 'absolute', left: 0, right: 0, bottom: 0, maxHeight: '92%', overflowY: 'auto', zIndex: 41, padding: '10px 20px 24px', boxSizing: 'border-box', borderRadius: '20px 20px 0 0', background: 'var(--surface-raised)', display: 'grid', gap: 16, animation: embed ? 'none' : 'spil-up 400ms cubic-bezier(.32,.72,0,1)' };
+
+    const errK = ERRS[S.variant] || ERRS.notfound;
+    const errT = errK.tone === 'accent' ? TONES.accent : TONES.inverse;
+    const pageTabsDef = [['howto','How to play'],['privacy','Privacy'],['terms','Terms'],['contact','Contact']];
+
+    return {
+      avHero: AV(14, 44, false, 'Jordan'), avAma32: AV(0, 32, false, 'Ama'), avHost44: AV(hostP.av, 44, false, hostP.name), hostName: hostP.name, roomCode: S.room || '',
+      chromeRoom: S.room ? 'Room ' + S.room + (me ? ' as ' + me.name : '') : 'Not in a room',
+      openPlayerTab: () => window.open(location.pathname + (S.room ? '?join=' + S.room : ''), '_blank'),
+      resetData: () => { if (!window.confirm('Reset all SPIL data? Rooms, packs, questions and reports go back to the starting set.')) return; SpilStore.reset(); this.leave(); },
+      qPerGame: D.settings.questionsPerGame, minPlayers: D.settings.minPlayers, addBot: () => this.addBot(),
+      cMail: S.cMail, cMsg: S.cMsg, onCMail: e => this.setState({ cMail: e.target.value }), onCMsg: e => this.setState({ cMsg: e.target.value }),
+      openReport: () => this.setState({ sheet: 'report' }), sheetReport: S.sheet === 'report',
+      reportReasons: ['Too personal','Offensive','Typo or unclear','Not for my group'].map(label => ({ label, on: () => this.report(label) })),
+      resHeadName: sorted[0] ? sorted[0].name : '', resHeadLabel: LABEL(meR.score),
+      resLine: `You scored ${meR.score}. The room guessed ${meR.guess}. ${gap <= 10 ? 'They know you well.' : gap <= 25 ? 'They know you a little.' : 'They have no idea.'}`,
+      youLabel: LABEL(meR.score), meScore: meR.score, meAward: myAward ? myAward.name : 'Open Book',
+      shareBoard: sorted.map((p, i) => ({ rank: i + 1, name: p.name, av: p.av, score: p.score })), s, inShell, preRoom, isDesktop, isMobile: !isDesktop, themeResolved: resolved,
+      showChrome: !embed, pageStyle, stageStyle, frameStyle, scrollRef: this.scrollRef, trackRef: this.trackRef,
+      grainStyle: { position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 60, backgroundImage: GRAIN, opacity: resolved === 'dark' ? .07 : .06, mixBlendMode: resolved === 'dark' ? 'screen' : 'multiply' },
+      mainCol: { width: '100%', maxWidth: 520, boxSizing: 'border-box', padding: isDesktop ? '48px 32px 40px' : '8px 20px 24px', flex: 1, display: 'flex', flexDirection: 'column' },
+      deviceOpts: ['mobile','desktop'].map(d => ({ label: d === 'mobile' ? 'Mobile 390' : 'Desktop', on: () => this.setState({ device: d }), style: { height: 30, padding: '0 12px', borderRadius: 999, border: 0, background: device === d ? '#F3F1EC' : 'transparent', color: device === d ? '#101114' : '#A3A3AD', font: '500 12px/1 "Geist Mono", monospace', cursor: 'pointer' } })),
+      jumpOpts: JUMPS.map(([v, l]) => ({ v, l })), jumpVal: S.variant && scr !== 'landing' ? `${scr}:${S.variant}` : scr,
+      restart: () => this.leave(),
+      menuOpen: S.menu, menuStr: S.menu ? 'true' : 'false', toggleMenu: () => this.setTheme(resolved === 'dark' ? 'light' : 'dark'), themeToggleLabel: resolved === 'dark' ? 'Switch to light theme' : 'Switch to dark theme', closeMenu: () => this.setState({ menu: false }),
+      themeIconEl: React.createElement('i', { key: resolved, className: resolved === 'light' ? 'ph ph-sun' : 'ph ph-moon', style: { display: 'block', animation: (embed || this.rm) ? 'none' : 'spil-icon 240ms cubic-bezier(.23,1,.32,1)' } }), copyIcon: S.copied ? 'ph ph-check' : 'ph ph-copy', copyLabel: S.copied ? 'Copied' : 'Copy link', themeOpts,
+      ...this.heroVals(),
+      ...this.lpVals(),
+      ...(() => {
+        const pc = selPack ? SpilStore.countFor(D, selPack) : 0;
+        const opts = [...new Set([5, 10, 15, 20, 30, 50].filter(n => n < pc).concat(pc))].filter(n => n > 0);
+        const cur = S.qn && opts.includes(S.qn) ? S.qn : (opts.find(n => n >= D.settings.questionsPerGame) || opts[opts.length - 1] || 0);
+        if (cur !== S.qn && cur) setTimeout(() => this.state.qn !== cur && this.setState({ qn: cur }), 0);
+        return {
+          qnOpts: opts.map(n => ({ label: n === pc ? `All ${n}` : String(n), sel: n === cur ? 'true' : 'false', on: () => this.setState({ qn: n }),
+            style: { minWidth: 56, height: 48, padding: '0 18px', borderRadius: 999, border: `1.5px solid ${n === cur ? 'var(--accent)' : 'var(--line-strong)'}`, background: n === cur ? 'var(--accent-soft)' : 'transparent', color: n === cur ? 'var(--accent-ink)' : 'var(--text)', font: '600 15px/1 Geist, sans-serif', fontVariantNumeric: 'tabular-nums', cursor: 'pointer' } })),
+          qnHint: cur ? `About ${Math.max(1, Math.round(cur * 7 / 60))} minute${Math.round(cur * 7 / 60) > 1 ? 's' : ''} of answering.` : ''
+        };
+      })(),
+      startRoom: () => { if (S.room) this.leave(); this.go('packs', { role: 'host', rematch: false, pack: '' }); }, goJoin: () => this.go('join', { code: '', joinErr: '', role: 'guest', rematch: false }),
+      goHowto: () => this.go('page', { pageTab: 'howto' }),
+      howtoCur: scr === 'page' && S.pageTab === 'howto' ? 'page' : 'false',
+      howtoText: isDesktop ? {} : { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' },
+      howtoNav: { height: 48, minWidth: 48, justifyContent: 'center', position: 'relative', padding: isDesktop ? '0 18px' : 0, display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap', borderRadius: 999, border: 0, background: scr === 'page' && S.pageTab === 'howto' ? 'var(--surface-raised)' : 'transparent', color: 'var(--text)', font: '600 15px/1 Geist, sans-serif', cursor: 'pointer' }, goLanding: () => this.go('landing'),
+      footerLinks: pageTabsDef.map(([k, label]) => ({ label, on: () => this.go('page', { pageTab: k }) })),
+      goBack: () => { const back = { join: 'landing', packs: 'landing', profile: S.role === 'host' ? 'packs' : 'join', error: 'landing', page: 'landing' }; this.go(back[scr] || 'landing'); },
+      code, codeBoxes, onCode: e => this.setState({ code: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4), joinErr: '' }),
+      codeFocusOn: () => this.setState({ codeFocus: true }), codeFocusOff: () => this.setState({ codeFocus: false }),
+      hasJoinErr: !!S.joinErr, joinErrStr: S.joinErr ? 'true' : 'false', joinErrMsg: joinMsgs[S.joinErr] || '', joinExpired: S.joinErr === 'expired',
+      pasteCode: async () => { let t = ''; try { t = (await navigator.clipboard.readText()) || t; } catch (e) {} this.setState({ code: t.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4), joinErr: '' }); },
+      submitCode: () => joinOk && this.submitCode(code),
+      joinBtn: joinOk ? btnP : btnOff, joinDisabledStr: joinOk ? 'false' : 'true',
+      packs, packGrid, packGridRef: this.packGridRef,
+      sheetInfo: S.sheet === 'packinfo', infoTitle: (PACK_INFO[S.infoPack] || {}).title || '', infoSections: ((PACK_INFO[S.infoPack] || {}).sections || []).map(([hh, pp]) => ({ h: hh, p: pp })),
+      selHasInfo: !!PACK_INFO[selPack], openSelInfo: () => this.setState({ sheet: 'packinfo', infoPack: selPack }),
+      packFoot: isDesktop ? { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', columnGap: 32, rowGap: 10, alignItems: 'center', padding: '8px 8px 0', marginTop: 'auto' } : { display: 'grid', gap: 20, padding: '4px 8px 0', marginTop: 'auto' },
+      qnBox: isDesktop ? { display: 'contents' } : { display: 'grid', gap: 10 },
+      packCtaWrap: isDesktop ? { gridColumn: 2, gridRow: 2, minWidth: 320 } : { width: '100%' }, packCta: `Continue with ${packObj.name}`, goProfile: () => this.afterPacks(selPack),
+      nick: S.nick, onNick: e => this.setState({ nick: e.target.value.slice(0, 16), nickErr: '' }),
+      nickErrStr: nickBad ? 'true' : 'false', hasNickErr: nickBad, nickMsg: S.nickErr || '2 to 16 characters. Everyone in the room sees this.',
+      nickStyle: { height: 56, borderRadius: 14, border: `1.5px solid ${nickBad ? 'var(--error)' : 'var(--line-strong)'}`, background: 'var(--surface)', color: 'var(--text)', padding: '0 16px', font: '500 17px/1 Geist, sans-serif', outlineOffset: 2 },
+      nickMsgStyle: { display: 'flex', gap: 6, alignItems: 'center', font: '400 14px/1.35 Geist, sans-serif', color: nickBad ? 'var(--error)' : 'var(--text-muted)' },
+      avatars: Array.from({ length: 24 }, (_, i) => ({ n: i, ax: AV(i, 42, S.avatar === i, `Avatar ${i + 1}`), sel: S.avatar === i, checked: S.avatar === i ? 'true' : 'false', label: `Avatar ${i + 1}`, pick: () => this.setState({ avatar: i }) })),
+      spicy, ageStr: S.ageOk ? 'true' : 'false', toggleAge: () => this.setState({ ageOk: !S.ageOk, ageErr: false }), ageTrack: aT, ageKnob: aK,
+      ageRow: { display: 'flex', alignItems: 'center', gap: 14, width: '100%', padding: 16, borderRadius: 20, background: 'var(--surface)', border: `1px solid ${S.ageErr ? 'var(--error)' : 'var(--line)'}`, color: 'var(--text)', cursor: 'pointer' },
+      profileBtn: profileOk ? btnP : btnOff, profileDisabledStr: profileOk ? 'false' : 'true', profileCta: S.role === 'host' ? 'Open the lobby' : 'Join the room', 
+      submitProfile: () => this.submitProfile(spicy),
+      errHasSticker: !errK.waking, errWaking: !!errK.waking, errSt: errK.st || '', errH: errK.h, errP: errK.p, errHasCta: !!errK.cta, errCta: errK.cta || '', errHasAlt: !!errK.alt, errAlt: errK.alt || '',
+      errGo: () => this.go(errK.to || 'landing', errK.to === 'packs' ? { role: 'host' } : {}), errAltGo: () => this.go(errK.altTo || 'landing'),
+      errSticker: { alignSelf: 'flex-start', display: 'inline-flex', padding: '16px 26px', background: errT[0], color: errT[1], border: '6px solid var(--sticker-edge)', borderRadius: 14, boxShadow: '0 0 0 1.5px var(--sticker-ring), 0 14px 24px -14px var(--shadow)', font: '800 34px/1 "Bricolage Grotesque", sans-serif', fontStretch: '78%', textTransform: 'uppercase', transform: 'rotate(-4deg)', animation: embed ? 'none' : 'spil-slap 480ms cubic-bezier(.25,1.6,.45,1) both' },
+      wakeVessel: this.vessel({ level: 45, num: null, height: 140, transition: 'transform 3s cubic-bezier(.77,0,.175,1)' }),
+      pg: { howto: S.pageTab === 'howto', privacy: S.pageTab === 'privacy', terms: S.pageTab === 'terms', contact: S.pageTab === 'contact' },
+      pageTabs: pageTabsDef.map(([k, label]) => ({ label, sel: S.pageTab === k ? 'true' : 'false', on: () => this.setState({ pageTab: k }), style: segTab(S.pageTab === k) })),
+      pageTabBar: { ...segBar(4), margin: '4px 0 28px' },
+      sendMsg: () => this.sendMsg(),
+      packLine: `${packObj.name}, ${packObj.count} questions`,
+      sideRows: sidePlayers.map(p => ({ name: nameOf(p) + (p.id === youId ? ' (you)' : ''), av: avOf(p), ax: AV(avOf(p), 32, false, nameOf(p)), status: sideStatus(p) })),
+      copyLink: () => { try { navigator.clipboard.writeText(this.link()); } catch (e) {} this.toast('Link copied. Drop it in the group chat.'); this.setState({ copied: true }); clearTimeout(this.ct); this.ct = setTimeout(() => this.setState({ copied: false }), 1600); },
+      shareWA: () => this.shareWA(), shareNative: () => this.shareNative(),
+      lobbyLoading: S.loading, lobbyReady: !S.loading, lobbyPlayers, lobbyCount: n, lobbyAlone: n === 1,
+      isHost: S.role === 'host', isGuest: S.role === 'guest',
+      startHint: canStart ? `${n} in. Everyone ready?` : unconfirmed.length ? `Waiting on ${unconfirmed.map(p => p.name).join(', ')} to confirm 18+.` : `Need ${D.settings.minPlayers} players to start. ${n} here.`, startIcon: canStart ? 'ph ph-check-circle' : 'ph ph-users-three',
+      startBtn: canStart ? btnP : btnOff, startDisabledStr: canStart ? 'false' : 'true', startGame: () => canStart ? this.startGame() : this.toast(unconfirmed.length ? 'Everyone has to confirm they are 18+ first.' : `Need ${D.settings.minPlayers} players. Add a test player or share the code.`, 'err'),
+      changePack: () => this.rematch(), packName: packObj.name, sheetAge: S.sheet === 'age',
+      confirmAge: () => { const r2 = this.room(); SpilStore.update(db => { db.rooms[r2.code].players[S.pid].adultOk = true; }); this.setState({ sheet: '' }); },
+      offline: S.offline, saving: S.saving || S.offline, savingStr: S.saving ? 'true' : 'false', savingLabel: S.offline ? 'Queued' : 'Saving',
+      qi, qTotal: total, qLabel: `${qi + 1}/${total}`, qText: qTxt, qCode: `Q${qi + 1}`, qAria: `Question ${qi + 1} of ${total}. Have you ever ${qTxt}`,
+      pourFill: { position: 'absolute', inset: 0, borderRadius: 999, background: 'var(--accent)', clipPath: `inset(0 ${100 - Math.max(4, qi / total * 100)}% 0 0 round 999px)`, transition: 'clip-path 300ms cubic-bezier(.23,1,.32,1)' },
+      pourDrip: { position: 'absolute', inset: 0, pointerEvents: 'none', transform: `translateX(-${100 - Math.max(4, qi / total * 100)}%)`, transition: 'transform 300ms cubic-bezier(.23,1,.32,1)' },
+      cardStyle: { position: 'absolute', inset: 0, borderRadius: 20, background: 'var(--surface-raised)', border: '1px solid var(--line)', padding: 24, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', touchAction: 'pan-y', cursor: S.dragging ? 'grabbing' : 'grab', userSelect: 'none', transform: cardTransform, opacity: (S.snap || S.flying) ? 0 : 1, transition: cardTrans, willChange: 'transform', boxShadow: '0 24px 40px -28px var(--shadow)' },
+      yesStamp: { ...stamp, left: 18, background: 'var(--accent)', color: 'var(--on-accent)', transform: 'rotate(-10deg)', opacity: yO },
+      noStamp: { ...stamp, right: 18, background: 'var(--inverse)', color: 'var(--on-inverse)', transform: 'rotate(9deg)', opacity: nO },
+      pd: e => { if (S.flying || embed) return; this.drag = { x: e.clientX, t: performance.now() }; e.currentTarget.setPointerCapture && e.currentTarget.setPointerCapture(e.pointerId); this.setState({ dragging: true }); },
+      pm: e => { if (!this.drag) return; this.setState({ dx: e.clientX - this.drag.x }); },
+      pu: () => { if (!this.drag) return; const d = this.state.dx, v = Math.abs(d) / Math.max(1, performance.now() - this.drag.t); this.drag = null; if (Math.abs(d) > 96 || (Math.abs(d) > 24 && v > 0.11)) this.answer(d > 0); else this.setState({ dx: 0, dragging: false }); },
+      yesBtn: { ...ansBase, border: '1.5px solid var(--accent)', background: 'var(--accent)', color: 'var(--on-accent)' },
+      noBtn: { ...ansBase, border: '1.5px solid var(--text)', background: 'transparent', color: 'var(--text)' },
+      answerYes: () => this.answer(true), answerNo: () => this.answer(false),
+      prevQ: () => S.qi > 0 && this.setState({ qi: S.qi - 1 }), skipQ: () => this.answer(null, true),
+      waitVessel: this.vessel({ level: doneN / Math.max(1, R.length) * 100, num: `${doneN}/${Math.max(1, R.length)}`, height: 190, fs: 64, transition: 'transform 1.4s cubic-bezier(.2,.9,.3,1)' }),
+      waitTitle, waitRows, hostWaiting: S.role === 'host' && unfinishedP.length > 0,
+      nudgeLabel: unfinishedP.length === 1 ? `Nudge ${unfinishedP[0].name}` : 'Nudge them',
+      nudge: () => this.nudge(unfinishedP.filter(p => p.id !== youId)),
+      openForce: () => this.setState({ sheet: 'force' }),
+      unfinished: unfinishedP.map(p => ({ name: p.name, av: p.av, ax: AV(p.av, 36, false, p.name), prog: progOf(p) })),
+      confirmForce: () => this.force(),
+      guessCount: `Guess ${S.gi % others.length + 1} of ${others.length}`, gName: target.name, gAv: target.av, gAx: AV(target.av, 104, false, target.name), gv: S.gv, gLabel, gValText: `${S.gv}, ${gLabel}`, sliderAria: `Your guess for ${target.name}`,
+      gLabelStyle: { ...this.stk(gLabel, 3, 17), marginBottom: 6 },
+      sFill: { position: 'absolute', left: 0, width: `${S.gv}%`, height: 14, borderRadius: 999, background: 'var(--accent)' },
+      sThumb: { position: 'absolute', left: `${S.gv}%`, width: 32, height: 32, marginLeft: -16, borderRadius: 999, background: 'var(--text)', boxShadow: '0 0 0 4px var(--bg)', cursor: 'grab' },
+      sDown: e => { this.sliding = true; e.currentTarget.setPointerCapture && e.currentTarget.setPointerCapture(e.pointerId); this.setFromX(e.clientX); },
+      sMove: e => { if (this.sliding) this.setFromX(e.clientX); }, sUp: () => { this.sliding = false; },
+      sKey: e => { const m = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1, PageUp: 10, PageDown: -10 }; if (e.key in m) { e.preventDefault(); this.bump(m[e.key]); } if (e.key === 'Home') this.setState({ gv: 0 }); if (e.key === 'End') this.setState({ gv: 100 }); },
+      minus: () => this.bump(-1), plus: () => this.bump(1),
+      lockGuess: () => this.lockGuess(others, target),
+      readyStickers: R.map((p, i) => ({ name: nameOf(p), av: avOf(p), ax: AV(avOf(p), 34, false, nameOf(p)), style: { display: 'inline-flex', alignItems: 'center', gap: 8, padding: '4px 14px 4px 4px', borderRadius: 999, background: p.id === youId ? 'var(--accent)' : 'var(--surface-raised)', color: p.id === youId ? 'var(--on-accent)' : 'var(--text)', border: '3px solid var(--sticker-edge)', boxShadow: '0 0 0 1.5px var(--sticker-ring)', transform: `rotate(${ROT[i]}deg)` } })),
+      readyCopy: S.role === 'host' ? 'Put your phone where the room can see it, or cast it. Start the reveal when everyone is watching.' : `Eyes on ${hostP.name}. The reveal starts any second.`,
+      startReveal: () => this.startReveal(),
+      rvCounter: awardMode ? `THE AWARDS  ${Math.max(0, rv.a) + 1} OF ${AW.length}` : `REVEAL ${rv.i + 1} OF ${order.length}`,
+      skipReveal: () => this.finishReveal(),
+      rvPlayerMode: !awardMode, rvAwardMode: awardMode, rvAwardShow: rv.phase === 'award',
+      rvAv: rp.id === youId ? S.avatar : rp.av, rvAx: AV(rp.id === youId ? S.avatar : rp.av, 64, false, nameOf(rp)), rvName: nameOf(rp), rvPlace: ord(order.length - rv.i),
+      rvVessel: this.vessel({ level: rv.count, num: rv.count, height: isDesktop ? 400 : 380, fs: 150, radius: 24 }),
+      rvShowLabel: rv.phase === 'label', rvLabel: LABEL(rp.score),
+      rvLabelStyle: { ...this.stk(LABEL(rp.score), -4, 26), position: 'absolute', left: -6, bottom: -18, animation: embed ? 'none' : 'spil-slap 480ms cubic-bezier(.25,1.6,.45,1) both' },
+      rvGuessLine: rv.phase === 'label' ? `The room guessed ${rp.guess}.` : '',
+      awName: aw.name, awIcon: aw.icon, awWho: nameOf(awP), awAv: avOf(awP), awAx: AV(avOf(awP), 56, false, nameOf(awP)), awWhy: aw.why,
+      awStyle: { alignSelf: 'flex-start', width: 210, height: 210, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 18, boxSizing: 'border-box', background: awT[0], color: awT[1], border: '8px solid var(--sticker-edge)', borderRadius: aw.shape, boxShadow: '0 0 0 2px var(--sticker-ring), 0 20px 30px -16px var(--shadow)', font: '800 26px/1.02 "Bricolage Grotesque", sans-serif', textAlign: 'center', transform: `rotate(${ROT[Math.max(0, rv.a)] * 1.3}deg)`, animation: embed ? 'none' : 'spil-slap 520ms cubic-bezier(.25,1.6,.45,1) both' },
+      resVessel: this.vessel({ level: meR.score, num: meR.score, height: 136, fs: 56, radius: 18 }),
+      resTabs: [['scores','Scores'],['awards','Awards'],['questions','Questions']].map(([k, label]) => ({ label, sel: S.tab === k ? 'true' : 'false', on: () => this.setState({ tab: k }), style: segTab(S.tab === k) })), resTabBar: { ...segBar(3), marginTop: 6 }, fmtTabBar: segBar(2),
+      tabScores: S.tab === 'scores', tabAwards: S.tab === 'awards', tabQuestions: S.tab === 'questions',
+      resultRows, awardRows, qStats,
+      spillStr: S.spill ? 'true' : 'false', toggleSpill: () => { this.setSpill(!S.spill); this.toast(S.spill ? 'Spill Mode off. Your answers are private.' : 'Spill Mode on. This room can see your answers.'); },
+      spillCopy: S.spill ? 'On. This room can see your yes and no answers.' : 'Off. Show your yes and no answers to this room only.',
+      spillTrack: spT, spillKnob: spK,
+      openShare: () => this.setState({ sheet: 'share' }), rematch: () => S.role === 'host' ? this.rematch() : this.toast(`Only ${hostP.name} can start the rematch. You will move to the lobby when it opens.`, 'info'),
+      sheetOpen, sheetForce: S.sheet === 'force', sheetShare: S.sheet === 'share', sheetLabel: S.sheet === 'packinfo' ? 'About this pack' : S.sheet === 'force' ? 'Move on without them' : S.sheet === 'report' ? 'Report this question' : S.sheet === 'leave' ? 'Leave room' : 'Share your card', sheetBox, closeSheet: () => S.sheet !== 'age' && this.setState({ sheet: '' }),
+      fmtStory: S.fmt === 'story', fmtGroup: S.fmt === 'group',
+      fmtTabs: [['story','Story 9:16'],['group','Group 1:1']].map(([k, label]) => ({ label, sel: S.fmt === k ? 'true' : 'false', on: () => this.setState({ fmt: k }), style: segTab(S.fmt === k) })),
+      youName: me ? me.name : S.nick, youAv: S.avatar, hideName: S.hideName, hideStr: S.hideName ? 'true' : 'false', toggleHide: () => this.setState({ hideName: !S.hideName }), hideTrack: hT, hideKnob: hK,
+      saveImg: () => this.saveImg(cardO), shareImg: () => this.shareImg(cardO),
+      hasToast: !!S.toast, toast: S.toast, toastIcon: S.toastKind === 'err' ? 'ph ph-warning-circle' : S.toastKind === 'info' ? 'ph ph-info' : 'ph ph-check-circle',
+      toastIconStyle: { fontSize: 22, flexShrink: 0, color: S.toastKind === 'err' ? 'var(--error)' : S.toastKind === 'info' ? 'var(--text-muted)' : 'var(--success)' },
+      codeKey: e => { if (e.key === 'Enter' && joinOk) this.submitCode(code); },
+      nickKey: e => { if (e.key === 'Enter') this.submitProfile(spicy); },
+      openLeave: () => this.setState({ sheet: 'leave' }), sheetLeave: S.sheet === 'leave', confirmLeave: () => this.leaveRoom(),
+      leaveCopy: S.role === 'host' ? (R.filter(p => !p.bot && p.id !== youId).length ? 'You are the host. The next player in the room takes over.' : 'You are the only real player, so the room closes.') : (room && room.status !== 'lobby' ? 'You cannot rejoin this game once you leave. Your answers stay private.' : 'You can join again with the code while the lobby is open.'),
+      toastStyle: { position: 'absolute', zIndex: 55, ...(isDesktop ? { right: 24, bottom: 24, width: 380 } : { left: 16, right: 16, bottom: 100 }), display: 'flex', alignItems: 'center', gap: 12, padding: '14px 18px', borderRadius: 16, background: 'var(--surface-raised)', border: '1px solid var(--line)', boxShadow: '0 18px 36px -18px var(--shadow)', font: '500 15px/1.35 Geist, sans-serif', animation: 'spil-rise 240ms cubic-bezier(.23,1,.32,1)' }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+@import "tailwindcss";
+@import "./styles/tokens.css";
+@import "./styles/spil-theme.css";
+
+html {
+  font-synthesis: none;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+}

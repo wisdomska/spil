@@ -1,0 +1,156 @@
+/* SPIL design tokens. Dark ("After Hours") is default; light is "Daylight".
+   Theme resolution: html[data-theme="dark"|"light"]; "system" removes the attribute and the media query decides.
+   Stored per device in localStorage key "spil-theme" = "dark" | "light" | "system". Set it before first paint (inline script in <head>). */
+
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #101114;
+  --surface: #17181d;
+  --surface-raised: #1f2027;
+  --line: #2c2e36; /* dividers only, decorative */
+  --line-strong: #6e707b; /* input and slider edges, 3.6:1 */
+  --text: #f3f1ec;
+  --text-muted: #a3a3ad;
+  --accent: #ff5b3a; /* "Spill" */
+  --accent-ink: #ff5b3a; /* accent used as text */
+  --on-accent: #101114;
+  --accent-soft: rgb(255 91 58 / 0.14);
+  --inverse: #f3f1ec;
+  --on-inverse: #101114;
+  --sticker-edge: #f3f1ec;
+  --sticker-ring: rgb(0 0 0 / 0.5);
+  --error: #f0938a;
+  --success: #8ccba2;
+  --scrim: rgb(8 9 11 / 0.72);
+  --shadow: rgb(0 0 0 / 0.5);
+  --skeleton: #23242b;
+  --grain-opacity: 0.07;
+  --grain-blend: screen;
+  --halftone: rgb(243 241 236 / 0.05);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f1f2f4;
+  --surface: rgb(255 255 255 / 0.92);
+  --surface-raised: #ffffff;
+  --line: #d9dbe1;
+  --line-strong: #868994;
+  --text: #15161a;
+  --text-muted: #5d5f69;
+  --accent: #d63d1d; /* brief said #E5401F; white on it is 4.13:1, fails AA at 17px */
+  --accent-ink: #b8321a; /* 5.3:1 on bg */
+  --on-accent: #ffffff; /* 4.62:1 on accent */
+  --accent-soft: rgb(214 61 29 / 0.1);
+  --inverse: #15161a;
+  --on-inverse: #f3f1ec;
+  --sticker-edge: #fbfaf7;
+  --sticker-ring: #c4c7cf;
+  --error: #b3362b;
+  --success: #2f7a4c;
+  --scrim: rgb(21 22 26 / 0.45);
+  --shadow: rgb(21 22 26 / 0.16);
+  --skeleton: #e3e5ea;
+  --grain-opacity: 0.06;
+  --grain-blend: multiply;
+  --halftone: rgb(21 22 26 / 0.06);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
+    --bg: #f1f2f4;
+    --surface: rgb(255 255 255 / 0.92);
+    --surface-raised: #ffffff;
+    --line: #d9dbe1;
+    --line-strong: #868994;
+    --text: #15161a;
+    --text-muted: #5d5f69;
+    --accent: #d63d1d;
+    --accent-ink: #b8321a;
+    --on-accent: #ffffff;
+    --accent-soft: rgb(214 61 29 / 0.1);
+    --inverse: #15161a;
+    --on-inverse: #f3f1ec;
+    --sticker-edge: #fbfaf7;
+    --sticker-ring: #c4c7cf;
+    --error: #b3362b;
+    --success: #2f7a4c;
+    --scrim: rgb(21 22 26 / 0.45);
+    --shadow: rgb(21 22 26 / 0.16);
+    --skeleton: #e3e5ea;
+    --grain-opacity: 0.06;
+    --grain-blend: multiply;
+    --halftone: rgb(21 22 26 / 0.06);
+  }
+}
+
+:root {
+  /* type */
+  --font-display: "Bricolage Grotesque", system-ui, sans-serif;
+  --font-sans: "Geist", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --text-display-xl: clamp(46px, 7.2cqi, 100px);
+  --text-display-l: 44px;
+  --text-display-m: 38px;
+  --text-question: 29px; /* 26 to 30, max 3 lines */
+  --text-title: 26px;
+  --text-body-l: 18px;
+  --text-body: 16px; /* never below 16 on mobile */
+  --text-label: 14px;
+  --text-caption: 13px; /* mono meta only */
+  --tracking-display: -0.03em;
+  --stretch-emphasis: 75%; /* Bricolage has no italic; emphasis = condensed width */
+
+  /* space, 4px grid */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
+  --s-16: 64px;
+  --s-20: 80px;
+
+  /* radius */
+  --radius-pill: 999px; /* every interactive control */
+  --radius-card: 20px; /* cards, sheets, modals, pack tiles */
+  --radius-input: 14px; /* fields, code boxes */
+
+  /* sizing */
+  --hit: 48px; /* minimum touch target */
+  --btn-h: 56px;
+  --answer-h: 64px;
+  --sticker-border: 4px; /* 3px at 40px avatars, 8 to 10px on share cards */
+
+  /* motion (CSS fallbacks; Motion springs in HANDOFF.md) */
+  --ease-spring: cubic-bezier(0.2, 1.4, 0.4, 1);
+  --ease-slap: cubic-bezier(0.25, 1.6, 0.45, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --dur-press: 120ms;
+  --dur-flick: 240ms;
+  --dur-slap: 480ms;
+  --dur-count: 1400ms;
+  --dur-beat: 450ms;
+  --dur-award-beat: 550ms;
+  --dur-fade: 150ms;
+}
+
+*:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

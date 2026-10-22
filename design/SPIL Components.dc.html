@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Geist+Mono:wght@400..700&family=Geist:wght@400..700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<style>
+body{margin:0;background:#101114;-webkit-font-smoothing:antialiased}
+*:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+@keyframes spil-pulse{50%{opacity:.55}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="{{ root }}">
+  <header style="display:flex;justify-content:space-between;align-items:baseline;gap:24px">
+    <h2 style="margin:0;font:800 48px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em">Components</h2>
+    <span style="font:500 14px/1 'Geist Mono',monospace;color:var(--text-muted)">{{ themeName }}</span>
+  </header>
+
+  <section style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:32px;border-top:1px solid var(--line);padding-top:28px">
+    <div><h3 style="margin:0;font:800 26px/1.05 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Button</h3><p style="margin:8px 0 0;font:400 14px/1.45 Geist,sans-serif;color:var(--text-muted)">Full pill. 56 tall, never under 48. One primary per screen. Loading swaps the label for a mini pour, never a spinner.</p></div>
+    <div style="display:grid;gap:18px">
+      <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)"><span>default</span><span>hover</span><span>pressed 0.97</span><span>focus</span><span>disabled</span><span>loading</span></div>
+      <sc-for list="{{ btnRows }}" as="row" hint-placeholder-count="4">
+        <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;align-items:center">
+          <sc-for list="{{ row.cells }}" as="c" hint-placeholder-count="6">
+            <div><button style="{{ c.style }}" aria-disabled="{{ c.dis }}"><sc-if value="{{ c.loading }}"><span style="{{ c.track }}"><span style="{{ c.fill }}"></span></span></sc-if><sc-if value="{{ c.hasIcon }}"><i class="{{ c.icon }}" style="font-size:20px"></i></sc-if><span>{{ c.label }}</span></button></div>
+          </sc-for>
+        </div>
+      </sc-for>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding-top:8px">
+        <button style="height:56px;padding:0 28px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 17px/1 Geist,sans-serif;cursor:pointer;flex:1 1 220px" style-hover="box-shadow:inset 0 0 0 99px rgba(255,255,255,.12)" style-active="transform:scale(.97)">Start a room</button>
+        <button style="height:56px;padding:0 28px;border:1.5px solid var(--text);border-radius:999px;background:transparent;color:var(--text);font:600 17px/1 Geist,sans-serif;cursor:pointer;flex:1 1 220px" style-hover="background:var(--surface-raised)" style-active="transform:scale(.97)">Join with code</button>
+        <button aria-label="Copy link" style="width:48px;height:48px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text);display:grid;place-items:center;cursor:pointer" style-hover="background:var(--surface-raised)"><i class="ph ph-copy" style="font-size:22px"></i></button>
+        <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">live, full width, icon 48</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:32px;border-top:1px solid var(--line);padding-top:28px">
+    <div><h3 style="margin:0;font:800 26px/1.05 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Yes / No</h3><p style="margin:8px 0 0;font:400 14px/1.45 Geist,sans-serif;color:var(--text-muted)">64 tall. Yes filled, No outlined, icon plus word so meaning never rides on colour. Keys Y, N and arrows.</p></div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 28px">
+      <sc-for list="{{ answerStates }}" as="a" hint-placeholder-count="4">
+        <div style="display:grid;gap:10px">
+          <div style="display:flex;gap:10px">
+            <button style="{{ a.no }}"><i class="ph ph-x" style="font-size:22px"></i>No</button>
+            <button style="{{ a.yes }}"><i class="ph ph-check" style="font-size:22px"></i>Yes</button>
+          </div>
+          <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">{{ a.label }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:32px;border-top:1px solid var(--line);padding-top:28px">
+    <div><h3 style="margin:0;font:800 26px/1.05 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Code input</h3><p style="margin:8px 0 0;font:400 14px/1.45 Geist,sans-serif;color:var(--text-muted)">One real input under four 14 px boxes. Paste fills all four. Uppercases, strips spaces.</p></div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px">
+      <sc-for list="{{ codeStates }}" as="cs" hint-placeholder-count="4">
+        <div style="display:grid;gap:10px">
+          <div style="display:grid;grid-template-columns:repeat(4,64px);gap:10px">
+            <sc-for list="{{ cs.boxes }}" as="b" hint-placeholder-count="4">
+              <div style="{{ b.style }}">{{ b.ch }}</div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ cs.err }}" hint-placeholder-val="{{ false }}"><span style="display:flex;gap:6px;align-items:center;font:500 14px/1.3 Geist,sans-serif;color:var(--error)"><i class="ph ph-warning-circle" style="font-size:18px"></i>{{ cs.err }}</span></sc-if>
+          <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">{{ cs.label }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:32px;border-top:1px solid var(--line);padding-top:28px">
+    <div><h3 style="margin:0;font:800 26px/1.05 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Text input</h3><p style="margin:8px 0 0;font:400 14px/1.45 Geist,sans-serif;color:var(--text-muted)">Label above, message below, 14 px radius, 56 tall. Errors get an icon and text.</p></div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px">
+      <sc-for list="{{ inputStates }}" as="f" hint-placeholder-count="5">
+        <div style="display:grid;gap:8px;align-content:start">
+          <label style="font:600 14px/1 Geist,sans-serif;color:var(--text)">Nickname</label>
+          <div style="{{ f.box }}"><span style="{{ f.txt }}">{{ f.value }}</span><sc-if value="{{ f.caret }}" hint-placeholder-val="{{ false }}"><span style="width:2px;height:22px;background:var(--accent);margin-left:1px"></span></sc-if></div>
+          <span style="{{ f.msgStyle }}"><sc-if value="{{ f.isErr }}" hint-placeholder-val="{{ false }}"><i class="ph ph-warning-circle" style="font-size:16px"></i></sc-if>{{ f.msg }}</span>
+          <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">{{ f.label }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:32px;border-top:1px solid var(--line);padding-top:28px">
+    <div><h3 style="margin:0;font:800 26px/1.05 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Avatar and player sticker</h3><p style="margin:8px 0 0;font:400 14px/1.45 Geist,sans-serif;color:var(--text-muted)">Avatars read at 32. Player stickers drop in with a bounce and sit at a random -4 to 4 degrees.</p></div>
+    <div style="display:grid;gap:28px">
+      <div style="display:flex;gap:24px;align-items:flex-end;flex-wrap:wrap">
+        <div style="display:grid;gap:8px;justify-items:center"><dc-import name="SPIL Avatar" n="3" size="32" hint-size="32px,32px"></dc-import><span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">32</span></div>
+        <div style="display:grid;gap:8px;justify-items:center"><dc-import name="SPIL Avatar" n="3" size="48" hint-size="48px,48px"></dc-import><span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">48</span></div>
+        <div style="display:grid;gap:8px;justify-items:center"><dc-import name="SPIL Avatar" n="3" size="72" hint-size="72px,72px"></dc-import><span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">72</span></div>
+        <div style="display:grid;gap:8px;justify-items:center"><dc-import name="SPIL Avatar" n="3" size="112" hint-size="112px,112px"></dc-import><span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">112</span></div>
+        <div style="display:grid;gap:8px;justify-items:center"><dc-import name="SPIL Avatar" n="16" size="72" selected="true" hint-size="72px,72px"></dc-import><span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">selected</span></div>
+      </div>
+      <div style="display:flex;gap:28px 22px;align-items:center;flex-wrap:wrap">
+        <div style="display:grid;gap:10px;justify-items:start">
+          <span style="display:inline-flex;align-items:center;gap:10px;padding:5px 18px 5px 5px;border-radius:999px;background:var(--surface-raised);color:var(--text);border:3px solid var(--sticker-edge);box-shadow:0 0 0 1.5px var(--sticker-ring),0 8px 16px -10px var(--shadow);transform:rotate(-3deg)"><dc-import name="SPIL Avatar" n="5" size="40" hint-size="40px,40px"></dc-import><span style="font:700 18px/1 'Bricolage Grotesque',sans-serif">Kofi</span></span>
+          <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">default</span>
+        </div>
+        <div style="display:grid;gap:10px;justify-items:start">
+          <span style="display:inline-flex;align-items:center;gap:10px;padding:5px 18px 5px 5px;border-radius:999px;background:var(--accent);color:var(--on-accent);border:3px solid var(--sticker-edge);box-shadow:0 0 0 1.5px var(--sticker-ring),0 8px 16px -10px var(--shadow);transform:rotate(2deg)"><dc-import name="SPIL Avatar" n="0" size="40" hint-size="40px,40px"></dc-import><span style="font:700 18px/1 'Bricolage Grotesque',sans-serif">Ama</span><i class="ph ph-crown-simple" aria-label="Host" style="font-size:18px"></i></span>
+          <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">you, host</span>
+        </div>
+        <div style="display:grid;gap:10px;justify-items:start">
+          <span style="display:inline-flex;align-items:center;gap:10px;padding:5px 6px 5px 5px;border-radius:999px;background:var(--surface-raised);color:var(--text);border:3px solid var(--sticker-edge);box-shadow:0 0 0 1.5px var(--sticker-ring),0 8px 16px -10px var(--shadow);transform:rotate(-1deg)"><dc-import name="SPIL Avatar" n="9" size="40" hint-size="40px,40px"></dc-import><span style="font:700 18px/1 'Bricolage Grotesque',sans-serif">Zainab</span><button aria-label="Remove Zainab" style="width:40px;height:40px;margin:-4px -2px -4px 0;border-radius:999px;border:0;background:var(--bg);color:var(--text);display:grid;place-items:center;cursor:pointer"><i class="ph ph-x" style="font-size:18px"></i></button></span>
+          <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">host can remove</span>
+        </div>
+        <div style="display:grid;gap:10px;justify-items:start">
+          <span style="display:inline-flex;align-items:center;gap:10px;padding:5px 16px 5px 5px;border-radius:999px;background:var(--surface-raised);color:var(--text);border:3px solid var(--sticker-edge);box-shadow:0 0 0 1.5px var(--sticker-ring);transform:rotate(3deg)"><dc-import name="SPIL Avatar" n="14" size="40" hint-size="40px,40px"></dc-import><span style="font:700 18px/1 'Bricolage Grotesque',sans-serif">Tunde</span><i class="ph ph-check" style="font-size:18px;color:var(--accent-ink)"></i><span style="font:500 13px/1 Geist,sans-serif;color:var(--text-muted)">Done</span></span>
+          <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">done</span>
+        </div>
+        <div style="display:grid;gap:10px;justify-items:start">
+          <span style="display:inline-flex;align-items:center;gap:10px;padding:5px 16px 5px 5px;border-radius:999px;background:var(--surface);color:var(--text-muted);border:3px dashed var(--line);transform:rotate(-2deg)"><dc-import name="SPIL Avatar" n="21" size="40" hint-size="40px,40px"></dc-import><span style="font:700 18px/1 'Bricolage Grotesque',sans-serif">Yaw</span><span style="font:500 13px/1 'Geist Mono',monospace">31/50</span></span>
+          <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">still answering</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:32px;border-top:1px solid var(--line);padding-top:28px">
+    <div><h3 style="margin:0;font:800 26px/1.05 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Label and award stickers</h3><p style="margin:8px 0 0;font:400 14px/1.45 Geist,sans-serif;color:var(--text-muted)">Accent, ink or inverted only. Variety comes from shape, width and rotation. Slap spring on entry.</p></div>
+    <div style="display:grid;gap:36px">
+      <div style="display:flex;gap:26px 22px;flex-wrap:wrap;align-items:center;padding:6px">
+        <span style="display:inline-flex;padding:10px 16px;background:var(--inverse);color:var(--on-inverse);border:4px solid var(--sticker-edge);border-radius:10px;box-shadow:0 0 0 1.5px var(--sticker-ring),0 8px 16px -10px var(--shadow);font:800 19px/1 'Bricolage Grotesque',sans-serif;transform:rotate(-3deg)">Fresh Out The Box</span>
+        <span style="display:inline-flex;padding:11px 20px;background:var(--surface-raised);color:var(--text);border:4px solid var(--sticker-edge);border-radius:999px;box-shadow:0 0 0 1.5px var(--sticker-ring),0 8px 16px -10px var(--shadow);font:800 19px/1 'Bricolage Grotesque',sans-serif;transform:rotate(2deg)">Mostly Innocent</span>
+        <span style="display:inline-flex;padding:10px 16px;background:var(--accent);color:var(--on-accent);border:4px solid var(--sticker-edge);border-radius:4px 18px 4px 18px;box-shadow:0 0 0 1.5px var(--sticker-ring),0 8px 16px -10px var(--shadow);font:800 19px/1 'Bricolage Grotesque',sans-serif;transform:rotate(-1.5deg)">Been Around</span>
+        <span style="display:inline-flex;padding:11px 20px;background:var(--accent);color:var(--on-accent);border:4px solid var(--sticker-edge);border-radius:999px;box-shadow:0 0 0 1.5px var(--sticker-ring),0 8px 16px -10px var(--shadow);font:800 21px/1 'Bricolage Grotesque',sans-serif;font-stretch:80%;transform:rotate(3deg)">Main Character</span>
+        <span style="display:inline-flex;padding:10px 16px;background:var(--inverse);color:var(--on-inverse);border:4px solid var(--sticker-edge);border-radius:10px;box-shadow:0 0 0 1.5px var(--sticker-ring),0 8px 16px -10px var(--shadow);font:800 21px/1 'Bricolage Grotesque',sans-serif;font-stretch:75%;text-transform:uppercase;letter-spacing:.01em;transform:rotate(-4deg)">Legendary Menace</span>
+      </div>
+      <div style="display:flex;gap:26px;flex-wrap:wrap;align-items:center;padding:6px">
+        <span style="width:116px;height:116px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:var(--on-accent);border:5px solid var(--sticker-edge);border-radius:50%;box-shadow:0 0 0 1.5px var(--sticker-ring),0 10px 18px -10px var(--shadow);font:800 16px/1 'Bricolage Grotesque',sans-serif;text-align:center;transform:rotate(-4deg)"><i class="ph ph-drop" style="font-size:30px"></i>Top Spiller</span>
+        <span style="width:116px;height:116px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--inverse);color:var(--on-inverse);border:5px solid var(--sticker-edge);border-radius:28px;box-shadow:0 0 0 1.5px var(--sticker-ring),0 10px 18px -10px var(--shadow);font:800 16px/1.05 'Bricolage Grotesque',sans-serif;text-align:center;transform:rotate(3deg)"><i class="ph ph-hands-praying" style="font-size:30px"></i>Saint of<br>the Room</span>
+        <span style="width:116px;height:116px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--surface-raised);color:var(--text);border:5px solid var(--sticker-edge);border-radius:50%;box-shadow:0 0 0 1.5px var(--sticker-ring),0 10px 18px -10px var(--shadow);font:800 16px/1 'Bricolage Grotesque',sans-serif;text-align:center;transform:rotate(-2deg)"><i class="ph ph-eye" style="font-size:30px"></i>Mind Reader</span>
+        <span style="width:116px;height:116px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--inverse);color:var(--on-inverse);border:5px solid var(--sticker-edge);border-radius:50%;box-shadow:0 0 0 1.5px var(--sticker-ring),0 10px 18px -10px var(--shadow);font:800 16px/1 'Bricolage Grotesque',sans-serif;text-align:center;transform:rotate(4deg)"><i class="ph ph-horse" style="font-size:30px"></i>Dark Horse</span>
+        <span style="width:116px;height:116px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:var(--on-accent);border:5px solid var(--sticker-edge);border-radius:28px;box-shadow:0 0 0 1.5px var(--sticker-ring),0 10px 18px -10px var(--shadow);font:800 16px/1 'Bricolage Grotesque',sans-serif;text-align:center;transform:rotate(-3deg)"><i class="ph ph-book-open" style="font-size:30px"></i>Open Book</span>
+        <span style="width:116px;height:116px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--surface-raised);color:var(--text);border:5px solid var(--sticker-edge);border-radius:50%;box-shadow:0 0 0 1.5px var(--sticker-ring),0 10px 18px -10px var(--shadow);font:800 16px/1 'Bricolage Grotesque',sans-serif;text-align:center;transform:rotate(2deg)"><i class="ph ph-question" style="font-size:30px"></i>Clueless</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:32px;border-top:1px solid var(--line);padding-top:28px">
+    <div><h3 style="margin:0;font:800 26px/1.05 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Pack tile</h3><p style="margin:8px 0 0;font:400 14px/1.45 Geist,sans-serif;color:var(--text-muted)">Tall, flat colour, thick off-white edge. Tiles never rotate; their glyph sticker does. Selected adds a ring and a check sticker.</p></div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+      <div style="display:grid;gap:10px">
+        <div style="position:relative;width:200px;height:260px;box-sizing:border-box;padding:18px;border-radius:20px;background:var(--surface-raised);border:4px solid var(--sticker-edge);box-shadow:0 0 0 1.5px var(--sticker-ring);display:flex;flex-direction:column;justify-content:space-between">
+          <span style="width:64px;height:64px;border-radius:50%;background:var(--accent);color:var(--on-accent);border:4px solid var(--sticker-edge);box-shadow:0 0 0 1.5px var(--sticker-ring);display:grid;place-items:center;transform:rotate(-6deg)"><i class="ph ph-cards" style="font-size:32px"></i></span>
+          <div style="display:grid;gap:6px"><span style="font:800 26px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Classic</span><span style="font:500 14px/1 'Geist Mono',monospace;color:var(--text-muted)">50 questions</span></div>
+        </div>
+        <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">default</span>
+      </div>
+      <div style="display:grid;gap:10px">
+        <div style="position:relative;width:200px;height:260px;box-sizing:border-box;padding:18px;border-radius:20px;background:var(--accent);color:var(--on-accent);border:4px solid var(--sticker-edge);box-shadow:0 0 0 1.5px var(--sticker-ring),0 0 0 4px var(--bg),0 0 0 7px var(--accent);display:flex;flex-direction:column;justify-content:space-between">
+          <span style="width:64px;height:64px;border-radius:50%;background:var(--inverse);color:var(--on-inverse);border:4px solid var(--sticker-edge);display:grid;place-items:center;transform:rotate(5deg)"><i class="ph ph-sun-horizon" style="font-size:32px"></i></span>
+          <span style="position:absolute;right:-10px;top:-12px;width:40px;height:40px;border-radius:50%;background:var(--inverse);color:var(--on-inverse);border:3px solid var(--sticker-edge);display:grid;place-items:center;transform:rotate(8deg)"><i class="ph ph-check" style="font-size:20px"></i></span>
+          <div style="display:grid;gap:8px"><span style="font:800 26px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Campus Life</span><span style="font:500 14px/1 'Geist Mono',monospace">45 questions</span></div>
+        </div>
+        <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">selected</span>
+      </div>
+      <div style="display:grid;gap:10px">
+        <div style="position:relative;width:200px;height:260px;box-sizing:border-box;padding:18px;border-radius:20px;background:var(--inverse);color:var(--on-inverse);border:4px solid var(--sticker-edge);box-shadow:0 0 0 1.5px var(--sticker-ring);display:flex;flex-direction:column;justify-content:space-between">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start"><span style="width:64px;height:64px;border-radius:50%;background:var(--accent);color:var(--on-accent);border:4px solid var(--sticker-edge);display:grid;place-items:center;transform:rotate(-4deg)"><i class="ph ph-moon-stars" style="font-size:32px"></i></span><span style="padding:7px 10px;border-radius:999px;border:2px solid currentColor;font:700 14px/1 'Geist Mono',monospace">18+</span></div>
+          <div style="display:grid;gap:6px"><span style="font:800 26px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">After Dark</span><span style="font:500 14px/1 'Geist Mono',monospace;opacity:.8">50 questions</span></div>
+        </div>
+        <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">18+ badge</span>
+      </div>
+      <div style="display:grid;gap:10px">
+        <div style="width:200px;height:260px;box-sizing:border-box;padding:18px;border-radius:20px;background:var(--surface);border:1px dashed var(--line);display:flex;flex-direction:column;justify-content:space-between;color:var(--text-muted)">
+          <span style="width:64px;height:64px;border-radius:50%;background:var(--surface-raised);display:grid;place-items:center"><i class="ph ph-lock-simple" style="font-size:28px"></i></span>
+          <div style="display:grid;gap:6px"><span style="font:800 26px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">After Dark</span><span style="font:500 14px/1.3 Geist,sans-serif">Confirm you're 18+ to pick this</span></div>
+        </div>
+        <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">disabled, age not confirmed</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:32px;border-top:1px solid var(--line);padding-top:28px">
+    <div><h3 style="margin:0;font:800 26px/1.05 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Question card</h3><p style="margin:8px 0 0;font:400 14px/1.45 Geist,sans-serif;color:var(--text-muted)">Drag tilts up to 12 degrees; past 96 px it flicks off. Stamp opacity follows the drag.</p></div>
+    <div style="display:flex;gap:40px;flex-wrap:wrap;padding:12px 0 8px">
+      <div style="display:grid;gap:14px">
+        <div style="width:260px;height:300px;box-sizing:border-box;padding:22px;border-radius:20px;background:var(--surface-raised);border:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between"><div style="display:grid;gap:10px"><span style="font:600 15px/1 Geist,sans-serif;color:var(--text-muted)">Have you ever</span><span style="font:800 27px/1.04 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">cried at a Nollywood movie?</span></div><span style="font:500 13px/1 'Geist Mono',monospace;color:var(--text-muted)">Q12</span></div>
+        <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">resting</span>
+      </div>
+      <div style="display:grid;gap:14px">
+        <div style="position:relative;width:260px;height:300px;box-sizing:border-box;padding:22px;border-radius:20px;background:var(--surface-raised);border:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between;transform:translateX(26px) rotate(7deg)"><span style="position:absolute;left:16px;top:16px;padding:8px 14px;border-radius:999px;background:var(--accent);color:var(--on-accent);border:4px solid var(--sticker-edge);font:800 22px/1 'Bricolage Grotesque',sans-serif;transform:rotate(-10deg)">YES</span><div style="display:grid;gap:10px;margin-top:52px"><span style="font:600 15px/1 Geist,sans-serif;color:var(--text-muted)">Have you ever</span><span style="font:800 27px/1.04 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">cried at a Nollywood movie?</span></div><span style="font:500 13px/1 'Geist Mono',monospace;color:var(--text-muted)">Q12</span></div>
+        <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">dragging right, Yes</span>
+      </div>
+      <div style="display:grid;gap:14px">
+        <div style="position:relative;width:260px;height:300px;box-sizing:border-box;padding:22px;border-radius:20px;background:var(--surface-raised);border:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between;transform:translateX(-20px) rotate(-6deg)"><span style="position:absolute;right:16px;top:16px;padding:8px 14px;border-radius:999px;background:var(--inverse);color:var(--on-inverse);border:4px solid var(--sticker-edge);font:800 22px/1 'Bricolage Grotesque',sans-serif;transform:rotate(9deg)">NO</span><div style="display:grid;gap:10px;margin-top:52px"><span style="font:600 15px/1 Geist,sans-serif;color:var(--text-muted)">Have you ever</span><span style="font:800 27px/1.04 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">cried at a Nollywood movie?</span></div><span style="font:500 13px/1 'Geist Mono',monospace;color:var(--text-muted)">Q12</span></div>
+        <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">dragging left, No</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:32px;border-top:1px solid var(--line);padding-top:28px">
+    <div><h3 style="margin:0;font:800 26px/1.05 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Pour progress and score counter</h3><p style="margin:8px 0 0;font:400 14px/1.45 Geist,sans-serif;color:var(--text-muted)">The pour leads with a hanging drop. The counter clips the number so it flips colour where the liquid sits. One liquid per screen.</p></div>
+    <div style="display:grid;gap:28px">
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px">
+        <div style="display:grid;gap:12px"><div style="display:flex;align-items:center;gap:12px"><div style="position:relative;flex:1;height:12px;border-radius:999px;background:var(--surface-raised)"><div style="position:relative;width:24%;height:12px;border-radius:999px;background:var(--accent)"><span style="position:absolute;right:1px;top:7px;width:9px;height:12px;border-radius:50% 50% 50% 50% / 40% 40% 60% 60%;background:var(--accent)"></span></div></div><span style="font:500 14px/1 'Geist Mono',monospace">12/50</span></div><span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">answering</span></div>
+        <div style="display:grid;gap:12px"><div style="display:flex;align-items:center;gap:12px"><div style="position:relative;flex:1;height:12px;border-radius:999px;background:var(--surface-raised)"><div style="position:relative;width:78%;height:12px;border-radius:999px;background:var(--accent)"><span style="position:absolute;right:1px;top:7px;width:9px;height:12px;border-radius:50% 50% 50% 50% / 40% 40% 60% 60%;background:var(--accent)"></span></div></div><span style="font:500 14px/1 'Geist Mono',monospace">39/50</span></div><span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">late</span></div>
+        <div style="display:grid;gap:12px"><div style="display:flex;align-items:center;gap:12px"><div style="flex:1;height:12px;border-radius:999px;background:var(--accent)"></div><span style="font:500 14px/1 'Geist Mono',monospace">50/50</span></div><span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">full, drop settles</span></div>
+      </div>
+      <div style="display:flex;gap:32px;flex-wrap:wrap;align-items:flex-end">
+        <div style="display:grid;gap:12px">
+          <div style="position:relative;width:200px;height:240px;border-radius:20px;background:var(--surface-raised);overflow:hidden"><div style="position:absolute;inset:0;display:grid;place-items:center;font:600 92px/1 'Geist Mono',monospace;letter-spacing:-.06em">47</div><div style="position:absolute;left:0;right:0;bottom:0;height:47%;background:var(--accent);overflow:hidden"><div style="position:absolute;left:0;right:0;bottom:0;height:240px;display:grid;place-items:center;font:600 92px/1 'Geist Mono',monospace;letter-spacing:-.06em;color:var(--on-accent)">47</div></div><div style="position:absolute;left:0;right:0;bottom:47%;height:12px;background:radial-gradient(circle at 50% 100%, var(--accent) 62%, transparent 64%) 0 0/30px 12px repeat-x"></div></div>
+          <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">counting, liquid rising</span>
+        </div>
+        <div style="display:grid;gap:12px">
+          <div style="position:relative;width:200px;height:240px;border-radius:20px;background:var(--surface-raised);overflow:visible"><div style="position:absolute;inset:0;border-radius:20px;overflow:hidden"><div style="position:absolute;inset:0;display:grid;place-items:center;font:600 92px/1 'Geist Mono',monospace;letter-spacing:-.06em">72</div><div style="position:absolute;left:0;right:0;bottom:0;height:72%;background:var(--accent);overflow:hidden"><div style="position:absolute;left:0;right:0;bottom:0;height:240px;display:grid;place-items:center;font:600 92px/1 'Geist Mono',monospace;letter-spacing:-.06em;color:var(--on-accent)">72</div></div><div style="position:absolute;left:0;right:0;bottom:72%;height:12px;background:radial-gradient(circle at 50% 100%, var(--accent) 62%, transparent 64%) 0 0/30px 12px repeat-x"></div></div><span style="position:absolute;left:-12px;bottom:-14px;display:inline-flex;padding:10px 16px;background:var(--inverse);color:var(--on-inverse);border:4px solid var(--sticker-edge);border-radius:999px;box-shadow:0 0 0 1.5px var(--sticker-ring);font:800 18px/1 'Bricolage Grotesque',sans-serif;font-stretch:80%;transform:rotate(-4deg);white-space:nowrap">Main Character</span></div>
+          <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted);margin-top:8px">settled, label slapped</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:32px;border-top:1px solid var(--line);padding-top:28px">
+    <div><h3 style="margin:0;font:800 26px/1.05 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Slider with steppers</h3><p style="margin:8px 0 0;font:400 14px/1.45 Geist,sans-serif;color:var(--text-muted)">role slider, arrows step 1, Page keys step 10. Steppers are 48 pills. Value in Geist Mono.</p></div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px">
+      <sc-for list="{{ sliderStates }}" as="sl" hint-placeholder-count="3">
+        <div style="display:grid;gap:12px">
+          <span style="{{ sl.valStyle }}">{{ sl.v }}</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button aria-label="Lower" style="{{ sl.step }}"><i class="ph ph-minus" style="font-size:20px"></i></button>
+            <div style="position:relative;flex:1;height:48px;display:flex;align-items:center">
+              <div style="position:absolute;left:0;right:0;height:14px;border-radius:999px;background:var(--surface-raised);border:1px solid var(--line-strong)"></div>
+              <div style="{{ sl.fill }}"></div>
+              <div style="{{ sl.thumb }}"></div>
+            </div>
+            <button aria-label="Raise" style="{{ sl.step }}"><i class="ph ph-plus" style="font-size:20px"></i></button>
+          </div>
+          <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">{{ sl.label }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:32px;border-top:1px solid var(--line);padding-top:28px">
+    <div><h3 style="margin:0;font:800 26px/1.05 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Toast, sheet, modal</h3><p style="margin:8px 0 0;font:400 14px/1.45 Geist,sans-serif;color:var(--text-muted)">Toasts sit above the thumb zone, 4 s, polite live region. Sheets for choices on mobile, modals on desktop. Scrim, no blur.</p></div>
+    <div style="display:grid;gap:28px">
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+        <div role="status" style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:16px;background:var(--surface-raised);border:1px solid var(--line);box-shadow:0 14px 30px -18px var(--shadow);font:500 15px/1.3 Geist,sans-serif"><i class="ph ph-check-circle" style="font-size:22px;color:var(--success)"></i>Link copied. Drop it in the group chat.</div>
+        <div role="alert" style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:16px;background:var(--surface-raised);border:1px solid var(--error);font:500 15px/1.3 Geist,sans-serif"><i class="ph ph-warning-circle" style="font-size:22px;color:var(--error)"></i>Couldn't save that answer. Trying again.</div>
+        <div role="status" style="display:flex;align-items:center;gap:12px;padding:8px 8px 8px 18px;border-radius:16px;background:var(--inverse);color:var(--on-inverse);font:500 15px/1.3 Geist,sans-serif"><i class="ph ph-user-minus" style="font-size:22px"></i>Removed Yaw.<button style="height:40px;padding:0 16px;border-radius:999px;border:0;background:transparent;color:inherit;font:600 15px/1 Geist,sans-serif;text-decoration:underline;cursor:pointer">Undo</button></div>
+      </div>
+      <div style="display:flex;gap:28px;flex-wrap:wrap;align-items:flex-end">
+        <div style="position:relative;width:360px;height:380px;border-radius:20px;overflow:hidden;background:var(--surface);border:1px solid var(--line)">
+          <div style="position:absolute;inset:0;background:var(--scrim)"></div>
+          <div role="dialog" aria-label="Force next" style="position:absolute;left:0;right:0;bottom:0;padding:12px 20px 20px;border-radius:20px 20px 0 0;background:var(--surface-raised);display:grid;gap:14px">
+            <span style="justify-self:center;width:40px;height:5px;border-radius:999px;background:var(--line)"></span>
+            <span style="font:800 24px/1.05 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Move on without them?</span>
+            <span style="font:400 15px/1.45 Geist,sans-serif;color:var(--text-muted)">Kofi and Yaw haven't finished. Their answers so far won't count. They can still guess.</span>
+            <button style="height:56px;border-radius:999px;border:0;background:var(--error);color:var(--bg);font:600 17px/1 Geist,sans-serif">Force next</button>
+            <button style="height:56px;border-radius:999px;border:1.5px solid var(--text);background:transparent;color:var(--text);font:600 17px/1 Geist,sans-serif">Keep waiting</button>
+          </div>
+        </div>
+        <div role="dialog" aria-label="Leave room" style="width:380px;padding:28px;border-radius:20px;background:var(--surface-raised);border:1px solid var(--line);box-shadow:0 30px 60px -30px var(--shadow);display:grid;gap:16px">
+          <span style="font:800 26px/1.05 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Leave the room?</span>
+          <span style="font:400 15px/1.45 Geist,sans-serif;color:var(--text-muted)">You're the host. Leaving hands the room to Kofi.</span>
+          <div style="display:flex;gap:10px;justify-content:flex-end"><button style="height:48px;padding:0 20px;border-radius:999px;border:0;background:transparent;color:var(--text);font:600 16px/1 Geist,sans-serif">Stay</button><button style="height:48px;padding:0 20px;border-radius:999px;border:1.5px solid var(--error);background:transparent;color:var(--error);font:600 16px/1 Geist,sans-serif">Leave room</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:32px;border-top:1px solid var(--line);padding-top:28px">
+    <div><h3 style="margin:0;font:800 26px/1.05 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Theme toggle, tabs, skeletons</h3><p style="margin:8px 0 0;font:400 14px/1.45 Geist,sans-serif;color:var(--text-muted)">Theme is stored per device. Skeletons copy the final layout and breathe slowly. No spinners anywhere.</p></div>
+    <div style="display:grid;gap:28px">
+      <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center">
+        <div role="radiogroup" aria-label="Theme" style="display:flex;padding:4px;gap:4px;border-radius:999px;border:1px solid var(--line);background:var(--surface)">
+          <button role="radio" aria-checked="true" style="height:48px;padding:0 18px;border-radius:999px;border:0;background:var(--text);color:var(--bg);font:600 15px/1 Geist,sans-serif;display:flex;align-items:center;gap:8px"><i class="ph ph-moon" style="font-size:18px"></i>Dark</button>
+          <button role="radio" aria-checked="false" style="height:48px;padding:0 18px;border-radius:999px;border:0;background:transparent;color:var(--text-muted);font:600 15px/1 Geist,sans-serif;display:flex;align-items:center;gap:8px"><i class="ph ph-sun" style="font-size:18px"></i>Light</button>
+          <button role="radio" aria-checked="false" style="height:48px;padding:0 18px;border-radius:999px;border:0;background:transparent;color:var(--text-muted);font:600 15px/1 Geist,sans-serif;display:flex;align-items:center;gap:8px;box-shadow:0 0 0 3px var(--bg),0 0 0 5.5px var(--accent)"><i class="ph ph-device-mobile" style="font-size:18px"></i>System</button>
+        </div>
+        <div role="tablist" style="display:flex;gap:6px">
+          <button role="tab" aria-selected="true" style="height:48px;padding:0 20px;border-radius:999px;border:1px solid var(--line);background:var(--surface-raised);color:var(--text);font:600 15px/1 Geist,sans-serif">Scores</button>
+          <button role="tab" aria-selected="false" style="height:48px;padding:0 20px;border-radius:999px;border:1px solid transparent;background:transparent;color:var(--text-muted);font:600 15px/1 Geist,sans-serif">Awards</button>
+          <button role="tab" aria-selected="false" style="height:48px;padding:0 20px;border-radius:999px;border:1px solid transparent;background:transparent;color:var(--text-muted);font:600 15px/1 Geist,sans-serif">Questions</button>
+        </div>
+        <span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">System has focus ring</span>
+      </div>
+      <div aria-hidden="true" style="display:flex;gap:28px;flex-wrap:wrap;align-items:center;animation:spil-pulse 1.8s ease-in-out infinite">
+        <div style="display:grid;gap:10px"><div style="width:120px;height:14px;border-radius:999px;background:var(--skeleton)"></div><div style="width:220px;height:56px;border-radius:14px;background:var(--skeleton)"></div></div>
+        <div style="display:flex;gap:12px"><div style="width:130px;height:50px;border-radius:999px;background:var(--skeleton);transform:rotate(-3deg)"></div><div style="width:110px;height:50px;border-radius:999px;background:var(--skeleton);transform:rotate(2deg)"></div></div>
+        <div style="display:flex;align-items:center;gap:12px;width:280px"><div style="width:44px;height:44px;border-radius:50%;background:var(--skeleton)"></div><div style="flex:1;display:grid;gap:8px"><div style="width:70%;height:14px;border-radius:999px;background:var(--skeleton)"></div><div style="width:40%;height:10px;border-radius:999px;background:var(--skeleton)"></div></div><div style="width:44px;height:26px;border-radius:8px;background:var(--skeleton)"></div></div>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1200,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;'dark'|'light'&quot;}}">
+const SPIL_THEMES = {
+  dark: {'--bg':'#101114','--surface':'#17181D','--surface-raised':'#1F2027','--line':'#2C2E36','--line-strong':'#6E707B','--text':'#F3F1EC','--text-muted':'#A3A3AD','--accent':'#FF5B3A','--accent-ink':'#FF5B3A','--on-accent':'#101114','--accent-soft':'rgba(255,91,58,.14)','--inverse':'#F3F1EC','--on-inverse':'#101114','--sticker-edge':'#F3F1EC','--sticker-ring':'rgba(0,0,0,.5)','--error':'#F0938A','--success':'#8CCBA2','--scrim':'rgba(8,9,11,.72)','--shadow':'rgba(0,0,0,.5)','--halftone':'rgba(243,241,236,.05)','--skeleton':'#23242B'},
+  light: {'--bg':'#F1F2F4','--surface':'rgba(255,255,255,.92)','--surface-raised':'#FFFFFF','--line':'#D9DBE1','--line-strong':'#868994','--text':'#15161A','--text-muted':'#5D5F69','--accent':'#D63D1D','--accent-ink':'#B8321A','--on-accent':'#FFFFFF','--accent-soft':'rgba(214,61,29,.1)','--inverse':'#15161A','--on-inverse':'#F3F1EC','--sticker-edge':'#FBFAF7','--sticker-ring':'#C4C7CF','--error':'#B3362B','--success':'#2F7A4C','--scrim':'rgba(21,22,26,.45)','--shadow':'rgba(21,22,26,.16)','--halftone':'rgba(21,22,26,.06)','--skeleton':'#E3E5EA'}
+};
+class Component extends DCLogic {
+  renderVals() {
+    const t = this.props.theme === 'light' ? 'light' : 'dark';
+    const ring = '0 0 0 3px var(--bg), 0 0 0 6px var(--accent)';
+    const base = {height:56,padding:'0 22px',borderRadius:999,font:'600 17px/1 Geist, sans-serif',display:'inline-flex',alignItems:'center',justifyContent:'center',gap:10,border:'1.5px solid transparent',cursor:'pointer',whiteSpace:'nowrap'};
+    const V = {
+      primary:{label:'Rematch',icon:'ph ph-arrow-clockwise',s:{background:'var(--accent)',color:'var(--on-accent)'}},
+      secondary:{label:'Nudge',icon:'ph ph-bell-ringing',s:{background:'transparent',color:'var(--text)',borderColor:'var(--text)'}},
+      ghost:{label:'Skip',icon:'ph ph-arrow-right',s:{background:'transparent',color:'var(--text)'}},
+      destructive:{label:'Remove',icon:'ph ph-user-minus',s:{background:'transparent',color:'var(--error)',borderColor:'var(--error)'}}
+    };
+    const btnRows = Object.entries(V).map(([k,v]) => ({ name:k, cells: ['default','hover','pressed','focus','disabled','loading'].map(st => {
+      let s = {...base, ...v.s};
+      if (st==='hover') s = k==='primary' ? {...s, boxShadow:'inset 0 0 0 99px rgba(255,255,255,.14)'} : {...s, background:'var(--surface-raised)'};
+      if (st==='pressed') s = {...s, transform:'scale(.97)', ...(k==='primary' ? {boxShadow:'inset 0 0 0 99px rgba(0,0,0,.16)'} : {background:'var(--line)'})};
+      if (st==='focus') s = {...s, boxShadow:ring};
+      if (st==='disabled') s = {...s, background:k==='primary'?'var(--surface-raised)':'transparent', color:'var(--text-muted)', borderColor:(k==='secondary'||k==='destructive')?'var(--line)':'transparent', cursor:'not-allowed'};
+      const loading = st==='loading';
+      return { style:s, dis: st==='disabled'?'true':'false', loading, hasIcon:!loading, icon:v.icon, label: loading?'Saving':v.label,
+        track:{width:30,height:8,borderRadius:999,border:'1.5px solid currentColor',display:'inline-flex',overflow:'hidden',boxSizing:'border-box'},
+        fill:{width:'60%',height:'100%',background:'currentColor',borderRadius:999} };
+    })}));
+    const yes = {flex:1,height:64,borderRadius:999,border:'1.5px solid var(--accent)',background:'var(--accent)',color:'var(--on-accent)',font:'700 18px/1 Geist, sans-serif',display:'flex',alignItems:'center',justifyContent:'center',gap:8,cursor:'pointer'};
+    const no = {...yes, background:'transparent', color:'var(--text)', borderColor:'var(--text)'};
+    const off = {background:'var(--surface-raised)',color:'var(--text-muted)',borderColor:'var(--line)'};
+    const answerStates = [
+      {label:'default', yes, no},
+      {label:'Yes pressed 0.97, haptic', yes:{...yes, transform:'scale(.97)', boxShadow:'inset 0 0 0 99px rgba(0,0,0,.16)'}, no},
+      {label:'No keyboard focus', yes, no:{...no, boxShadow:ring}},
+      {label:'disabled while saving', yes:{...yes, ...off}, no:{...no, ...off, background:'transparent'}}
+    ];
+    const box = {height:76,borderRadius:14,border:'1.5px solid var(--line-strong)',background:'var(--surface)',display:'grid',placeItems:'center',font:'600 36px/1 "Geist Mono", monospace',color:'var(--text)'};
+    const mk = (chars, opt={}) => chars.split('').map((ch,i)=>({ch: ch==='_'?'':ch, style:{...box, ...(opt.err?{borderColor:'var(--error)'}:{}), ...(opt.dis?{background:'var(--surface-raised)',color:'var(--text-muted)',borderStyle:'dashed'}:{}), ...(opt.focus===i?{borderColor:'var(--accent)',boxShadow:'0 0 0 3px var(--accent-soft)'}:{})}}));
+    const codeStates = [
+      {label:'empty, focused', boxes: mk('____',{focus:0})},
+      {label:'typing', boxes: mk('K7__',{focus:2})},
+      {label:'error', boxes: mk('Z9Z9',{err:true}), err:"No room with that code."},
+      {label:'disabled, checking', boxes: mk('K7QX',{dis:true})}
+    ];
+    const ib = {height:56,borderRadius:14,border:'1.5px solid var(--line-strong)',background:'var(--surface)',display:'flex',alignItems:'center',padding:'0 16px',boxSizing:'border-box'};
+    const txt = {font:'500 17px/1 Geist, sans-serif',color:'var(--text)'};
+    const ms = {display:'flex',gap:6,alignItems:'center',font:'400 14px/1.35 Geist, sans-serif',color:'var(--text-muted)'};
+    const inputStates = [
+      {label:'default', box:ib, txt:{...txt,color:'var(--text-muted)'}, value:'Your name in this room', msg:'2 to 16 characters', msgStyle:ms},
+      {label:'focus', box:{...ib,borderColor:'var(--accent)',boxShadow:'0 0 0 3px var(--accent-soft)'}, txt, value:'Ama', caret:true, msg:'2 to 16 characters', msgStyle:ms},
+      {label:'error', box:{...ib,borderColor:'var(--error)'}, txt, value:'A', isErr:true, msg:'Pick a nickname with 2 to 16 characters.', msgStyle:{...ms,color:'var(--error)'}},
+      {label:'filled', box:ib, txt, value:'Adaeze', msg:'Looks good', msgStyle:ms},
+      {label:'disabled', box:{...ib,background:'var(--surface-raised)',borderStyle:'dashed'}, txt:{...txt,color:'var(--text-muted)'}, value:'Chidi', msg:'Locked once the game starts', msgStyle:ms}
+    ];
+    const step = {width:48,height:48,flexShrink:0,borderRadius:999,border:'1px solid var(--line)',background:'var(--surface)',color:'var(--text)',display:'grid',placeItems:'center',cursor:'pointer'};
+    const sl = (v,label,o={}) => ({v,label,
+      valStyle:{font:'600 44px/1 "Geist Mono", monospace',letterSpacing:'-.04em',color:o.dis?'var(--text-muted)':'var(--text)'},
+      step:o.dis?{...step,color:'var(--text-muted)',cursor:'not-allowed'}:step,
+      fill:{position:'absolute',left:0,width:`${v}%`,height:14,borderRadius:999,background:o.dis?'var(--line)':'var(--accent)'},
+      thumb:{position:'absolute',left:`${v}%`,width:32,height:32,marginLeft:-16,borderRadius:999,background:o.dis?'var(--line)':'var(--text)',boxShadow:o.focus?'0 0 0 4px var(--bg), 0 0 0 7px var(--accent)':'0 0 0 4px var(--bg)'}});
+    const sliderStates = [sl(64,'default'), sl(30,'focus, keyboard',{focus:true}), sl(50,'disabled, locked',{dis:true})];
+    return {
+      root: {...SPIL_THEMES[t], width:1200, boxSizing:'border-box', padding:56, background:'var(--bg)', color:'var(--text)', fontFamily:'Geist, sans-serif', display:'grid', gap:44},
+      themeName: t==='light' ? 'Daylight theme' : 'After Hours theme (default)',
+      btnRows, answerStates, codeStates, inputStates, sliderStates
+    };
+  }
+}
+</script>
+</body>
+</html>

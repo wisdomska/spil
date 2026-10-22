@@ -1,0 +1,1 @@
+pnpm exec prettier --check --ignore-unknown --log-level warn $(git diff --cached --name-only --diff-filter=ACM | grep -vE "^(design|docs/SRS\.md|\.claude)/" ) || exit 1

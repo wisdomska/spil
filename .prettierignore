@@ -1,0 +1,13 @@
+design/
+docs/SRS.md
+docs/TECH_SPEC.md
+.claude/
+skills-lock.json
+pnpm-lock.yaml
+.next/
+node_modules/
+coverage/
+supabase/.temp/
+tests/visual/
+playwright-report/
+test-results/

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400..700&family=Geist:wght@400..700&display=swap">
+<script src="./spil-store.js"></script>
+<style>body{margin:0;background:#101114;color:#F3F1EC;-webkit-font-smoothing:antialiased} a{color:#FF5B3A} a:hover{color:#F3F1EC} button{cursor:pointer}</style>
+</helmet>
+<div style="max-width:980px;margin:0 auto;padding:40px 24px;display:grid;gap:20px;font-family:Geist,sans-serif">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap">
+    <div style="display:grid;gap:8px"><span style="font:600 13px/1 'Geist Mono',monospace;color:#A3A3AD">SPIL QA</span><h1 style="margin:0;font:700 36px/1 Geist,sans-serif;letter-spacing:-.02em">End-to-end test run</h1><span style="font:400 15px/1.5 Geist,sans-serif;color:#A3A3AD">Runs every role through the shared data layer, then restores your data exactly as it was.</span></div>
+    <button onClick="{{ run }}" style="height:44px;padding:0 18px;border:0;border-radius:999px;background:#FF5B3A;color:#101114;font:600 15px/1 Geist,sans-serif" style-hover="filter:brightness(1.08)">Run again</button>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;font:600 14px/1 'Geist Mono',monospace"><span style="padding:10px 14px;border-radius:999px;background:#1F2027">{{ total }} checks</span><span style="padding:10px 14px;border-radius:999px;background:#17331F;color:#8CCBA2">{{ passed }} passed</span><span style="{{ failPill }}">{{ failed }} failed</span></div>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="6">
+    <div style="border:1px solid #2C2E36;border-radius:16px;overflow:hidden">
+      <div style="padding:12px 16px;background:#1F2027;font:700 15px/1 Geist,sans-serif;display:flex;justify-content:space-between"><span>{{ g.name }}</span><span style="font:500 12px/1 'Geist Mono',monospace;color:#A3A3AD">{{ g.role }}</span></div>
+      <sc-for list="{{ g.items }}" as="t" hint-placeholder-count="4"><div style="display:flex;gap:12px;align-items:flex-start;padding:10px 16px;border-top:1px solid #2C2E36;font:400 14px/1.45 Geist,sans-serif"><span style="{{ t.badge }}">{{ t.mark }}</span><span style="flex:1">{{ t.name }}</span><span style="font:500 12px/1.45 'Geist Mono',monospace;color:#A3A3AD;text-align:right;max-width:40%">{{ t.note }}</span></div></sc-for>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { groups: [] };
+  componentDidMount() { this.run(); }
+  run() {
+    const S = window.SpilStore; if (!S) return;
+    const KEY = 'spil-db-v1', backup = localStorage.getItem(KEY), groups = [];
+    let G;
+    const group = (name, role) => { G = { name, role, items: [] }; groups.push(G); };
+    const check = (name, fn) => { try { const r = fn(); G.items.push({ name, ok: r !== false, note: typeof r === 'string' ? r : '' }); } catch (e) { G.items.push({ name, ok: false, note: e.message }); } };
+    const eq = (a, b, msg) => { if (a !== b) throw new Error(`${msg || ''} expected ${b}, got ${a}`); return `${a}`; };
+    const room = c => S.get().rooms[c];
+    const mk = (id, name, extra = {}) => ({ id, name, av: 1, bot: false, joined: Date.now(), answers: {}, guesses: {}, spill: false, adultOk: false, ...extra });
+    try {
+      S.reset();
+      let D = S.get(), code;
+      group('Content seed', 'system');
+      check('7 packs seeded, 4 of them 18+', () => { eq(D.packs.length, 7); eq(D.packs.filter(p => p.adult).length, 4); return '7 / 4'; });
+      check('Every pack has 12 live questions', () => D.packs.every(p => S.countFor(D, p.id) === 12));
+      check('Live packs list only shows live packs with questions', () => eq(S.livePacks(D).length, 7));
+
+      group('Host creates a room', 'host');
+      code = S.update(db => { const c = S.newCode(db); db.rooms[c] = { code: c, pack: 'classic', status: 'lobby', host: 'h1', created: Date.now(), updated: Date.now(), round: 1, final: null, qids: S.pickQs(db, 'classic'), players: { h1: mk('h1', 'Ama') }, order: ['h1'] }; return c; });
+      check('Room code is 4 characters, no ambiguous letters', () => /^[A-HJ-NP-Z2-9]{4}$/.test(code) ? code : false);
+      check('Room draws questions-per-game from the pack', () => eq(room(code).qids.length, S.get().settings.questionsPerGame));
+      check('Questions are unique', () => new Set(room(code).qids).size === room(code).qids.length);
+
+      group('Guests join', 'guest');
+      check('Valid code passes join check', () => eq(S.joinCheck(S.get(), code), ''));
+      check('Unknown code is rejected', () => eq(S.joinCheck(S.get(), 'ZZZZ'), 'invalid'));
+      S.update(db => { ['g1', 'g2', 'g3'].forEach((id, i) => { db.rooms[code].players[id] = mk(id, ['Kofi', 'Zainab', 'Yaw'][i]); db.rooms[code].order.push(id); }); });
+      check('Four players in the lobby', () => eq(S.active(room(code)).length, 4));
+      S.update(db => { db.rooms[code].players.g3.kicked = true; });
+      check('Host removes a player, they drop out of the room', () => eq(S.active(room(code)).length, 3));
+      S.update(db => { db.settings.maxPlayers = 3; });
+      check('Full room blocks joining', () => eq(S.joinCheck(S.get(), code), 'full'));
+      S.update(db => { db.settings.maxPlayers = 12; });
+
+      group('Answering', 'all players');
+      S.update(db => { db.rooms[code].status = 'answering'; });
+      check('Started room blocks late joiners', () => eq(S.joinCheck(S.get(), code), 'started'));
+      const q = room(code).qids;
+      S.update(db => { const r = db.rooms[code]; q.forEach((id, i) => { r.players.h1.answers[id] = i < 9; r.players.g1.answers[id] = i < 3; r.players.g2.answers[id] = i % 2 === 0; }); r.players.g2.answers[q[0]] = null; });
+      check('Skipped answers do not count toward the score', () => eq(S.score(room(code), room(code).players.g2), Math.round(5 / 11 * 100)));
+      check('Host score is yes / answered', () => eq(S.score(room(code), room(code).players.h1), 75));
+      S.tick(code);
+      check('Everyone done moves the room to guessing', () => eq(room(code).status, 'guessing'));
+
+      group('Guessing and results', 'all players');
+      S.update(db => { const r = db.rooms[code], A = S.active(r); A.forEach(p => A.forEach(o => { if (o.id !== p.id) p.guesses[o.id] = 50; })); r.players.g1.guesses.h1 = 75; r.players.g2.guesses.h1 = 75; });
+      S.tick(code);
+      check('All guesses in moves the room to ready', () => eq(room(code).status, 'ready'));
+      const R = S.results(S.get(), room(code));
+      check('Room guess is the average of the others', () => eq(R.rows.find(r => r.id === 'h1').guess, 75));
+      check('Six awards are given', () => eq(R.awards.length, 6));
+      check('Top Spiller is the highest score', () => eq(R.awards[0].who, 'h1'));
+      check('Saint of the Room is the lowest score', () => eq(R.awards[1].who, 'g1'));
+      check('Question stats cover every question', () => eq(R.qstats.length, q.length));
+      S.update(db => { db.rooms[code].players.g2.spill = true; });
+      check('Spill Mode names only opted-in players', () => { const st = S.results(S.get(), room(code)).qstats; return st.every(x => x.spill.every(n => n === 'Zainab')) ? 'only Zainab' : false; });
+      S.update(db => { S.finalize(db, db.rooms[code]); S.finalize(db, db.rooms[code]); db.rooms[code].status = 'results'; });
+      check('Finishing counts the game once, even if called twice', () => eq(S.get().games.finished, 1));
+      check('Question answer stats are recorded', () => { const x = S.get().questions.find(z => z.id === q[1]); return eq(x.answered, 3); });
+
+      group('Rematch', 'host');
+      S.update(db => { const x = db.rooms[code]; x.pack = 'sheets'; x.qids = S.pickQs(db, 'sheets'); x.round++; x.status = 'lobby'; x.final = null; Object.values(x.players).forEach(p => { p.answers = {}; p.guesses = {}; }); });
+      check('Rematch clears answers and guesses', () => S.active(room(code)).every(p => !Object.keys(p.answers).length && !Object.keys(p.guesses).length));
+      check('Switching to an 18+ pack leaves players unconfirmed', () => eq(S.active(room(code)).filter(p => !p.adultOk).length, 3));
+      check('New questions come from the new pack', () => room(code).qids.length > 0 && room(code).qids.every(id => S.get().questions.find(x => x.id === id).pack === 'sheets'));
+
+      group('Bots fill in', 'test players');
+      const c2 = S.update(db => { const c = S.newCode(db); db.rooms[c] = { code: c, pack: 'campus', status: 'answering', host: 'h2', created: Date.now(), updated: Date.now(), round: 1, final: null, qids: S.pickQs(db, 'campus'), players: { h2: mk('h2', 'Host'), b1: mk('b1', 'Sam', { bot: true }), b2: mk('b2', 'Riley', { bot: true }) }, order: ['h2', 'b1', 'b2'] }; return c; });
+      S.update(db => { db.rooms[c2].qids.forEach(id => { db.rooms[c2].players.h2.answers[id] = true; }); });
+      for (let i = 0; i < 120 && room(c2).status === 'answering'; i++) S.tick(c2);
+      check('Bots finish answering on their own', () => eq(room(c2).status, 'guessing'));
+      S.update(db => { const r = db.rooms[c2]; ['b1', 'b2'].forEach(o => { r.players.h2.guesses[o] = 40; }); });
+      for (let i = 0; i < 120 && room(c2).status === 'guessing'; i++) S.tick(c2);
+      check('Bots finish guessing on their own', () => eq(room(c2).status, 'ready'));
+
+      group('Admin moderation', 'admin');
+      const victim = S.get().questions.find(x => x.pack === 'classic');
+      S.update(db => { db.questions.find(x => x.id === victim.id).status = 'hidden'; });
+      check('Hidden questions are never drawn', () => { for (let i = 0; i < 20; i++) if (S.pickQs(S.get(), 'classic').includes(victim.id)) return false; return true; });
+      S.update(db => { db.packs.find(p => p.id === 'work').status = 'draft'; });
+      check('Draft packs disappear from the picker', () => !S.livePacks(S.get()).some(p => p.id === 'work'));
+      S.update(db => { db.questions.filter(x => x.pack === 'campus').forEach(x => { x.status = 'hidden'; }); });
+      check('Packs with no live questions disappear too', () => !S.livePacks(S.get()).some(p => p.id === 'campus'));
+      S.update(db => { db.settings.questionsPerGame = 5; });
+      check('Questions per game setting is respected', () => eq(S.pickQs(S.get(), 'afterdark').length, 5));
+      S.update(db => { db.rooms[code].status = 'closed'; });
+      check('Closed rooms count as expired', () => eq(S.joinCheck(S.get(), code), 'expired'));
+      S.update(db => { db.rooms[c2].created = Date.now() - 90000000; db.rooms[c2].status = 'lobby'; });
+      check('Rooms older than 24 hours expire', () => eq(S.joinCheck(S.get(), c2), 'expired'));
+      S.update(db => { db.removedSeeds = ['kink']; db.packs = db.packs.filter(p => p.id !== 'kink'); });
+      check('A deleted seed pack stays deleted', () => !S.get().packs.some(p => p.id === 'kink'));
+      check('Default admin account exists', () => S.get().admins.some(a => a.email === 'admin@spil.party'));
+    } finally {
+      if (backup) localStorage.setItem(KEY, backup); else localStorage.removeItem(KEY);
+      S.get(); try { new BroadcastChannel('spil').postMessage(1); } catch (e) {}
+    }
+    this.setState({ groups });
+  }
+  renderVals() {
+    const all = this.state.groups.flatMap(g => g.items), failed = all.filter(t => !t.ok).length;
+    return {
+      run: () => this.run(), total: all.length, passed: all.length - failed, failed,
+      failPill: { padding: '10px 14px', borderRadius: 999, background: failed ? '#3A1C1A' : '#1F2027', color: failed ? '#F0938A' : '#A3A3AD' },
+      groups: this.state.groups.map(g => ({ ...g, items: g.items.map(t => ({ ...t, mark: t.ok ? 'PASS' : 'FAIL', badge: { flexShrink: 0, width: 46, textAlign: 'center', padding: '3px 0', borderRadius: 6, font: '600 11px/1.4 "Geist Mono", monospace', background: t.ok ? '#17331F' : '#3A1C1A', color: t.ok ? '#8CCBA2' : '#F0938A' } })) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Geist+Mono:wght@400..700&family=Geist:wght@400..700&display=swap">
+<style>body{margin:0;background:#08090B;-webkit-font-smoothing:antialiased} a{color:#FF5B3A} a:hover{color:#F3F1EC}</style>
+</helmet>
+<div style="padding:64px;display:grid;gap:96px;color:#F3F1EC;font-family:Geist,sans-serif;width:max-content">
+  <header style="display:grid;gap:12px;max-width:900px">
+    <span style="font:800 72px/.9 'Bricolage Grotesque',sans-serif;letter-spacing:-.04em">SPIL screens</span>
+    <span style="font:400 18px/1.5 Geist,sans-serif;color:#A3A3AD">Every screen and state, mobile 390 and desktop 1280, After Hours and Daylight. All frames are live instances of the prototype, so they stay in sync with it.</span>
+    <nav style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><sc-for list="{{ links }}" as="l" hint-placeholder-count="4"><a href="{{ l.href }}" style="{{ l.style }}">{{ l.label }}</a></sc-for></nav>
+  </header>
+  <sc-for list="{{ sections }}" as="sec" hint-placeholder-count="2">
+    <section style="display:grid;gap:32px">
+      <div style="display:flex;align-items:baseline;gap:18px;border-bottom:1px solid #2C2E36;padding-bottom:16px"><span style="font:800 44px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em">{{ sec.title }}</span><span style="font:500 15px/1 'Geist Mono',monospace;color:#A3A3AD">{{ sec.sub }}</span></div>
+      <div style="{{ sec.grid }}">
+        <sc-for list="{{ sec.items }}" as="it" hint-placeholder-count="6">
+          <figure style="margin:0;display:grid;gap:12px;align-content:start">
+            <figcaption style="font:500 14px/1 'Geist Mono',monospace;color:#A3A3AD">{{ it.label }}</figcaption>
+            <div style="{{ it.box }}">
+              <sc-if value="{{ it.showApp }}" hint-placeholder-val="{{ false }}"><dc-import name="SPIL Prototype" embed="true" screen="{{ it.screen }}" variant="{{ it.variant }}" theme="{{ sec.theme }}" device="{{ sec.device }}" hint-size="{{ it.hint }}"></dc-import></sc-if>
+              <sc-if value="{{ it.showAdmin }}" hint-placeholder-val="{{ false }}"><dc-import name="SPIL Admin" embed="true" view="{{ it.screen }}" theme="{{ sec.theme }}" hint-size="1280px,800px"></dc-import></sc-if>
+            </div>
+          </figure>
+        </sc-for>
+      </div>
+    </section>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const SET = 'admin';
+const FILES = { 'mobile-dark': 'SPIL Screens Mobile Dark.dc.html', 'mobile-light': 'SPIL Screens Mobile Light.dc.html', desktop: 'SPIL Screens Desktop.dc.html', admin: 'SPIL Screens Admin.dc.html' };
+const MOBILE = [
+  ['landing','','Landing'],['landing','menu','Landing, theme menu'],
+  ['join','','Join with code, typing'],['join','invalid','Join, invalid code'],['join','expired','Join, expired'],['join','full','Join, room full'],['join','started','Join, already started'],
+  ['packs','','Pack picker'],['profile','','Profile setup'],['profile','error','Profile, nickname error'],['profile','spicy','Profile, After Dark age check'],
+  ['lobby','empty','Lobby, empty (host alone)'],['lobby','few','Lobby, Start disabled'],['lobby','','Lobby, host, full'],['lobby','guest','Lobby, guest view'],['lobby','loading','Lobby, loading skeleton'],
+  ['question','','Question'],['question','swipe','Question, dragging Yes'],['question','saving','Question, saving'],['question','offline','Question, offline'],
+  ['waiting','','Waiting, host'],['waiting','sheet','Waiting, Force next sheet'],['waiting','guest','Waiting, guest'],
+  ['guess','','Guess'],['ready','','Reveal ready'],
+  ['reveal','count','Reveal, counting'],['reveal','label','Reveal, label slapped'],['reveal','award','Reveal, award'],
+  ['results','','Results, scores'],['results','awards','Results, awards'],['results','questions','Results, questions + Spill Mode'],['results','share','Share sheet'],
+  ['error','notfound','Error, room not found'],['error','expired','Error, expired'],['error','full','Error, full'],['error','started','Error, game started'],['error','offline','Error, offline'],['error','waking','Server waking up'],
+  ['page','howto','How to play'],['page','privacy','Privacy'],['page','terms','Terms'],['page','contact','Contact']
+];
+const DESKTOP = [
+  ['landing','','Landing'],['join','invalid','Join, invalid'],['packs','','Pack picker'],['profile','spicy','Profile'],['lobby','','Lobby, host'],['question','','Question'],
+  ['waiting','sheet','Waiting, Force next modal'],['guess','','Guess'],['reveal','label','Reveal'],['results','','Results'],['results','share','Share modal'],['error','expired','Error, expired'],['page','privacy','Privacy']
+];
+const ADMIN = [['login','Admin, login'],['overview','Admin, overview'],['packs','Admin, packs'],['questions','Admin, questions'],['reports','Admin, reports'],['audit','Admin, audit log']];
+class Component extends DCLogic {
+  state = { n: 2 };
+  componentDidMount() { this.iv = setInterval(() => { if (this.state.n >= (this.total || 0)) return clearInterval(this.iv); this.setState(s => ({ n: s.n + 2 })); }, 350); }
+  componentWillUnmount() { clearInterval(this.iv); }
+  renderVals() {
+    const mob = list => list.map(([screen, variant, label]) => ({ screen, variant, label, app: true, admin: false, hint: '390px,844px', box: { width: 390, height: 844, borderRadius: 28, overflow: 'hidden', boxShadow: '0 0 0 1px #2C2E36' } }));
+    const desk = list => list.map(([screen, variant, label]) => ({ screen, variant, label, app: true, admin: false, hint: '1280px,800px', box: { width: 1280, height: 800, borderRadius: 16, overflow: 'hidden', boxShadow: '0 0 0 1px #2C2E36' } }));
+    const adm = ADMIN.map(([screen, label]) => ({ screen, variant: '', label, app: false, admin: true, box: { width: 1280, height: 800, borderRadius: 16, overflow: 'hidden', boxShadow: '0 0 0 1px #2C2E36' } }));
+    const mg = { display: 'grid', gridTemplateColumns: 'repeat(8, 390px)', gap: '48px 40px' };
+    const dg = { display: 'grid', gridTemplateColumns: 'repeat(3, 1280px)', gap: '56px 48px' };
+    const all = [
+      { title: 'Mobile, After Hours', sub: '390 x 844, dark default', theme: 'dark', device: 'mobile', grid: mg, items: mob(MOBILE) },
+      { title: 'Mobile, Daylight', sub: '390 x 844, light', theme: 'light', device: 'mobile', grid: mg, items: mob(MOBILE) },
+      { title: 'Desktop, After Hours', sub: '1280 x 800', theme: 'dark', device: 'desktop', grid: dg, items: desk(DESKTOP) },
+      { title: 'Desktop, Daylight', sub: '1280 x 800', theme: 'light', device: 'desktop', grid: dg, items: desk(DESKTOP) },
+      { title: 'Admin', sub: 'Utilitarian, same tokens. Dark then light.', theme: 'dark', device: 'desktop', grid: dg, items: adm },
+      { title: 'Admin, Daylight', sub: '1280 x 800', theme: 'light', device: 'desktop', grid: dg, items: adm }
+    ];
+    const set = this.props.set ?? SET;
+    const pick = { 'mobile-dark': [0], 'mobile-light': [1], desktop: [2, 3], admin: [4, 5] }[set] || [0];
+    let k = 0; this.total = pick.reduce((a, i) => a + all[i].items.length, 0); const sections = pick.map(i => ({ ...all[i], items: all[i].items.map(it => { const show = k++ < this.state.n; return { ...it, showApp: it.app && show, showAdmin: it.admin && show }; }) }));
+    return { sections, links: [['mobile-dark','Mobile, After Hours'],['mobile-light','Mobile, Daylight'],['desktop','Desktop'],['admin','Admin']].map(([k,l]) => ({ label: l, href: FILES[k], style: { color: k === set ? '#101114' : '#F3F1EC', background: k === set ? '#F3F1EC' : 'transparent', border: '1px solid #2C2E36', borderRadius: 999, padding: '12px 18px', font: '600 15px/1 Geist, sans-serif', textDecoration: 'none' } })) };
+  }
+}
+</script>
+</body>
+</html>

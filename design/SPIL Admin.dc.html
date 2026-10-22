@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Geist+Mono:wght@400..700&family=Geist:wght@400..700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<script src="./spil-store.js"></script>
+<style>body{margin:0;background:#101114;-webkit-font-smoothing:antialiased} *:focus-visible{outline:3px solid var(--accent);outline-offset:3px} a{color:var(--accent-ink)} a:hover{color:var(--text)} button{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform 160ms cubic-bezier(.23,1,.32,1),background-color 150ms ease,color 150ms ease,border-color 150ms ease,filter 150ms ease} button:active{transform:scale(.97)} input,textarea,select{transition:border-color 150ms ease,box-shadow 150ms ease} input::placeholder,textarea::placeholder{color:var(--text-muted)} input:not([data-bare]):not(:disabled):hover,textarea:not(:disabled):hover,select:not(:disabled):hover,[data-field]:hover{border-color:var(--text-muted)!important} input:not([data-bare]):focus,textarea:focus,select:focus,[data-field]:focus-within{outline:none!important;border-color:var(--accent)!important;box-shadow:0 0 0 3px var(--accent-soft)!important} input[data-bare]:focus{outline:none!important} input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:var(--error)!important} input:disabled,textarea:disabled,select:disabled{opacity:.5;cursor:not-allowed} @keyframes ad-rise{from{transform:translateY(8px);opacity:0}} @keyframes ad-pop{from{transform:translate(-50%,-50%) scale(.96);opacity:0}} @keyframes ad-fade{from{opacity:0}} @keyframes ad-icon{from{transform:rotate(-70deg) scale(.6);opacity:0}} @media (prefers-reduced-motion: reduce){@keyframes ad-rise{from{opacity:0}}@keyframes ad-pop{from{opacity:0;transform:translate(-50%,-50%)}}@keyframes ad-icon{from{opacity:0}}}</style>
+</helmet>
+<div style="{{ root }}">
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;display:grid;place-items:center;padding:24px;position:relative">
+      <sc-if value="{{ loginMain }}" hint-placeholder-val="{{ true }}"><form onSubmit="{{ signIn }}" style="width:100%;max-width:400px;display:grid;gap:18px;padding:32px;border-radius:20px;background:var(--surface);border:1px solid var(--line)">
+        <span style="display:flex;align-items:center;gap:10px"><span role="img" aria-label="SPIL" style="display:inline-flex;align-items:baseline;font:800 30px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em"><span aria-hidden="true" style="display:inline-block;transform:rotate(-8deg) translateY(.03em)">S</span><span aria-hidden="true" style="display:inline-block;transform:rotate(5deg) translateY(-.05em);margin-left:-.01em">P</span><span aria-hidden="true" style="position:relative;display:inline-block;color:var(--accent);font-stretch:75%;transform:rotate(14deg);transform-origin:50% 90%;margin:0 .14em 0 -.03em">I<span style="position:absolute;top:-.17em;right:-.2em;width:.13em;height:.13em;background:var(--accent);border-radius:0 50% 50% 50%"></span><span style="position:absolute;top:-.3em;right:.02em;width:.07em;height:.07em;background:var(--accent);border-radius:50%"></span></span><span aria-hidden="true" style="display:inline-block;transform:rotate(-4deg) translateY(.02em)">L</span></span><span style="font:500 13px/1 'Geist Mono',monospace;color:var(--text-muted);padding:6px 10px;border:1px solid var(--line);border-radius:999px">admin</span></span>
+        <span style="font:800 30px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Sign in</span>
+        <div style="display:grid;gap:8px"><label for="ad-mail" style="font:600 14px/1 Geist,sans-serif">Email</label><input id="ad-mail" type="email" autocomplete="username" value="{{ lMail }}" onChange="{{ onLMail }}" style="{{ inputStyle }}"></div>
+        <div style="display:grid;gap:8px"><label for="ad-pw" style="font:600 14px/1 Geist,sans-serif">Password</label><input id="ad-pw" type="password" autocomplete="current-password" value="{{ lPw }}" onChange="{{ onLPw }}" style="{{ inputStyle }}"></div>
+        <sc-if value="{{ hasLoginErr }}" hint-placeholder-val="{{ false }}"><span role="alert" style="display:flex;gap:8px;align-items:center;font:500 14px/1.4 Geist,sans-serif;color:var(--error)"><i class="ph ph-warning-circle" style="font-size:18px"></i>{{ loginErr }}</span></sc-if>
+        <button type="button" onClick="{{ openForgot }}" style="justify-self:start;height:44px;padding:0 12px;margin:-8px 0 0 -12px;border:0;border-radius:999px;background:transparent;color:var(--accent-ink);font:600 14px/1 Geist,sans-serif;cursor:pointer" style-hover="background:var(--surface-raised)">Forgot password?</button>
+        <button type="submit" style="height:48px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 15px/1 Geist,sans-serif;cursor:pointer" style-active="transform:scale(.97)" style-hover="filter:brightness(1.08)">Sign in</button>
+        <span style="display:grid;gap:6px;font:400 13px/1.4 Geist,sans-serif;color:var(--text-muted)"><span style="display:flex;gap:8px;align-items:center"><i class="ph ph-shield-check" style="font-size:16px"></i>Every admin action is written to the audit log.</span></span>
+      </form></sc-if>
+      <sc-if value="{{ loginForgot }}" hint-placeholder-val="{{ false }}"><form onSubmit="{{ forgotSubmit }}" style="width:100%;max-width:400px;display:grid;gap:18px;padding:32px;border-radius:20px;background:var(--surface);border:1px solid var(--line)">
+        <span style="font:800 30px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">Reset your password</span>
+        <span style="font:400 15px/1.5 Geist,sans-serif;color:var(--text-muted)">{{ forgotIntro }}</span>
+        <sc-if value="{{ forgotStep1 }}" hint-placeholder-val="{{ true }}"><div style="display:grid;gap:8px"><label for="ad-fmail" style="font:600 14px/1 Geist,sans-serif">Admin email</label><input id="ad-fmail" type="email" autocomplete="username" value="{{ fMail }}" onChange="{{ onFMail }}" style="{{ inputStyle }}"></div></sc-if>
+        <sc-if value="{{ forgotStep2 }}" hint-placeholder-val="{{ false }}">
+          <div role="status" style="display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:var(--accent-soft);font:500 14px/1.45 Geist,sans-serif"><i class="ph ph-envelope-simple" style="font-size:18px;margin-top:1px"></i><span>{{ codeNotice }}</span></div>
+          <div style="display:grid;gap:8px"><label for="ad-fcode" style="font:600 14px/1 Geist,sans-serif">6-digit code</label><input id="ad-fcode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" value="{{ fCode }}" onChange="{{ onFCode }}" style="{{ inputStyle }}"></div>
+          <div style="display:grid;gap:8px"><label for="ad-fpw" style="font:600 14px/1 Geist,sans-serif">New password</label><input id="ad-fpw" type="password" autocomplete="new-password" value="{{ fPw }}" onChange="{{ onFPw }}" style="{{ inputStyle }}"><span style="font:400 13px/1.4 Geist,sans-serif;color:var(--text-muted)">At least 8 characters.</span></div>
+          <div style="display:grid;gap:8px"><label for="ad-fpw2" style="font:600 14px/1 Geist,sans-serif">Confirm new password</label><input id="ad-fpw2" type="password" autocomplete="new-password" value="{{ fPw2 }}" onChange="{{ onFPw2 }}" style="{{ inputStyle }}"></div>
+        </sc-if>
+        <sc-if value="{{ hasForgotErr }}" hint-placeholder-val="{{ false }}"><span role="alert" style="display:flex;gap:8px;align-items:center;font:500 14px/1.4 Geist,sans-serif;color:var(--error)"><i class="ph ph-warning-circle" style="font-size:18px"></i>{{ forgotErr }}</span></sc-if>
+        <button type="submit" style="height:48px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 15px/1 Geist,sans-serif;cursor:pointer" style-hover="filter:brightness(1.08)">{{ forgotCta }}</button>
+        <button type="button" onClick="{{ closeForgot }}" style="height:48px;border:0;border-radius:999px;background:transparent;color:var(--text);font:600 15px/1 Geist,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="background:var(--surface-raised)"><i class="ph ph-arrow-left" style="font-size:18px"></i>Back to sign in</button>
+      </form></sc-if>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isApp }}" hint-placeholder-val="{{ true }}">
+    <aside style="width:248px;flex-shrink:0;border-right:1px solid var(--line);background:var(--surface);padding:20px 14px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px;overflow-y:auto">
+      <span style="display:flex;align-items:center;gap:10px;padding:0 8px"><span role="img" aria-label="SPIL" style="display:inline-flex;align-items:baseline;font:800 26px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em"><span aria-hidden="true" style="display:inline-block;transform:rotate(-8deg) translateY(.03em)">S</span><span aria-hidden="true" style="display:inline-block;transform:rotate(5deg) translateY(-.05em);margin-left:-.01em">P</span><span aria-hidden="true" style="position:relative;display:inline-block;color:var(--accent);font-stretch:75%;transform:rotate(14deg);transform-origin:50% 90%;margin:0 .14em 0 -.03em">I<span style="position:absolute;top:-.17em;right:-.2em;width:.13em;height:.13em;background:var(--accent);border-radius:0 50% 50% 50%"></span><span style="position:absolute;top:-.3em;right:.02em;width:.07em;height:.07em;background:var(--accent);border-radius:50%"></span></span><span aria-hidden="true" style="display:inline-block;transform:rotate(-4deg) translateY(.02em)">L</span></span><span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">admin</span></span>
+      <nav style="display:grid;gap:2px">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="8"><button onClick="{{ n.on }}" aria-current="{{ n.cur }}" style="{{ n.style }}" style-hover="background:var(--surface-raised);color:var(--text)"><i class="{{ n.icon }}" style="font-size:18px"></i><span style="flex:1;text-align:left">{{ n.label }}</span><span style="{{ n.badgeStyle }}">{{ n.badge }}</span></button></sc-for>
+      </nav>
+      <a href="SPIL App.dc.html" target="_blank" style="display:flex;align-items:center;gap:10px;height:44px;padding:0 12px;border-radius:999px;color:var(--text-muted);font:600 14px/1 Geist,sans-serif;text-decoration:none" style-hover="background:var(--surface-raised);color:var(--text)"><i class="ph ph-arrow-square-out" style="font-size:18px"></i>Open the game</a>
+      <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:8px;border-top:1px solid var(--line);padding-top:16px"><span style="width:32px;height:32px;border-radius:999px;background:var(--surface-raised);display:grid;place-items:center;font:700 13px/1 Geist,sans-serif">{{ adminInitials }}</span><span style="flex:1;min-width:0;display:grid;gap:3px"><span style="font:600 14px/1 Geist,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ adminName }}</span><span style="font:400 12px/1 Geist,sans-serif;color:var(--text-muted)">{{ adminRole }}</span></span><button aria-label="Sign out" onClick="{{ signOut }}" style="width:44px;height:44px;border-radius:999px;border:0;background:transparent;color:var(--text-muted);display:grid;place-items:center;cursor:pointer" style-hover="background:var(--surface-raised);color:var(--text)"><i class="ph ph-sign-out" style="font-size:18px"></i></button></div>
+    </aside>
+    <main style="flex:1;min-width:0;overflow:auto;padding:28px clamp(20px, 3vw, 40px);box-sizing:border-box;display:flex;flex-direction:column;gap:22px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <h1 style="margin:0;font:800 34px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em">{{ title }}</h1>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <sc-if value="{{ hasSearch }}" hint-placeholder-val="{{ false }}"><label data-field="true" style="display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border-radius:14px;border:1.5px solid var(--line-strong);background:var(--surface);color:var(--text-muted);width:260px;box-sizing:border-box"><i class="ph ph-magnifying-glass" style="font-size:18px"></i><input data-bare="true" aria-label="Search" placeholder="{{ searchPh }}" value="{{ search }}" onChange="{{ onSearch }}" style="flex:1;min-width:0;border:0;background:transparent;color:var(--text);font:400 15px/1 Geist,sans-serif;outline:none"></label></sc-if>
+          <sc-if value="{{ hasExport }}" hint-placeholder-val="{{ false }}"><button onClick="{{ exportCsv }}" style="height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--line);background:transparent;color:var(--text);font:600 15px/1 Geist,sans-serif;display:flex;align-items:center;gap:8px;cursor:pointer" style-hover="background:var(--surface-raised)"><i class="ph ph-download-simple" style="font-size:18px"></i>Export CSV</button></sc-if>
+          <sc-if value="{{ hasAction }}" hint-placeholder-val="{{ false }}"><button onClick="{{ act }}" style="height:44px;padding:0 18px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 15px/1 Geist,sans-serif;display:flex;align-items:center;gap:8px;cursor:pointer" style-active="transform:scale(.97)" style-hover="filter:brightness(1.08)"><i class="ph ph-plus" style="font-size:18px"></i>{{ actionLabel }}</button></sc-if>
+        </div>
+      </div>
+
+      <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border:1px solid var(--line);border-radius:20px;background:var(--surface);overflow:hidden;flex-shrink:0">
+          <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4"><button onClick="{{ s.on }}" style="{{ s.style }}" style-hover="background:var(--surface-raised)"><span style="font:500 13px/1 Geist,sans-serif;color:var(--text-muted)">{{ s.label }}</span><span style="font:600 34px/1 'Geist Mono',monospace;letter-spacing:-.03em">{{ s.value }}</span><span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">{{ s.note }}</span></button></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px">
+          <div style="border:1px solid var(--line);border-radius:20px;background:var(--surface);padding:20px;display:grid;gap:12px;align-content:start">
+            <span style="font:700 17px/1 Geist,sans-serif">Games started per pack</span>
+            <sc-for list="{{ packBars }}" as="b" hint-placeholder-count="4"><div style="display:grid;grid-template-columns:170px 1fr 48px;gap:12px;align-items:center;font:500 14px/1 Geist,sans-serif"><span>{{ b.name }}</span><div style="height:8px;border-radius:999px;background:var(--surface-raised);overflow:hidden"><div style="{{ b.bar }}"></div></div><span style="font:500 13px/1 'Geist Mono',monospace;text-align:right">{{ b.plays }}</span></div></sc-for>
+          </div>
+          <div style="border:1px solid var(--line);border-radius:20px;background:var(--surface);padding:20px;display:grid;gap:4px;align-content:start">
+            <span style="font:700 17px/1 Geist,sans-serif;margin-bottom:8px">Needs a look</span>
+            <sc-if value="{{ noFlags }}" hint-placeholder-val="{{ false }}"><span style="display:flex;gap:10px;align-items:center;padding:10px 0;font:400 14px/1.4 Geist,sans-serif;color:var(--text-muted)"><i class="ph ph-check-circle" style="font-size:18px;color:var(--success)"></i>No open reports. Nice and quiet.</span></sc-if>
+            <sc-for list="{{ reportsShort }}" as="r" hint-placeholder-count="3"><button onClick="{{ r.on }}" style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--text);text-align:left;cursor:pointer" style-hover="background:var(--surface-raised)"><i class="ph ph-flag" style="font-size:18px;color:var(--error);margin-top:2px"></i><span style="flex:1;font:400 14px/1.4 Geist,sans-serif">{{ r.q }}</span><span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">{{ r.count }}</span></button></sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+        <form onSubmit="{{ saveSettings }}" style="max-width:720px;display:grid;gap:18px;padding:24px;border:1px solid var(--line);border-radius:20px;background:var(--surface)">
+          <sc-for list="{{ settingFields }}" as="f" hint-placeholder-count="3"><div style="display:grid;gap:8px"><label for="{{ f.id }}" style="font:600 14px/1 Geist,sans-serif">{{ f.label }}</label><input id="{{ f.id }}" type="number" min="{{ f.min }}" max="{{ f.max }}" value="{{ f.value }}" onChange="{{ f.on }}" style="{{ inputStyle }}"><span style="font:400 13px/1.4 Geist,sans-serif;color:var(--text-muted)">{{ f.hint }}</span></div></sc-for>
+          <sc-if value="{{ hasSetErr }}" hint-placeholder-val="{{ false }}"><span role="alert" style="display:flex;gap:8px;align-items:center;font:500 14px/1.4 Geist,sans-serif;color:var(--error)"><i class="ph ph-warning-circle" style="font-size:18px"></i>{{ setErr }}</span></sc-if>
+          <div style="display:flex;gap:10px;flex-wrap:wrap"><button type="submit" style="height:48px;padding:0 22px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 15px/1 Geist,sans-serif;cursor:pointer" style-active="transform:scale(.97)" style-hover="filter:brightness(1.08)">Save settings</button></div>
+        </form>
+        <div style="max-width:720px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:20px 24px;border:1px solid var(--error);border-radius:20px">
+          <div style="display:grid;gap:6px;min-width:0;flex:1 1 240px"><span style="font:700 17px/1 Geist,sans-serif">Reset all data</span><span style="font:400 14px/1.45 Geist,sans-serif;color:var(--text-muted)">Wipes every room, report, message and content edit, then restores the starting packs. This cannot be undone.</span></div>
+          <button type="button" onClick="{{ resetAll }}" style="height:48px;padding:0 20px;border-radius:999px;border:1.5px solid var(--error);background:transparent;color:var(--error);font:600 15px/1 Geist,sans-serif;cursor:pointer" style-active="transform:scale(.97)" style-hover="background:var(--accent-soft)">Reset everything</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:720px;display:grid;gap:14px;padding:24px;border:1px solid var(--line);border-radius:20px;background:var(--surface)">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><span style="font:700 17px/1 Geist,sans-serif">Admin accounts</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ openAcct }}" style="height:44px;padding:0 18px;border-radius:999px;border:1.5px solid var(--line);background:transparent;color:var(--text);font:600 15px/1 Geist,sans-serif;cursor:pointer" style-hover="background:var(--surface-raised)">Edit my details</button><button onClick="{{ openPw }}" style="height:44px;padding:0 18px;border-radius:999px;border:1.5px solid var(--line);background:transparent;color:var(--text);font:600 15px/1 Geist,sans-serif;cursor:pointer" style-hover="background:var(--surface-raised)">Change my password</button><button onClick="{{ openAdmin }}" style="height:44px;padding:0 18px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 15px/1 Geist,sans-serif;display:flex;gap:6px;align-items:center;cursor:pointer" style-hover="filter:brightness(1.08)"><i class="ph ph-user-plus" style="font-size:16px"></i>Add admin</button></div></div>
+          <sc-for list="{{ adminRows }}" as="a" hint-placeholder-count="1"><div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)"><span style="width:36px;height:36px;border-radius:999px;background:var(--surface-raised);display:grid;place-items:center;font:700 13px/1 Geist,sans-serif">{{ a.ini }}</span><span style="flex:1;min-width:0;display:grid;gap:4px"><span style="font:600 15px/1.2 Geist,sans-serif">{{ a.name }}</span><span style="font:400 13px/1.2 Geist,sans-serif;color:var(--text-muted)">{{ a.email }} · {{ a.role }}</span></span><sc-if value="{{ a.canRemove }}" hint-placeholder-val="{{ false }}"><button onClick="{{ a.resetPw }}" style="height:36px;padding:0 14px;border-radius:999px;border:1.5px solid var(--line);background:transparent;color:var(--text);font:600 13px/1 Geist,sans-serif;cursor:pointer" style-hover="background:var(--surface-raised)">Reset password</button><button onClick="{{ a.remove }}" style="height:36px;padding:0 14px;border-radius:999px;border:1.5px solid var(--error);background:transparent;color:var(--error);font:600 13px/1 Geist,sans-serif;cursor:pointer" style-hover="background:var(--accent-soft)">Remove</button></sc-if><sc-if value="{{ a.isYou }}" hint-placeholder-val="{{ false }}"><span style="font:500 12px/1 'Geist Mono',monospace;color:var(--text-muted)">you</span></sc-if></div></sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ hasTable }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ hasChips }}" hint-placeholder-val="{{ false }}"><div role="tablist" style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ chips }}" as="c" hint-placeholder-count="5"><button role="tab" aria-selected="{{ c.sel }}" onClick="{{ c.on }}" style="{{ c.style }}" style-hover="border-color:var(--text)">{{ c.label }}</button></sc-for></div></sc-if>
+        <div style="border:1px solid var(--line);border-radius:20px;background:var(--surface);overflow:auto">
+          <table style="width:100%;border-collapse:collapse;font:400 14px/1.35 Geist,sans-serif">
+            <thead><tr><sc-for list="{{ cols }}" as="c" hint-placeholder-count="5"><th scope="col" style="{{ c.style }}">{{ c.label }}</th></sc-for></tr></thead>
+            <tbody>
+              <sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+                <tr style="border-top:1px solid var(--line);transition:background-color 120ms ease" style-hover="background:var(--accent-soft)">
+                  <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="5"><td style="{{ c.style }}"><sc-if value="{{ c.icon }}" hint-placeholder-val="{{ false }}"><i class="{{ c.icon }}" style="font-size:16px;margin-right:6px;vertical-align:-2px"></i></sc-if>{{ c.v }}</td></sc-for>
+                  <td style="padding:8px 10px 8px 0;text-align:right;white-space:nowrap"><sc-for list="{{ r.actions }}" as="a" hint-placeholder-count="1"><button onClick="{{ a.on }}" aria-label="{{ a.label }}" title="{{ a.label }}" style="{{ a.style }}" style-hover="background:var(--surface-raised)" style-active="transform:scale(.97)"><sc-if value="{{ a.hasIcon }}" hint-placeholder-val="{{ false }}"><i class="{{ a.icon }}" style="font-size:18px"></i></sc-if><sc-if value="{{ a.showText }}" hint-placeholder-val="{{ true }}"><span>{{ a.label }}</span></sc-if></button></sc-for></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <sc-if value="{{ hasMore }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-top:1px solid var(--line)"><span style="font:500 13px/1 'Geist Mono',monospace;color:var(--text-muted)">{{ rowCount }}</span><button onClick="{{ showMore }}" style="height:44px;padding:0 18px;border-radius:999px;border:1.5px solid var(--line);background:transparent;color:var(--text);font:600 15px/1 Geist,sans-serif;cursor:pointer" style-hover="background:var(--surface-raised)">{{ moreLabel }}</button></div></sc-if>
+          <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}"><div style="padding:40px 20px;text-align:center;font:400 15px/1.5 Geist,sans-serif;color:var(--text-muted)">{{ emptyText }}</div></sc-if>
+        </div>
+      </sc-if>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:absolute;inset:0;background:rgba(8,9,11,.6);z-index:40;animation:ad-fade 200ms ease-out"></div>
+    <form role="dialog" aria-modal="true" aria-label="{{ modalTitle }}" onSubmit="{{ modalSave }}" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:41;width:min(520px,calc(100% - 32px));max-height:90%;overflow:auto;box-sizing:border-box;padding:24px;border-radius:20px;background:var(--surface-raised);border:1px solid var(--line);display:grid;gap:16px;animation:ad-pop 200ms cubic-bezier(.23,1,.32,1)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2 style="margin:0;font:800 26px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">{{ modalTitle }}</h2><button type="button" aria-label="Close" onClick="{{ closeModal }}" style="width:44px;height:44px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text);display:grid;place-items:center;cursor:pointer" style-hover="background:var(--surface-raised)"><i class="ph ph-x" style="font-size:18px"></i></button></div>
+      <sc-for list="{{ fields }}" as="f" hint-placeholder-count="3">
+        <div style="display:grid;gap:8px">
+          <label for="{{ f.id }}" style="font:600 14px/1 Geist,sans-serif">{{ f.label }}</label>
+          <sc-if value="{{ f.isText }}" hint-placeholder-val="{{ true }}"><input id="{{ f.id }}" type="{{ f.type }}" value="{{ f.value }}" onChange="{{ f.on }}" maxlength="{{ f.max }}" style="{{ inputStyle }}"></sc-if>
+          <sc-if value="{{ f.isArea }}" hint-placeholder-val="{{ false }}"><textarea id="{{ f.id }}" rows="3" value="{{ f.value }}" onChange="{{ f.on }}" maxlength="{{ f.max }}" style="{{ areaStyle }}"></textarea></sc-if>
+          <sc-if value="{{ f.isSelect }}" hint-placeholder-val="{{ false }}"><select id="{{ f.id }}" value="{{ f.value }}" onChange="{{ f.on }}" style="{{ inputStyle }}"><sc-for list="{{ f.options }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select></sc-if>
+          <sc-if value="{{ f.hasHint }}" hint-placeholder-val="{{ false }}"><span style="font:400 13px/1.4 Geist,sans-serif;color:var(--text-muted)">{{ f.hint }}</span></sc-if>
+        </div>
+      </sc-for>
+      <sc-if value="{{ hasModalErr }}" hint-placeholder-val="{{ false }}"><span role="alert" style="display:flex;gap:8px;align-items:center;font:500 14px/1.4 Geist,sans-serif;color:var(--error)"><i class="ph ph-warning-circle" style="font-size:18px"></i>{{ modalErr }}</span></sc-if>
+      <div style="display:flex;gap:10px;align-items:center;margin-top:4px">
+        <sc-if value="{{ canDelete }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ modalDelete }}" style="height:48px;padding:0 18px;border-radius:999px;border:1.5px solid var(--error);background:transparent;color:var(--error);font:600 15px/1 Geist,sans-serif;cursor:pointer" style-active="transform:scale(.97)" style-hover="background:var(--accent-soft)">Delete</button></sc-if>
+        <span style="flex:1"></span>
+        <button type="button" onClick="{{ closeModal }}" style="height:48px;padding:0 18px;border-radius:999px;border:0;background:transparent;color:var(--text);font:600 15px/1 Geist,sans-serif;cursor:pointer" style-hover="background:var(--surface-raised)">Cancel</button>
+        <button type="submit" style="height:48px;padding:0 22px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font:600 15px/1 Geist,sans-serif;cursor:pointer" style-active="transform:scale(.97)" style-hover="filter:brightness(1.08)">Save</button>
+      </div>
+    </form>
+  </sc-if>
+
+  <sc-if value="{{ confirmOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ cancelConfirm }}" style="position:absolute;inset:0;background:rgba(8,9,11,.6);z-index:44;animation:ad-fade 200ms ease-out"></div>
+    <div role="alertdialog" aria-modal="true" aria-labelledby="ad-cf-t" aria-describedby="ad-cf-b" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:45;width:min(440px,calc(100% - 32px));box-sizing:border-box;padding:24px;border-radius:20px;background:var(--surface-raised);border:1px solid var(--line);display:grid;gap:14px;animation:ad-pop 200ms cubic-bezier(.23,1,.32,1)">
+      <h2 id="ad-cf-t" style="margin:0;font:800 24px/1.1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em">{{ cfTitle }}</h2>
+      <p id="ad-cf-b" style="margin:0;font:400 15px/1.5 Geist,sans-serif;color:var(--text-muted)">{{ cfBody }}</p>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px">
+        <button id="ad-cf-cancel" onClick="{{ cancelConfirm }}" style="height:48px;padding:0 18px;border-radius:999px;border:0;background:transparent;color:var(--text);font:600 15px/1 Geist,sans-serif;cursor:pointer" style-hover="background:var(--surface)">Cancel</button>
+        <button onClick="{{ okConfirm }}" style="height:48px;padding:0 20px;border:0;border-radius:999px;background:var(--error);color:var(--bg);font:600 15px/1 Geist,sans-serif;cursor:pointer" style-hover="filter:brightness(1.08)">{{ cfCta }}</button>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}"><div role="status" style="position:absolute;right:24px;bottom:24px;z-index:50;display:flex;gap:10px;align-items:center;padding:14px 18px;border-radius:16px;background:var(--surface-raised);border:1px solid var(--line);box-shadow:0 18px 36px -18px var(--shadow);font:500 15px/1.3 Geist,sans-serif;animation:ad-rise 240ms cubic-bezier(.23,1,.32,1)"><i class="ph ph-check-circle" style="font-size:20px;color:var(--success)"></i>{{ toast }}</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:800},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;login&quot;,&quot;overview&quot;,&quot;rooms&quot;,&quot;packs&quot;,&quot;questions&quot;,&quot;reports&quot;,&quot;inbox&quot;,&quot;audit&quot;,&quot;settings&quot;],&quot;default&quot;:&quot;overview&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;embed&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const SPIL_THEMES = {
+  dark: {'--bg':'#101114','--surface':'#17181D','--surface-raised':'#1F2027','--line':'#2C2E36','--line-strong':'#6E707B','--text':'#F3F1EC','--text-muted':'#A3A3AD','--accent':'#FF5B3A','--accent-ink':'#FF5B3A','--on-accent':'#101114','--accent-soft':'rgba(255,91,58,.14)','--error':'#F0938A','--success':'#8CCBA2','--shadow':'rgba(0,0,0,.5)'},
+  light: {'--bg':'#F1F2F4','--surface':'rgba(255,255,255,.92)','--surface-raised':'#FFFFFF','--line':'#D9DBE1','--line-strong':'#868994','--text':'#15161A','--text-muted':'#5D5F69','--accent':'#D63D1D','--accent-ink':'#B8321A','--on-accent':'#FFFFFF','--accent-soft':'rgba(214,61,29,.1)','--error':'#B3362B','--success':'#2F7A4C','--shadow':'rgba(21,22,26,.16)'}
+};
+const ICON = { live: 'ph ph-check-circle', draft: 'ph ph-pencil-simple', hidden: 'ph ph-eye-slash', open: 'ph ph-flag', dismissed: 'ph ph-x-circle', actioned: 'ph ph-eye-slash', new: 'ph ph-envelope-simple', read: 'ph ph-envelope-open', lobby: 'ph ph-users-three', answering: 'ph ph-hand-swipe-right', guessing: 'ph ph-sliders-horizontal', ready: 'ph ph-hourglass', reveal: 'ph ph-sparkle', results: 'ph ph-trophy', closed: 'ph ph-lock-simple' };
+const CAP = s => s ? s[0].toUpperCase() + s.slice(1) : '';
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const WHEN = t => { const d = new Date(t); return `${MON[d.getMonth()]} ${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+const AGO = t => { const s = (Date.now() - t) / 1000; return s < 60 ? 'Just now' : s < 3600 ? `${Math.floor(s / 60)} min ago` : s < 86400 ? `${Math.floor(s / 3600)} h ago` : `${Math.floor(s / 86400)} d ago`; };
+const ICONS = [['ph ph-cards','Cards'],['ph ph-moon-stars','Moon'],['ph ph-student','Student'],['ph ph-briefcase','Briefcase'],['ph ph-heart','Heart'],['ph ph-airplane-tilt','Plane'],['ph ph-pizza','Pizza'],['ph ph-game-controller','Controller'],['ph ph-music-notes','Music'],['ph ph-house','House']];
+class Component extends DCLogic {
+  state = { themePref: null, view: 'login', chip: 'All', toast: '', search: '', lMail: '', lPw: '', loginErr: '', modal: null, form: {}, modalErr: '', sets: null, setErr: '', admin: null, tick: 0 };
+  embed() { const e = this.props.embed; return e === true || e === 'true'; }
+  componentDidMount() {
+    try { const tp = localStorage.getItem('spil-admin-theme'); if (tp) this.setState({ themePref: tp }); } catch (e) {}
+    if (!window.SpilStore) return;
+    this.onRs = () => this.setState({ vw: window.innerWidth }); this.onRs(); window.addEventListener('resize', this.onRs);
+    this.unsub = SpilStore.on(db => { this.setState(s => ({ tick: s.tick + 1 })); const ad = this.state.admin; if (ad && !this.embed() && !db.admins.some(x => x.email === ad.email)) { try { sessionStorage.removeItem('spil-admin'); } catch (e) {} this.setState({ admin: null, view: 'login', loginErr: 'Your admin access was removed.' }); } });
+    this.iv = setInterval(() => this.setState(s => ({ tick: s.tick + 1 })), 15000);
+    if (this.embed()) return this.setState({ view: this.props.view ?? 'overview', admin: SpilStore.get().admins[0] });
+    let a = null; try { a = JSON.parse(sessionStorage.getItem('spil-admin')); } catch (e) {}
+    if (a) this.setState({ admin: a, view: 'overview' });
+    this.onKey = e => { if (e.key !== 'Escape') return; if (this.state.cf) this.setState({ cf: null }); else if (this.state.modal) this.setState({ modal: null }); };
+    window.addEventListener('keydown', this.onKey);
+  }
+  componentDidUpdate(pp, ps) {
+    if (this.state.modal && (!ps.modal || ps.modal !== this.state.modal)) setTimeout(() => { const el = document.querySelector('[role="dialog"] input, [role="dialog"] textarea'); el && el.focus(); }, 30); if (pp.view !== this.props.view && this.props.view && this.embed()) this.setState({ view: this.props.view }); }
+  componentWillUnmount() { window.removeEventListener('resize', this.onRs); this.unsub && this.unsub(); clearInterval(this.iv); window.removeEventListener('keydown', this.onKey); }
+  ask(title, body, cta, fn) { this.setState({ cf: { title, body, cta, fn } }, () => setTimeout(() => { const b = document.getElementById('ad-cf-cancel'); b && b.focus(); }, 30)); }
+  t(msg) { this.setState({ toast: msg }); clearTimeout(this.tt); this.tt = setTimeout(() => this.setState({ toast: '' }), 2400); }
+  who() { return (this.state.admin && this.state.admin.name) || 'Admin'; }
+  act(fn, msg, action, target) { SpilStore.update(db => { fn(db); if (action) SpilStore.log(db, this.who(), action, target); }); if (msg) this.t(msg); }
+  go(view) { this.setState({ limit: 40, view, chip: view === 'reports' ? 'Open' : 'All', search: '' }); }
+  forgotSubmit(e) {
+    e.preventDefault();
+    const S = this.state, D = SpilStore.get(), mail = (S.fMail || '').trim().toLowerCase();
+    if (S.forgot === 1) {
+      const ad = D.admins.find(x => x.email.toLowerCase() === mail);
+      if (!/^\S+@\S+\.\S+$/.test(mail)) return this.setState({ forgotErr: 'Enter the email you sign in with.' });
+      const code = String(Math.floor(100000 + Math.random() * 900000));
+      if (ad) SpilStore.update(db => { db.resets = db.resets || {}; db.resets[mail] = { code, exp: Date.now() + 900000 }; SpilStore.log(db, ad.name, 'Requested password reset', mail); });
+      return this.setState({ forgot: 2, forgotErr: '', fCode: '', fPw: '', fPw2: '', shownCode: ad ? code : '' });
+    }
+    const r = (D.resets || {})[mail];
+    if (!r || r.exp < Date.now()) return this.setState({ forgotErr: 'That code has expired. Go back and request a new one.' });
+    if ((S.fCode || '').trim() !== r.code) return this.setState({ forgotErr: 'That code is not right.' });
+    if ((S.fPw || '').length < 8) return this.setState({ forgotErr: 'New password needs at least 8 characters.' });
+    if (S.fPw !== S.fPw2) return this.setState({ forgotErr: 'The new passwords do not match.' });
+    SpilStore.update(db => { const x = db.admins.find(a => a.email.toLowerCase() === mail); if (x) x.password = S.fPw; delete db.resets[mail]; SpilStore.log(db, x ? x.name : mail, 'Reset password', mail); });
+    this.setState({ forgot: 0, lMail: mail, lPw: '', loginErr: '', forgotErr: '' }); this.t('Password reset. Sign in with your new password.');
+  }
+  signIn(e) {
+    e.preventDefault();
+    const S = this.state, a = SpilStore.get().admins.find(x => x.email.toLowerCase() === S.lMail.trim().toLowerCase() && x.password === S.lPw);
+    if (!a) return this.setState({ loginErr: 'That email and password do not match.' });
+    const pub = { email: a.email, name: a.name, role: a.role };
+    try { sessionStorage.setItem('spil-admin', JSON.stringify(pub)); } catch (err) {}
+    this.setState({ admin: pub, view: 'overview', lPw: '', loginErr: '' });
+    SpilStore.update(db => SpilStore.log(db, a.name, 'Signed in', 'Admin console'));
+  }
+  signOut() { SpilStore.update(db => SpilStore.log(db, this.who(), 'Signed out', 'Admin console')); try { sessionStorage.removeItem('spil-admin'); } catch (e) {} this.setState({ admin: null, view: 'login', lMail: '', lPw: '' }); }
+  openPack(p) { this.setState({ modal: { kind: 'pack', id: p ? p.id : null }, modalErr: '', form: p ? { name: p.name, blurb: p.blurb, icon: p.icon, tone: p.tone, adult: p.adult ? (p.heat || 'spicy') : 'all', status: p.status } : { name: '', blurb: '', icon: 'ph ph-cards', tone: 'accent', adult: 'all', status: 'draft' } }); }
+  openQ(q) { const D = SpilStore.get(); this.setState({ modal: { kind: 'q', id: q ? q.id : null }, modalErr: '', form: q ? { text: q.text, pack: q.pack, status: q.status } : { text: '', pack: (D.packs.find(p => p.name === this.state.chip) || D.packs[0] || {}).id || '', status: 'live' } }); }
+  save(e) {
+    e.preventDefault();
+    const { modal: m, form: f } = this.state, D = SpilStore.get();
+    if (m.kind === 'admin') {
+      const name = (f.name || '').trim(), email = (f.email || '').trim().toLowerCase();
+      if (name.length < 2) return this.setState({ modalErr: 'Add their name.' });
+      if (!/^\S+@\S+\.\S+$/.test(email)) return this.setState({ modalErr: 'That email looks off.' });
+      if (D.admins.some(a => a.email.toLowerCase() === email)) return this.setState({ modalErr: 'That email already has an account.' });
+      if ((f.password || '').length < 8) return this.setState({ modalErr: 'Passwords need at least 8 characters.' });
+      this.act(db => db.admins.push({ id: SpilStore.uid(), name, email, password: f.password, role: f.role || 'Moderator' }), 'Admin added. Share the password with them privately.', 'Added admin', email);
+      return this.setState({ modal: null });
+    }
+    if (m.kind === 'acct') {
+      const me = D.admins.find(a => a.email === (this.state.admin || {}).email);
+      const name = (f.name || '').trim(), email = (f.email || '').trim().toLowerCase();
+      if (name.length < 2) return this.setState({ modalErr: 'Add your name.' });
+      if (!/^\S+@\S+\.\S+$/.test(email)) return this.setState({ modalErr: 'That email looks off.' });
+      if (D.admins.some(a => a.email.toLowerCase() === email && a.email !== me.email)) return this.setState({ modalErr: 'Another admin already uses that email.' });
+      if (!me || me.password !== f.current) return this.setState({ modalErr: 'Enter your current password to save changes.' });
+      const old = me.email;
+      this.act(db => { const x = db.admins.find(a => a.email === old); x.name = name; x.email = email; }, 'Your details are saved.', 'Edited own account', old === email ? email : `${old} to ${email}`);
+      const pub = { email, name, role: me.role }; try { sessionStorage.setItem('spil-admin', JSON.stringify(pub)); } catch (e) {}
+      return this.setState({ modal: null, admin: pub });
+    }
+    if (m.kind === 'pw') {
+      const me = D.admins.find(a => a.email === (this.state.admin || {}).email);
+      if (!me || me.password !== f.current) return this.setState({ modalErr: 'Your current password is not right.' });
+      if ((f.password || '').length < 8) return this.setState({ modalErr: 'New password needs at least 8 characters.' });
+      if (f.password !== f.confirm) return this.setState({ modalErr: 'The new passwords do not match.' });
+      this.act(db => { db.admins.find(a => a.email === me.email).password = f.password; }, 'Password changed.', 'Changed password', me.email);
+      return this.setState({ modal: null });
+    }
+    if (m.kind === 'pack') {
+      const name = (f.name || '').trim();
+      if (name.length < 2) return this.setState({ modalErr: 'Give the pack a name.' });
+      if (D.packs.some(p => p.name.toLowerCase() === name.toLowerCase() && p.id !== m.id)) return this.setState({ modalErr: 'A pack with that name already exists.' });
+      if (f.status === 'live' && m.id && !D.questions.some(q => q.pack === m.id && q.status === 'live')) return this.setState({ modalErr: 'Add at least one live question before publishing.' });
+      if (f.status === 'live' && !m.id) return this.setState({ modalErr: 'Save it as a draft first, then add questions.' });
+      const data = { name, blurb: (f.blurb || '').trim(), icon: f.icon, tone: f.tone, adult: f.adult !== 'all', heat: f.adult === 'all' ? '' : f.adult, status: f.status, updated: Date.now() };
+      if (m.id) this.act(db => Object.assign(db.packs.find(p => p.id === m.id), data), 'Pack saved.', 'Edited pack', name);
+      else { const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + SpilStore.uid().slice(0, 4); this.act(db => db.packs.push({ id, ...data }), 'Pack created.', 'Created pack', name); }
+    } else {
+      const lines = (f.text || '').split('\n').map(l => l.trim()).filter(Boolean);
+      if (!m.id && lines.length > 1) {
+        if (!f.pack) return this.setState({ modalErr: 'Pick a pack.' });
+        const clean = lines.map(l => { let t = l.replace(/^have you ever\s*/i, ''); if (!t.endsWith('?')) t += '?'; return t; }).filter(t => t.length >= 7);
+        const fresh = clean.filter((t, i) => clean.indexOf(t) === i && !D.questions.some(q => q.pack === f.pack && q.text.toLowerCase() === t.toLowerCase()));
+        if (!fresh.length) return this.setState({ modalErr: 'All of those are already in this pack.' });
+        this.act(db => fresh.forEach(t => db.questions.push({ id: SpilStore.uid(), yes: 0, answered: 0, text: t, pack: f.pack, status: f.status, updated: Date.now() })), `${fresh.length} questions added${fresh.length < lines.length ? ', duplicates skipped' : ''}.`, 'Added questions', `${fresh.length} to ${(D.packs.find(p => p.id === f.pack) || {}).name}`);
+        return this.setState({ modal: null });
+      }
+      let text = (f.text || '').trim().replace(/^have you ever\s*/i, '');
+      if (text.length < 6) return this.setState({ modalErr: 'Write the rest of the question.' });
+      if (!text.endsWith('?')) text += '?';
+      if (!f.pack) return this.setState({ modalErr: 'Pick a pack.' });
+      if (D.questions.some(q => q.text.toLowerCase() === text.toLowerCase() && q.pack === f.pack && q.id !== m.id)) return this.setState({ modalErr: 'That question is already in this pack.' });
+      const data = { text, pack: f.pack, status: f.status, updated: Date.now() };
+      if (m.id) this.act(db => Object.assign(db.questions.find(q => q.id === m.id), data), 'Question saved.', 'Edited question', text);
+      else this.act(db => db.questions.push({ id: SpilStore.uid(), yes: 0, answered: 0, ...data }), 'Question added.', 'Added question', text);
+    }
+    this.setState({ modal: null });
+  }
+  del() {
+    const m = this.state.modal, D = SpilStore.get();
+    if (m.kind === 'pack') {
+      const p = D.packs.find(x => x.id === m.id), n = D.questions.filter(q => q.pack === m.id).length;
+      return this.ask(`Delete ${p.name}?`, `Its ${n} questions go with it. Rooms already playing keep theirs.`, 'Delete pack', () => { this.setState({ modal: null }); this.act(db => { db.removedSeeds = [...(db.removedSeeds || []), m.id]; db.packs = db.packs.filter(x => x.id !== m.id); db.questions = db.questions.filter(q => q.pack !== m.id); }, 'Pack deleted.', 'Deleted pack', p.name); });
+    } else {
+      const q = D.questions.find(x => x.id === m.id);
+      return this.ask('Delete this question?', `Have you ever ${q.text} It is removed for good and its open reports are closed.`, 'Delete question', () => { this.setState({ modal: null }); this.act(db => { db.questions = db.questions.filter(x => x.id !== m.id); db.reports.forEach(r => { if (r.qid === m.id && r.status === 'open') r.status = 'actioned'; }); }, 'Question deleted.', 'Deleted question', q.text); });
+    }
+    this.setState({ modal: null });
+  }
+  saveSettings(e) {
+    e.preventDefault();
+    const s = this.state.sets; if (!s) return;
+    const q = +s.questionsPerGame, mx = +s.maxPlayers, mn = +s.minPlayers;
+    if (!(q >= 5 && q <= 50)) return this.setState({ setErr: 'Questions per game must be between 5 and 50.' });
+    if (!(mn >= 2 && mn <= 12)) return this.setState({ setErr: 'Minimum players must be between 2 and 12.' });
+    if (!(mx >= mn && mx <= 24)) return this.setState({ setErr: 'Maximum players must be between the minimum and 24.' });
+    this.act(db => { db.settings = { questionsPerGame: q, maxPlayers: mx, minPlayers: mn }; }, 'Settings saved. New rooms use them.', 'Changed settings', `${q} questions, ${mn} to ${mx} players`);
+    this.setState({ sets: null, setErr: '' });
+  }
+  renderVals() {
+    const S = this.state, embed = this.embed(), ok = !!window.SpilStore;
+    const D = ok ? SpilStore.get() : { packs: [], questions: [], reports: [], messages: [], rooms: {}, audit: [], settings: {}, plays: {}, games: {}, joins: [] };
+    const mode = 'dark';
+    const theme = SPIL_THEMES[mode];
+    const v = S.view; const wide = (S.vw || 1280) >= 1100;
+    const th = (label, w, right) => ({ label, style: { textAlign: right ? 'right' : 'left', padding: wide ? '12px 14px' : '12px 10px', font: '600 12px/1 "Geist Mono", monospace', color: 'var(--text-muted)', width: w || 'auto', background: 'var(--surface-raised)', whiteSpace: 'nowrap', position: 'sticky', top: 0, zIndex: 1 } });
+    const td = (val, o = {}) => ({ v: val, icon: o.icon || '', style: { padding: wide ? '12px 14px' : '12px 10px', font: o.mono ? '500 13px/1.3 "Geist Mono", monospace' : '400 14px/1.4 Geist, sans-serif', color: o.muted ? 'var(--text-muted)' : 'var(--text)', textAlign: o.right ? 'right' : 'left', fontWeight: o.bold ? 600 : undefined, whiteSpace: o.nowrap ? 'nowrap' : 'normal' } });
+    const AB_ICON = { 'Questions': 'ph ph-list-bullets', 'Edit': 'ph ph-pencil-simple', 'Hide': 'ph ph-eye-slash', 'Show': 'ph ph-eye', 'Close': 'ph ph-lock-simple', 'Dismiss': 'ph ph-x', 'Hide question': 'ph ph-eye-slash', 'Reply': 'ph ph-arrow-bend-up-left', 'Mark read': 'ph ph-envelope-open', 'Delete': 'ph ph-trash', 'Reset password': 'ph ph-key' };
+    const ab = (label, on, danger) => { const icon = !wide && AB_ICON[label]; return { label, on, icon: icon || '', hasIcon: !!icon, showText: !icon, style: { height: 36, padding: '0 14px', marginLeft: 6, borderRadius: 999, border: `1.5px solid ${danger ? 'var(--error)' : 'var(--line)'}`, background: 'transparent', color: danger ? 'var(--error)' : 'var(--text)', font: '600 13px/1 Geist, sans-serif', cursor: 'pointer', ...(icon ? { width: 40, height: 40, padding: 0, marginLeft: 4, display: 'inline-grid', placeItems: 'center', verticalAlign: 'middle' } : {}) } }; };
+    const chipStyle = sel => ({ height: 40, padding: '0 16px', borderRadius: 999, border: `1.5px solid ${sel ? 'var(--accent)' : 'var(--line)'}`, background: sel ? 'var(--accent-soft)' : 'transparent', color: sel ? 'var(--accent-ink)' : 'var(--text)', font: '600 14px/1 Geist, sans-serif', whiteSpace: 'nowrap', cursor: 'pointer' });
+    const mkChips = list => list.map(c => ({ label: c, sel: S.chip === c ? 'true' : 'false', on: () => this.setState({ chip: c, limit: 40 }), style: chipStyle(S.chip === c) }));
+    const packName = id => (D.packs.find(p => p.id === id) || {}).name || 'Deleted pack';
+    const qText = id => (D.questions.find(q => q.id === id) || {}).text || 'Deleted question';
+    const openReports = D.reports.filter(r => r.status === 'open');
+    const rooms = Object.values(D.rooms).sort((a, b) => b.created - a.created);
+    const liveRooms = rooms.filter(r => r.status !== 'closed' && r.status !== 'results' && Date.now() - r.updated < 3600000);
+    const newMsgs = D.messages.filter(m => m.status === 'new');
+    const sq = S.search.trim().toLowerCase();
+    let cols = [], rows = [], title = 'Overview', actionLabel = '', act = null, hasSearch = false, chips = null, emptyText = 'Nothing here yet.', searchPh = 'Search';
+
+    if (v === 'rooms') {
+      title = 'Rooms'; hasSearch = true; searchPh = 'Search by code'; chips = mkChips(['All', 'Active', 'Finished', 'Closed']); emptyText = 'No rooms yet. Start one from the game.';
+      cols = [th('Code', 90), th('Pack'), ...(wide ? [th('Host')] : []), th('Players', 90, true), th('Status', 130), th('Started', 120), th('', wide ? 120 : 110)];
+      rows = rooms.filter(r => (!sq || r.code.toLowerCase().includes(sq)) && (S.chip === 'All' || (S.chip === 'Closed' ? r.status === 'closed' : S.chip === 'Finished' ? r.status === 'results' : !['closed', 'results'].includes(r.status))))
+        .map(r => { const act = SpilStore.active(r); return { cells: [td(r.code, { mono: true, bold: true }), td(packName(r.pack), { nowrap: true }), ...(wide ? [td((r.players[r.host] || {}).name || 'Left', { muted: !(r.players[r.host] || {}).name, nowrap: true })] : []), td(`${act.length}`, { mono: true, right: true }), td(CAP(r.status), { icon: ICON[r.status], nowrap: true }), td(AGO(r.created), { muted: true, nowrap: true })],
+          actions: r.status === 'closed' ? [] : [ab('Close', () => this.ask(`Close room ${r.code}?`, 'Everyone in it is sent back to the start screen. This cannot be undone.', 'Close room', () => this.act(db => { db.rooms[r.code].status = 'closed'; }, `Room ${r.code} closed.`, 'Closed room', r.code)), true)] }; });
+    }
+    if (v === 'packs') {
+      title = 'Packs'; actionLabel = 'New pack'; act = () => this.openPack(null); emptyText = 'No packs. Create one to get started.';
+      cols = [th('Pack'), th('Questions', 110, true), th('Rating', 130), th('Status', 110), ...(wide ? [th('Games', 90, true), th('Updated', 120)] : []), th('', wide ? 210 : 110)];
+      rows = D.packs.map(p => { const all = D.questions.filter(q => q.pack === p.id), live = all.filter(q => q.status === 'live').length;
+        return { cells: [td(p.name, { bold: true, nowrap: true }), td(`${live} / ${all.length}`, { mono: true, right: true }), td(p.adult ? ({ spicy: '18+', explicit: '18+ Explicit', intense: '18+ Intense' }[p.heat] || '18+') : 'All', { mono: true, nowrap: true }), td(CAP(p.status), { icon: ICON[p.status] }), ...(wide ? [td(String(D.plays[p.id] || 0), { mono: true, right: true }), td(AGO(p.updated), { muted: true, nowrap: true })] : [])],
+          actions: [ab('Questions', () => this.setState({ view: 'questions', chip: p.name, search: '' })), ab('Edit', () => this.openPack(p))] }; });
+    }
+    if (v === 'questions') {
+      title = 'Questions'; actionLabel = 'Add question'; act = () => this.openQ(null); hasSearch = true; searchPh = 'Search questions'; chips = mkChips(['All', ...D.packs.map(p => p.name)]); emptyText = 'No questions match.';
+      cols = [{ ...th('Have you ever'), style: { ...th('Have you ever').style, minWidth: 260 } }, th('Pack', 130), ...(wide ? [th('Yes rate', 90, true)] : []), ...(wide ? [th('Answered', 100, true), th('Reports', 80, true)] : []), th('Status', 100), th('', wide ? 170 : 110)];
+      rows = D.questions.filter(q => (S.chip === 'All' || packName(q.pack) === S.chip) && (!sq || q.text.toLowerCase().includes(sq)))
+        .map(q => { const rep = openReports.filter(r => r.qid === q.id).length;
+          return { cells: [td(q.text), td(packName(q.pack), { muted: true, nowrap: true }), ...(wide ? [td(q.answered ? Math.round(q.yes / q.answered * 100) + '%' : 'n/a', { mono: true, right: true })] : []), ...(wide ? [td(String(q.answered), { mono: true, right: true }), td(String(rep), { mono: true, right: true })] : []), td(CAP(q.status), { icon: ICON[q.status] })],
+            actions: [ab(q.status === 'hidden' ? 'Show' : 'Hide', () => this.act(db => { db.questions.find(x => x.id === q.id).status = q.status === 'hidden' ? 'live' : 'hidden'; }, q.status === 'hidden' ? 'Question is live again.' : 'Question hidden.', q.status === 'hidden' ? 'Showed question' : 'Hid question', q.text)), ab('Edit', () => this.openQ(q))] }; });
+    }
+    if (v === 'reports') {
+      title = 'Reports'; chips = mkChips(['Open', 'All']); emptyText = S.chip === 'Open' ? 'No open reports. Nice and quiet.' : 'No reports yet.';
+      cols = [th('Question'), th('Reason', 150), th('Room', 80), th('When', 110), th('Status', 110), th('', wide ? 230 : 110)];
+      rows = D.reports.filter(r => S.chip === 'All' || r.status === 'open')
+        .map(r => ({ cells: [td(qText(r.qid), { bold: true }), td(r.reason, { muted: true }), td(r.room, { mono: true }), td(AGO(r.at), { muted: true, nowrap: true }), td(CAP(r.status), { icon: ICON[r.status] })],
+          actions: r.status !== 'open' ? [] : [ab('Dismiss', () => this.act(db => { db.reports.find(x => x.id === r.id).status = 'dismissed'; }, 'Report dismissed.', 'Dismissed report', qText(r.qid))), ab('Hide question', () => this.act(db => { const q = db.questions.find(x => x.id === r.qid); if (q) q.status = 'hidden'; db.reports.forEach(x => { if (x.qid === r.qid && x.status === 'open') x.status = 'actioned'; }); }, 'Question hidden. Reports closed.', 'Hid question', qText(r.qid)), true)] }));
+    }
+    if (v === 'inbox') {
+      title = 'Inbox'; chips = mkChips(['All', 'New']); emptyText = 'No messages yet. They arrive from the Contact page.';
+      cols = [th('When', 130), th('From', 200), th('Message'), th('', wide ? 200 : 110)];
+      rows = D.messages.filter(m => S.chip === 'All' || m.status === 'new')
+        .map(m => ({ cells: [td(WHEN(m.at), { mono: true, muted: true, nowrap: true }), td(m.email || 'No email', { bold: m.status === 'new', muted: !m.email }), td(m.text, { bold: m.status === 'new' })],
+          actions: [...(m.email ? [ab('Reply', () => { window.open(`mailto:${m.email}?subject=${encodeURIComponent('Re: your SPIL message')}`); })] : []), ab(m.status === 'new' ? 'Mark read' : 'Delete', () => m.status === 'new' ? this.act(db => { db.messages.find(x => x.id === m.id).status = 'read'; }, 'Marked read.') : this.act(db => { db.messages = db.messages.filter(x => x.id !== m.id); }, 'Message deleted.', 'Deleted message', m.email || 'anonymous'), m.status !== 'new')] }));
+    }
+    if (v === 'audit') {
+      title = 'Audit log'; hasSearch = true; searchPh = 'Search the log';
+      cols = [th('When', 150), th('Who', 160), th('Action', 180), th('Target'), th('', 10)];
+      rows = D.audit.filter(a => !sq || `${a.who} ${a.action} ${a.target}`.toLowerCase().includes(sq)).slice(0, 200).map(a => ({ cells: [td(WHEN(a.at), { mono: true, muted: true, nowrap: true }), td(a.who, { bold: true, nowrap: true }), td(a.action, { nowrap: true }), td(a.target, { muted: true })], actions: [] }));
+    }
+    if (v === 'settings') title = 'Settings';
+    const totalRows = rows.length, lim = S.limit || 40; rows = rows.slice(0, lim);
+
+    const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+    const today = rooms.filter(r => r.created >= startOfDay.getTime()).length, joins = D.joins.filter(t => t >= startOfDay.getTime()).length;
+    const maxPlay = Math.max(1, ...D.packs.map(p => D.plays[p.id] || 0));
+    const byQ = {}; openReports.forEach(r => { byQ[r.qid] = (byQ[r.qid] || 0) + 1; });
+    const sets = S.sets || D.settings;
+    const setF = (k, label, min, max, hint) => ({ id: 'set-' + k, label, min, max, hint, value: sets[k], on: e => this.setState({ sets: { ...sets, [k]: e.target.value }, setErr: '' }) });
+    const f = S.form, m = S.modal, upd = k => e => this.setState({ form: { ...S.form, [k]: e.target.value }, modalErr: '' });
+    const fld = (id, label, kind, extra = {}) => ({ id: 'f-' + id, label, type: 'text', isText: kind === 'text', isArea: kind === 'area', isSelect: kind === 'select', value: f[id] ?? '', on: upd(id), options: [], max: 200, hint: '', hasHint: !!extra.hint, ...extra });
+    const statusOpts = [{ v: 'live', l: 'Live' }, { v: 'draft', l: 'Draft' }, { v: 'hidden', l: 'Hidden' }];
+    const fields = !m ? [] : m.kind === 'admin' ? [
+      fld('name', 'Name', 'text', { max: 40 }), fld('email', 'Email', 'text', { type: 'email', max: 80 }), fld('password', 'Temporary password', 'text', { type: 'password', max: 64, hint: 'At least 8 characters. Ask them to change it after signing in.' }),
+      fld('role', 'Role', 'select', { options: [{ v: 'Moderator', l: 'Moderator' }, { v: 'Content lead', l: 'Content lead' }, { v: 'Owner', l: 'Owner' }] })
+    ] : m.kind === 'acct' ? [
+      fld('name', 'Name', 'text', { max: 40 }), fld('email', 'Email', 'text', { type: 'email', max: 80, hint: 'You sign in with this email.' }), fld('current', 'Current password', 'text', { type: 'password', max: 64, hint: 'Needed to confirm it is you.' })
+    ] : m.kind === 'pw' ? [
+      fld('current', 'Current password', 'text', { type: 'password', max: 64 }), fld('password', 'New password', 'text', { type: 'password', max: 64, hint: 'At least 8 characters.' }), fld('confirm', 'Repeat new password', 'text', { type: 'password', max: 64 })
+    ] : m.kind === 'pack' ? [
+      fld('name', 'Name', 'text', { max: 28 }), fld('blurb', 'One-line description', 'text', { max: 60, hint: 'Shown on the pack tile. Keep it short.' }),
+      fld('icon', 'Icon', 'select', { options: ICONS.map(([v, l]) => ({ v, l })) }), fld('adult', 'Rating (sets the tile colour: 18+ packs are black)', 'select', { options: [{ v: 'all', l: 'Everyone' }, { v: 'spicy', l: '18+ Spicy (age check)' }, { v: 'explicit', l: '18+ Explicit (age check)' }, { v: 'intense', l: '18+ Intense (age check)' }] }), fld('status', 'Status', 'select', { options: statusOpts, hint: 'Only live packs with live questions show in the game.' })
+    ] : [
+      fld('text', 'Have you ever...', 'area', { max: m.id ? 140 : 4000, hint: m.id ? 'Write the rest of the sentence. We add the question mark if you forget.' : 'Write the rest of the sentence. Paste several lines to add one question per line.' }),
+      fld('pack', 'Pack', 'select', { options: D.packs.map(p => ({ v: p.id, l: p.name })) }), fld('status', 'Status', 'select', { options: statusOpts })
+    ];
+    const navDef = [['overview', 'Overview', 'ph ph-chart-bar', ''], ['rooms', 'Rooms', 'ph ph-door-open', liveRooms.length || ''], ['packs', 'Packs', 'ph ph-cards', D.packs.length], ['questions', 'Questions', 'ph ph-list-bullets', D.questions.length], ['reports', 'Reports', 'ph ph-flag', openReports.length || ''], ['inbox', 'Inbox', 'ph ph-envelope-simple', newMsgs.length || ''], ['audit', 'Audit log', 'ph ph-clock-counter-clockwise', ''], ['settings', 'Settings', 'ph ph-gear-six', '']];
+    const alert = k => (k === 'reports' && openReports.length) || (k === 'inbox' && newMsgs.length);
+    const adminName = (S.admin && S.admin.name) || 'Admin';
+    const inputStyle = { height: 48, width: '100%', boxSizing: 'border-box', borderRadius: 14, border: '1.5px solid var(--line-strong)', background: 'var(--bg)', color: 'var(--text)', padding: '0 14px', font: '500 15px/1 Geist, sans-serif' };
+    return {
+      root: { ...theme, position: 'relative', display: 'flex', width: embed ? 1280 : '100%', height: embed ? 800 : '100vh', background: 'var(--bg)', color: 'var(--text)', fontFamily: 'Geist, sans-serif', overflow: 'hidden' },
+      isLogin: v === 'login', isApp: v !== 'login', isOverview: v === 'overview', isSettings: v === 'settings', hasTable: !['overview', 'login', 'settings'].includes(v),
+      inputStyle, areaStyle: { ...inputStyle, height: 'auto', padding: '12px 14px', lineHeight: 1.45, resize: 'vertical' },
+      lMail: S.lMail, lPw: S.lPw, onLMail: e => this.setState({ lMail: e.target.value, loginErr: '' }), onLPw: e => this.setState({ lPw: e.target.value, loginErr: '' }), hasLoginErr: !!S.loginErr, loginErr: S.loginErr,
+      signIn: e => this.signIn(e), signOut: () => this.signOut(),
+      adminName, adminRole: (S.admin && S.admin.role) || '', adminInitials: adminName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
+      nav: navDef.map(([k, label, icon, badge]) => ({ label, icon, badge: String(badge), cur: v === k ? 'page' : 'false', on: () => this.go(k),
+        badgeStyle: alert(k) ? { minWidth: 20, height: 20, padding: '0 6px', boxSizing: 'border-box', borderRadius: 999, background: 'var(--accent)', color: 'var(--on-accent)', display: 'grid', placeItems: 'center', font: '600 11px/1 "Geist Mono", monospace' } : { font: '500 12px/1 "Geist Mono", monospace', color: 'var(--text-muted)' },
+        style: { height: 44, display: 'flex', alignItems: 'center', gap: 10, padding: '0 12px', border: 0, borderRadius: 999, background: v === k ? 'var(--surface-raised)' : 'transparent', color: v === k ? 'var(--text)' : 'var(--text-muted)', font: '600 14px/1 Geist, sans-serif', cursor: 'pointer' } })),
+      title, actionLabel, hasAction: !!actionLabel, act: () => act && act(), hasSearch, searchPh, search: S.search, onSearch: e => this.setState({ search: e.target.value, limit: 40 }),
+      hasChips: !!chips, chips: chips || [], cols, rows, empty: rows.length === 0, emptyText,
+      hasMore: totalRows > rows.length, moreLabel: `Show more (${totalRows - rows.length} left)`, rowCount: `Showing ${rows.length} of ${totalRows}`, showMore: () => this.setState({ limit: lim + 40 }),
+      stats: [['Rooms today', today, `${liveRooms.length} active now`, 'rooms'], ['Players today', joins, today ? `${(joins / today).toFixed(1)} per room` : 'no rooms yet', 'rooms'], ['Games finished', D.games.started ? Math.round(D.games.finished / D.games.started * 100) + '%' : 'n/a', `${D.games.finished} of ${D.games.started} started`, 'rooms'], ['Open reports', openReports.length, openReports.length ? 'tap to review' : 'nothing to review', 'reports']]
+        .map(([label, value, note, to], i) => ({ label, value: String(value), note, on: () => this.go(to), style: { padding: 20, display: 'grid', gap: 10, textAlign: 'left', border: 0, borderLeft: i ? '1px solid var(--line)' : 0, background: 'transparent', color: 'var(--text)', cursor: 'pointer', font: 'inherit' } })),
+      packBars: D.packs.map(p => ({ name: p.name, plays: String(D.plays[p.id] || 0), bar: { width: `${(D.plays[p.id] || 0) / maxPlay * 100}%`, height: 8, borderRadius: 999, background: 'var(--accent)' } })),
+      reportsShort: Object.entries(byQ).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([qid, count]) => ({ q: `Have you ever ${qText(qid)}`, count: String(count), on: () => this.go('reports') })), noFlags: openReports.length === 0,
+      settingFields: [setF('questionsPerGame', 'Default questions per game', 5, 50, 'Pre-selected for hosts. They can pick more or fewer when they choose a pack.'), setF('minPlayers', 'Minimum players to start', 2, 12, 'The host cannot start below this.'), setF('maxPlayers', 'Maximum players per room', 3, 24, 'Joining is blocked once a room is full.')],
+      saveSettings: e => this.saveSettings(e), hasSetErr: !!S.setErr, setErr: S.setErr,
+      resetAll: () => this.ask('Reset all data?', 'Every room, pack edit, report and message is wiped and the starting content comes back.', 'Reset everything', () => { SpilStore.reset(); SpilStore.update(db => SpilStore.log(db, this.who(), 'Reset all data', 'Everything')); this.t('Data reset.'); }),
+      modalOpen: !!m, modalTitle: !m ? '' : m.kind === 'admin' ? 'Add admin' : m.kind === 'pw' ? 'Change password' : m.kind === 'acct' ? 'Edit my details' : m.kind === 'pack' ? (m.id ? 'Edit pack' : 'New pack') : (m.id ? 'Edit question' : 'Add question'), fields, closeModal: () => this.setState({ modal: null }),
+      modalSave: e => this.save(e), modalDelete: () => this.del(), canDelete: !!(m && m.id && (m.kind === 'pack' || m.kind === 'q')), hasModalErr: !!S.modalErr, modalErr: S.modalErr,
+      hasExport: v === 'questions', exportCsv: () => {
+        const esc = x => '"' + String(x).replace(/"/g, '""') + '"';
+        const list = D.questions.filter(q => (S.chip === 'All' || packName(q.pack) === S.chip) && (!sq || q.text.toLowerCase().includes(sq)));
+        const csv = ['pack,question,status,answered,yes_rate', ...list.map(q => [packName(q.pack), 'Have you ever ' + q.text, q.status, q.answered, q.answered ? Math.round(q.yes / q.answered * 100) + '%' : ''].map(esc).join(','))].join('\n');
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'spil-questions.csv'; document.body.appendChild(a); a.click(); a.remove();
+        this.t(`Exported ${list.length} questions.`);
+      },
+      openAdmin: () => this.setState({ modal: { kind: 'admin' }, form: { role: 'Moderator' }, modalErr: '' }), openPw: () => this.setState({ modal: { kind: 'pw' }, form: {}, modalErr: '' }),
+      openAcct: () => this.setState({ modal: { kind: 'acct' }, form: { name: (S.admin || {}).name || '', email: (S.admin || {}).email || '' }, modalErr: '' }),
+      loginMain: !S.forgot, loginForgot: !!S.forgot, forgotStep1: S.forgot === 1, forgotStep2: S.forgot === 2,
+      openForgot: () => this.setState({ forgot: 1, fMail: S.lMail, forgotErr: '' }), closeForgot: () => this.setState({ forgot: 0, forgotErr: '' }),
+      forgotSubmit: e => this.forgotSubmit(e), forgotCta: S.forgot === 2 ? 'Set new password' : 'Send reset code',
+      forgotIntro: S.forgot === 2 ? 'Enter the code and choose a new password. The code works for 15 minutes.' : 'Enter the email you sign in with. We will send you a 6-digit code.',
+      codeNotice: S.shownCode ? `No mail server is connected yet, so here is the code we would email to ${S.fMail}: ${S.shownCode}` : 'If that email belongs to an admin, a code is on its way.',
+      fMail: S.fMail || '', fCode: S.fCode || '', fPw: S.fPw || '', fPw2: S.fPw2 || '',
+      onFMail: e => this.setState({ fMail: e.target.value, forgotErr: '' }), onFCode: e => this.setState({ fCode: e.target.value.replace(/\D/g, ''), forgotErr: '' }), onFPw: e => this.setState({ fPw: e.target.value, forgotErr: '' }), onFPw2: e => this.setState({ fPw2: e.target.value, forgotErr: '' }),
+      hasForgotErr: !!S.forgotErr, forgotErr: S.forgotErr || '',
+      adminRows: (D.admins || []).map(a => { const you = S.admin && S.admin.email === a.email; return { name: a.name, email: a.email, role: a.role, ini: a.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(), isYou: !!you, canRemove: !you && D.admins.length > 1,
+        resetPw: () => this.ask(`Reset ${a.name}'s password?`, 'They get a temporary password and should change it after signing in.', 'Reset password', () => { const tmp = 'spil-' + Math.random().toString(36).slice(2, 8); this.act(db => { db.admins.find(x => x.email === a.email).password = tmp; }, '', 'Reset password for', a.email); this.setState({ cf: { title: 'Temporary password', body: `Send this to ${a.name}: ${tmp}`, cta: 'Done', fn: null } }); }),
+        remove: () => this.ask(`Remove ${a.name}?`, 'They lose access to the admin console straight away.', 'Remove admin', () => this.act(db => { db.admins = db.admins.filter(x => x.email !== a.email); }, 'Admin removed.', 'Removed admin', a.email)) }; }),
+      confirmOpen: !!S.cf, cfTitle: S.cf ? S.cf.title : '', cfBody: S.cf ? S.cf.body : '', cfCta: S.cf ? S.cf.cta : '', cancelConfirm: () => this.setState({ cf: null }), okConfirm: () => { const f = S.cf && S.cf.fn; this.setState({ cf: null }); f && f(); },
+      themeLabel: mode === 'dark' ? 'Switch to light theme' : 'Switch to dark theme',
+      toggleTheme: () => { const n = mode === 'dark' ? 'light' : 'dark'; this.setState({ themePref: n }); try { localStorage.setItem('spil-admin-theme', n); } catch (e) {} },
+      themeIconEl: React.createElement('i', { key: mode, className: mode === 'light' ? 'ph ph-sun' : 'ph ph-moon', style: { display: 'block', fontSize: 18, animation: embed ? 'none' : 'ad-icon 240ms cubic-bezier(.23,1,.32,1)' } }),
+      hasToast: !!S.toast, toast: S.toast
+    };
+  }
+}
+</script>
+</body>
+</html>
