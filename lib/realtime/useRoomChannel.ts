@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { getBrowserClient } from "@/lib/supabase/client";
+import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
 
 type Options = {
   code: string;
@@ -29,30 +29,40 @@ export function useRoomChannel({ code, channel, playerId, pollingOnly, onNudge }
 
   useEffect(() => {
     if (!channel || !playerId || pollingOnly) return;
-    const supabase = getBrowserClient();
     const refetch = () => qc.invalidateQueries({ queryKey: ["room", code] });
     let cancelled = false;
-    const ch = supabase.channel(channel, {
-      config: { private: true, presence: { key: playerId } },
-    });
-
-    ch.on("broadcast", { event: "*" }, ({ event, payload }) => {
-      if (event === "nudge" && payload?.targetPlayerId) nudgeRef.current?.(payload.targetPlayerId);
-      refetch();
-    }).on("presence", { event: "sync" }, () => {
-      setOnline(new Set(Object.keys(ch.presenceState())));
-    });
+    let supabase: SupabaseClient | undefined;
+    let ch: RealtimeChannel | undefined;
 
     (async () => {
+      // supabase-js loads after first paint: the room renders from /state, realtime only speeds
+      // up updates, and polling covers the gap until it connects.
+      const { getBrowserClient } = await import("@/lib/supabase/client");
+      if (cancelled) return;
+      supabase = getBrowserClient();
+      const room = supabase.channel(channel, {
+        config: { private: true, presence: { key: playerId } },
+      });
+      ch = room;
+      room
+        .on("broadcast", { event: "*" }, ({ event, payload }) => {
+          if (event === "nudge" && payload?.targetPlayerId)
+            nudgeRef.current?.(payload.targetPlayerId);
+          refetch();
+        })
+        .on("presence", { event: "sync" }, () => {
+          setOnline(new Set(Object.keys(room.presenceState())));
+        });
+
       // Private channels authorise with the user's JWT.
       const { data } = await supabase.auth.getSession();
       if (cancelled) return;
       if (data.session) await supabase.realtime.setAuth(data.session.access_token);
-      ch.subscribe(async (status) => {
+      room.subscribe(async (status) => {
         if (cancelled) return;
         if (status === "SUBSCRIBED") {
           setLive(true);
-          await ch.track({ at: Date.now() });
+          await room.track({ at: Date.now() });
           refetch();
         } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
           setLive(false);
@@ -63,7 +73,7 @@ export function useRoomChannel({ code, channel, playerId, pollingOnly, onNudge }
     return () => {
       cancelled = true;
       setLive(false);
-      supabase.removeChannel(ch);
+      if (supabase && ch) void supabase.removeChannel(ch);
     };
   }, [channel, playerId, pollingOnly, code, qc]);
 

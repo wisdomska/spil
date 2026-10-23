@@ -92,7 +92,7 @@ First-load JavaScript (gzip, all scripts in the HTML), measured with `scripts/me
 | `/join`        | 366 KB           | 220 KB |
 | `/how-to-play` | 298 KB           | 217 KB |
 | `/r/[code]/me` | 312 KB           | 240 KB |
-| `/r/[code]`    | 424 KB           | 412 KB |
+| `/r/[code]`    | 424 KB           | 348 KB |
 
 About 180 KB of every page is the framework (React DOM, the RSC runtime, the router). The room
 page adds Motion (swipe and reveal), Supabase Realtime and the room views. The 150 KB target for
