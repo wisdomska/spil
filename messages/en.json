@@ -465,7 +465,7 @@
     },
     "reset": {
       "title": "Reset your password",
-      "introEmail": "Enter the email you sign in with. We will send you a 6-digit code.",
+      "introEmail": "Enter the email you sign in with. We will send you a reset email.",
       "introCode": "Enter the code and choose a new password. The code works for 1 hour.",
       "introLink": "Choose a new password for your admin account.",
       "adminEmail": "Admin email",
@@ -695,6 +695,9 @@
       "importTitle": "Import questions",
       "importIntro": "Upload a CSV with a header row. Columns: question, plus pack_id or pack (id or name), and an optional status. An export from this page imports as is.",
       "importFile": "CSV file",
+      "importChoose": "Choose a CSV file",
+      "importBrowse": "Browse",
+      "importChange": "Change",
       "importDefault": "Status for rows without one",
       "importCta": "Import",
       "importNoFile": "Choose a CSV file first.",

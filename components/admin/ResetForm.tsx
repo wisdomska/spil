@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
+import { Wordmark } from "@/components/brand/Wordmark";
 import { Button } from "@/components/ui/Button";
 import { PASSWORD_MIN } from "@/lib/admin/schemas";
 import { api, ClientApiError } from "@/lib/api/client";
@@ -24,6 +25,7 @@ type Step = "email" | "code" | "link" | "checking";
 export function ResetForm() {
   const t = useTranslations("admin.reset");
   const tc = useTranslations("admin.common");
+  const tb = useTranslations("admin");
   const router = useRouter();
   const params = useSearchParams();
   const [step, setStep] = useState<Step>(
@@ -160,6 +162,12 @@ export function ResetForm() {
           if (!busy && step !== "checking") submit();
         }}
       >
+        <span className="flex items-center gap-2.5">
+          <Wordmark size={30} />
+          <span className="rounded-pill border border-line px-2.5 py-1.5 font-mono text-[13px] leading-none font-medium text-text-muted">
+            {tb("badge")}
+          </span>
+        </span>
         <AuthTitle>{t("title")}</AuthTitle>
         <p className="m-0 text-[15px] leading-[1.5] text-text-muted">
           {step === "email" ? t("introEmail") : step === "code" ? t("introCode") : t("introLink")}

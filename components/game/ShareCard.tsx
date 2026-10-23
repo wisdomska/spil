@@ -18,6 +18,8 @@ export type ShareCardProps = {
   score?: number;
   award?: AwardKey;
   room?: string;
+  /** The pack the room played, shown under the room code. */
+  pack?: string;
   board?: BoardRow[];
   /** Square card footer sticker, e.g. Mind Reader: Zainab. */
   boardAward?: { award: AwardKey; name: string };
@@ -109,6 +111,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
     score = 0,
     award = "open_book",
     room = "",
+    pack,
     board = [],
     boardAward,
     copy,
@@ -171,14 +174,21 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <Wordmark size={104} />
-              <span
-                style={{
-                  font: "500 32px/1 var(--font-mono)",
-                  color: "var(--text-muted)",
-                  letterSpacing: ".06em",
-                }}
-              >
-                {copy.room(room)}
+              <span style={{ display: "grid", justifyItems: "end", gap: 14 }}>
+                <span
+                  style={{
+                    font: "500 32px/1 var(--font-mono)",
+                    color: "var(--text-muted)",
+                    letterSpacing: ".06em",
+                  }}
+                >
+                  {copy.room(room)}
+                </span>
+                {pack && (
+                  <span style={{ font: "700 36px/1 var(--font-sans)", whiteSpace: "nowrap" }}>
+                    {pack}
+                  </span>
+                )}
               </span>
             </div>
             <div style={{ marginTop: 120, display: "flex", alignItems: "center", gap: 32 }}>
@@ -299,14 +309,21 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <Wordmark size={76} />
-              <span
-                style={{
-                  font: "500 28px/1 var(--font-mono)",
-                  color: "var(--text-muted)",
-                  letterSpacing: ".06em",
-                }}
-              >
-                {copy.room(room)}
+              <span style={{ display: "grid", justifyItems: "end", gap: 10 }}>
+                <span
+                  style={{
+                    font: "500 28px/1 var(--font-mono)",
+                    color: "var(--text-muted)",
+                    letterSpacing: ".06em",
+                  }}
+                >
+                  {copy.room(room)}
+                </span>
+                {pack && (
+                  <span style={{ font: "700 30px/1 var(--font-sans)", whiteSpace: "nowrap" }}>
+                    {pack}
+                  </span>
+                )}
               </span>
             </div>
             <span style={{ font: "800 72px/.95 var(--font-display)", letterSpacing: "-.035em" }}>
@@ -351,12 +368,9 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
                   {labelFor(top?.score ?? 0).name}
                 </span>
               </div>
+              {/* Rows stack from the top; a short room should not spread them down the card. */}
               <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                }}
+                style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start" }}
               >
                 {board.slice(0, 6).map((p) => (
                   <div

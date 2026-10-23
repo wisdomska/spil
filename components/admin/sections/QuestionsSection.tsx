@@ -186,6 +186,14 @@ export function QuestionsSection() {
   return (
     <>
       <PageHeader title={tn("questions")}>
+        {canWrite && (
+          <Button size="md" onClick={() => open(null)} className="px-[18px]">
+            <PlusIcon aria-hidden size={18} />
+            {t("add")}
+          </Button>
+        )}
+      </PageHeader>
+      <div className="flex flex-wrap items-center gap-2">
         <SearchBox
           value={search}
           onChange={(v) => {
@@ -220,13 +228,9 @@ export function QuestionsSection() {
               <UploadSimpleIcon aria-hidden size={18} />
               {t("import")}
             </OutlineButton>
-            <Button size="md" onClick={() => open(null)} className="px-[18px]">
-              <PlusIcon aria-hidden size={18} />
-              {t("add")}
-            </Button>
           </>
         )}
-      </PageHeader>
+      </div>
       <Chips
         label={t("packFilter")}
         value={pack}
@@ -248,7 +252,7 @@ export function QuestionsSection() {
           caption={tn("questions")}
           cols={[
             { label: t("cols.text") },
-            { label: t("cols.pack"), width: 130 },
+            { label: t("cols.pack"), width: 130, noPhone: true },
             { label: t("cols.yesRate"), width: 90, right: true, wide: true },
             { label: t("cols.answered"), width: 100, right: true, wide: true },
             { label: t("cols.reports"), width: 80, right: true, wide: true },
@@ -265,7 +269,7 @@ export function QuestionsSection() {
             return (
               <Tr key={x.id}>
                 <Td className="min-w-[200px] min-[1100px]:min-w-[260px]">{x.text}</Td>
-                <Td muted nowrap>
+                <Td muted nowrap noPhone>
                   {packName(x.packId)}
                 </Td>
                 <Td mono right wide>
@@ -410,17 +414,29 @@ function ImportDialog({ open, onClose }: { open: boolean; onClose: () => void })
     >
       <p className="m-0 text-[15px] leading-[1.5] text-text-muted">{t("importIntro")}</p>
       <FieldRow id="qn-file" label={t("importFile")}>
-        <input
-          id="qn-file"
-          type="file"
-          accept=".csv,text/csv"
-          onChange={(e) => {
-            setFile(e.target.files?.[0] ?? null);
-            setError(null);
-            setRowErrors([]);
-          }}
-          className="box-border min-h-12 w-full rounded-input border-[1.5px] border-line-strong bg-bg px-3.5 py-2.5 text-[15px] text-text file:mr-3 file:h-8 file:cursor-pointer file:rounded-pill file:border-[1.5px] file:border-solid file:border-line file:bg-transparent file:px-3 file:font-semibold file:text-text"
-        />
+        <label
+          htmlFor="qn-file"
+          className="flex min-h-14 cursor-pointer items-center gap-3 rounded-input border-[1.5px] border-dashed border-line-strong bg-bg px-4 py-3 focus-within:border-accent focus-within:shadow-[0_0_0_3px_var(--accent-soft)] hover:border-text-muted"
+        >
+          <UploadSimpleIcon aria-hidden size={20} className="shrink-0 text-text-muted" />
+          <span className="min-w-0 flex-1 truncate text-[15px] font-medium">
+            {file ? file.name : t("importChoose")}
+          </span>
+          <span className="shrink-0 text-[14px] font-semibold text-accent-ink">
+            {file ? t("importChange") : t("importBrowse")}
+          </span>
+          <input
+            id="qn-file"
+            type="file"
+            accept=".csv,text/csv"
+            onChange={(e) => {
+              setFile(e.target.files?.[0] ?? null);
+              setError(null);
+              setRowErrors([]);
+            }}
+            className="sr-only"
+          />
+        </label>
       </FieldRow>
       <FieldRow id="qn-default" label={t("importDefault")}>
         <Select

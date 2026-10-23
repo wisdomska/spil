@@ -81,7 +81,7 @@ export function ReportsSection() {
           caption={tn("reports")}
           cols={[
             { label: t("cols.subject") },
-            { label: t("cols.reason"), width: 150 },
+            { label: t("cols.reason"), width: 150, noPhone: true },
             { label: t("cols.room"), width: 80, wide: true },
             { label: t("cols.when"), width: 110, wide: true },
             { label: t("cols.status"), width: 110 },
@@ -97,7 +97,7 @@ export function ReportsSection() {
               <Td bold className="min-w-[180px]">
                 {subject(r)}
               </Td>
-              <Td muted className="min-w-[140px]">
+              <Td muted noPhone className="min-w-[140px]">
                 {r.reason}
               </Td>
               <Td mono wide>

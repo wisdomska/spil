@@ -18,7 +18,7 @@ type RowProps = {
 /** Label above, muted hint below (design modal field). */
 export function FieldRow({ id, label, hint, children }: RowProps) {
   return (
-    <div className="grid gap-2">
+    <div className="grid content-start gap-2">
       <label htmlFor={id} className="text-[14px] leading-none font-semibold">
         {label}
       </label>

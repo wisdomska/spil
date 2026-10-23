@@ -264,6 +264,7 @@ export function ResultsView({
         open={share}
         onOpenChange={setShare}
         room={state.room.code}
+        pack={state.room.pack.name}
         name={state.me.nickname}
         avatar={state.me.avatar}
         score={score}

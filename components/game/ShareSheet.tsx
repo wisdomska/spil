@@ -18,6 +18,7 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   room: string;
+  pack?: string;
   name: string;
   avatar: number;
   score: number;
@@ -41,6 +42,7 @@ export function ShareSheet(props: Props) {
   const cardProps = {
     theme: "dark" as const,
     room: props.room,
+    pack: props.pack,
     name: props.name,
     hideName: props.hideName,
     avatar: props.avatar,

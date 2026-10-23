@@ -85,11 +85,11 @@ export function RoomsSection() {
           caption={tn("rooms")}
           cols={[
             { label: t("cols.code"), width: 90 },
-            { label: t("cols.pack") },
+            { label: t("cols.pack"), noPhone: true },
             { label: t("cols.host"), wide: true },
-            { label: t("cols.players"), width: 90, right: true },
+            { label: t("cols.players"), width: 90, right: true, noPhone: true },
             { label: t("cols.status"), width: 130 },
-            { label: t("cols.started"), width: 120 },
+            { label: t("cols.started"), width: 120, noPhone: true },
           ]}
           empty={rows.length === 0}
           emptyText={t("empty")}
@@ -102,23 +102,24 @@ export function RoomsSection() {
               <Td mono bold>
                 {r.code}
               </Td>
-              <Td nowrap>{r.packName}</Td>
+              <Td nowrap noPhone>
+                {r.packName}
+              </Td>
               <Td wide nowrap muted={!r.hostNickname}>
                 {r.hostNickname ?? t("hostLeft")}
               </Td>
-              <Td mono right>
+              <Td mono right noPhone>
                 {r.players}
               </Td>
               <Td nowrap>
                 <StatusLabel status={r.status} />
               </Td>
-              <Td muted nowrap>
+              <Td muted nowrap noPhone>
                 {ago(r.createdAt)}
               </Td>
               <ActionsTd>
                 {r.status !== "closed" && (
                   <RowAction
-                    danger
                     icon={LockSimpleIcon}
                     label={t("close")}
                     onClick={() =>

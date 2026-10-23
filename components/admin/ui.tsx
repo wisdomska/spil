@@ -251,8 +251,16 @@ export function Panel({ className, children }: { className?: string; children: R
 
 /** Columns flagged `wide` show from 1100 px, like the design's narrow layout. */
 export const WIDE = "hidden min-[1100px]:table-cell";
+/** Columns flagged `noPhone` hide below 640 px so the row fits a phone without sideways scroll. */
+export const NO_PHONE = "max-sm:hidden";
 
-export type Col = { label: string; width?: number; right?: boolean; wide?: boolean };
+export type Col = {
+  label: string;
+  width?: number;
+  right?: boolean;
+  wide?: boolean;
+  noPhone?: boolean;
+};
 
 export function DataTable({
   cols,
@@ -289,6 +297,7 @@ export function DataTable({
                   "sticky top-0 z-[1] bg-surface-raised px-2.5 py-3 font-mono text-[12px] leading-none font-semibold whitespace-nowrap text-text-muted min-[1100px]:px-3.5",
                   c.right ? "text-right" : "text-left",
                   c.wide && WIDE,
+                  c.noPhone && NO_PHONE,
                 )}
               >
                 {c.label}
@@ -334,6 +343,7 @@ export function Td({
   right,
   nowrap,
   wide,
+  noPhone,
   className,
 }: {
   children: React.ReactNode;
@@ -343,6 +353,7 @@ export function Td({
   right?: boolean;
   nowrap?: boolean;
   wide?: boolean;
+  noPhone?: boolean;
   className?: string;
 }) {
   return (
@@ -355,6 +366,7 @@ export function Td({
         right ? "text-right" : "text-left",
         nowrap && "whitespace-nowrap",
         wide && WIDE,
+        noPhone && NO_PHONE,
         className,
       )}
     >
@@ -424,8 +436,8 @@ export function StatusLabel({ status }: { status: string }) {
   const t = useTranslations("admin.status");
   const IconCmp = STATUS_ICON[status];
   return (
-    <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-      {IconCmp && <IconCmp aria-hidden size={16} />}
+    <span className="inline-flex items-center gap-1.5 align-middle whitespace-nowrap">
+      {IconCmp && <IconCmp aria-hidden size={16} className="shrink-0" />}
       {t.has(status) ? t(status) : status}
     </span>
   );

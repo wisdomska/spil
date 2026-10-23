@@ -4,7 +4,7 @@ import { ListBulletsIcon, PencilSimpleIcon, PlusIcon } from "@phosphor-icons/rea
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { FieldRow, Input, Select } from "@/components/admin/fields";
+import { FieldRow, Input, Select, TextArea } from "@/components/admin/fields";
 import {
   ActionsTd,
   adminApi,
@@ -93,7 +93,7 @@ export function PacksSection() {
   };
   const set =
     <K extends keyof Form>(k: K) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
       setForm((f) => ({ ...f, [k]: e.target.value }));
       setError(null);
     };
@@ -167,8 +167,8 @@ export function PacksSection() {
           caption={tn("packs")}
           cols={[
             { label: t("cols.pack") },
-            { label: t("cols.questions"), width: 110, right: true },
-            { label: t("cols.rating"), width: 130 },
+            { label: t("cols.questions"), width: 110, right: true, noPhone: true },
+            { label: t("cols.rating"), width: 130, noPhone: true },
             { label: t("cols.status"), width: 110 },
             { label: t("cols.games"), width: 90, right: true, wide: true },
             { label: t("cols.updated"), width: 120, wide: true },
@@ -182,15 +182,15 @@ export function PacksSection() {
           {shown.map((p) => (
             <Tr key={p.id}>
               <Td bold nowrap>
-                <span className="inline-flex items-center gap-2">
+                <span className="inline-flex items-center gap-2 align-middle">
                   <PackGlyph icon={p.icon} size={18} />
                   {p.name}
                 </span>
               </Td>
-              <Td mono right>
+              <Td mono right noPhone>
                 {p.liveQuestions} / {p.totalQuestions}
               </Td>
-              <Td mono nowrap>
+              <Td mono nowrap noPhone>
                 {t(`rating.${p.isAdult ? (p.heat ?? "spicy") : "all"}`)}
               </Td>
               <Td>
@@ -228,12 +228,14 @@ export function PacksSection() {
           <Input id="pk-name" value={form.name} onChange={set("name")} maxLength={40} required />
         </FieldRow>
         <FieldRow id="pk-blurb" label={t("blurb")} hint={t("blurbHint")}>
-          <Input
+          <TextArea
             id="pk-blurb"
+            rows={2}
             value={form.blurb}
             onChange={set("blurb")}
             maxLength={140}
             aria-describedby="pk-blurb-hint"
+            className="!resize-none"
           />
         </FieldRow>
         <FieldRow id="pk-icon" label={t("icon")}>

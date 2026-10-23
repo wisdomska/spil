@@ -74,7 +74,7 @@ export function InboxSection() {
           caption={tn("inbox")}
           cols={[
             { label: t("cols.when"), width: 130, wide: true },
-            { label: t("cols.from"), width: 200 },
+            { label: t("cols.from"), width: 200, noPhone: true },
             { label: t("cols.message") },
           ]}
           empty={rows.length === 0}
@@ -90,7 +90,7 @@ export function InboxSection() {
                 <Td mono muted nowrap wide>
                   {when(m.createdAt)}
                 </Td>
-                <Td bold={fresh} muted={!m.email} className="break-all">
+                <Td bold={fresh} muted={!m.email} noPhone className="break-all">
                   {m.name ? (
                     <span className="grid gap-0.5">
                       <span>{m.name}</span>

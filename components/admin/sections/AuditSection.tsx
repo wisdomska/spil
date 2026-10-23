@@ -52,8 +52,8 @@ export function AuditSection() {
         <DataTable
           caption={tn("audit")}
           cols={[
-            { label: t("cols.when"), width: 150 },
-            { label: t("cols.who"), width: 160 },
+            { label: t("cols.when"), width: 150, noPhone: true },
+            { label: t("cols.who"), width: 160, noPhone: true },
             { label: t("cols.action"), width: 180 },
             { label: t("cols.target") },
           ]}
@@ -65,10 +65,10 @@ export function AuditSection() {
         >
           {shown.map((a) => (
             <Tr key={a.id}>
-              <Td mono muted nowrap>
+              <Td mono muted nowrap noPhone>
                 {when(a.at)}
               </Td>
-              <Td bold nowrap>
+              <Td bold nowrap noPhone>
                 {a.who}
               </Td>
               <Td nowrap>{label(a.action)}</Td>

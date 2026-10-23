@@ -187,9 +187,10 @@ export function ConsoleShell({ me, children }: { me: Me; children: React.ReactNo
           </header>
           <main
             id="admin-main"
-            className="box-border flex min-w-0 flex-1 flex-col gap-[22px] px-4 py-6 lg:overflow-auto lg:px-[clamp(20px,3vw,40px)] lg:py-7"
+            className="box-border min-w-0 flex-1 px-4 py-6 lg:overflow-auto lg:px-[clamp(20px,3vw,40px)] lg:py-7"
           >
-            {children}
+            {/* Pages sit in a centred column, so wide screens do not leave them hugging the sidebar. */}
+            <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-[22px]">{children}</div>
           </main>
         </div>
       </div>

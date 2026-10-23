@@ -32,11 +32,11 @@ export function SettingsSection() {
   const me = useMe();
   const owner = can(me.role, "settings.write");
   return (
-    <>
+    <div className="mx-auto grid w-full max-w-[760px] gap-[22px]">
       <PageHeader title={tn("settings")} />
       {owner && <GameSettings />}
       <Accounts me={me} />
-    </>
+    </div>
   );
 }
 
@@ -53,7 +53,7 @@ function GameSettings() {
   if (q.isError) return <LoadError onRetry={() => q.refetch()} />;
   if (!q.data)
     return (
-      <SkeletonGroup label={tc("loading")} className="max-w-[720px] gap-5">
+      <SkeletonGroup label={tc("loading")} className="gap-5">
         <Skeleton className="h-[340px] rounded-card" />
         <Skeleton className="h-[300px] rounded-card" />
       </SkeletonGroup>
@@ -88,7 +88,7 @@ function GameSettings() {
     const mn = Number(vals.minPlayers);
     const mx = Number(vals.maxPlayers);
     if (!Number.isInteger(qn) || qn < 5 || qn > 100) return setError(t("rangeQuestions"));
-    if (!Number.isInteger(mn) || mn < 3 || mn > 20) return setError(t("rangeMin"));
+    if (!Number.isInteger(mn) || mn < 2 || mn > 20) return setError(t("rangeMin"));
     if (!Number.isInteger(mx) || mx < mn || mx > 20) return setError(t("rangeMax"));
     setBusy(true);
     const res = await run(
@@ -102,7 +102,7 @@ function GameSettings() {
 
   return (
     <>
-      <Panel className="grid max-w-[720px] gap-[18px] p-6">
+      <Panel className="grid gap-[18px] p-6">
         <h2 className="m-0 text-[17px] leading-none font-bold">{t("game")}</h2>
         <form
           noValidate
@@ -112,9 +112,11 @@ function GameSettings() {
             if (!busy) save();
           }}
         >
-          {field("questionsPerGame", t("questionsPerGame"), t("questionsPerGameHint"), 5, 100)}
-          {field("minPlayers", t("minPlayers"), t("minPlayersHint"), 2, 20)}
-          {field("maxPlayers", t("maxPlayers"), t("maxPlayersHint"), 3, 20)}
+          <div className="grid gap-[18px] sm:grid-cols-3 sm:gap-4">
+            {field("questionsPerGame", t("questionsPerGame"), t("questionsPerGameHint"), 5, 100)}
+            {field("minPlayers", t("minPlayers"), t("minPlayersHint"), 2, 20)}
+            {field("maxPlayers", t("maxPlayers"), t("maxPlayersHint"), 3, 20)}
+          </div>
           <ErrorLine>{error}</ErrorLine>
           <div>
             <Button type="submit" size="md" loading={busy} className="px-[22px]">
@@ -124,7 +126,7 @@ function GameSettings() {
         </form>
       </Panel>
 
-      <Panel className="grid max-w-[720px] gap-3 p-6">
+      <Panel className="grid gap-3 p-6">
         <h2 className="m-0 mb-1 text-[17px] leading-none font-bold">{t("flags")}</h2>
         {FLAG_KEYS.map((key) => {
           const on = q.data.flags[key] ?? false;
@@ -132,6 +134,7 @@ function GameSettings() {
             <SwitchRow
               key={key}
               look="plain"
+              className="-mx-2 w-[calc(100%+16px)]"
               checked={on}
               title={t(`flag.${key}.title`)}
               description={t(`flag.${key}.body`)}
@@ -149,7 +152,7 @@ function GameSettings() {
       </Panel>
 
       {q.data.canResetData && (
-        <div className="flex max-w-[720px] flex-wrap items-center justify-between gap-4 rounded-card border border-error px-6 py-5">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-card border border-error px-6 py-5">
           <div className="grid min-w-0 flex-[1_1_240px] gap-1.5">
             <span className="text-[17px] leading-none font-bold">{t("dangerTitle")}</span>
             <span className="text-[14px] leading-[1.45] text-text-muted">{t("dangerBody")}</span>
@@ -286,16 +289,16 @@ function Accounts({ me }: { me: Me }) {
     });
 
   return (
-    <Panel className="grid max-w-[720px] gap-3.5 p-6">
+    <Panel className="grid gap-3.5 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="m-0 text-[17px] leading-none font-bold">
           {owner ? t("accounts") : t("myAccount")}
         </h2>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid w-full gap-2 sm:flex sm:w-auto sm:flex-wrap">
           <OutlineButton onClick={() => openModal("details")}>{t("editDetails")}</OutlineButton>
           <OutlineButton onClick={() => openModal("password")}>{t("changePassword")}</OutlineButton>
           {owner && (
-            <Button size="md" className="px-[18px]" onClick={() => openModal("add")}>
+            <Button size="md" className="px-[18px] max-sm:w-full" onClick={() => openModal("add")}>
               <UserPlusIcon aria-hidden size={16} />
               {t("addAdmin")}
             </Button>
