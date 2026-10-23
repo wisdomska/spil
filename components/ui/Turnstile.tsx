@@ -18,14 +18,28 @@ declare global {
   }
 }
 
+/** Tokens live 300 s at Cloudflare; use a prefetched one only while it has a safe margin left. */
+const TOKEN_TTL_MS = 240_000;
+
 /**
- * Invisible Cloudflare Turnstile. `getToken()` resolves to a fresh token, or undefined when no
- * site key is configured (local and CI), in which case the server also skips verification.
+ * Invisible Cloudflare Turnstile. The check runs in the background as soon as the page is ready,
+ * so `getToken()` usually returns at once; after a token is used the next one is fetched quietly.
+ * Resolves undefined when no site key is configured (local and CI), in which case the server also
+ * skips verification.
  */
 export function useTurnstile() {
   const holder = useRef<HTMLDivElement>(null);
   const widget = useRef<string | null>(null);
+  const ready = useRef<{ token: string; at: number } | null>(null);
+  const running = useRef(false);
   const waiters = useRef<Array<(token: string | undefined) => void>>([]);
+
+  const run = useCallback(() => {
+    if (!widget.current || !window.turnstile || running.current) return;
+    running.current = true;
+    window.turnstile.reset(widget.current);
+    window.turnstile.execute(widget.current);
+  }, []);
 
   const render = useCallback(() => {
     if (!SITE_KEY || !holder.current || !window.turnstile || widget.current) return;
@@ -35,13 +49,21 @@ export function useTurnstile() {
       execution: "execute",
       appearance: "interaction-only",
       callback: (token: string) => {
-        waiters.current.splice(0).forEach((resolve) => resolve(token));
+        running.current = false;
+        const waiting = waiters.current.splice(0);
+        if (waiting.length) waiting.forEach((resolve) => resolve(token));
+        else ready.current = { token, at: Date.now() };
       },
       "error-callback": () => {
+        running.current = false;
         waiters.current.splice(0).forEach((resolve) => resolve(undefined));
       },
+      "expired-callback": () => {
+        ready.current = null;
+      },
     });
-  }, []);
+    run();
+  }, [run]);
 
   useEffect(render, [render]);
 
@@ -49,14 +71,19 @@ export function useTurnstile() {
     if (!SITE_KEY) return undefined;
     render();
     if (!window.turnstile || !widget.current) return undefined;
-    const id = widget.current;
+    const cached = ready.current;
+    ready.current = null;
+    if (cached && Date.now() - cached.at < TOKEN_TTL_MS) {
+      // Tokens are single use: start on the next one now, in case this request is retried.
+      setTimeout(run, 0);
+      return cached.token;
+    }
     return new Promise((resolve) => {
       waiters.current.push(resolve);
-      window.turnstile!.reset(id);
-      window.turnstile!.execute(id);
+      run();
       setTimeout(() => resolve(undefined), 15_000);
     });
-  }, [render]);
+  }, [render, run]);
 
   const element = SITE_KEY ? (
     <>
