@@ -6,7 +6,7 @@ import { cn } from "@/lib/cn";
 
 /** Admin field look (design inputStyle): 48 px, radius 14, 1.5 px strong edge, page background. */
 export const FIELD =
-  "box-border w-full rounded-input border-[1.5px] border-line-strong bg-bg px-3.5 text-[15px] font-medium text-text";
+  "box-border w-full rounded-input border-[1.5px] border-line-strong bg-bg px-3.5 text-[15px] font-medium text-text focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]";
 
 type RowProps = {
   id: string;

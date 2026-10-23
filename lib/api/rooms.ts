@@ -134,7 +134,8 @@ export async function heartbeat(ctx: Ctx) {
   await db().from("players").update({ last_seen_at: now }).eq("id", ctx.me.id);
   ctx.me.last_seen_at = now;
   const humans = ctx.players.filter((p) => !p.is_bot);
-  const host = nextHost(humans.map(toPhase), ctx.room.host_player_id, now);
+  const creator = humans.find((p) => p.user_id === ctx.room.created_by);
+  const host = nextHost(humans.map(toPhase), ctx.room.host_player_id, now, creator?.id);
   if (host && host !== ctx.room.host_player_id) {
     await db().from("rooms").update({ host_player_id: host }).eq("id", ctx.room.id);
     ctx.room.host_player_id = host;

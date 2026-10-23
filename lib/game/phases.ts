@@ -131,15 +131,19 @@ export function isHostInactive(host: PhasePlayer, now: TimeInput): boolean {
 }
 
 /**
- * Who should host. Keeps the current host while they are active and seen in the last 10 minutes;
- * otherwise passes to the earliest-joined active player, preferring ones with a recent heartbeat.
- * Returns null when nobody active is left.
+ * Who should host. The room's creator (`creatorId`) hosts whenever they are active and seen in
+ * the last 10 minutes, so hosting comes back to them after a stretch away from the app. Otherwise
+ * the current host keeps it on the same terms, and failing that it passes to the earliest-joined
+ * active player, preferring ones with a recent heartbeat. Returns null when nobody active is left.
  */
 export function nextHost(
   players: readonly PhasePlayer[],
   currentHostId: string | null,
   now: TimeInput,
+  creatorId?: string | null,
 ): string | null {
+  const creator = creatorId ? players.find((p) => p.id === creatorId) : undefined;
+  if (creator && !isHostInactive(creator, now)) return creator.id;
   const current = players.find((p) => p.id === currentHostId);
   if (current && !isHostInactive(current, now)) return current.id;
   const others = activePlayers(players)

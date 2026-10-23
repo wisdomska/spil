@@ -12,7 +12,7 @@ type FieldProps = {
 } & Omit<React.InputHTMLAttributes<HTMLInputElement & HTMLTextAreaElement>, "id">;
 
 const BASE =
-  "w-full rounded-input border-[1.5px] bg-surface px-4 text-[17px] text-text focus-visible:outline-none";
+  "w-full rounded-input border-[1.5px] bg-surface px-4 text-[17px] text-text focus-visible:outline-none focus:shadow-[0_0_0_3px_var(--accent-soft)]";
 
 /** Label above, helper or error below (error carries an icon). Edge uses --line-strong (HANDOFF rule 3). */
 export const TextField = forwardRef<HTMLInputElement & HTMLTextAreaElement, FieldProps>(
@@ -34,7 +34,7 @@ export const TextField = forwardRef<HTMLInputElement & HTMLTextAreaElement, Fiel
             className={cn(
               BASE,
               "resize-y py-3.5 leading-[1.5]",
-              invalid ? "border-error" : "border-line-strong",
+              invalid ? "border-error" : "border-line-strong focus:border-accent",
               className,
             )}
             {...rest}
@@ -48,7 +48,7 @@ export const TextField = forwardRef<HTMLInputElement & HTMLTextAreaElement, Fiel
             className={cn(
               BASE,
               "h-14 leading-none font-medium",
-              invalid ? "border-error" : "border-line-strong",
+              invalid ? "border-error" : "border-line-strong focus:border-accent",
               className,
             )}
             {...rest}

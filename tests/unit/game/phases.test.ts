@@ -215,6 +215,18 @@ describe("host handover", () => {
     expect(nextHost(ps, "h", NOW)).toBe("a");
   });
 
+  it("hands hosting back to the creator once they are active again", () => {
+    const ps = [p("h", 1), p("a", 2)];
+    expect(nextHost(ps, "a", NOW, "h")).toBe("h");
+  });
+
+  it("keeps the stand-in host while the creator is away or gone", () => {
+    const away = [p("h", 1, { lastSeenAt: NOW - HOST_INACTIVE_MS }), p("a", 2)];
+    expect(nextHost(away, "a", NOW, "h")).toBe("a");
+    const gone = [p("h", 1, { status: "left" }), p("a", 2)];
+    expect(nextHost(gone, "a", NOW, "h")).toBe("a");
+  });
+
   it("passes on after 10 minutes without a heartbeat", () => {
     const ps = [p("h", 1, { lastSeenAt: NOW - HOST_INACTIVE_MS }), p("a", 2), p("b", 3)];
     expect(isHostInactive(ps[0]!, NOW)).toBe(true);

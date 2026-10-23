@@ -19,7 +19,7 @@ export function useRoomState(code: string, live: { current: boolean }) {
     queryKey: roomKey(code),
     queryFn: () => api<RoomState>("GET", `/rooms/${code}/state`),
     refetchInterval: () => (live.current ? 30_000 : 5_000),
-    refetchIntervalInBackground: false,
+    refetchIntervalInBackground: true,
     retry: (count, error) =>
       count < 3 && !(error instanceof ClientApiError && error.status >= 400 && error.status < 500),
   });

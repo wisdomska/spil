@@ -91,3 +91,14 @@ body {
     transition-property: opacity, color, background-color, border-color !important;
   }
 }
+
+/* Text fields show focus with their accent border and glow (base layer above). The design's
+   global outline (tokens.css, unlayered) would draw a second ring around them, so turn it off
+   for text fields only; buttons, links, checkboxes and sliders keep it. */
+:where(
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]),
+  textarea,
+  select
+):focus-visible {
+  outline: none;
+}
