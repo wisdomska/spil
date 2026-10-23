@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.0 (2026-10-23)
+
+- Rooms can start with 2 players (was 3). Question stats still need 3 answers, so nobody's
+  answers are exposed in a 2-player room.
+- Dark only: the theme menu and toggles are gone; share cards are always dark.
+- Info pages: header, tabs and text line up in one column, and the tabs fill it on every screen.
+- Join page: "No code? Start your own room" for people who arrive without an invite.
+- Vercel Web Analytics and Speed Insights are on.
+
 ## 1.0.0 (2026-10-23)
 
 First public release.
