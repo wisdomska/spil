@@ -248,6 +248,11 @@ d("host tools", () => {
     );
   });
 
+  it("two players are enough to start", async () => {
+    const room = await fullRoom(2);
+    expect((await room.host.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);
+  });
+
   it("adult packs need everyone's 18+ confirmation", async () => {
     const room = await fullRoom(3);
     await room.host.call("PATCH", `/rooms/${room.roomCode}/pack`, { packId: "afterdark" });

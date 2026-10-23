@@ -85,7 +85,7 @@ export const patchMessage = z.object({ status: z.enum(["new", "read", "archived"
 export const patchSettings = z
   .object({
     questionsPerGame: z.number().int().min(5).max(100),
-    minPlayers: z.number().int().min(3).max(20),
+    minPlayers: z.number().int().min(2).max(20),
     maxPlayers: z.number().int().min(3).max(20),
   })
   .refine((s) => s.maxPlayers >= s.minPlayers, {

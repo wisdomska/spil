@@ -23,7 +23,7 @@ async function minPlayers() {
   // Builds without database access (CI) fall back to the default.
   return getSettings()
     .then((s) => s.minPlayers)
-    .catch(() => 3);
+    .catch(() => 2);
 }
 
 export default async function HowToPlay() {

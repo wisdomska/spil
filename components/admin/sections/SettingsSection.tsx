@@ -113,7 +113,7 @@ function GameSettings() {
           }}
         >
           {field("questionsPerGame", t("questionsPerGame"), t("questionsPerGameHint"), 5, 100)}
-          {field("minPlayers", t("minPlayers"), t("minPlayersHint"), 3, 20)}
+          {field("minPlayers", t("minPlayers"), t("minPlayersHint"), 2, 20)}
           {field("maxPlayers", t("maxPlayers"), t("maxPlayersHint"), 3, 20)}
           <ErrorLine>{error}</ErrorLine>
           <div>

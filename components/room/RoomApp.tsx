@@ -128,7 +128,7 @@ export function RoomApp({ code }: { code: string }) {
     const reason = e instanceof ClientApiError ? e.code : "";
     if (reason === "AGE_PENDING") return toast(tt("ageFirst"), "err");
     if (reason === "NOT_ENOUGH_PLAYERS")
-      return toast(tt("needPlayersProd", { min: state?.room.settings.minPlayers ?? 3 }), "err");
+      return toast(tt("needPlayersProd", { min: state?.room.settings.minPlayers ?? 2 }), "err");
     if (reason === "RATE_LIMITED") return toast(tt("rateLimited"), "err");
     if (reason === "WRONG_PHASE") return qc.invalidateQueries({ queryKey: roomKey(code) });
     toast(tt("somethingWrong"), "err");

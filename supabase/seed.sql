@@ -4,7 +4,7 @@
 
 -- Settings singleton
 insert into public.settings (id, questions_per_game, max_players, min_players)
-values (true, 12, 12, 3);
+values (true, 12, 12, 2);
 
 -- Feature flags (local values; test players are never on in production)
 insert into public.feature_flags (key, enabled) values
