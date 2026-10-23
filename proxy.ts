@@ -19,7 +19,28 @@ export async function proxy(request: NextRequest) {
     },
   });
   // Touching the user revalidates and, when needed, rotates the access token.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Admin console: signed-out visitors and non-admins go to the sign-in page, and signed-in
+  // admins skip it. The console layout repeats the check on the server (defence in depth).
+  const path = request.nextUrl.pathname;
+  if (path === "/admin" || path.startsWith("/admin/")) {
+    const open = path === "/admin/login" || path === "/admin/reset";
+    let admin = false;
+    if (user) {
+      const { data } = await supabase.rpc("is_admin");
+      admin = data === true;
+    }
+    const target =
+      !open && !admin ? "/admin/login" : path === "/admin/login" && admin ? "/admin" : null;
+    if (target) {
+      const redirect = NextResponse.redirect(new URL(target, request.url));
+      for (const cookie of response.cookies.getAll()) redirect.cookies.set(cookie);
+      return redirect;
+    }
+  }
   return response;
 }
 

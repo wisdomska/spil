@@ -14,7 +14,7 @@ Milestones follow docs/TECH_SPEC.md section 22.
 | 7   | Static and entry screens       | done    |                                                                                                                                |
 | 8   | Room flow                      | done    |                                                                                                                                |
 | 9   | Reveal and results             | done    |                                                                                                                                |
-| 10  | Admin                          | pending |                                                                                                                                |
+| 10  | Admin                          | done    | Console with 8 sections and roles, admin API with audit log, CSV import/export, create-owner script, admin integration tests   |
 | 11  | Hardening                      | pending |                                                                                                                                |
 | 12  | Release                        | pending |                                                                                                                                |
 

@@ -220,8 +220,10 @@ web3 = 30
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.
-# Off: admins are created by the owner (service role); players use anonymous sign-in.
-enable_signup = false
+# Must stay on: the CLI maps this to the email provider switch (`external_email_enabled`), and
+# with it off admins cannot sign in with a password or reset it ("Email logins are disabled").
+# Admins are still created only by the owner (service role); see docs/DECISIONS.md.
+enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
