@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardTextIcon, WarningCircleIcon } from "@phosphor-icons/react";
+import { ClipboardTextIcon, PlusCircleIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -108,6 +108,17 @@ export function JoinForm() {
         <Button block softDisabled={!ready} loading={busy} onClick={submit}>
           {t("submit")}
         </Button>
+        {/* Tertiary way out for people who landed here without an invite. The expired error
+            already offers Start a room above, so it is not repeated then. */}
+        {error !== "expired" && (
+          <Link
+            href="/create"
+            className="flex h-12 items-center justify-center gap-2 rounded-pill text-[15px] leading-none font-semibold text-text-muted no-underline hover:bg-surface-raised hover:text-text"
+          >
+            <PlusCircleIcon size={20} aria-hidden />
+            {t("noCode")}
+          </Link>
+        )}
       </div>
     </>
   );

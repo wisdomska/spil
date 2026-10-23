@@ -118,6 +118,7 @@
     "label": "Room code",
     "paste": "Paste code",
     "submit": "Join with code",
+    "noCode": "No code? Start your own room",
     "invalid": "No room with that code. Check it with your host.",
     "expired": "This room has dried up. Start a fresh one.",
     "full": "This room is full. {max} players max.",

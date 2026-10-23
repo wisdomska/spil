@@ -62,15 +62,7 @@ const route = (path: string) => async (page: Page) => {
 
 const MOBILE: Array<[string, string, (page: Page) => Promise<void>]> = [
   ["Landing", "landing", route("/")],
-  [
-    "Landing, theme menu",
-    "landing-menu",
-    async (page) => {
-      await page.goto("/");
-      await page.getByRole("button", { name: "Choose theme" }).click();
-      await settle(page);
-    },
-  ],
+  // "Landing, theme menu" is not compared: SPIL is dark only, with no theme menu.
   [
     "Join with code, typing",
     "join",

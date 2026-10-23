@@ -3,10 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 
 export type Player = { page: Page; context: BrowserContext; name: string };
 
-/** Fresh browser context (a different phone) with the theme preset. */
-export async function newPlayer(browser: Browser, name: string, theme: "dark" | "light" = "dark") {
+/** Fresh browser context (a different phone). */
+export async function newPlayer(browser: Browser, name: string) {
   const context = await browser.newContext({ storageState: undefined });
-  await context.addInitScript((t) => localStorage.setItem("spil-theme", t), theme);
   const page = await context.newPage();
   return { page, context, name } satisfies Player;
 }

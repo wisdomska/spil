@@ -5,30 +5,29 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Wordmark } from "@/components/brand/Wordmark";
-import { ThemeMenu } from "@/components/ui/ThemeMenu";
 import { cn } from "@/lib/cn";
 
 /** Floating pill header shared by the landing and pre-room screens (design: App header). */
 export function SiteHeader({
   back,
-  howtoCurrent,
+  narrow,
+  hideHowTo,
 }: {
   /** Where Back goes. Omit on the landing page (wordmark on the left instead). */
   back?: string;
-  howtoCurrent?: boolean;
+  /** Match a 720 px reading column (info pages) instead of the full page width. */
+  narrow?: boolean;
+  /** Info pages have their own tabs, so the header link would repeat the first one. */
+  hideHowTo?: boolean;
 }) {
   const t = useTranslations("common");
   const router = useRouter();
 
-  const howTo = (
+  const howTo = hideHowTo ? null : (
     <Link
       href="/how-to-play"
       aria-label={t("howToPlay")}
-      aria-current={howtoCurrent ? "page" : undefined}
-      className={cn(
-        "relative flex h-12 min-w-12 items-center justify-center gap-2 rounded-pill text-[15px] leading-none font-semibold whitespace-nowrap text-text no-underline hover:bg-surface-raised hover:text-text lg:px-[18px]",
-        howtoCurrent && "bg-surface-raised",
-      )}
+      className="relative flex h-12 min-w-12 items-center justify-center gap-2 rounded-pill text-[15px] leading-none font-semibold whitespace-nowrap text-text no-underline hover:bg-surface-raised hover:text-text lg:px-[18px]"
     >
       <QuestionIcon size={20} aria-hidden />
       <span className="sr-only lg:not-sr-only">{t("howToPlay")}</span>
@@ -38,7 +37,8 @@ export function SiteHeader({
   return (
     <header
       className={cn(
-        "sticky top-3 mx-auto mt-3 w-[calc(100%-24px)] max-w-[1160px] rounded-pill border border-line p-1.5",
+        "sticky top-3 mx-auto mt-3 w-[calc(100%-24px)] rounded-pill border border-line p-1.5",
+        narrow ? "max-w-[720px]" : "max-w-[1160px]",
         "bg-[color-mix(in_oklab,var(--surface-raised)_80%,transparent)] shadow-[0_14px_32px_-20px_var(--shadow)] backdrop-blur-[14px] backdrop-saturate-[1.4]",
         back
           ? "grid grid-cols-[1fr_auto_1fr] items-center gap-2"
@@ -61,20 +61,14 @@ export function SiteHeader({
           <Link href="/" className="flex justify-center text-text no-underline hover:text-text">
             <Wordmark size={26} />
           </Link>
-          <span className="flex items-center justify-end gap-1">
-            {howTo}
-            <ThemeMenu />
-          </span>
+          <span className="flex items-center justify-end gap-1">{howTo}</span>
         </>
       ) : (
         <>
           <Link href="/" className="text-text no-underline hover:text-text">
             <Wordmark size={30} />
           </Link>
-          <div className="flex items-center gap-1">
-            {howTo}
-            <ThemeMenu />
-          </div>
+          <div className="flex items-center gap-1">{howTo}</div>
         </>
       )}
     </header>

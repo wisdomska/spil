@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { FRAMES } from "../visual/frames";
 import { apiPlayer, hostRoom, newPlayer } from "./helpers";
 
-// WCAG 2.2 AA in both themes (NFR-AC-01): zero serious or critical axe findings on every route.
+// WCAG 2.2 AA (NFR-AC-01; SPIL is dark only): zero serious or critical axe findings on every route.
 async function audit(page: Page, label: string) {
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
@@ -26,9 +26,9 @@ const STATIC_ROUTES = [
   "/not-a-page",
 ];
 
-for (const theme of ["dark", "light"] as const) {
+for (const theme of ["dark"] as const) {
   test(`static routes have no serious a11y issues (${theme})`, async ({ browser }) => {
-    const p = await newPlayer(browser, "A11y", theme);
+    const p = await newPlayer(browser, "A11y");
     for (const route of STATIC_ROUTES) {
       await p.page.goto(route);
       await p.page.waitForLoadState("networkidle");
@@ -38,7 +38,7 @@ for (const theme of ["dark", "light"] as const) {
   });
 
   test(`room screens have no serious a11y issues (${theme})`, async ({ browser, baseURL }) => {
-    const host = await newPlayer(browser, "Ama", theme);
+    const host = await newPlayer(browser, "Ama");
     const code = await hostRoom(host, { pack: "Classic", count: 5 });
     await audit(host.page, `lobby ${theme}`);
     for (const n of ["Kofi", "Efua"]) await apiPlayer(baseURL!, n).then((p) => p.join(code));

@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Avatar } from "@/components/brand/Avatar";
 import { Wordmark } from "@/components/brand/Wordmark";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useToast } from "@/components/ui/Toast";
 import type { RoomState } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
@@ -47,7 +46,7 @@ type Props = {
 
 /**
  * In-room frame. Below lg: floating pill header with leave and the code. At lg: a 340 px left
- * panel with the room code, players and status, theme toggle and leave (HANDOFF breakpoints).
+ * panel with the room code, players and status and leave (HANDOFF breakpoints).
  */
 export function RoomShell({ state, online, statusFor, order, onLeave, children }: Props) {
   const t = useTranslations("room");
@@ -112,7 +111,6 @@ export function RoomShell({ state, online, statusFor, order, onLeave, children }
           ))}
         </div>
         <div className="mt-auto grid gap-3">
-          <ThemeToggle />
           <button
             type="button"
             onClick={onLeave}

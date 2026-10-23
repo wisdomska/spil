@@ -11,7 +11,6 @@ import { SwitchRow } from "@/components/ui/Switch";
 import { useToast } from "@/components/ui/Toast";
 import { cardToBlob, downloadBlob, shareOrSave } from "@/lib/share/capture";
 import { useCardCopy } from "@/lib/share/useCardCopy";
-import { useTheme } from "@/lib/theme/useTheme";
 import { ShareCard, type BoardRow } from "./ShareCard";
 import { track } from "@/lib/analytics/posthog";
 
@@ -35,13 +34,12 @@ export function ShareSheet(props: Props) {
   const tt = useTranslations("toast");
   const toast = useToast();
   const copy = useCardCopy();
-  const { resolved } = useTheme();
   const [format, setFormat] = useState<"story" | "group">("story");
   const [busy, setBusy] = useState<"save" | "share" | null>(null);
   const capture = useRef<HTMLDivElement>(null);
   const cardFormat = format === "story" ? "story" : "square";
   const cardProps = {
-    theme: resolved,
+    theme: "dark" as const,
     room: props.room,
     name: props.name,
     hideName: props.hideName,

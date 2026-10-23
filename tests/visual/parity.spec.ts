@@ -77,7 +77,8 @@ function compare(a: PNG, b: PNG) {
   return { ratio: n / (width * height), diff };
 }
 
-for (const theme of ["dark", "light"] as const) {
+// SPIL ships dark only, so only the dark frames are compared.
+for (const theme of ["dark"] as const) {
   for (const frame of FRAMES) {
     const set = SETS[frame.set];
     const file = set.file[theme];

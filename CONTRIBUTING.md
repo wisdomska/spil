@@ -18,7 +18,9 @@ GitHub writes its own author on squash and merge commits, so the repo only allow
    ```
 4. Open a PR into `preview`. CI and the Vercel preview deploy must be green.
 5. Merge with **Rebase and merge** (`gh pr merge --rebase`). The single commit lands with your authorship intact.
-6. Release: PR `preview` → `main`, rebase-merged.
+6. Delete the feature branch (`git push origin --delete <branch>`). The repo does not delete
+   branches on merge, because that would also delete `preview` when a release PR merges.
+7. Release: PR `preview` → `main`, landed by fast-forward, then tag `vX.Y.Z`. `preview` stays.
 
 ## Dependabot
 

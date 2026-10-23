@@ -17,11 +17,12 @@ export async function InfoPage({ tab, children }: { tab: InfoTab; children: Reac
   const label = (k: InfoTab) => (k === "howto" ? t("common.howToPlay") : t(`pages.${k}`));
   return (
     <div className="flex min-h-[100dvh] flex-col">
-      <SiteHeader back="/" howtoCurrent={tab === "howto"} />
-      <div className="mx-auto box-border w-full max-w-[720px] px-5 pt-1 pb-14">
+      <SiteHeader back="/" narrow hideHowTo />
+      {/* Same column as the header pill, so header, tabs and text share one left edge. */}
+      <div className="mx-auto box-border w-[calc(100%-24px)] max-w-[720px] pt-1 pb-14">
         <nav
           aria-label={t("pages.tabs")}
-          className="mt-1 mb-7 grid w-full max-w-full grid-cols-4 gap-0.5 rounded-pill border border-line bg-surface p-1 lg:w-fit"
+          className="mt-3 mb-8 flex w-full gap-0.5 rounded-pill border border-line bg-surface p-1"
         >
           {TABS.map(([k, href]) => (
             <Link
@@ -29,7 +30,7 @@ export async function InfoPage({ tab, children }: { tab: InfoTab; children: Reac
               href={href}
               aria-current={k === tab ? "page" : undefined}
               className={cn(
-                "flex h-11 min-w-0 items-center justify-center rounded-pill px-1.5 text-[14px] leading-none font-semibold whitespace-nowrap no-underline lg:px-5 lg:text-[15px]",
+                "flex h-11 flex-auto items-center justify-center rounded-pill px-2.5 text-[14px] leading-none font-semibold whitespace-nowrap no-underline sm:px-4 lg:h-12 lg:text-[15px]",
                 k === tab
                   ? "bg-surface-raised text-text shadow-[0_1px_0_var(--line)] hover:text-text"
                   : "text-text-muted hover:bg-surface-raised hover:text-text",
@@ -39,7 +40,9 @@ export async function InfoPage({ tab, children }: { tab: InfoTab; children: Reac
             </Link>
           ))}
         </nav>
-        <article className="grid gap-[18px] text-[18px] leading-[1.65]">{children}</article>
+        <article className="grid gap-[18px] px-2 text-[18px] leading-[1.65] sm:px-3">
+          {children}
+        </article>
       </div>
     </div>
   );

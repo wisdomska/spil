@@ -22,8 +22,6 @@ import { Sheet } from "@/components/ui/Sheet";
 import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
 import { SwitchRow } from "@/components/ui/Switch";
 import { TextField } from "@/components/ui/TextField";
-import { ThemeMenu } from "@/components/ui/ThemeMenu";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useToast } from "@/components/ui/Toast";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -50,9 +48,7 @@ export function KitchenSink() {
     <main className="mx-auto grid max-w-[880px] gap-10 px-5 py-12">
       <header className="flex items-center justify-between gap-4">
         <Wordmark size={44} />
-        <ThemeMenu />
       </header>
-      <ThemeToggle className="max-w-[340px]" />
 
       <Section title="Type">
         <h1 className="m-0 font-display text-display-l font-extrabold tracking-display">

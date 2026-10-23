@@ -8,7 +8,7 @@ test("full game with 3 players on separate phones, then results, share card and 
   baseURL,
 }) => {
   const host = await newPlayer(browser, "Ama");
-  const kofi = await newPlayer(browser, "Kofi", "light");
+  const kofi = await newPlayer(browser, "Kofi");
   const efua = await newPlayer(browser, "Efua");
 
   const code = await hostRoom(host, { pack: "Classic", count: 5 });

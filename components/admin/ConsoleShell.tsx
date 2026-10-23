@@ -21,8 +21,6 @@ import { createContext, useContext, useState } from "react";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { IconButton } from "@/components/ui/IconButton";
 import { Sheet } from "@/components/ui/Sheet";
-import { ThemeMenu } from "@/components/ui/ThemeMenu";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { sectionsFor, type Section } from "@/lib/admin/roles";
 import type { Counts, Me } from "@/lib/admin/types";
 import { api } from "@/lib/api/client";
@@ -173,7 +171,6 @@ export function ConsoleShell({ me, children }: { me: Me; children: React.ReactNo
           <Nav me={me} />
           <GameLink />
           <div className="mt-auto grid gap-3">
-            <ThemeToggle />
             <Account me={me} />
           </div>
         </aside>
@@ -184,7 +181,6 @@ export function ConsoleShell({ me, children }: { me: Me; children: React.ReactNo
           >
             <Brand size={24} />
             <span className="flex-1" />
-            <ThemeMenu />
             <IconButton label={t("menu")} onClick={() => setMenu(true)}>
               <ListIcon aria-hidden size={20} />
             </IconButton>
