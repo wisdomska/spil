@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0 (2026-10-23)
+
+- Avatars are now 24 emoji (🤪 😈 👻 🦄 and friends) on one plain background, so the face stands out.
+- Bot protection (Cloudflare Turnstile) on room creation and the contact form, running in the
+  background so creating a room stays quick; joining is never checked.
+
 ## 1.2.0 (2026-10-23)
 
 - Share invite: one button opens a sheet with WhatsApp, Instagram, Snapchat, Telegram, X, Facebook,
