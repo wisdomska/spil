@@ -75,8 +75,18 @@ jobs:
               curl -fsS "$SITE$js" | grep -q 'service_role' && { echo "::error::service_role found in $js"; exit 1; } || true
             done
           done
+      - name: Pages and health respond
+        run: |
+          for path in / /join /create /how-to-play /api/health; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$SITE$path")
+            [ "$code" = 200 ] || { echo "::error::$path returned $code"; exit 1; }
+          done
+      # Production has Turnstile, which is built to stop a headless browser creating rooms, so the
+      # full game runs on staging only.
       - run: pnpm exec playwright install --with-deps chromium
+        if: github.ref_name != 'main'
       - name: Smoke test on the live deployment
+        if: github.ref_name != 'main'
         run: pnpm e2e:smoke
         env:
           E2E_BASE_URL: ${{ env.SITE }}
