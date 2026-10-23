@@ -12,7 +12,6 @@ import { ErrorScreen, type ErrorVariant } from "@/components/site/ErrorScreen";
 import { Button } from "@/components/ui/Button";
 import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
 import { SwitchRow } from "@/components/ui/Switch";
-import { useTurnstile } from "@/components/ui/Turnstile";
 import { api, ClientApiError, ensureSession } from "@/lib/api/client";
 import type { PublicRoom } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
@@ -30,7 +29,6 @@ const ROOM_ERRORS: Record<string, ErrorVariant> = {
 export function ProfileForm({ code }: { code: string }) {
   const t = useTranslations("profile");
   const router = useRouter();
-  const { getToken, element } = useTurnstile();
   const [nick, setNick] = useState("");
   const [avatar, setAvatar] = useState(() => Math.floor(Math.random() * AVATAR_COUNT));
   const [age, setAge] = useState(false);
@@ -81,7 +79,7 @@ export function ProfileForm({ code }: { code: string }) {
     if (adult && !age) return setAgeErr(true);
     setBusy(true);
     try {
-      await ensureSession(getToken);
+      await ensureSession();
       await api("POST", `/rooms/${code}/join`, {
         nickname: nick,
         avatar,
@@ -180,7 +178,6 @@ export function ProfileForm({ code }: { code: string }) {
           {isHost ? t("openLobby") : t("joinRoom")}
         </Button>
       </div>
-      {element}
     </main>
   );
 }

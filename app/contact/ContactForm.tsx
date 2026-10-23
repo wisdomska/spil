@@ -35,7 +35,9 @@ export function ContactForm() {
       toast(
         e instanceof ClientApiError && e.code === "RATE_LIMITED"
           ? tt("rateLimited")
-          : tt("somethingWrong"),
+          : e instanceof ClientApiError && e.code === "CAPTCHA_FAILED"
+            ? tt("botCheck")
+            : tt("somethingWrong"),
         "err",
       );
     } finally {

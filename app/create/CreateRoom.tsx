@@ -42,8 +42,9 @@ export function CreateRoom({
         router.push(`/r/${room}`);
         return;
       }
-      // Turnstile tokens are single use: one for the anonymous sign-in, one for room creation.
-      await ensureSession(getToken);
+      // Only room creation is bot-checked (server side); signing in anonymously is not, so the
+      // single-use Turnstile token is spent on the request that needs it.
+      await ensureSession();
       const { code } = await api<{ code: string }>("POST", "/rooms", {
         packId,
         questionCount,
@@ -56,9 +57,11 @@ export function CreateRoom({
       toast(
         code === "RATE_LIMITED"
           ? tt("rateLimited")
-          : code === "PACK_UNAVAILABLE"
-            ? tt("noPacks")
-            : tt("somethingWrong"),
+          : code === "CAPTCHA_FAILED"
+            ? tt("botCheck")
+            : code === "PACK_UNAVAILABLE"
+              ? tt("noPacks")
+              : tt("somethingWrong"),
         "err",
       );
       setBusy(false);
