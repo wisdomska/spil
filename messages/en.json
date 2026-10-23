@@ -46,6 +46,7 @@
   "toast": {
     "linkCopied": "Link copied. Drop it in the group chat.",
     "linkCopiedNoShare": "Link copied. Sharing is not available on this device.",
+    "pasteInApp": "Link copied. Paste it in {app}.",
     "removed": "Removed {name}.",
     "full": "This room is full. {max} players max.",
     "nudgedYou": "{host} nudged you. Hurry up.",
@@ -182,8 +183,10 @@
     "players": "Players",
     "leaveAria": "Leave room",
     "shareText": "Join my SPIL room. Code {code}",
-    "inviteWhatsApp": "Invite on WhatsApp",
-    "moreOptions": "More options"
+    "shareInvite": "Share invite",
+    "inviteTitle": "Invite your friends",
+    "inviteBody": "Send the link wherever your group chats. They tap it and they're in.",
+    "moreApps": "More"
   },
   "lobby": {
     "loading": "Loading room",

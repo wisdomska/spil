@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0 (2026-10-23)
+
+- Share invite: one button opens a sheet with WhatsApp, Instagram, Snapchat, Telegram, X, Facebook,
+  Messenger, Threads, Discord, Messages, Email and Copy link.
+- Buttons show a spinner before the label while they work.
+- New favicon and home-screen icon (the spilled speech bubble).
+- `create-owner` works from any shell: `--email` flag, finds the Supabase CLI on its own.
+
 ## 1.1.0 (2026-10-23)
 
 - Rooms can start with 2 players (was 3). Question stats still need 3 answers, so nobody's

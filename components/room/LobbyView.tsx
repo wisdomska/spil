@@ -9,17 +9,18 @@ import {
   ShareNetworkIcon,
   SwapIcon,
   UsersThreeIcon,
-  WhatsappLogoIcon,
   XIcon,
 } from "@phosphor-icons/react";
 import { useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { Avatar } from "@/components/brand/Avatar";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import type { RoomState } from "@/lib/api/types";
 import { rotationFor } from "@/lib/game";
+import { InviteSheet } from "./InviteSheet";
 import { inviteLink, useCopyLink } from "./RoomShell";
 
 type Props = {
@@ -50,22 +51,7 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
   const link = inviteLink(room.code);
   const shareText = tr("shareText", { code: room.code });
 
-  const shareNative = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "SPIL", text: shareText, url: link });
-      } catch {
-        // dismissed
-      }
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(link);
-    } catch {
-      // ignore
-    }
-    toast(tt("linkCopiedNoShare"));
-  };
+  const [inviting, setInviting] = useState(false);
 
   return (
     <div className="flex flex-1 flex-col gap-[26px]">
@@ -74,28 +60,19 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
         <span className="font-mono text-[76px] leading-none font-semibold tracking-[.06em]">
           {room.code}
         </span>
-        <div className="mt-1.5 grid grid-cols-2 gap-2">
-          <a
-            href={`https://wa.me/?text=${encodeURIComponent(`${shareText}: ${link}`)}`}
-            target="_blank"
-            rel="noopener"
-            className="col-span-full flex h-14 items-center justify-center gap-2 rounded-pill border-[1.5px] border-text px-[18px] text-[17px] leading-none font-semibold whitespace-nowrap text-text no-underline hover:bg-surface-raised hover:text-text"
-          >
-            <WhatsappLogoIcon size={22} aria-hidden />
-            {tr("inviteWhatsApp")}
-          </a>
+        <div className="mt-1.5 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
           <button
             type="button"
-            onClick={shareNative}
-            className="flex h-12 items-center justify-center gap-2 rounded-pill border border-line bg-transparent px-4 text-[15px] leading-none font-semibold whitespace-nowrap text-text hover:bg-surface-raised"
+            onClick={() => setInviting(true)}
+            className="flex h-14 items-center justify-center gap-2 rounded-pill border-[1.5px] border-text bg-transparent px-[18px] text-[17px] leading-none font-semibold whitespace-nowrap text-text hover:bg-surface-raised"
           >
-            <ShareNetworkIcon size={18} aria-hidden />
-            {tr("moreOptions")}
+            <ShareNetworkIcon size={22} aria-hidden />
+            {tr("shareInvite")}
           </button>
           <button
             type="button"
             onClick={copy}
-            className="flex h-12 items-center justify-center gap-2 rounded-pill border border-line bg-transparent px-4 text-[15px] leading-none font-semibold whitespace-nowrap text-text hover:bg-surface-raised"
+            className="flex h-14 items-center justify-center gap-2 rounded-pill border border-line bg-transparent px-5 text-[15px] leading-none font-semibold whitespace-nowrap text-text hover:bg-surface-raised"
           >
             {copied ? (
               <CheckIcon size={18} aria-hidden className="animate-icon-in" />
@@ -105,6 +82,13 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
             {copied ? tr("copied") : tr("copyLink")}
           </button>
         </div>
+        <InviteSheet
+          open={inviting}
+          onOpenChange={setInviting}
+          code={room.code}
+          link={link}
+          text={shareText}
+        />
       </div>
 
       <div className="grid gap-3.5">

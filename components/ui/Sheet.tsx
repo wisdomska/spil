@@ -46,7 +46,7 @@ export function Sheet({
           onEscapeKeyDown={(e) => !dismissible && e.preventDefault()}
           onPointerDownOutside={(e) => !dismissible && e.preventDefault()}
           className={cn(
-            "fixed grid gap-4 overflow-y-auto bg-surface-raised text-text outline-none",
+            "fixed grid grid-cols-[minmax(0,1fr)] gap-4 overflow-y-auto bg-surface-raised text-text outline-none",
             "inset-x-0 bottom-0 max-h-[92dvh] animate-sheet-up rounded-t-card px-5 pt-2.5 pb-[max(24px,env(safe-area-inset-bottom))]",
             "lg:inset-x-auto lg:top-1/2 lg:bottom-auto lg:left-1/2 lg:max-h-[90dvh] lg:w-[440px] lg:-translate-x-1/2 lg:-translate-y-1/2 lg:animate-modal-pop lg:rounded-card lg:border lg:border-line lg:p-6",
             className,

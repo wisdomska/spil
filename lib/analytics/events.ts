@@ -10,6 +10,7 @@ export type AnalyticsEvents = {
   phase_forced: { from: "answering" | "guessing" };
   room_revealed: { players: number };
   share_clicked: { format: "story" | "group"; action: "save" | "share" };
+  invite_shared: { via: string };
   spill_mode_toggled: { on: boolean };
   rematch_started: { packChanged: boolean };
   question_reported: { reason: string };

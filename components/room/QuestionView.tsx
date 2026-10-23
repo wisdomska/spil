@@ -20,7 +20,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PourProgress } from "@/components/brand/PourProgress";
-import { MiniPour } from "@/components/ui/Button";
+import { Spinner } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { useToast } from "@/components/ui/Toast";
 import { api } from "@/lib/api/client";
@@ -320,7 +320,7 @@ export function QuestionView({ state, onDone, preview }: Props) {
             role="status"
             className="flex items-center gap-1.5 font-mono text-[13px] leading-none font-medium whitespace-nowrap text-text-muted"
           >
-            <MiniPour />
+            <Spinner />
             {(preview?.offline ?? offline) ? t("queued") : t("saving")}
           </span>
         )}

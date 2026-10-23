@@ -7,7 +7,7 @@ type Size = "lg" | "md";
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: Variant;
   size?: Size;
-  /** Shows the mini pour instead of the label's trailing content and blocks presses. */
+  /** Shows a spinner before the label and blocks presses. */
   loading?: boolean;
   /** Renders as unavailable but still focusable and clickable, so it can explain why (aria-disabled). */
   softDisabled?: boolean;
@@ -66,23 +66,31 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       )}
       {...rest}
     >
+      {loading && <Spinner />}
       {children}
-      {loading && <MiniPour />}
     </button>
   );
 });
 
-/** The loading state inside a button: a tiny vessel that fills, never a spinner. */
-export function MiniPour({ className }: { className?: string }) {
+/**
+ * Loading indicator: a ring in the current text colour with a turning arc. Sized to the text, so
+ * it fits any button. With reduced motion it holds still (the button also sets aria-busy).
+ */
+export function Spinner({ className }: { className?: string }) {
   return (
-    <span
+    <svg
       aria-hidden
-      className={cn(
-        "inline-flex h-1.5 w-[22px] overflow-hidden rounded-pill border-[1.5px] border-current",
-        className,
-      )}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={cn("size-[1.1em] shrink-0 motion-safe:animate-spin", className)}
     >
-      <span className="w-[60%] animate-breathe bg-current" />
-    </span>
+      <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeWidth="3" opacity=".25" />
+      <path
+        d="M21.5 12A9.5 9.5 0 0 0 12 2.5"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
