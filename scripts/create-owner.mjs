@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// One-off: makes INITIAL_OWNER_EMAIL the first admin (role owner).
+// One-off: makes the given email the first admin (role owner).
 // Creates the auth user (or finds it) with the service role and a random password that is never
 // printed, then upserts the `admins` row. The owner sets a real password through /admin/reset.
 //
-// Usage: INITIAL_OWNER_EMAIL=you@example.com node scripts/create-owner.mjs [--name "Your Name"]
+// Usage (any shell, from the project folder):
+//   node scripts/create-owner.mjs --email you@example.com [--name "Your Name"]
 //          [--project staging|production] [--set-password]
 // --project fetches that project's URL and service key with the logged-in Supabase CLI
 // (SUPABASE_BIN, default "supabase"); without it, NEXT_PUBLIC_SUPABASE_URL and
@@ -13,8 +14,17 @@
 import { execFileSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { existsSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { createInterface } from "node:readline";
 import { createClient } from "@supabase/supabase-js";
+
+/** SUPABASE_BIN, else the standalone CLI in ~/bin (Windows setup), else "supabase" on PATH. */
+function supabaseBin() {
+  if (process.env.SUPABASE_BIN) return process.env.SUPABASE_BIN;
+  const local = join(homedir(), "bin", process.platform === "win32" ? "supabase.exe" : "supabase");
+  return existsSync(local) ? local : "supabase";
+}
 
 const PROJECTS = { staging: "cambebifktqgnbthumzq", production: "vhrtnirvvkiybxjufmsm" };
 const flag = (n) => {
@@ -32,14 +42,10 @@ if (project) {
     process.exit(1);
   }
   const keys = JSON.parse(
-    execFileSync(
-      process.env.SUPABASE_BIN ?? "supabase",
-      ["projects", "api-keys", "--project-ref", ref, "-o", "json"],
-      {
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
-      },
-    ),
+    execFileSync(supabaseBin(), ["projects", "api-keys", "--project-ref", ref, "-o", "json"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }),
   );
   url = `https://${ref}.supabase.co`;
   key = keys.find((k) => k.name === "service_role")?.api_key;
@@ -48,7 +54,8 @@ if (project) {
   url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 }
-const email = process.env.INITIAL_OWNER_EMAIL?.trim().toLowerCase();
+// --email works in any shell; INITIAL_OWNER_EMAIL is kept for scripts and CI.
+const email = (flag("--email") ?? process.env.INITIAL_OWNER_EMAIL)?.trim().toLowerCase();
 const nameFlag = process.argv.indexOf("--name");
 const name =
   (nameFlag > 0 ? process.argv[nameFlag + 1] : undefined)?.trim() ||
@@ -61,7 +68,7 @@ function fail(message) {
 }
 
 if (!url || !key) fail("set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY");
-if (!email || !/^\S+@\S+\.\S+$/.test(email)) fail("set INITIAL_OWNER_EMAIL to the owner's email");
+if (!email || !/^\S+@\S+\.\S+$/.test(email)) fail("pass --email with the owner's email address");
 if (name.length < 2 || name.length > 40) fail("--name must be 2 to 40 characters");
 
 const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
