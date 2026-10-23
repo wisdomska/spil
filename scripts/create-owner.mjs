@@ -4,16 +4,50 @@
 // printed, then upserts the `admins` row. The owner sets a real password through /admin/reset.
 //
 // Usage: INITIAL_OWNER_EMAIL=you@example.com node scripts/create-owner.mjs [--name "Your Name"]
-// Reads NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY from the environment, falling back
-// to .env.local. Run it once per Supabase project (local, staging, production).
+//          [--project staging|production] [--set-password]
+// --project fetches that project's URL and service key with the logged-in Supabase CLI
+// (SUPABASE_BIN, default "supabase"); without it, NEXT_PUBLIC_SUPABASE_URL and
+// SUPABASE_SERVICE_ROLE_KEY come from the environment or .env.local.
+// --set-password asks for the password in this terminal (hidden, typed twice) and sets it, for
+// when the reset email cannot be delivered (Supabase's default sender only mails project members).
+import { execFileSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { existsSync } from "node:fs";
+import { createInterface } from "node:readline";
 import { createClient } from "@supabase/supabase-js";
 
-if (existsSync(".env.local")) process.loadEnvFile(".env.local");
+const PROJECTS = { staging: "cambebifktqgnbthumzq", production: "vhrtnirvvkiybxjufmsm" };
+const flag = (n) => {
+  const i = process.argv.indexOf(n);
+  return i > 0 ? process.argv[i + 1] : undefined;
+};
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const project = flag("--project");
+let url;
+let key;
+if (project) {
+  const ref = PROJECTS[project];
+  if (!ref) {
+    console.error("create-owner: --project must be staging or production");
+    process.exit(1);
+  }
+  const keys = JSON.parse(
+    execFileSync(
+      process.env.SUPABASE_BIN ?? "supabase",
+      ["projects", "api-keys", "--project-ref", ref, "-o", "json"],
+      {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      },
+    ),
+  );
+  url = `https://${ref}.supabase.co`;
+  key = keys.find((k) => k.name === "service_role")?.api_key;
+} else {
+  if (existsSync(".env.local")) process.loadEnvFile(".env.local");
+  url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+}
 const email = process.env.INITIAL_OWNER_EMAIL?.trim().toLowerCase();
 const nameFlag = process.argv.indexOf("--name");
 const name =
@@ -69,4 +103,30 @@ await db.from("audit_log").insert({
 });
 
 console.log(`${email} is an owner.`);
-console.log("Next: open /admin/reset on the site, enter that email and set a password.");
+
+/** Reads a line without echoing it. */
+function ask(question) {
+  return new Promise((resolve) => {
+    const rl = createInterface({ input: process.stdin, output: process.stdout, terminal: true });
+    rl._writeToOutput = (text) => {
+      if (text.includes(question)) process.stdout.write(text);
+    };
+    rl.question(question, (answer) => {
+      rl.close();
+      process.stdout.write("\n");
+      resolve(answer);
+    });
+  });
+}
+
+if (process.argv.includes("--set-password")) {
+  const first = await ask("New password (10+ characters, hidden): ");
+  const again = await ask("Same password again: ");
+  if (first !== again) fail("the two passwords do not match; nothing changed");
+  if (first.length < 10) fail("the password needs at least 10 characters; nothing changed");
+  const { error: pwError } = await db.auth.admin.updateUserById(user.id, { password: first });
+  if (pwError) fail(`could not set the password: ${pwError.message}`);
+  console.log("Password set. Sign in at /admin/login.");
+} else {
+  console.log("Next: open /admin/reset on the site, enter that email and set a password.");
+}

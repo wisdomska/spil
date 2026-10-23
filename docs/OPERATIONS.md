@@ -99,7 +99,10 @@ At 200 concurrent realtime connections a room of 12 uses 12, so about 16 full ro
 
 ## Admin accounts
 
-- The first owner is created once per environment with `INITIAL_OWNER_EMAIL` and the setup script;
-  they set a password through the reset link.
+- The first owner is created once per environment, with the logged-in Supabase CLI:
+  `INITIAL_OWNER_EMAIL=you@example.com node scripts/create-owner.mjs --name "Your name" --project production --set-password`
+  (`--project staging` for staging; set `SUPABASE_BIN` if the CLI is not on PATH). The password is
+  typed into that terminal, hidden. Without `--set-password`, set it through `/admin/reset`
+  (Supabase's default email sender only delivers to members of the Supabase project).
 - Owners invite admins and editors from the console. Roles: owner, admin, editor.
 - Public sign-up is off; anonymous sign-in is on (players).
