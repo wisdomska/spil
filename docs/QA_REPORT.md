@@ -19,7 +19,7 @@ headers, smoke) run from `.github/workflows/deploy.yml` after each deploy.
 | No sideways scroll at 375 px        | none                                  | pass on all 42 mobile design states                          |
 | Design parity                       | every frame compared                  | 97 of 97 frames captured; median diff 5.2%                   |
 | Service-role key in client bundle   | absent                                | absent (CI scan of `.next/static`, deploy scan of live JS)   |
-| Lighthouse (mobile)                 | Perf ≥ 90, A11y/BP/SEO 100            | A11y, BP, SEO 100; Perf: see "Performance"                   |
+| Lighthouse (mobile, live staging)   | Perf ≥ 90, A11y/BP/SEO 100            | A11y, BP, SEO 100; Perf 81 to 95 by route (see Performance)  |
 
 ## End-to-end scenarios (`tests/e2e`)
 
@@ -99,17 +99,20 @@ page adds Motion (swipe and reveal), Supabase Realtime and the room views. The 1
 room JS is not met: the framework alone is above it. Further cuts would mean dropping Motion from
 the swipe or loading Realtime after first paint; both are listed as follow-ups.
 
-Lighthouse, mobile, local production build (simulated throttling):
+Lighthouse, mobile, on live staging (`spil-party-preview.vercel.app`, Vercel CDN):
 
-| Route          | Perf | A11y | BP  | SEO | LCP   | TBT    | CLS |
-| -------------- | ---- | ---- | --- | --- | ----- | ------ | --- |
-| `/`            | 74   | 100  | 100 | 100 | 4.5 s | 394 ms | 0   |
-| `/join`        | 72   | 100  | 100 | 100 | 4.0 s | 283 ms | 0   |
-| `/how-to-play` | 85   | 100  | 100 | 100 | 4.1 s | 149 ms | 0   |
+| Route          | Perf     | A11y | BP  | SEO | LCP (lab)    | CLS |
+| -------------- | -------- | ---- | --- | --- | ------------ | --- |
+| `/`            | 81 to 84 | 100  | 100 | 100 | 2.6 to 3.2 s | 0   |
+| `/join`        | 90 to 95 | 100  | 100 | 100 | 2.4 to 2.8 s | 0   |
+| `/how-to-play` | 86 to 93 | 100  | 100 | 100 | 2.4 to 3.4 s | 0   |
 
-Observed (unthrottled) LCP on the same runs is 0.26 s. On localhost every script finishes before
-the first paint, so the simulation charges all of them to LCP; the deploy workflow measures the
-live staging and production URLs, which is the number that counts. CLS is 0 everywhere.
+Ranges are across runs from a desktop and from GitHub runners; the simulated numbers move with
+the runner's CPU. Accessibility, Best Practices and SEO are 100 everywhere and CLS is 0. The
+performance target of 90 is met on `/join` and mostly on `/how-to-play`, not on the landing page
+(open item 15). Two fixes made the biggest difference: the session proxy no longer runs on static
+pages (time to first byte from about 950 ms to 100 ms), and the hero's idle animation no longer
+re-renders React every frame.
 
 ## Security
 
@@ -121,9 +124,11 @@ live staging and production URLs, which is the number that counts. CLS is 0 ever
 - Admin routes all check the role server-side; the proxy and the console layout both gate `/admin`.
 - No analytics cookies: PostHog runs with memory persistence and never receives answer content.
 
-## Not covered yet
+## Live checks
 
-- Lighthouse and the smoke test on the live staging URL run after this lands on `preview`.
-- Production smoke test runs at release.
-- Admin password sign-in and reset in a browser on staging: needs the first owner account
-  (`scripts/create-owner.mjs`).
+- Staging (`spil-party-preview.vercel.app`): the deploy workflow passed on 2026-10-23: migrations,
+  Lighthouse, all six security headers, no service-role key in any of the 56 live scripts, and the
+  3-player smoke game on a phone-sized browser.
+- Production: the same workflow runs on the release merge to `main`.
+- Not covered: admin password sign-in and reset in a browser, which needs the first owner account
+  (`scripts/create-owner.mjs`, open item 11).
