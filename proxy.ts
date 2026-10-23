@@ -45,8 +45,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    // Skip static assets, images, OG images and the health/cron endpoints.
-    "/((?!_next/|favicon.ico|og|api/health|api/cron|.*\\.(?:svg|png|jpg|jpeg|gif|webp|woff2?)$).*)",
-  ],
+  // Only where a session matters: rooms, the API and the admin console. Static pages (landing,
+  // join, create, info) skip the proxy entirely so the CDN serves them without a function call.
+  matcher: ["/r/:path*", "/api/v1/:path*", "/admin", "/admin/:path*"],
 };

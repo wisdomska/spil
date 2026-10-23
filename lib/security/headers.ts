@@ -5,6 +5,10 @@ const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseWs = supabase.replace(/^https:/, "wss:");
 const posthog = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://eu.i.posthog.com";
 const isDev = process.env.NODE_ENV !== "production";
+// Vercel injects its feedback toolbar into preview deployments (staging, PR previews), never
+// production. Allow it there so it does not log CSP errors.
+const toolbar = process.env.VERCEL_ENV === "preview";
+const live = toolbar ? ["https://vercel.live"] : [];
 
 export function contentSecurityPolicy() {
   const directives: Record<string, string[]> = {
@@ -16,10 +20,11 @@ export function contentSecurityPolicy() {
       "https://challenges.cloudflare.com",
       "https://va.vercel-scripts.com",
       "https://*.posthog.com",
+      ...live,
     ],
-    "style-src": ["'self'", "'unsafe-inline'"],
-    "img-src": ["'self'", "data:", "blob:"],
-    "font-src": ["'self'", "data:"],
+    "style-src": ["'self'", "'unsafe-inline'", ...live],
+    "img-src": ["'self'", "data:", "blob:", ...live, ...(toolbar ? ["https://vercel.com"] : [])],
+    "font-src": ["'self'", "data:", ...live, ...(toolbar ? ["https://assets.vercel.com"] : [])],
     "connect-src": [
       "'self'",
       // Dev only: the HMR websocket ('self' does not cover ws: in every browser).
@@ -32,8 +37,10 @@ export function contentSecurityPolicy() {
       "https://*.ingest.de.sentry.io",
       "https://vitals.vercel-insights.com",
       "https://challenges.cloudflare.com",
+      ...live,
+      ...(toolbar ? ["wss://ws-us3.pusher.com"] : []),
     ].filter(Boolean),
-    "frame-src": ["https://challenges.cloudflare.com"],
+    "frame-src": ["https://challenges.cloudflare.com", ...live],
     "worker-src": ["'self'", "blob:"],
     "object-src": ["'none'"],
     "base-uri": ["'self'"],

@@ -52,13 +52,20 @@ export function HeroDemo() {
     setLabel((cur) => (cur === next ? cur : next));
   });
 
+  // While idle the liquid moves without updating `guess`, so read it from the motion value.
+  const currentGuess = () => (touched ? guess : Math.round(level.get()));
+
   const stopIdle = useCallback(() => {
     clearTimeout(idleTimer.current);
-    if (!revealed) anim.current?.stop();
+    if (!revealed) {
+      anim.current?.stop();
+      setGuess(Math.round(level.get()));
+    }
     setTouched(true);
-  }, [revealed]);
+  }, [revealed, level]);
 
-  // Idle loop: the liquid sloshes between three levels until someone touches it.
+  // Idle loop: the liquid sloshes between three levels until someone touches it. Only the motion
+  // value moves (no React render per frame); the guess syncs once when the loop stops.
   useEffect(() => {
     if (reduced || touched || revealed) return;
     let n = 0;
@@ -69,7 +76,6 @@ export function HeroDemo() {
       anim.current = animate(level, to, {
         duration: 1.1,
         ease: easeInOutCubic,
-        onUpdate: (v) => setGuess(Math.round(v)),
         onComplete: () => {
           idleTimer.current = setTimeout(loop, 700);
         },
@@ -96,7 +102,7 @@ export function HeroDemo() {
     stopIdle();
     navigator.vibrate?.(10);
     setRevealed(true);
-    const from = guess;
+    const from = currentGuess();
     if (reduced) {
       level.set(person.score);
       return;
@@ -198,7 +204,7 @@ export function HeroDemo() {
               if (e.key in step) {
                 e.preventDefault();
                 stopIdle();
-                const v = Math.max(0, Math.min(100, guess + step[e.key]!));
+                const v = Math.max(0, Math.min(100, currentGuess() + step[e.key]!));
                 level.set(v);
                 setGuess(v);
               }
