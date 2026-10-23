@@ -13,6 +13,7 @@ import { cardToBlob, downloadBlob, shareOrSave } from "@/lib/share/capture";
 import { useCardCopy } from "@/lib/share/useCardCopy";
 import { useTheme } from "@/lib/theme/useTheme";
 import { ShareCard, type BoardRow } from "./ShareCard";
+import { track } from "@/lib/analytics/posthog";
 
 type Props = {
   open: boolean;
@@ -56,6 +57,7 @@ export function ShareSheet(props: Props) {
 
   const run = async (kind: "save" | "share") => {
     if (!capture.current) return;
+    track("share_clicked", { format, action: kind });
     setBusy(kind);
     try {
       const blob = await cardToBlob(capture.current);

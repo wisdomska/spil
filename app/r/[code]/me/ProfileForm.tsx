@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { useBusy } from "@/lib/useBusy";
 import { Avatar, AVATAR_COUNT } from "@/components/brand/Avatar";
 import { ErrorScreen, type ErrorVariant } from "@/components/site/ErrorScreen";
 import { Button } from "@/components/ui/Button";
@@ -15,6 +16,7 @@ import { useTurnstile } from "@/components/ui/Turnstile";
 import { api, ClientApiError, ensureSession } from "@/lib/api/client";
 import type { PublicRoom } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
+import { track } from "@/lib/analytics/posthog";
 
 const ROOM_ERRORS: Record<string, ErrorVariant> = {
   ROOM_NOT_FOUND: "notfound",
@@ -35,7 +37,7 @@ export function ProfileForm({ code }: { code: string }) {
   const [ageErr, setAgeErr] = useState(false);
   const [nickErr, setNickErr] = useState<string | null>(null);
   const [roomErr, setRoomErr] = useState<ErrorVariant | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useBusy();
 
   const room = useQuery({
     queryKey: ["room-public", code],
@@ -85,6 +87,7 @@ export function ProfileForm({ code }: { code: string }) {
         avatar,
         ageConfirmed: adult ? age : false,
       });
+      track("player_joined", { pack: room.data.pack.id, isHost });
       router.replace(`/r/${code}`);
     } catch (e) {
       const c = e instanceof ClientApiError ? e.code : "";

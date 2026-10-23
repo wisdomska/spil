@@ -19,13 +19,15 @@ type Props = {
   onNudge: (players: StatePlayer[]) => void;
   onForce: () => void;
   forcing: boolean;
+  /** Dev fixtures only: open the force-next sheet. */
+  initialSheet?: boolean;
 };
 
 /** After you lock in: who is still going, the room's progress as a vessel, host tools. */
-export function WaitingView({ state, onNudge, onForce, forcing }: Props) {
+export function WaitingView({ state, onNudge, onForce, forcing, initialSheet = false }: Props) {
   const t = useTranslations("waiting");
   const c = useTranslations("common");
-  const [sheet, setSheet] = useState(false);
+  const [sheet, setSheet] = useState(initialSheet);
   const guessing = state.room.status === "guessing";
   const total = state.room.questionCount;
   const active = state.players.filter((p) => p.status === "active");
@@ -90,17 +92,21 @@ export function WaitingView({ state, onNudge, onForce, forcing }: Props) {
         })}
       </ul>
       {state.me.isHost && unfinished.length > 0 && (
-        <div className="mt-auto flex gap-2.5">
+        <div className="mt-auto flex flex-wrap gap-2.5">
           <Button
             variant="secondary"
-            className="flex-1"
+            className="min-w-[160px] flex-[1_1_auto]"
             onClick={() => onNudge(others)}
             softDisabled={!others.length}
           >
             <BellRingingIcon size={20} aria-hidden />
             {others.length === 1 ? t("nudgeOne", { name: others[0]!.nickname }) : t("nudgeMany")}
           </Button>
-          <Button variant="ghost" className="px-5 text-[16px]" onClick={() => setSheet(true)}>
+          <Button
+            variant="ghost"
+            className="flex-[1_1_auto] px-5 text-[16px]"
+            onClick={() => setSheet(true)}
+          >
             <SkipForwardIcon size={20} aria-hidden />
             {t("force")}
           </Button>

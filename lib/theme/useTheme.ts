@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { THEME_COLOR, THEME_KEY, type ThemePref } from "./theme-script";
+import { track } from "@/lib/analytics/posthog";
 
 const listeners = new Set<() => void>();
 
@@ -64,6 +65,7 @@ export function useTheme() {
       // storage blocked: the choice still applies for this page view
     }
     applyTheme(next);
+    track("theme_changed", { theme: next });
     listeners.forEach((listener) => listener());
   }, []);
 

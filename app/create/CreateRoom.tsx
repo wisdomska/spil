@@ -2,12 +2,13 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useBusy } from "@/lib/useBusy";
 import { PackPicker } from "@/components/game/PackPicker";
 import { useToast } from "@/components/ui/Toast";
 import { useTurnstile } from "@/components/ui/Turnstile";
 import { api, ClientApiError, ensureSession } from "@/lib/api/client";
 import type { Pack } from "@/lib/api/types";
+import { track } from "@/lib/analytics/posthog";
 
 /**
  * Host flow: pick a pack and length, then the room is created and the host sets up their
@@ -28,12 +29,14 @@ export function CreateRoom({
   const room = params.get("room");
   const mode = params.get("mode");
   const { getToken, element } = useTurnstile();
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useBusy();
 
   const go = async (packId: string, questionCount: number) => {
     setBusy(true);
     try {
       if (room && (mode === "pack" || mode === "rematch")) {
+        if (mode === "rematch")
+          track("rematch_started", { packChanged: packId !== params.get("pack") });
         if (mode === "pack") await api("PATCH", `/rooms/${room}/pack`, { packId, questionCount });
         else await api("POST", `/rooms/${room}/rematch`, { packId, questionCount });
         router.push(`/r/${room}`);
@@ -46,6 +49,7 @@ export function CreateRoom({
         questionCount,
         captchaToken: await getToken(),
       });
+      track("room_created", { pack: packId, questionCount });
       router.push(`/r/${code}/me`);
     } catch (e) {
       const code = e instanceof ClientApiError ? e.code : "";

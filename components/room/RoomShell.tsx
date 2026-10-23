@@ -59,7 +59,7 @@ export function RoomShell({ state, online, statusFor, order, onLeave, children }
     : state.players;
 
   return (
-    <div className="flex min-h-[100dvh]">
+    <div className="flex min-h-[100dvh] overflow-x-clip">
       <aside className="sticky top-0 box-border hidden h-[100dvh] w-[340px] shrink-0 flex-col gap-6 overflow-y-auto border-r border-line bg-surface p-6 lg:flex">
         <Wordmark size={32} />
         <div className="grid gap-2 rounded-card bg-surface-raised p-[18px]">

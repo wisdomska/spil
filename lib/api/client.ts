@@ -1,6 +1,5 @@
 "use client";
 
-import { getBrowserClient } from "@/lib/supabase/client";
 import type { ApiErrorBody } from "./types";
 
 export class ClientApiError extends Error {
@@ -20,6 +19,8 @@ let signingIn: Promise<void> | null = null;
  * The session lives in cookies, so refresh and reopen keep the player in their room.
  */
 export async function ensureSession(getCaptchaToken?: () => Promise<string | undefined>) {
+  // Loaded on demand: supabase-js is only needed to sign in, not to call the API.
+  const { getBrowserClient } = await import("@/lib/supabase/client");
   const supabase = getBrowserClient();
   const { data } = await supabase.auth.getSession();
   if (data.session) return;

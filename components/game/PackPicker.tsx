@@ -173,10 +173,8 @@ export function PackPicker({
                   >
                     {p.name}
                   </span>
-                  <span className="text-[14px] leading-[1.35] text-pretty opacity-85">
-                    {p.blurb}
-                  </span>
-                  <span className="mt-1 font-mono text-[13px] leading-none font-medium opacity-85">
+                  <span className="text-[14px] leading-[1.35] text-pretty">{p.blurb}</span>
+                  <span className="mt-1 font-mono text-[13px] leading-none font-medium">
                     {tc("questions", { count: p.questionCount })}
                   </span>
                 </div>

@@ -1,0 +1,67 @@
+name: nightly
+
+# Full end-to-end, cross-browser and accessibility suites against staging.
+on:
+  schedule:
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [e2e, e2e:cross]
+    env:
+      E2E_BASE_URL: https://spil-party-preview.vercel.app
+      NEXT_PUBLIC_SUPABASE_URL: https://cambebifktqgnbthumzq.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PREVIEW_ANON_KEY }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: preview
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install browsers
+        run: pnpm exec playwright install --with-deps chromium ${{ matrix.suite == 'e2e:cross' && 'webkit firefox msedge' || '' }}
+      - run: pnpm ${{ matrix.suite }}
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report-${{ matrix.suite == 'e2e' && 'main' || 'cross' }}
+          path: playwright-report
+
+  visual:
+    # Design parity: every design frame against staging, diffs uploaded for review.
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      E2E_BASE_URL: https://spil-party-preview.vercel.app
+      DESIGN_URL: http://localhost:4500
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: preview
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: npx -y serve@14.2.4 design -l 4500 &
+      - run: pnpm test:visual
+        continue-on-error: true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: design-parity
+          path: |
+            tests/visual/report.json
+            tests/visual/diff

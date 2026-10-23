@@ -1,4 +1,4 @@
-import { ThemeMenu } from "@/components/ui/ThemeToggle";
+import { ThemeMenu } from "@/components/ui/ThemeMenu";
 
 /** Centred 400 px card on the page background (design admin login frame). */
 export function AuthCard({ children }: { children: React.ReactNode }) {

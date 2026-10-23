@@ -56,3 +56,7 @@ supabase/.branches/
 
 # local dev logs
 .local/
+/tests/visual/rows/
+/tests/visual/reference/
+/tests/visual/report.json
+/.next-*/

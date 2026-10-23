@@ -1,0 +1,89 @@
+name: deploy
+
+# Merges to preview apply migrations to spil-preview; merges to main apply them to spil-prod.
+# Vercel deploys the app itself (Git integration). Then the live deployment is checked with
+# Lighthouse and the Playwright smoke test.
+on:
+  push:
+    branches: [preview, main]
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    name: migrate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      PROJECT_REF: ${{ github.ref_name == 'main' && 'vhrtnirvvkiybxjufmsm' || 'cambebifktqgnbthumzq' }}
+      TARGET: ${{ github.ref_name == 'main' && 'production' || 'preview' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - name: Skip when the access token is not configured
+        if: env.SUPABASE_ACCESS_TOKEN == ''
+        run: echo "::warning::SUPABASE_ACCESS_TOKEN secret missing; migrations not applied"
+      - name: Link and push migrations
+        if: env.SUPABASE_ACCESS_TOKEN != ''
+        run: |
+          supabase link --project-ref "$PROJECT_REF"
+          supabase db push --linked --yes
+      - name: Push auth settings
+        if: env.SUPABASE_ACCESS_TOKEN != ''
+        run: SUPABASE_BIN=supabase node scripts/push-auth-config.mjs "$TARGET"
+
+  verify:
+    name: verify live
+    needs: migrate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SITE: ${{ github.ref_name == 'main' && 'https://spil-party.vercel.app' || 'https://spil-party-preview.vercel.app' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Wait for the Vercel deployment of this commit
+        run: |
+          for i in $(seq 1 60); do
+            sha=$(curl -fsS "$SITE/api/version" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).sha)}catch{}})' || true)
+            [ "$sha" = "$GITHUB_SHA" ] && exit 0
+            sleep 20
+          done
+          echo "::error::deployment for $GITHUB_SHA did not go live"; exit 1
+      - name: Lighthouse (mobile)
+        run: npx -y @lhci/cli@0.15.1 autorun --collect.url="$SITE/" --collect.url="$SITE/join" --collect.url="$SITE/how-to-play"
+      - name: Security headers
+        run: |
+          h=$(curl -sI "$SITE/")
+          for k in content-security-policy strict-transport-security x-frame-options referrer-policy permissions-policy x-content-type-options; do
+            echo "$h" | grep -qi "^$k:" || { echo "::error::missing $k"; exit 1; }
+          done
+      - name: Service-role key never reaches the browser
+        run: |
+          for path in / /join /create; do
+            curl -fsS "$SITE$path" | grep -o '/_next/static/[^"]*\.js' | sort -u | while read js; do
+              curl -fsS "$SITE$js" | grep -q 'service_role' && { echo "::error::service_role found in $js"; exit 1; } || true
+            done
+          done
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Smoke test on the live deployment
+        run: pnpm e2e:smoke
+        env:
+          E2E_BASE_URL: ${{ env.SITE }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ github.ref_name == 'main' && 'https://vhrtnirvvkiybxjufmsm.supabase.co' || 'https://cambebifktqgnbthumzq.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ github.ref_name == 'main' && secrets.PROD_ANON_KEY || secrets.PREVIEW_ANON_KEY }}
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report-${{ github.ref_name }}
+          path: playwright-report

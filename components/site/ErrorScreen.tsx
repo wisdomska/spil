@@ -1,9 +1,15 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Vessel } from "@/components/brand/Vessel";
+import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { track } from "@/lib/analytics/posthog";
+
+// Only the "waking" variant shows the vessel; loading it on demand keeps Motion out of every
+// page bundle (the root error boundary imports this screen).
+const Vessel = dynamic(() => import("@/components/brand/Vessel").then((m) => m.Vessel));
 
 export type ErrorVariant =
   | "notfound"
@@ -65,6 +71,7 @@ export function ErrorScreen({
   };
   const { cta, alt, accent } = map[variant];
   const waking = variant === "waking";
+  useEffect(() => track("error_shown", { variant }), [variant]);
 
   return (
     <main className="mx-auto box-border flex w-full max-w-[520px] flex-1 flex-col justify-center gap-[22px] px-5 pt-5 pb-10">

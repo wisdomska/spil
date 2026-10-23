@@ -22,7 +22,8 @@ import { Sheet } from "@/components/ui/Sheet";
 import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
 import { SwitchRow } from "@/components/ui/Switch";
 import { TextField } from "@/components/ui/TextField";
-import { ThemeMenu, ThemeToggle } from "@/components/ui/ThemeToggle";
+import { ThemeMenu } from "@/components/ui/ThemeMenu";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useToast } from "@/components/ui/Toast";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

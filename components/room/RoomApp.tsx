@@ -8,7 +8,6 @@ import { RevealStage } from "@/components/game/RevealStage";
 import { ErrorScreen, type ErrorVariant } from "@/components/site/ErrorScreen";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
-import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import { ClientApiError } from "@/lib/api/client";
 import type { RoomState, StatePlayer } from "@/lib/api/types";
@@ -20,7 +19,9 @@ import { QuestionView } from "./QuestionView";
 import { ReadyView } from "./ReadyView";
 import { ResultsView } from "./ResultsView";
 import { RoomShell } from "./RoomShell";
+import { RoomSkeleton } from "./RoomSkeleton";
 import { WaitingView } from "./WaitingView";
+import { track } from "@/lib/analytics/posthog";
 
 type Screen = "lobby" | "question" | "waiting" | "guess" | "ready" | "reveal" | "results";
 
@@ -58,7 +59,6 @@ export function RoomApp({ code }: { code: string }) {
   const tt = useTranslations("toast");
   const ts = useTranslations("sheet");
   const c = useTranslations("common");
-  const tLobby = useTranslations("lobby");
   const live = useRef(false);
   const query = useRoomState(code, live);
   const state = query.data;
@@ -148,21 +148,7 @@ export function RoomApp({ code }: { code: string }) {
   if (!state) {
     return (
       <div className="mx-auto box-border w-full max-w-[520px] px-5 pt-20">
-        <SkeletonGroup label={tLobby("loading")} className="gap-4">
-          <Skeleton className="h-3 w-[90px] rounded-pill" />
-          <Skeleton className="h-[72px] w-[240px] rounded-input" />
-          <div className="flex gap-2">
-            <Skeleton className="h-[52px] flex-1 rounded-pill" />
-            <Skeleton className="size-[52px] rounded-pill" />
-            <Skeleton className="size-[52px] rounded-pill" />
-          </div>
-          <Skeleton className="mt-3 h-[22px] w-[140px] rounded-pill" />
-          <div className="flex flex-wrap gap-x-2.5 gap-y-3.5">
-            <Skeleton className="h-[52px] w-[120px] rounded-pill" style={{ rotate: "-3deg" }} />
-            <Skeleton className="h-[52px] w-[104px] rounded-pill" style={{ rotate: "2deg" }} />
-            <Skeleton className="h-[52px] w-[130px] rounded-pill" style={{ rotate: "-1deg" }} />
-          </div>
-        </SkeletonGroup>
+        <RoomSkeleton />
       </div>
     );
   }
@@ -228,7 +214,17 @@ export function RoomApp({ code }: { code: string }) {
           <LobbyView
             state={state}
             starting={actions.start.isPending}
-            onStart={() => actions.start.mutate(undefined, { onError: fail })}
+            onStart={() =>
+              actions.start.mutate(undefined, {
+                onError: fail,
+                onSuccess: (s) =>
+                  track("game_started", {
+                    pack: s.room.pack.id,
+                    players: s.players.length,
+                    questionCount: s.room.questionCount,
+                  }),
+              })
+            }
             onKick={(id, name) =>
               actions.kick.mutate(id, {
                 onSuccess: () => toast(tt("removed", { name })),
@@ -249,11 +245,11 @@ export function RoomApp({ code }: { code: string }) {
           <WaitingView
             state={state}
             forcing={actions.advance.isPending}
-            onForce={() =>
-              actions.advance.mutate(state.room.status === "guessing" ? "guessing" : "answering", {
-                onError: fail,
-              })
-            }
+            onForce={() => {
+              const from = state.room.status === "guessing" ? "guessing" : "answering";
+              track("phase_forced", { from });
+              actions.advance.mutate(from, { onError: fail });
+            }}
             onNudge={(players: StatePlayer[]) => {
               for (const p of players) actions.nudge.mutate(p.id, { onError: fail });
               toast(tt("nudged", { names: players.map((p) => p.nickname).join(" and ") }));
@@ -271,13 +267,19 @@ export function RoomApp({ code }: { code: string }) {
           <ReadyView
             state={state}
             revealing={actions.advance.isPending}
-            onReveal={() => actions.advance.mutate("ready", { onError: fail })}
+            onReveal={() => {
+              track("room_revealed", { players: state.players.length });
+              actions.advance.mutate("ready", { onError: fail });
+            }}
           />
         )}
         {screen === "results" && (
           <ResultsView
             state={state}
-            onSpill={(on) => actions.patchMe.mutate({ spillMode: on }, { onError: fail })}
+            onSpill={(on) => {
+              track("spill_mode_toggled", { on });
+              actions.patchMe.mutate({ spillMode: on }, { onError: fail });
+            }}
             onHideName={(hide) =>
               actions.patchMe.mutate({ hideNameOnCard: hide }, { onError: fail })
             }

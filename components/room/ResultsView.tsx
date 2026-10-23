@@ -26,19 +26,28 @@ type Props = {
   state: RoomState;
   onSpill: (on: boolean) => void;
   onHideName: (hide: boolean) => void;
+  /** Dev fixtures only. */
+  initialTab?: "scores" | "awards" | "questions";
+  initialShare?: boolean;
 };
 
 type Tab = "scores" | "awards" | "questions";
 
-export function ResultsView({ state, onSpill, onHideName }: Props) {
+export function ResultsView({
+  state,
+  onSpill,
+  onHideName,
+  initialTab = "scores",
+  initialShare = false,
+}: Props) {
   const t = useTranslations("results");
   const tl = useTranslations("labels");
   const ta = useTranslations("awards");
   const tt = useTranslations("toast");
   const tq = useTranslations("question");
   const toast = useToast();
-  const [tab, setTab] = useState<Tab>("scores");
-  const [share, setShare] = useState(false);
+  const [tab, setTab] = useState<Tab>(initialTab);
+  const [share, setShare] = useState(initialShare);
   const results = state.results;
   const host = state.players.find((p) => p.isHost);
 

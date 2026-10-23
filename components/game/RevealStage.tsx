@@ -23,6 +23,8 @@ type Props = {
   /** Server time the room was revealed; clients align to it (max 2 s skew). */
   revealedAt?: string;
   onDone: () => void;
+  /** Dev fixtures only: hold the ceremony at this many ms. */
+  freezeAt?: number;
 };
 
 const sameFrame = (a: RevealFrame, b: RevealFrame) =>
@@ -34,7 +36,7 @@ const sameFrame = (a: RevealFrame, b: RevealFrame) =>
  * Full-bleed reveal stage (max 560 wide at every size; it gets cast to TVs). One rAF timeline
  * writes the count to a motion value; React only re-renders when the beat changes.
  */
-export function RevealStage({ rows, awards, revealedAt, onDone }: Props) {
+export function RevealStage({ rows, awards, revealedAt, onDone, freezeAt }: Props) {
   const t = useTranslations("reveal");
   const tl = useTranslations("labels");
   const ta = useTranslations("awards");
@@ -42,7 +44,9 @@ export function RevealStage({ rows, awards, revealedAt, onDone }: Props) {
   const desktop = useIsDesktop();
   const order = useMemo(() => [...rows].sort((a, b) => a.score - b.score), [rows]);
   const scores = useMemo(() => order.map((r) => r.score), [order]);
-  const [frame, setFrame] = useState<RevealFrame>(() => frameAt(0, scores, awards.length, reduced));
+  const [frame, setFrame] = useState<RevealFrame>(() =>
+    frameAt(freezeAt ?? 0, scores, awards.length, reduced),
+  );
   const count = useMotionValue(0);
   const num = useTransform(count, (v) => String(Math.round(v)));
   const doneRef = useRef(onDone);
@@ -51,6 +55,11 @@ export function RevealStage({ rows, awards, revealedAt, onDone }: Props) {
   });
 
   useEffect(() => {
+    if (freezeAt !== undefined) {
+      const f = frameAt(freezeAt, scores, awards.length, reduced);
+      if ("count" in f) count.set(f.count);
+      return;
+    }
     const total = revealDuration(scores.length, awards.length);
     const skew = revealedAt ? Math.max(0, Date.now() - Date.parse(revealedAt)) : 0;
     // Phones align to the server's reveal time with at most 2 s of catch-up (spec section 8), so
@@ -71,7 +80,7 @@ export function RevealStage({ rows, awards, revealedAt, onDone }: Props) {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [scores, awards.length, revealedAt, reduced, count]);
+  }, [scores, awards.length, revealedAt, reduced, count, freezeAt]);
 
   const awardMode = frame.phase === "beat" || frame.phase === "award";
   const player = "player" in frame ? order[frame.player] : order[order.length - 1];

@@ -38,9 +38,11 @@ const OUT_EASE = [0.23, 1, 0.32, 1] as const;
 type Props = {
   state: RoomState;
   onDone: () => Promise<unknown>;
+  /** Dev fixtures only: show a mid-drag card, saving or offline. */
+  preview?: { dragX?: number; saving?: boolean; offline?: boolean };
 };
 
-export function QuestionView({ state, onDone }: Props) {
+export function QuestionView({ state, onDone, preview }: Props) {
   const t = useTranslations("question");
   const tr = useTranslations("report");
   const tt = useTranslations("toast");
@@ -53,9 +55,14 @@ export function QuestionView({ state, onDone }: Props) {
     state.room.code,
     state.room.round,
   );
+  // Answers given on this phone this round. The queue forgets them once they reach the server, and
+  // the room state may not have refetched yet, so without this a flush between two answers would
+  // send the card back to the first question.
+  const [local, setLocal] = useState<Record<string, AnswerValue>>({});
+  const localRef = useRef(local);
   const answers: Record<string, AnswerValue> = useMemo(
-    () => ({ ...(state.myAnswers ?? {}), ...pending }),
-    [state.myAnswers, pending],
+    () => ({ ...(state.myAnswers ?? {}), ...local, ...pending }),
+    [state.myAnswers, local, pending],
   );
   const firstOpen = () => {
     const i = questions.findIndex((q) => !(q.id in answers));
@@ -70,6 +77,7 @@ export function QuestionView({ state, onDone }: Props) {
   const queueKey = `${state.room.code}:${state.room.round}`;
   const latestAnswers = (): Record<string, AnswerValue> => ({
     ...(state.myAnswers ?? {}),
+    ...localRef.current,
     ...(useAnswerQueue.getState().pending[queueKey] ?? {}),
   });
   const [rise, setRise] = useState(0);
@@ -77,7 +85,7 @@ export function QuestionView({ state, onDone }: Props) {
   const [finishing, setFinishing] = useState(false);
   const flying = useRef(false);
 
-  const x = useMotionValue(0);
+  const x = useMotionValue(preview?.dragX ?? 0);
   const opacity = useMotionValue(1);
   const rotate = useTransform(x, (v) => Math.max(-12, Math.min(12, v / 14)));
   const yesOpacity = useTransform(x, (v) => Math.max(0, Math.min(1, v / FLICK_DISTANCE)));
@@ -100,7 +108,9 @@ export function QuestionView({ state, onDone }: Props) {
 
   const commit = (id: string, value: AnswerValue) => {
     record(id, value);
-    const next = { ...latestAnswers(), [id]: value };
+    localRef.current = { ...localRef.current, [id]: value };
+    setLocal(localRef.current);
+    const next = latestAnswers();
     const open = questions.findIndex((qq) => !(qq.id in next));
     if (open >= 0) {
       qiRef.current = open;
@@ -187,7 +197,7 @@ export function QuestionView({ state, onDone }: Props) {
 
   return (
     <div className="flex flex-1 flex-col gap-[18px]">
-      {offline && (
+      {(preview?.offline ?? offline) && (
         <div
           role="status"
           className="flex items-start gap-2.5 rounded-input border border-line bg-surface-raised px-3.5 py-3 text-[15px] leading-[1.4] font-medium"
@@ -305,13 +315,13 @@ export function QuestionView({ state, onDone }: Props) {
           <LockSimpleIcon size={16} aria-hidden className="shrink-0" />
           {t("fixHint")}
         </span>
-        {(saving || offline) && (
+        {(preview?.saving ?? (saving || offline)) && (
           <span
             role="status"
             className="flex items-center gap-1.5 font-mono text-[13px] leading-none font-medium whitespace-nowrap text-text-muted"
           >
             <MiniPour />
-            {offline ? t("queued") : t("saving")}
+            {(preview?.offline ?? offline) ? t("queued") : t("saving")}
           </span>
         )}
       </div>

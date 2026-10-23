@@ -15,6 +15,7 @@ import { Avatar } from "@/components/brand/Avatar";
 import { labelStickerStyle, type LabelName } from "@/components/brand/Stickers";
 import { labelFor } from "@/lib/game";
 import { Vessel } from "@/components/brand/Vessel";
+import { track } from "@/lib/analytics/posthog";
 
 const PEOPLE = [
   { name: "Jordan", avatar: 14, score: 88, award: "topSpiller", Icon: DropIcon },
@@ -44,6 +45,7 @@ export function HeroDemo() {
   const idleTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const person = PEOPLE[i % PEOPLE.length]!;
+  useEffect(() => track("landing_viewed", {}), []);
 
   useMotionValueEvent(level, "change", (v) => {
     const next = labelFor(Math.round(v));

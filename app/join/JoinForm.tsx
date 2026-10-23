@@ -9,9 +9,11 @@ import { Button } from "@/components/ui/Button";
 import { CodeInput, cleanCode } from "@/components/ui/CodeInput";
 import { api, ClientApiError } from "@/lib/api/client";
 import type { PublicRoom } from "@/lib/api/types";
+import { track } from "@/lib/analytics/posthog";
 
 type JoinError = "invalid" | "expired" | "full" | "started" | "offline";
 
+/** The code field and its actions. The page renders the heading, so it is in the static HTML. */
 export function JoinForm() {
   const t = useTranslations("join");
   const c = useTranslations("common");
@@ -31,6 +33,7 @@ export function JoinForm() {
       setMax(room.maxPlayers);
       if (room.status !== "lobby") return setError("started");
       if (room.playerCount >= room.maxPlayers) return setError("full");
+      track("room_link_opened", { via: params.get("code") ? "link" : "code" });
       router.push(`/r/${code}/me`);
     } catch (e) {
       const code = e instanceof ClientApiError ? e.code : "";
@@ -50,11 +53,7 @@ export function JoinForm() {
           : null;
 
   return (
-    <main className="mx-auto box-border flex w-full max-w-[480px] flex-1 flex-col gap-[22px] px-5 pt-4 pb-7">
-      <h1 className="m-0 font-display text-display-l font-extrabold tracking-display">
-        {t("title")}
-      </h1>
-      <p className="m-0 text-[17px] leading-[1.5] text-text-muted">{t("lede")}</p>
+    <>
       <div className="grid gap-3">
         <label htmlFor="spil-code" className="text-[14px] leading-none font-semibold">
           {t("label")}
@@ -110,6 +109,6 @@ export function JoinForm() {
           {t("submit")}
         </Button>
       </div>
-    </main>
+    </>
   );
 }

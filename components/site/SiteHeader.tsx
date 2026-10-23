@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Wordmark } from "@/components/brand/Wordmark";
-import { ThemeMenu } from "@/components/ui/ThemeToggle";
+import { ThemeMenu } from "@/components/ui/ThemeMenu";
 import { cn } from "@/lib/cn";
 
 /** Floating pill header shared by the landing and pre-room screens (design: App header). */

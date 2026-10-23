@@ -1,8 +1,10 @@
 import { DoorOpenIcon, PlusCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
+import { cacheLife } from "next/cache";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { InfoPage, Lede, PageTitle, Section } from "@/components/site/InfoPage";
+import { getSettings } from "@/lib/flags";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("pages.howto");
@@ -14,13 +16,23 @@ const ACCENT =
 const OUTLINE =
   "flex items-center justify-center gap-2 rounded-pill border-[1.5px] border-text font-semibold leading-none text-text no-underline hover:text-text";
 
+/** The admin can change the minimum; the page stays static and refreshes it every few minutes. */
+async function minPlayers() {
+  "use cache";
+  cacheLife("minutes");
+  // Builds without database access (CI) fall back to the default.
+  return getSettings()
+    .then((s) => s.minPlayers)
+    .catch(() => 3);
+}
+
 export default async function HowToPlay() {
   const t = await getTranslations("pages.howto");
   const c = await getTranslations("common");
   return (
     <InfoPage tab="howto">
       <PageTitle>{t("title")}</PageTitle>
-      <Lede>{t("lede", { min: 3 })}</Lede>
+      <Lede>{t("lede", { min: await minPlayers() })}</Lede>
       <div className="flex flex-wrap gap-2.5">
         <Link href="/create" className={`${ACCENT} h-12 px-5 text-[15px]`}>
           {c("startRoom")}

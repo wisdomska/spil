@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 import { fontVariables } from "./fonts";
 import { Grain } from "@/components/brand/Grain";
+import { Telemetry } from "@/components/site/Telemetry";
 import { Providers } from "./providers";
 import { THEME_COLOR, themeScript } from "@/lib/theme/theme-script";
 import "./globals.css";
@@ -42,6 +43,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           <Providers>{children}</Providers>
         </NextIntlClientProvider>
         <Grain />
+        <Telemetry />
       </body>
     </html>
   );

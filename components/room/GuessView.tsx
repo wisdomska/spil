@@ -14,10 +14,12 @@ import { labelFor } from "@/lib/game";
 type Props = {
   state: RoomState;
   onDone: () => Promise<unknown>;
+  /** Dev fixtures only: starting slider value. */
+  initialValue?: number;
 };
 
 /** Guess each other player's score, one at a time. Saved debounced; the last lock submits. */
-export function GuessView({ state, onDone }: Props) {
+export function GuessView({ state, onDone, initialValue = 50 }: Props) {
   const t = useTranslations("guess");
   const tt = useTranslations("toast");
   const toast = useToast();
@@ -34,7 +36,7 @@ export function GuessView({ state, onDone }: Props) {
       targets.findIndex((p) => !(p.id in locked)),
     );
   const [gi, setGi] = useState(firstOpen);
-  const [value, setValue] = useState(50);
+  const [value, setValue] = useState(initialValue);
   const [busy, setBusy] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const target = targets[gi % Math.max(1, targets.length)];
