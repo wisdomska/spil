@@ -143,19 +143,19 @@
   },
   "packInfo": {
     "purity": {
-      "title": "How The Purity 100 works",
-      "s1h": "Where it comes from",
-      "s1p": "The Rice Purity Test is a list of 100 yes or no questions. It started at Rice University in the 1920s so students could compare how sheltered they were.",
+      "title": "How The Full Hundred works",
+      "s1h": "What it is",
+      "s1p": "One hundred questions written for SPIL, from soft starters to the ones you would only admit to with a drink in your hand.",
       "s2h": "How it goes",
-      "s2p": "Questions run from mild to extreme: holding hands and kissing, then sex, then drinking, drugs and breaking rules.",
-      "s3h": "The classic score",
-      "s3p": "You tick everything you have done. Your score is 100 minus your ticks, so 100 is completely pure and 0 means you have done it all.",
-      "s4h": "How SPIL flips it",
-      "s4p": "Your Spill Score counts the yeses instead, so a purity score of 70 is a Spill Score of about 30. Higher means you have done more.",
+      "s2p": "It starts mild with crushes, dates and bad texts, warms up through nights out and hook-ups, and ends with the questions you will want to whisper.",
+      "s3h": "Your score",
+      "s3p": "Every yes counts. Play all 100 and your Spill Score is simply how many you said yes to.",
+      "s4h": "Nothing is shared",
+      "s4p": "Your friends only see your score, unless you switch on Spill Mode at the end.",
       "s5h": "What makes it a game",
-      "s5p": "Your friends guess your score before the reveal. Only the score is shared, unless you turn on Spill Mode.",
+      "s5p": "Everyone guesses everyone's score before the reveal. The closest guesses earn Mind Reader points.",
       "s6h": "Picking a length",
-      "s6p": "Choose All 100 for the full test. 20 or 30 makes a quicker round with questions drawn at random from the pack."
+      "s6p": "Choose All 100 for the full list. 20 or 30 makes a quicker round with questions drawn at random from the pack."
     }
   },
   "profile": {
