@@ -115,6 +115,16 @@ export const AWARD_LOOK: Record<
   clueless: { name: "Clueless", Icon: QuestionIcon, tone: "raised", shape: "circle" },
 };
 
+/** messages/en.json key under "awards" for each award id. */
+export const AWARD_KEY = {
+  top_spiller: "topSpiller",
+  saint_of_the_room: "saint",
+  mind_reader: "mindReader",
+  dark_horse: "darkHorse",
+  open_book: "openBook",
+  clueless: "clueless",
+} as const;
+
 export const AWARD_ORDER: AwardKey[] = [
   "top_spiller",
   "saint_of_the_room",
@@ -165,10 +175,13 @@ export function AwardBadge({
 export function AwardSticker({
   award,
   index,
+  name,
   animate = true,
 }: {
   award: AwardKey;
   index: number;
+  /** Translated award name; falls back to English. */
+  name?: string;
   animate?: boolean;
 }) {
   const look = AWARD_LOOK[award];
@@ -188,7 +201,7 @@ export function AwardSticker({
       }}
     >
       <look.Icon size={56} aria-hidden />
-      {look.name}
+      {name ?? look.name}
     </span>
   );
 }

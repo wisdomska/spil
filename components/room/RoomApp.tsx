@@ -1,0 +1,323 @@
+"use client";
+
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { RevealStage } from "@/components/game/RevealStage";
+import { ErrorScreen, type ErrorVariant } from "@/components/site/ErrorScreen";
+import { Button } from "@/components/ui/Button";
+import { Sheet } from "@/components/ui/Sheet";
+import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
+import { useToast } from "@/components/ui/Toast";
+import { ClientApiError } from "@/lib/api/client";
+import type { RoomState, StatePlayer } from "@/lib/api/types";
+import { useRoomChannel } from "@/lib/realtime/useRoomChannel";
+import { roomKey, useRoomActions, useRoomState } from "@/lib/room/useRoom";
+import { GuessView } from "./GuessView";
+import { LobbyView } from "./LobbyView";
+import { QuestionView } from "./QuestionView";
+import { ReadyView } from "./ReadyView";
+import { ResultsView } from "./ResultsView";
+import { RoomShell } from "./RoomShell";
+import { WaitingView } from "./WaitingView";
+
+type Screen = "lobby" | "question" | "waiting" | "guess" | "ready" | "reveal" | "results";
+
+const SEEN_KEY = (code: string, round: number) => `spil-revealed:${code}:${round}`;
+
+function screenFor(state: RoomState, revealSeen: boolean): Screen {
+  switch (state.room.status) {
+    case "lobby":
+      return "lobby";
+    case "answering":
+      return state.me.answersSubmitted || state.me.status !== "active" ? "waiting" : "question";
+    case "guessing":
+      return state.me.guessesSubmitted ? "waiting" : "guess";
+    case "ready":
+      return "ready";
+    default:
+      return revealSeen ? "results" : "reveal";
+  }
+}
+
+function errorFor(error: unknown): ErrorVariant {
+  if (!(error instanceof ClientApiError)) return "server";
+  if (error.code === "OFFLINE") return "offline";
+  if (error.code === "ROOM_EXPIRED") return "expired";
+  if (error.code === "ROOM_NOT_FOUND") return "notfound";
+  if (error.code === "NOT_IN_ROOM" && error.message === "REMOVED") return "removed";
+  return error.status >= 500 ? "waking" : "notfound";
+}
+
+/** The whole in-room experience; the server decides the phase, this only renders it. */
+export function RoomApp({ code }: { code: string }) {
+  const router = useRouter();
+  const qc = useQueryClient();
+  const toast = useToast();
+  const tt = useTranslations("toast");
+  const ts = useTranslations("sheet");
+  const c = useTranslations("common");
+  const tLobby = useTranslations("lobby");
+  const live = useRef(false);
+  const query = useRoomState(code, live);
+  const state = query.data;
+  const actions = useRoomActions(code);
+  const [leaving, setLeaving] = useState(false);
+  const [shake, setShake] = useState(0);
+  const [seen, setSeen] = useState<Record<string, boolean>>({});
+
+  const onNudge = useCallback(
+    (target: string) => {
+      if (!state || target !== state.me.id) return;
+      navigator.vibrate?.([30, 40, 30]);
+      setShake((n) => n + 1);
+      const host = state.players.find((p) => p.isHost);
+      toast(tt("nudgedYou", { host: host?.nickname ?? "" }), "info");
+    },
+    [state, toast, tt],
+  );
+
+  const channel = useRoomChannel({
+    code,
+    channel: state?.room.channel,
+    playerId: state?.me.id,
+    pollingOnly: state?.room.pollingOnly ?? false,
+    onNudge,
+  });
+  useEffect(() => {
+    live.current = channel.live;
+  }, [channel.live]);
+
+  // Not a player here yet: the profile screen joins (lobby), otherwise show why.
+  const error = query.error;
+  useEffect(() => {
+    if (
+      error instanceof ClientApiError &&
+      (error.code === "NOT_IN_ROOM" || error.code === "UNAUTHENTICATED") &&
+      error.message !== "REMOVED"
+    ) {
+      router.replace(`/r/${code}/me`);
+    }
+  }, [error, code, router]);
+
+  const revealSeen = useMemo(() => {
+    if (!state) return false;
+    const key = SEEN_KEY(code, state.room.round);
+    if (seen[key]) return true;
+    try {
+      return sessionStorage.getItem(key) === "1";
+    } catch {
+      return false;
+    }
+  }, [state, code, seen]);
+
+  const markRevealSeen = useCallback(() => {
+    if (!state) return;
+    const key = SEEN_KEY(code, state.room.round);
+    try {
+      sessionStorage.setItem(key, "1");
+    } catch {
+      // private mode: the in-memory flag still works for this visit
+    }
+    setSeen((s) => ({ ...s, [key]: true }));
+    window.scrollTo(0, 0);
+  }, [state, code]);
+
+  const fail = (e: unknown) => {
+    const reason = e instanceof ClientApiError ? e.code : "";
+    if (reason === "AGE_PENDING") return toast(tt("ageFirst"), "err");
+    if (reason === "NOT_ENOUGH_PLAYERS")
+      return toast(tt("needPlayersProd", { min: state?.room.settings.minPlayers ?? 3 }), "err");
+    if (reason === "RATE_LIMITED") return toast(tt("rateLimited"), "err");
+    if (reason === "WRONG_PHASE") return qc.invalidateQueries({ queryKey: roomKey(code) });
+    toast(tt("somethingWrong"), "err");
+  };
+
+  if (
+    error &&
+    !(
+      error instanceof ClientApiError &&
+      (error.code === "NOT_IN_ROOM" || error.code === "UNAUTHENTICATED") &&
+      error.message !== "REMOVED"
+    )
+  ) {
+    return <ErrorScreen variant={errorFor(error)} onRetry={() => query.refetch()} />;
+  }
+
+  if (!state) {
+    return (
+      <div className="mx-auto box-border w-full max-w-[520px] px-5 pt-20">
+        <SkeletonGroup label={tLobby("loading")} className="gap-4">
+          <Skeleton className="h-3 w-[90px] rounded-pill" />
+          <Skeleton className="h-[72px] w-[240px] rounded-input" />
+          <div className="flex gap-2">
+            <Skeleton className="h-[52px] flex-1 rounded-pill" />
+            <Skeleton className="size-[52px] rounded-pill" />
+            <Skeleton className="size-[52px] rounded-pill" />
+          </div>
+          <Skeleton className="mt-3 h-[22px] w-[140px] rounded-pill" />
+          <div className="flex flex-wrap gap-x-2.5 gap-y-3.5">
+            <Skeleton className="h-[52px] w-[120px] rounded-pill" style={{ rotate: "-3deg" }} />
+            <Skeleton className="h-[52px] w-[104px] rounded-pill" style={{ rotate: "2deg" }} />
+            <Skeleton className="h-[52px] w-[130px] rounded-pill" style={{ rotate: "-1deg" }} />
+          </div>
+        </SkeletonGroup>
+      </div>
+    );
+  }
+
+  const screen = screenFor(state, revealSeen);
+  const needAge =
+    state.room.status === "lobby" && state.room.pack.isAdult && !state.me.ageConfirmed;
+
+  if (screen === "reveal" && state.results) {
+    return (
+      <RevealStage
+        rows={state.results.rows}
+        awards={state.results.awards}
+        revealedAt={state.room.revealedAt}
+        onDone={markRevealSeen}
+      />
+    );
+  }
+
+  const results = state.results?.rows ?? [];
+  const statusFor = (id: string) => {
+    const p = state.players.find((x) => x.id === id);
+    if (!p) return "";
+    if (screen === "lobby") return p.isHost ? c("host") : p.isBot ? c("test") : "";
+    if (screen === "ready") return c("locked");
+    if (screen === "results") return String(results.find((r) => r.playerId === id)?.score ?? "");
+    const done = state.room.status === "guessing" ? p.guessesSubmitted : p.answersSubmitted;
+    if (done) return c("done");
+    return state.room.status === "guessing"
+      ? c("guessing")
+      : `${p.answered}/${state.room.questionCount}`;
+  };
+
+  const leaveCopy = state.me.isHost
+    ? state.players.some((p) => !p.isBot && p.id !== state.me.id && p.status === "active")
+      ? ts("leaveHostNext")
+      : ts("leaveHostOnly")
+    : state.room.status !== "lobby"
+      ? ts("leaveInGame")
+      : ts("leaveLobby");
+
+  const leave = async () => {
+    try {
+      await actions.leave.mutateAsync(undefined);
+    } catch {
+      // leaving locally is enough to move on
+    }
+    qc.removeQueries({ queryKey: roomKey(code) });
+    toast(tt("leftRoom"));
+    router.replace("/");
+  };
+
+  return (
+    <div key={shake} className={shake ? "animate-shake" : undefined}>
+      <RoomShell
+        state={state}
+        online={channel.online}
+        statusFor={statusFor}
+        order={screen === "results" ? results.map((r) => r.playerId) : undefined}
+        onLeave={() => setLeaving(true)}
+      >
+        {screen === "lobby" && (
+          <LobbyView
+            state={state}
+            starting={actions.start.isPending}
+            onStart={() => actions.start.mutate(undefined, { onError: fail })}
+            onKick={(id, name) =>
+              actions.kick.mutate(id, {
+                onSuccess: () => toast(tt("removed", { name })),
+                onError: fail,
+              })
+            }
+            onAddTest={() => actions.addTestPlayers.mutate(1, { onError: fail })}
+          />
+        )}
+        {screen === "question" && (
+          <QuestionView
+            key={state.room.round}
+            state={state}
+            onDone={() => actions.submitAnswers.mutateAsync(undefined).catch(fail)}
+          />
+        )}
+        {screen === "waiting" && (
+          <WaitingView
+            state={state}
+            forcing={actions.advance.isPending}
+            onForce={() =>
+              actions.advance.mutate(state.room.status === "guessing" ? "guessing" : "answering", {
+                onError: fail,
+              })
+            }
+            onNudge={(players: StatePlayer[]) => {
+              for (const p of players) actions.nudge.mutate(p.id, { onError: fail });
+              toast(tt("nudged", { names: players.map((p) => p.nickname).join(" and ") }));
+            }}
+          />
+        )}
+        {screen === "guess" && (
+          <GuessView
+            key={state.room.round}
+            state={state}
+            onDone={() => actions.submitGuesses.mutateAsync(undefined).catch(fail)}
+          />
+        )}
+        {screen === "ready" && (
+          <ReadyView
+            state={state}
+            revealing={actions.advance.isPending}
+            onReveal={() => actions.advance.mutate("ready", { onError: fail })}
+          />
+        )}
+        {screen === "results" && (
+          <ResultsView
+            state={state}
+            onSpill={(on) => actions.patchMe.mutate({ spillMode: on }, { onError: fail })}
+            onHideName={(hide) =>
+              actions.patchMe.mutate({ hideNameOnCard: hide }, { onError: fail })
+            }
+          />
+        )}
+      </RoomShell>
+
+      <Sheet
+        open={leaving}
+        onOpenChange={setLeaving}
+        title={ts("leaveTitle")}
+        description={leaveCopy}
+      >
+        <Button variant="destructive" loading={actions.leave.isPending} onClick={leave}>
+          {c("leaveRoom")}
+        </Button>
+        <Button variant="secondary" onClick={() => setLeaving(false)}>
+          {c("stay")}
+        </Button>
+      </Sheet>
+
+      <Sheet
+        open={needAge}
+        dismissible={false}
+        title={ts("ageTitle")}
+        description={ts("ageBody", {
+          host: state.players.find((p) => p.isHost)?.nickname ?? "",
+          pack: state.room.pack.name,
+        })}
+      >
+        <Button
+          loading={actions.confirmAge.isPending}
+          onClick={() => actions.confirmAge.mutate(undefined, { onError: fail })}
+        >
+          {ts("ageConfirm")}
+        </Button>
+        <Button variant="secondary" onClick={leave}>
+          {c("leaveRoom")}
+        </Button>
+      </Sheet>
+    </div>
+  );
+}

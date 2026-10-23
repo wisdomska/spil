@@ -241,7 +241,7 @@
   },
   "guess": {
     "count": "Guess {n} of {total}",
-    "title": "How much has {name} done? Be honest.",
+    "title": "How much has <em>{name}</em> done? Be honest.",
     "lower": "Lower guess",
     "raise": "Raise guess",
     "aria": "Your guess for {name}",

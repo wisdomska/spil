@@ -38,6 +38,8 @@ export type StatePlayer = {
   rotationSeed: number;
   isHost: boolean;
   isBot: boolean;
+  /** Confirmed 18+ for the current pack (adult packs only matter). */
+  ageConfirmed: boolean;
   status: PlayerStatus;
   /** Answers saved this round (count only; never the values). */
   answered: number;

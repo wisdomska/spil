@@ -31,6 +31,7 @@ export type ShareCardProps = {
     headline: string;
     headlineEmphasis: string;
     domain: string;
+    awardName?: (award: AwardKey) => string;
   };
 };
 
@@ -250,7 +251,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
                 }}
               >
                 <look.Icon size={72} />
-                <span style={{ maxWidth: 190 }}>{look.name}</span>
+                <span style={{ maxWidth: 190 }}>{copy.awardName?.(award) ?? look.name}</span>
               </span>
             </div>
             <div
@@ -266,12 +267,18 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
                 style={{
                   font: "800 60px/1 var(--font-display)",
                   letterSpacing: "-.03em",
-                  maxWidth: 560,
+                  maxWidth: 440,
                 }}
               >
                 {copy.tagline}
               </span>
-              <span style={{ font: "600 34px/1 var(--font-mono)", color: "var(--accent-ink)" }}>
+              <span
+                style={{
+                  font: "600 30px/1 var(--font-mono)",
+                  color: "var(--accent-ink)",
+                  whiteSpace: "nowrap",
+                }}
+              >
                 {copy.domain}
               </span>
             </div>
@@ -418,7 +425,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
                     return (
                       <>
                         <A.Icon size={40} />
-                        {A.name}: {boardAward.name}
+                        {copy.awardName?.(boardAward.award) ?? A.name}: {boardAward.name}
                       </>
                     );
                   })()}
@@ -512,7 +519,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
                 }}
               >
                 <look.Icon size={28} />
-                {look.name}
+                {copy.awardName?.(award) ?? look.name}
               </span>
             </div>
           </div>

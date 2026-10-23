@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
+import { AWARD_KEY, type AwardKey } from "@/components/brand/Stickers";
 
 /** All text a ShareCard prints, from messages/en.json. */
 export function useCardCopy() {
@@ -18,6 +19,7 @@ export function useCardCopy() {
       headlineEmphasis: t("landing.headlineEmphasis"),
       domain: t("card.domain"),
       saved: t("toast.cardSaved"),
+      awardName: (award: AwardKey) => t(`awards.${AWARD_KEY[award]}`),
     }),
     [t],
   );

@@ -346,6 +346,7 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     rotationSeed: p.rotation_seed,
     isHost: p.id === room.host_player_id,
     isBot: p.is_bot,
+    ageConfirmed: p.age_confirmed || p.is_bot,
     status: p.status as PlayerStatus,
     answered: countFor(p.id),
     answersSubmitted: p.answers_submitted_at != null,

@@ -12,8 +12,8 @@ Milestones follow docs/TECH_SPEC.md section 22.
 | 5   | Game logic                     | done    |                                                                                                                                |
 | 6   | API                            | done    | All section 12 endpoints, rate limits, Turnstile hook, 19 integration tests (local Supabase in CI, spil-preview locally)       |
 | 7   | Static and entry screens       | done    |                                                                                                                                |
-| 8   | Room flow                      | pending |                                                                                                                                |
-| 9   | Reveal and results             | pending |                                                                                                                                |
+| 8   | Room flow                      | done    |                                                                                                                                |
+| 9   | Reveal and results             | done    |                                                                                                                                |
 | 10  | Admin                          | pending |                                                                                                                                |
 | 11  | Hardening                      | pending |                                                                                                                                |
 | 12  | Release                        | pending |                                                                                                                                |
