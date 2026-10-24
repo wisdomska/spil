@@ -13,7 +13,8 @@ import {
 } from "@/components/brand/Stickers";
 import { Vessel } from "@/components/brand/Vessel";
 import type { AwardRow, ResultRow } from "@/lib/api/types";
-import { labelById } from "@/lib/game";
+import { cn } from "@/lib/cn";
+import { labelById, spillGroups } from "@/lib/game";
 import { frameAt, revealDuration, type RevealFrame } from "@/lib/room/revealTimeline";
 import { useIsDesktop } from "@/lib/useMedia";
 
@@ -34,7 +35,8 @@ const sameFrame = (a: RevealFrame, b: RevealFrame) =>
 
 /**
  * Full-bleed reveal stage (max 560 wide at every size; it gets cast to TVs). One rAF timeline
- * writes the count to a motion value; React only re-renders when the beat changes.
+ * writes the count to a motion value; React only re-renders when the beat changes. Each step is
+ * a group of equal Spill Scores, lowest first, so tied players are revealed together (SPIL-04).
  */
 export function RevealStage({ rows, awards, revealedAt, onDone, freezeAt }: Props) {
   const t = useTranslations("reveal");
@@ -42,8 +44,8 @@ export function RevealStage({ rows, awards, revealedAt, onDone, freezeAt }: Prop
   const ta = useTranslations("awards");
   const reduced = useReducedMotion() ?? false;
   const desktop = useIsDesktop();
-  const order = useMemo(() => [...rows].sort((a, b) => a.score - b.score), [rows]);
-  const scores = useMemo(() => order.map((r) => r.score), [order]);
+  const groups = useMemo(() => spillGroups(rows), [rows]);
+  const scores = useMemo(() => groups.map((g) => g.score), [groups]);
   const [frame, setFrame] = useState<RevealFrame>(() =>
     frameAt(freezeAt ?? 0, scores, awards.length, reduced),
   );
@@ -83,11 +85,21 @@ export function RevealStage({ rows, awards, revealedAt, onDone, freezeAt }: Prop
   }, [scores, awards.length, revealedAt, reduced, count, freezeAt]);
 
   const awardMode = frame.phase === "beat" || frame.phase === "award";
-  const player = "player" in frame ? order[frame.player] : order[order.length - 1];
+  const step = "player" in frame ? frame.player : groups.length - 1;
+  const group = groups[step];
+  const player = group?.rows[0];
+  const tied = (group?.rows.length ?? 0) > 1;
   const awardIndex = "award" in frame ? frame.award : 0;
   const award = awards[awardIndex];
   const winner = award ? rows.find((r) => r.playerId === award.playerId) : undefined;
-  const place = (k: number) => (k === 1 ? t("top") : t("place", { n: k }));
+  const place = (k: number) =>
+    tied
+      ? k === 1
+        ? t("tieTop")
+        : t("tiePlace", { n: k })
+      : k === 1
+        ? t("top")
+        : t("place", { n: k });
   const label = player ? (labelById(player.label).name as LabelName) : undefined;
   const labelKey = player ? labelKeyFor(player.label) : "fresh";
 
@@ -97,7 +109,7 @@ export function RevealStage({ rows, awards, revealedAt, onDone, freezeAt }: Prop
         <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] whitespace-pre text-text-muted">
           {awardMode
             ? t("awardsCounter", { n: awardIndex + 1, total: awards.length })
-            : t("counter", { n: ("player" in frame ? frame.player : 0) + 1, total: order.length })}
+            : t("counter", { n: step + 1, total: groups.length })}
         </span>
         <button
           type="button"
@@ -109,13 +121,73 @@ export function RevealStage({ rows, awards, revealedAt, onDone, freezeAt }: Prop
         </button>
       </div>
 
-      {!awardMode && player && (
+      {!awardMode && player && group && tied && (
+        <div className="flex flex-1 flex-col gap-[18px]">
+          <span className="text-[14px] leading-none font-medium text-text-muted">
+            {place(group.place)}
+          </span>
+          <div
+            className={cn(
+              "flex gap-3",
+              group.rows.length > 2 && "-mx-5 snap-x snap-mandatory overflow-x-auto px-5 pb-6",
+            )}
+          >
+            {group.rows.map((r) => (
+              <div
+                key={r.playerId}
+                className={cn(
+                  "grid content-start gap-3",
+                  group.rows.length > 2 ? "w-[44%] shrink-0 snap-start" : "min-w-0 flex-1",
+                )}
+              >
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <Avatar n={r.avatar} size={40} label={r.nickname} />
+                  <span className="truncate font-display text-[24px] leading-none font-extrabold tracking-[-.03em]">
+                    {r.nickname}
+                  </span>
+                </div>
+                <div className="relative">
+                  <Vessel
+                    level={count}
+                    num={num}
+                    height={desktop ? 360 : 300}
+                    fontSize={group.rows.length > 2 ? 60 : 72}
+                    radius={24}
+                  />
+                  {frame.phase === "label" && label && (
+                    <span
+                      className="absolute bottom-[-14px] left-[-4px] animate-slap"
+                      style={labelStickerStyle(label, -4, 17)}
+                    >
+                      {tl(labelKey)}
+                    </span>
+                  )}
+                </div>
+                <span className="mt-2 min-h-[20px] text-[14px] leading-[1.4] font-medium text-text-muted">
+                  {frame.phase === "label" ? t("guessed", { guess: r.avgGuessAbout }) : ""}
+                </span>
+              </div>
+            ))}
+          </div>
+          <span className="sr-only" aria-live="polite">
+            {frame.phase === "label" && label
+              ? group.rows
+                  .map((r) =>
+                    t("announce", { name: r.nickname, score: r.score, label: tl(labelKey) }),
+                  )
+                  .join(". ")
+              : ""}
+          </span>
+        </div>
+      )}
+
+      {!awardMode && player && group && !tied && (
         <div className="flex flex-1 flex-col gap-[18px]">
           <div className="flex items-center gap-3.5">
             <Avatar n={player.avatar} size={64} label={player.nickname} />
             <div className="grid gap-[5px]">
               <span className="text-[14px] leading-none font-medium text-text-muted">
-                {place(order.length - ("player" in frame ? frame.player : 0))}
+                {place(group.place)}
               </span>
               <span className="font-display text-[42px] leading-[.95] font-extrabold tracking-[-.03em]">
                 {player.nickname}

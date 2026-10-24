@@ -31,11 +31,12 @@ No other screen scrolls sideways at any viewport.
 
 ## Tickets
 
-| Ticket                      | Status      | 375 px                              | 1280 px                              | Chrome | Safari | Firefox    | QA sign-off                                                                      |
-| --------------------------- | ----------- | ----------------------------------- | ------------------------------------ | ------ | ------ | ---------- | -------------------------------------------------------------------------------- |
-| SPIL-01                     | Done        | screens/SPIL-01-after-375.png       | screens/SPIL-01-after-1280.png       | pass   | CI     | CI nightly | Unit matrix (2, 3, 12 players), e2e LMGF repro, harness self-test                |
-| SPIL-03                     | Done        | screens/SPIL-03-after-sheet-375.png | screens/SPIL-03-after-sheet-1280.png | pass   | CI     | CI nightly | e2e live counts (realtime), own count, force dialog hold; pgTAP for save_answers |
-| SPIL-02, SPIL-04 to SPIL-33 | Not started |                                     |                                      |        |        |            |                                                                                  |
+| Ticket                      | Status      | 375 px                                                                              | 1280 px                                                                               | Chrome | Safari | Firefox    | QA sign-off                                                                      |
+| --------------------------- | ----------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------ | ------ | ---------- | -------------------------------------------------------------------------------- |
+| SPIL-01                     | Done        | screens/SPIL-01-after-375.png                                                       | screens/SPIL-01-after-1280.png                                                        | pass   | CI     | CI nightly | Unit matrix (2, 3, 12 players), e2e LMGF repro, harness self-test                |
+| SPIL-03                     | Done        | screens/SPIL-03-after-sheet-375.png                                                 | screens/SPIL-03-after-sheet-1280.png                                                  | pass   | CI     | CI nightly | e2e live counts (realtime), own count, force dialog hold; pgTAP for save_answers |
+| SPIL-04                     | Done        | screens/SPIL-04-after-reveal-tie-375.png, screens/SPIL-04-after-results-tie-375.png | screens/SPIL-04-after-reveal-tie-1280.png, screens/SPIL-04-after-results-tie-1280.png | pass   | CI     | CI nightly | Unit tests for groups, places and T ranks; tie fixture checked at 375 and 1280   |
+| SPIL-02, SPIL-05 to SPIL-33 | Not started |                                                                                     |                                                                                       |        |        |            |                                                                                  |
 
 ## SPIL-01: Softlock after "Move on without them"
 
@@ -63,3 +64,15 @@ Notes:
 - Counts are written in the same transaction as the answers (`save_answers`), then broadcast as a small `progress` event that phones patch in place; no full refetch per answer.
 - The offline queue sends batches, and each batch produces one progress event with the final count.
 - Migration 20261024000900, applied to staging on 2026-10-24. See docs/MIGRATIONS.md.
+
+## SPIL-04: Ties ranked as if one player spilled more
+
+- [x] Two equal scores are revealed together with the tied kicker: LXQT (both 40) is one step, "Tied for most spilled". Two tied players sit side by side (vessels 300 px on phones, 360 px on desktop, 12 px gap); three or more scroll sideways with snap.
+- [x] No copy implies an order between equal scores: reveal kickers use the tie keys, the results list shows "T1, T1, 3", the winner line uses winnerTie, and the group card says "{names} tied for the win."
+- [x] Group card and results use the same ranks (both from `rankByGuessing`, with the same T labels).
+
+Notes:
+
+- The spec says "dense ranking" but gives `1 + count(score > mine)` and "T1, T1, 3", which is competition ranking. The examples win (docs/ARCHITECTURE_NOTES.md section 5).
+- The server returns `spillRank` and `tiedWith` per result row; the reveal groups come from the pure `spillGroups` in lib/game.
+- Award tie-breaks still follow SRS 4.3 (earliest submit wins a tied award); that is a product rule, not a ranking, so it is unchanged.

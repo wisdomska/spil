@@ -8,6 +8,8 @@ export type CardFormat = "story" | "square" | "og";
 /** `points` are guessing points (the ranking); older saved games only have `score`. */
 export type BoardRow = {
   rank: number;
+  /** Shown in place of rank: "T1" for a shared rank (SPIL-04). */
+  rankLabel?: string;
   name: string;
   avatar: number;
   score: number;
@@ -36,7 +38,8 @@ export type ShareCardProps = {
     mine: string;
     tagline: string;
     room: (code: string) => string;
-    topped: (name: string) => string;
+    /** One name wins; several share the win (SPIL-04). */
+    topped: (names: string[]) => string;
     headline: string;
     headlineEmphasis: string;
     domain: string;
@@ -129,6 +132,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
   const label = labelFor(score);
   const look = AWARD_LOOK[award];
   const top = board[0];
+  const winners = board.filter((p) => p.rank === top?.rank).map((p) => p.name);
 
   return (
     <div
@@ -334,7 +338,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
               </span>
             </div>
             <span style={{ font: "800 72px/.95 var(--font-display)", letterSpacing: "-.035em" }}>
-              {copy.topped(top?.name ?? "")}
+              {copy.topped(winners)}
             </span>
             <div
               style={{
@@ -394,10 +398,11 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
                       style={{
                         font: "500 30px/1 var(--font-mono)",
                         color: "var(--text-muted)",
-                        width: 36,
+                        minWidth: 36,
+                        whiteSpace: "nowrap",
                       }}
                     >
-                      {p.rank}
+                      {p.rankLabel ?? p.rank}
                     </span>
                     <Avatar n={p.avatar} size={68} decorative />
                     <span

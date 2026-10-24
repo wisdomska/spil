@@ -276,6 +276,8 @@
     "skip": "Skip",
     "top": "Spilled the most",
     "place": "{n, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} most spilled",
+    "tieTop": "Tied for most spilled",
+    "tiePlace": "Tied for {n, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} most spilled",
     "guessed": "The room guessed {guess}.",
     "announce": "{name} scored {score}, {label}",
     "announceAward": "{award}: {name}. {reason}"
@@ -292,6 +294,7 @@
     "questions": "Questions",
     "sub": "Spill Score {score} · the room guessed {guess}",
     "pts": "pts",
+    "rankTied": "T{rank}",
     "winner": "{name} won the round with {points} guessing points.",
     "winnerYou": "You won the round with {points} guessing points.",
     "winnerTie": "{names} tied for the win with {points} guessing points.",
@@ -329,6 +332,7 @@
     "tagline": "Think you know me? Guess my score.",
     "room": "ROOM {code}",
     "topped": "{name} won the round.",
+    "toppedTie": "{names} tied for the win.",
     "awardLine": "{award}: {name}",
     "domain": "spil-party.vercel.app"
   },

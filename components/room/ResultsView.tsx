@@ -24,7 +24,7 @@ import { SegmentedTabs, TabPanel } from "@/components/ui/SegmentedTabs";
 import { SwitchRow } from "@/components/ui/Switch";
 import { useToast } from "@/components/ui/Toast";
 import type { RoomState } from "@/lib/api/types";
-import { labelById, rankByGuessing } from "@/lib/game";
+import { isTiedRank, labelById, rankByGuessing } from "@/lib/game";
 import { saveLastGame } from "@/lib/share/capture";
 
 /** Wall-clock time for the saved card (called from an effect, never during render). */
@@ -60,10 +60,14 @@ export function ResultsView({
   const host = state.players.find((p) => p.isHost);
 
   const rows = rankByGuessing(results?.rows ?? []);
+  const ranks = rows.map((r) => r.rank);
+  const rankText = (rank: number) =>
+    isTiedRank(rank, ranks) ? t("rankTied", { rank }) : String(rank);
   const meRow = rows.find((r) => r.playerId === state.me.id);
   const myAward = results?.awards.find((a) => a.playerId === state.me.id);
   const board = rows.map((r) => ({
     rank: r.rank,
+    rankLabel: rankText(r.rank),
     name: r.nickname,
     avatar: r.avatar,
     score: r.score,
@@ -159,8 +163,8 @@ export function ResultsView({
                   background: r.playerId === state.me.id ? "var(--accent-soft)" : "transparent",
                 }}
               >
-                <span className="w-[18px] font-mono text-[14px] leading-none font-medium text-text-muted">
-                  {r.rank}
+                <span className="min-w-[18px] font-mono text-[14px] leading-none font-medium whitespace-nowrap text-text-muted">
+                  {rankText(r.rank)}
                 </span>
                 <Avatar n={r.avatar} size={44} label={r.nickname} />
                 <div className="grid min-w-0 flex-1 gap-2">

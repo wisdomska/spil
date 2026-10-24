@@ -18,7 +18,8 @@ const noop = () => {};
 const done = () => Promise.resolve();
 
 // Reveal freeze points (ms) matching the design frames: Ama counting at 47, Ama's label, award 1.
-const FREEZE = { count: 17_116, label: 18_350, award: 23_400 } as const;
+// "tie": Ama and Kofi both on 72, revealed together at the label beat (SPIL-04).
+const FREEZE = { count: 17_116, label: 18_350, award: 23_400, tie: 15_600 } as const;
 
 export function FixtureScreen({ screen }: { screen: string }) {
   const variant = useSearchParams().get("variant") ?? "";
@@ -50,6 +51,14 @@ export function FixtureScreen({ screen }: { screen: string }) {
     state.me.avatar = 9;
   }
   if (screen === "waiting") state.me.answersSubmitted = true;
+  if (variant === "tie" && state.results) {
+    const ama = state.results.rows.find((r) => r.playerId === "ama")!;
+    state.results.rows = state.results.rows.map((r) =>
+      r.playerId === "kofi"
+        ? { ...r, score: ama.score, label: ama.label, mindReader: ama.mindReader }
+        : r,
+    );
+  }
   if (screen === "guess" && variant === "nothing") {
     state.me.targets = [];
     state.me.guessesSubmitted = true;

@@ -14,7 +14,10 @@ export function useCardCopy() {
       mine: t("card.mine"),
       tagline: t("card.tagline"),
       room: (code: string) => t("card.room", { code }),
-      topped: (name: string) => t("card.topped", { name }),
+      topped: (names: string[]) =>
+        names.length > 1
+          ? t("card.toppedTie", { names: names.join(", ") })
+          : t("card.topped", { name: names[0] ?? "" }),
       headline: t("landing.headline"),
       headlineEmphasis: t("landing.headlineEmphasis"),
       domain: t("card.domain"),

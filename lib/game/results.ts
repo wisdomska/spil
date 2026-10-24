@@ -75,6 +75,44 @@ export function rankByGuessing<T extends { mindReader: number; score: number }>(
   }));
 }
 
+/** Players revealed together because their Spill Scores are equal (SPIL-04). */
+export interface SpillGroup<T> {
+  score: number;
+  /** 1 + how many players spilled more: equal scores share a place, the next place skips. */
+  place: number;
+  rows: T[];
+}
+
+/** Reveal steps: one group per distinct Spill Score, lowest first, so ties appear together. */
+export function spillGroups<T extends { score: number }>(rows: readonly T[]): SpillGroup<T>[] {
+  const scores = [...new Set(rows.map((r) => r.score))].sort((a, b) => a - b);
+  return scores.map((score) => ({
+    score,
+    place: 1 + rows.filter((r) => r.score > score).length,
+    rows: rows.filter((r) => r.score === score),
+  }));
+}
+
+/** Each player's Spill Score place and who shares it (SPIL-04). */
+export function spillTies<T extends { playerId: string; score: number }>(
+  rows: readonly T[],
+): Map<string, { spillRank: number; tiedWith: string[] }> {
+  return new Map(
+    rows.map((r) => [
+      r.playerId,
+      {
+        spillRank: 1 + rows.filter((o) => o.score > r.score).length,
+        tiedWith: rows.filter((o) => o.score === r.score && o !== r).map((o) => o.playerId),
+      },
+    ]),
+  );
+}
+
+/** Whether a rank is shared, so the list shows "T1, T1, 3" (SPIL-04). */
+export function isTiedRank(rank: number, ranks: readonly number[]): boolean {
+  return ranks.filter((r) => r === rank).length > 1;
+}
+
 export interface AnswerCount {
   questionId: string;
   yes: number;

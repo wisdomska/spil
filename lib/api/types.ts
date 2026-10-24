@@ -58,6 +58,10 @@ export type ResultRow = {
   avgGuessAbout: number;
   mindReader: number;
   rank: number;
+  /** Place by Spill Score: 1 + players who spilled more (SPIL-04). */
+  spillRank?: number;
+  /** Players with the same Spill Score; revealed together. */
+  tiedWith?: string[];
 };
 
 export type AwardRow = {

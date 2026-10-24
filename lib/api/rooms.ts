@@ -2,6 +2,7 @@ import "server-only";
 import {
   computeResults,
   guessTargets,
+  spillTies,
   isScoredPlayer as isScoredPhase,
   planAdvance,
   isRoomExpired,
@@ -447,6 +448,9 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     const byId = new Map(players.map((p) => [p.id, p]));
     // Recomputed each time so Spill Mode toggles after the reveal show up live.
     const { questionStats } = computeResults(input);
+    const ties = spillTies(
+      (rows ?? []).map((r) => ({ playerId: r.player_id, score: r.spill_score })),
+    );
     state.results = {
       rows: (rows ?? []).map((r) => ({
         playerId: r.player_id,
@@ -457,6 +461,7 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
         avgGuessAbout: r.avg_guess_about,
         mindReader: r.mind_reader,
         rank: r.rank,
+        ...ties.get(r.player_id),
       })),
       awards: (awards ?? []).map((a) => ({
         award: a.award as AwardId,
