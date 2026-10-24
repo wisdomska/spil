@@ -10,7 +10,7 @@ export const POST = route(async (request) => {
   const body = await readBody(request, message);
   const ip = clientIp(request);
   await rateLimit("message", ip);
-  await verifyTurnstile(body.captchaToken, ip);
+  await verifyTurnstile(body.captchaToken, ip, "contact", request);
   const { error } = await getAdminClient()
     .from("messages")
     .insert({ name: body.name || null, email: body.email || null, body: body.body });

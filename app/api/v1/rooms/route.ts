@@ -19,7 +19,7 @@ export const POST = route(async (request) => {
   if (body.ageBand === "under_13") throw new ApiError("AGE_TOO_YOUNG");
   const floor = bandFloor(body.ageBand);
   await rateLimit("roomCreate", userId);
-  await verifyTurnstile(body.captchaToken, clientIp(request));
+  await verifyTurnstile(body.captchaToken, clientIp(request), "create_room", request);
   const pack = await requireLivePack(body.packId, floor);
   const questionCount = body.questionCount
     ? Math.min(body.questionCount, pack.questionCount)

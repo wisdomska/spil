@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { PackGlyph } from "@/components/brand/PackGlyph";
 import { Button } from "@/components/ui/Button";
+import { InlineError } from "@/components/ui/ErrorLine";
 import { Sheet } from "@/components/ui/Sheet";
 import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
 import { api } from "@/lib/api/client";
@@ -45,6 +46,10 @@ type PackPickerProps = {
   cta: (packName: string) => string;
   busy?: boolean;
   onContinue: (packId: string, questionCount: number) => void;
+  /** Shown above the Continue button (the visible bot check, SPIL-05). */
+  aboveCta?: React.ReactNode;
+  /** Shown under the Continue button: why the last try failed (SPIL-05). */
+  error?: React.ReactNode;
 };
 
 /**
@@ -61,6 +66,8 @@ export function PackPicker({
   cta,
   busy,
   onContinue,
+  aboveCta,
+  error,
 }: PackPickerProps) {
   const t = useTranslations("packs");
   const ti = useTranslations("packInfo.purity");
@@ -277,10 +284,14 @@ export function PackPicker({
             ))}
           </RadioGroup.Root>
         </div>
-        <div className="mt-3 lg:mt-0 lg:min-w-80">
-          <Button block loading={busy} onClick={() => onContinue(pack.id, count)}>
-            {cta(pack.name)}
-          </Button>
+        <div className="mt-3 grid gap-3 lg:mt-0 lg:w-88">
+          {aboveCta}
+          <div>
+            <Button block loading={busy} onClick={() => onContinue(pack.id, count)}>
+              {cta(pack.name)}
+            </Button>
+            <InlineError>{error}</InlineError>
+          </div>
         </div>
       </div>
 

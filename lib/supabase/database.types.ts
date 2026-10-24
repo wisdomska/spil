@@ -170,6 +170,33 @@ export type Database = {
           },
         ];
       };
+      captcha_events: {
+        Row: {
+          browser: string;
+          created_at: string;
+          endpoint: string;
+          error_codes: string[];
+          hostname: string | null;
+          id: string;
+        };
+        Insert: {
+          browser?: string;
+          created_at?: string;
+          endpoint: string;
+          error_codes?: string[];
+          hostname?: string | null;
+          id?: string;
+        };
+        Update: {
+          browser?: string;
+          created_at?: string;
+          endpoint?: string;
+          error_codes?: string[];
+          hostname?: string | null;
+          id?: string;
+        };
+        Relationships: [];
+      };
       feature_flags: {
         Row: {
           enabled: boolean;

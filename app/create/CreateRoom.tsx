@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { AgeGate, PlayingAs } from "@/components/age/AgeGate";
 import { PackPicker } from "@/components/game/PackPicker";
 import { ErrorScreen } from "@/components/site/ErrorScreen";
@@ -37,7 +38,8 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
   const room = params.get("room");
   const mode = params.get("mode");
   const inRoom = Boolean(room && (mode === "pack" || mode === "rematch"));
-  const { getToken, element } = useTurnstile();
+  const { getToken, element, challenge, showChallenge } = useTurnstile();
+  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useBusy();
   const { band: stored, locked, setAge, clearAge } = useDeviceAge();
   const band = playableBand(stored);
@@ -57,8 +59,16 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
   });
   const packs = inRoom ? forRoom.data?.packs : floor > 13 ? forBand.data : everyone;
 
+  /** Every failure ends with a message: inline under Continue and as a toast (SPIL-05). */
+  const failWith = (message: string) => {
+    setError(message);
+    toast(message, "err");
+    setBusy(false);
+  };
+
   const go = async (packId: string, questionCount: number) => {
     if (!band) return;
+    setError(null);
     setBusy(true);
     try {
       if (inRoom) {
@@ -72,29 +82,36 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
       // Only room creation is bot-checked (server side); signing in anonymously is not, so the
       // single-use Turnstile token is spent on the request that needs it.
       await ensureSession();
+      const captchaToken = await getToken();
+      // No token within 5 s: never submit empty; show the visible check instead.
+      if (captchaToken === undefined) {
+        showChallenge();
+        return failWith(tt("botCheck"));
+      }
       const { code } = await api<{ code: string }>("POST", "/rooms", {
         ageBand: band,
         packId,
         questionCount,
-        captchaToken: await getToken(),
+        captchaToken: captchaToken || undefined,
       });
       track("room_created", { pack: packId, questionCount });
       router.push(`/r/${code}/me`);
     } catch (e) {
       const code = e instanceof ClientApiError ? e.code : "";
-      toast(
-        code === "RATE_LIMITED"
-          ? tt("rateLimited")
-          : code === "CAPTCHA_FAILED"
-            ? tt("botCheck")
-            : code === "PACK_UNAVAILABLE"
-              ? tt("noPacks")
-              : code === "PACK_NOT_ALLOWED"
-                ? tt("packNotAllowed")
-                : tt("somethingWrong"),
-        "err",
+      if (code === "CAPTCHA_FAILED") showChallenge();
+      failWith(
+        code === "CAPTCHA_FAILED"
+          ? tt("botCheck")
+          : code === "RATE_LIMITED"
+            ? tt("rateLimited")
+            : code === "OFFLINE"
+              ? tt("offline")
+              : code === "PACK_UNAVAILABLE"
+                ? tt("noPacks")
+                : code === "PACK_NOT_ALLOWED"
+                  ? tt("packNotAllowed")
+                  : tt("somethingWrong"),
       );
-      setBusy(false);
     }
   };
 
@@ -123,6 +140,8 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
           cta={(name) => t("continue", { pack: name })}
           busy={busy}
           onContinue={go}
+          aboveCta={challenge}
+          error={error}
         />
       ) : (
         <PickerSkeleton label={t("group")} bare />

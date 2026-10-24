@@ -6,7 +6,7 @@ import { IS_PROD } from "@/lib/supabase/env";
 
 /**
  * POST /admin/reset-data: local and staging only. Deletes every room (players, answers and
- * results go with them), report, message and play stat, and zeroes question counters. Packs,
+ * results go with them), report, message, failed bot check and play stat, and zeroes question counters. Packs,
  * questions, settings, admins and the audit log stay.
  */
 export const POST = route(async (request) => {
@@ -17,6 +17,7 @@ export const POST = route(async (request) => {
   const steps = await Promise.all([
     db.from("reports").delete().neq("id", all),
     db.from("messages").delete().neq("id", all),
+    db.from("captcha_events").delete().neq("id", all),
   ]);
   const rooms = await db.from("rooms").delete().neq("id", all);
   const stats = await Promise.all([

@@ -12,7 +12,7 @@ export const GET = route(async (request): Promise<Overview> => {
   const db = getAdminClient();
   const now = new Date();
   const weekStart = isoDay(now, 6);
-  const [stats, plays, packs, reports, counts] = await Promise.all([
+  const [stats, plays, packs, reports, counts, captcha] = await Promise.all([
     db
       .from("stats_daily")
       .select("day, games_started, games_finished, joins")
@@ -22,8 +22,13 @@ export const GET = route(async (request): Promise<Overview> => {
     db.from("packs").select("id, name").order("sort_order").order("name"),
     db.from("reports").select("question_id").eq("status", "open").not("question_id", "is", null),
     getCounts(),
+    db
+      .from("captcha_events")
+      .select("id", { count: "exact", head: true })
+      .gte("created_at", new Date(now.getTime() - 7 * 86_400_000).toISOString()),
   ]);
-  if (stats.error || plays.error || packs.error || reports.error) throw new ApiError("INTERNAL");
+  if (stats.error || plays.error || packs.error || reports.error || captcha.error)
+    throw new ApiError("INTERNAL");
 
   const days = fillDays(
     (stats.data ?? []).map((d) => ({
@@ -64,6 +69,7 @@ export const GET = route(async (request): Promise<Overview> => {
     liveRooms: counts.liveRooms,
     openReports: counts.openReports,
     newMessages: counts.newMessages,
+    captchaFailures: captcha.count ?? 0,
     packPlays,
     flagged: top.map(([questionId, count]) => ({
       questionId,

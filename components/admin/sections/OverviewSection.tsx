@@ -54,6 +54,11 @@ export function OverviewSection() {
           href: roomsHref,
         },
         {
+          label: t("captchaFailures"),
+          value: d.captchaFailures,
+          note: d.captchaFailures ? t("captchaFailuresNote") : t("captchaFailuresNone"),
+        },
+        {
           label: t("gamesWeek"),
           value: d.week.gamesStarted,
           note: t("gamesWeekNote", { finished: d.week.gamesFinished }),

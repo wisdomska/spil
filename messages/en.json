@@ -83,7 +83,8 @@
     "onlyHostRematch": "Only {host} can start the rematch. You will move to the lobby when it opens.",
     "somethingWrong": "Something went wrong. Try again.",
     "rateLimited": "Slow down a little. Try again in a minute.",
-    "botCheck": "We couldn't confirm you're a person. Try again, or turn off your VPN if you use one."
+    "botCheck": "We couldn't confirm you're a person. Try again, or turn off your VPN if you use one.",
+    "offline": "You're offline. Check your connection and try again."
   },
   "landing": {
     "headline": "Your friends think they know you.",
@@ -163,7 +164,8 @@
     "sectionEveryday": "Everyday",
     "sectionLife": "Life stages",
     "sectionAdult": "After dark · 18+",
-    "someHidden": "Some packs are hidden for this room."
+    "someHidden": "Some packs are hidden for this room.",
+    "quickCheck": "Quick check"
   },
   "packInfo": {
     "purity": {
@@ -609,6 +611,9 @@
     "overview": {
       "gamesToday": "Games today",
       "gamesTodayNote": "{finished} finished, {active} active now",
+      "captchaFailures": "Bot check failures",
+      "captchaFailuresNote": "Last 7 days. A spike usually means a hostname is missing from the Turnstile widget.",
+      "captchaFailuresNone": "None in the last 7 days",
       "gamesWeek": "Games, 7 days",
       "gamesWeekNote": "{finished} finished",
       "playersToday": "Players today",

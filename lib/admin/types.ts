@@ -19,6 +19,8 @@ export type Overview = {
   liveRooms: number;
   openReports: number;
   newMessages: number;
+  /** SPIL-05: failed bot checks in the last 7 days. */
+  captchaFailures: number;
   packPlays: Array<{ packId: string; name: string; started: number }>;
   flagged: Array<{ questionId: string; text: string; count: number }>;
   /** Last 30 days, newest first, for the CSV export. */
