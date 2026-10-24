@@ -4,13 +4,11 @@ import { CheckIcon } from "@phosphor-icons/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Avatar } from "@/components/brand/Avatar";
-import { labelStickerStyle, type LabelName } from "@/components/brand/Stickers";
+import { GuessVessel } from "@/components/game/GuessVessel";
 import { Button } from "@/components/ui/Button";
-import { ScoreSlider } from "@/components/ui/ScoreSlider";
 import { useToast } from "@/components/ui/Toast";
 import { api } from "@/lib/api/client";
 import type { RoomState } from "@/lib/api/types";
-import { labelFor } from "@/lib/game";
 import { SkipToReveal } from "./SkipToReveal";
 
 type Props = {
@@ -18,12 +16,12 @@ type Props = {
   onDone: () => Promise<unknown>;
   onSkip: () => void;
   skipping: boolean;
-  /** Dev fixtures only: starting slider value. */
-  initialValue?: number;
+  /** Dev fixtures only: a starting guess (otherwise there is none until the first touch). */
+  initialValue?: number | null;
 };
 
 /** Guess each other player's score, one at a time. Saved debounced; the last lock submits. */
-export function GuessView({ state, onDone, onSkip, skipping, initialValue = 50 }: Props) {
+export function GuessView({ state, onDone, onSkip, skipping, initialValue = null }: Props) {
   const t = useTranslations("guess");
   const tt = useTranslations("toast");
   const c = useTranslations("common");
@@ -42,14 +40,15 @@ export function GuessView({ state, onDone, onSkip, skipping, initialValue = 50 }
       targets.findIndex((p) => !(p.id in locked)),
     );
   const [gi, setGi] = useState(firstOpen);
-  const [value, setValue] = useState(initialValue);
+  // SPIL-10: no value until the player touches the vessel, so nobody anchors on 50.
+  const [value, setValue] = useState<number | null>(initialValue);
   const [busy, setBusy] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const target = targets[gi % Math.max(1, targets.length)];
 
-  // Debounced save of the current slider value (spec section 8: 400 ms).
+  // Debounced save of the current guess (spec section 8: 400 ms).
   useEffect(() => {
-    if (!target) return;
+    if (!target || value === null) return;
     clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
       api("PUT", `/rooms/${state.room.code}/guesses`, {
@@ -80,10 +79,8 @@ export function GuessView({ state, onDone, onSkip, skipping, initialValue = 50 }
         </div>
       </div>
     );
-  const label = labelFor(value).name as LabelName;
-
   const lock = async () => {
-    if (busy) return;
+    if (busy || value === null) return;
     setBusy(true);
     clearTimeout(saveTimer.current);
     const next = { ...locked, [target.id]: value };
@@ -95,7 +92,7 @@ export function GuessView({ state, onDone, onSkip, skipping, initialValue = 50 }
       const open = targets.findIndex((p) => !(p.id in next));
       if (open >= 0) {
         setGi(open);
-        setValue(50);
+        setValue(null);
       } else {
         await onDone();
       }
@@ -122,30 +119,25 @@ export function GuessView({ state, onDone, onSkip, skipping, initialValue = 50 }
           ),
         })}
       </h1>
-      <div className="flex min-h-[84px] items-end justify-between gap-3">
-        <span
-          aria-hidden
-          className="font-mono text-[88px] leading-[.85] font-semibold tracking-[-.05em] tabular-nums"
-        >
-          {value}
-        </span>
-        <span style={{ ...labelStickerStyle(label, 3, 17), marginBottom: 6 }}>{label}</span>
-      </div>
-      <ScoreSlider
+      <GuessVessel
+        key={target.id}
         value={value}
         onChange={setValue}
         label={t("aria", { name: target.nickname })}
-        valueText={t("valueText", { value, label })}
+        valueText={(v, label) => t("valueText", { value: v, label })}
+        emptyText={t("noGuess")}
+        hint={t("drag")}
         lowerLabel={t("lower")}
         raiseLabel={t("raise")}
+        lowCaption={t("saint")}
+        highCaption={t("menace")}
       />
-      <div className="flex justify-between px-14 font-mono text-[13px] leading-none font-medium whitespace-nowrap text-text-muted">
-        <span>{t("saint")}</span>
-        <span>{t("menace")}</span>
+      {/* The vessel is tall on phones, so Lock it in stays on screen (and dragging never scrolls). */}
+      <div className="sticky bottom-0 z-[5] -mx-5 mt-auto border-t border-line bg-surface/90 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] backdrop-blur-[14px] lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+        <Button block softDisabled={value === null} loading={busy} onClick={lock}>
+          {t("lock")}
+        </Button>
       </div>
-      <Button className="mt-auto" block loading={busy} onClick={lock}>
-        {t("lock")}
-      </Button>
     </div>
   );
 }

@@ -42,7 +42,8 @@ No other screen scrolls sideways at any viewport.
 | SPIL-05            | Done        | screens/SPIL-05-botcheck-375.png                                                                       | screens/SPIL-05-botcheck-1280.png                                                                          | pass   | CI     | CI nightly | e2e forced refusal: inline error, toast, visible check, then the room is created; unit browser family; pgTAP            |
 | SPIL-07            | Done        | n/a (no visual change)                                                                                 | n/a                                                                                                        | pass   | CI     | CI nightly | unit scope coverage walk, CI HTML check, full desktop e2e (26 passed)                                                   |
 | SPIL-09            | Done        | screens/SPIL-09-results-375.png, screens/SPIL-09-explainer-375.png                                     | screens/SPIL-09-results-1280.png, screens/SPIL-09-explainer-1280.png                                       | pass   | CI     | CI nightly | unit bands 0, 5, 6, 10, 11, 20, 21, closest bonus with ties, playtest numbers; results tests rewritten; e2e winner copy |
-| SPIL-10 to SPIL-33 | Not started |                                                                                                        |                                                                                                            |        |        |            |                                                                                                                         |
+| SPIL-10            | Done        | screens/SPIL-10-guess-empty-375.png, screens/SPIL-10-guess-375.png                                     | screens/SPIL-10-guess-empty-1280.png, screens/SPIL-10-guess-1280.png                                       | pass   | CI     | CI nightly | unit pointer mapping at 0, 50 and 100 %, keys, haptic ticks; e2e keyboard-only guess and lock, drag without page scroll |
+| SPIL-11 to SPIL-33 | Not started |                                                                                                        |                                                                                                            |        |        |            |                                                                                                                         |
 
 ## SPIL-01: Softlock after "Move on without them"
 
@@ -193,3 +194,15 @@ Notes:
 - The Mind Reader award reason now reads "Most Mind Reader points in the room: {n}." Awards still pick by the same rules, now on the new totals.
 - Older rounds keep their stored totals (average accuracy); only rounds revealed after this release use banded points.
 - Bullseye stamps during the reveal come with SPIL-11.
+
+## SPIL-10: Vessel becomes the guess input
+
+- [x] Guessing uses the vessel: drag anywhere on it or tap to jump (380 px tall under 640 px, 400 px above, up to 440 px wide). `touch-action: none` keeps the page still while dragging (e2e checks the scroll position across a drag).
+- [x] Lock it in is unavailable until the first interaction: the liquid shows faint at 50 with a "Drag the liquid" hint and no value, so nobody anchors on 50.
+- [x] Keyboard and screen reader: role slider, label "Your guess for {name}", value text "{value}, {label}" ("No guess yet" before the first touch), arrows 1, Page Up and Page Down 10, Home 0, End 100 (e2e keyboard-only guess and lock).
+- [x] The label sticker rides the liquid line on the right edge; minus and plus (48 px) with "0 saint" and "100 menace" sit under the vessel; Android gets a short vibration at each multiple of 10 unless reduced motion is on.
+
+Notes:
+
+- The landing demo and the game share `useVesselDrag` and `lib/vessel.ts`; the old slider component is deleted.
+- On phones the vessel is tall, so "Lock it in" sits in a bar stuck to the bottom (as in the pack picker) and is always reachable.

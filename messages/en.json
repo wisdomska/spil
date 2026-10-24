@@ -280,7 +280,9 @@
     "lock": "Lock it in",
     "nothingKicker": "NOTHING TO GUESS",
     "nothingTitle": "Everyone else sat out this round.",
-    "nothingBody": "Your score still counts. The reveal starts when the others lock in."
+    "nothingBody": "Your score still counts. The reveal starts when the others lock in.",
+    "drag": "Drag the liquid",
+    "noGuess": "No guess yet"
   },
   "ready": {
     "title": "Everyone's guessed.",

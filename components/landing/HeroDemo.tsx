@@ -14,6 +14,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Avatar } from "@/components/brand/Avatar";
 import { labelStickerStyle, type LabelName } from "@/components/brand/Stickers";
 import { labelFor, verdictBand } from "@/lib/game";
+import { useVesselDrag } from "@/lib/useVesselDrag";
+import { levelForKey } from "@/lib/vessel";
 import { Vessel } from "@/components/brand/Vessel";
 import { track } from "@/lib/analytics/posthog";
 
@@ -35,12 +37,10 @@ export function HeroDemo() {
   const [i, setI] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [touched, setTouched] = useState(false);
-  const [dragging, setDragging] = useState(false);
   const [guess, setGuess] = useState(50);
   const level = useMotionValue(50);
   const num = useTransform(level, (v) => String(Math.round(v)));
   const [label, setLabel] = useState(labelFor(50));
-  const ref = useRef<HTMLDivElement>(null);
   const anim = useRef<AnimationPlaybackControls | null>(null);
   const idleTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -89,13 +89,12 @@ export function HeroDemo() {
     };
   }, [reduced, touched, revealed, level]);
 
-  const setFromY = (y: number) => {
-    const r = ref.current?.getBoundingClientRect();
-    if (!r) return;
-    const v = Math.round(Math.max(0, Math.min(1, 1 - (y - r.top) / r.height)) * 100);
+  // Same drag and keys as the in-game guess (SPIL-10).
+  const setLevel = (v: number) => {
     level.set(v);
     setGuess(v);
   };
+  const { ref, dragging, handlers } = useVesselDrag(setLevel, !revealed);
 
   const reveal = () => {
     if (revealed) return;
@@ -177,32 +176,19 @@ export function HeroDemo() {
               touchAction: "none",
               cursor: revealed ? "default" : dragging ? "grabbing" : "grab",
             }}
+            {...handlers}
             onPointerDown={(e) => {
               if (revealed) return;
               stopIdle();
-              e.currentTarget.setPointerCapture(e.pointerId);
-              setDragging(true);
-              setFromY(e.clientY);
+              handlers.onPointerDown(e);
             }}
-            onPointerMove={(e) => dragging && setFromY(e.clientY)}
-            onPointerUp={() => setDragging(false)}
-            onPointerCancel={() => setDragging(false)}
             onKeyDown={(e) => {
               if (revealed) return;
-              const step: Record<string, number> = {
-                ArrowUp: 1,
-                ArrowRight: 1,
-                ArrowDown: -1,
-                ArrowLeft: -1,
-                PageUp: 10,
-                PageDown: -10,
-              };
-              if (e.key in step) {
+              const v = levelForKey(e.key, currentGuess());
+              if (v !== null) {
                 e.preventDefault();
                 stopIdle();
-                const v = Math.max(0, Math.min(100, currentGuess() + step[e.key]!));
-                level.set(v);
-                setGuess(v);
+                setLevel(v);
               }
               if (e.key === "Enter") reveal();
             }}

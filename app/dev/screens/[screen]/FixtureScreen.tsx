@@ -122,7 +122,13 @@ export function FixtureScreen({ screen }: { screen: string }) {
         />
       )}
       {screen === "guess" && (
-        <GuessView state={state} onDone={done} onSkip={noop} skipping={false} initialValue={64} />
+        <GuessView
+          state={state}
+          onDone={done}
+          onSkip={noop}
+          skipping={false}
+          initialValue={variant === "empty" ? null : 64}
+        />
       )}
       {screen === "ready" && <ReadyView state={state} onReveal={noop} revealing={false} />}
       {screen === "results" && (
