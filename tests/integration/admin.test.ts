@@ -125,6 +125,8 @@ d("admin content", () => {
       icon: "cards",
       tone: "raised",
       minAge: 13,
+      section: "everyday",
+      spice: 2,
       region: null,
       status: "draft",
       sortOrder: 999,
@@ -183,6 +185,8 @@ d("admin content", () => {
       icon: "fire",
       tone: "accent",
       minAge: 18,
+      section: "after_dark",
+      spice: 4,
       region: "gh",
       status: "hidden",
       sortOrder: 998,
@@ -191,7 +195,13 @@ d("admin content", () => {
     const after = (await lead.call("GET", "/admin/packs")).body.find(
       (p: { id: string }) => p.id === packId,
     );
-    expect(after).toMatchObject({ icon: "fire", minAge: 18, region: "GH" });
+    expect(after).toMatchObject({
+      icon: "fire",
+      minAge: 18,
+      section: "after_dark",
+      spice: 4,
+      region: "GH",
+    });
   });
 
   it("lets moderators hide but nothing else", async () => {
@@ -245,7 +255,9 @@ d("admin content", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toContain("text/csv");
     const csv = await res.text();
-    expect(csv.split("\r\n")[0]).toBe("pack_id,pack,question,status,answered,yes_rate,reports");
+    expect(csv.split("\r\n")[0]).toBe(
+      "pack_id,pack,question,status,is_sample,min_age,section,spice,answered,yes_rate,reports",
+    );
     expect(csv).toContain('Have you ever renamed a variable to ""x""?');
     const again = await lead.call("POST", "/admin/questions/import", { csv });
     expect(again.body).toEqual({ added: 0, duplicates: 3, errors: [] });
