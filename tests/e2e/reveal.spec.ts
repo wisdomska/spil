@@ -38,8 +38,9 @@ test("host taps Next through the reveal; the guest follows each step (SPIL-11)",
   const next = host.page.getByRole("button", { name: "Next", exact: true });
   await expect(next).not.toHaveAttribute("aria-disabled", "true", { timeout: 10_000 });
   await next.dblclick();
-  for (const p of [host.page, guest.page]) await expect(p.getByText("REVEAL 2 OF 2")).toBeVisible();
+  // The drumroll beat lasts 1.5 s, so check it on the host straight away.
   await expect(host.page.getByText("And the biggest spill of the night…")).toBeVisible();
+  for (const p of [host.page, guest.page]) await expect(p.getByText("REVEAL 2 OF 2")).toBeVisible();
 
   // The last slide, then results on both phones; it took at least 10 seconds.
   await expect(next).not.toHaveAttribute("aria-disabled", "true", { timeout: 12_000 });

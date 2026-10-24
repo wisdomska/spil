@@ -225,3 +225,8 @@ Notes:
 - Edge case: a 2-player room where both scored the same is one tied slide (about 5 s), so it can end sooner than 10 s.
 - For SPIL-24 (legibility): the "room guessed" tag can cross the big number when the guess is near the middle.
 - Rooms revealed before this release are marked finished and never replay.
+
+## Step 3 QA pass (SPIL-05, 07, 09, 10, 11)
+
+- Full e2e on mobile and desktop against a local production build: 35 passed, then two fixes. (1) The reveal scrolled sideways at 375 px while a sticker's slap animation briefly grew past the edge; the reveal now clips sideways overflow. (2) The reveal test checked the 1.5 s drumroll beat too late; it now checks the host straight after the tap. Both re-run green on mobile and desktop.
+- Public pages carry no admin strings (CI check) and all route copy scopes are covered (unit walk).
