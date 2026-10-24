@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.4.0 (2026-10-24)
+
+- The best guesser wins the round. Results rank by guessing points and say who won; every row
+  still shows the player's Spill Score and label. The group card says who won.
+- Awards follow the room-size rules: none below 3 players, Clueless from 5, Dark Horse only for
+  someone who beat the room's guess, and Open Book never goes to the Dark Horse.
+- The Questions tab lists every question from the round. Yes counts stay hidden until 3 people
+  answered, so small rooms never expose anyone.
+- Hosting returns to the room's creator when they come back; text fields show a single focus ring.
+
 ## 1.3.0 (2026-10-23)
 
 - Avatars are now 24 emoji (🤪 😈 👻 🦄 and friends) on one plain background, so the face stands out.

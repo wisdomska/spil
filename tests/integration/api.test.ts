@@ -180,7 +180,10 @@ d("a full game with 3 players", () => {
     const awardIds = revealed.body.results.awards.map((x: { award: string }) => x.award);
     expect(awardIds).toContain("top_spiller");
     expect(awardIds).not.toContain("clueless");
-    expect(revealed.body.results.rows[0].score).toBe(80);
+    // Ranked by guessing: everyone guessed 40, so the 80 and the 0 player tie at 70 points
+    // and share first place; the higher Spill Score lists first.
+    const firsts = revealed.body.results.rows.filter((r: { rank: number }) => r.rank === 1);
+    expect(firsts.map((r: { score: number }) => r.score)).toEqual([80, 0]);
 
     // Second reveal is refused (phase moved), results unchanged.
     const again = await room.host.call("POST", `/rooms/${room.roomCode}/advance`, {

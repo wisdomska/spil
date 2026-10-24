@@ -5,7 +5,14 @@ import { labelFor } from "@/lib/game";
 import { Wordmark } from "@/components/brand/Wordmark";
 
 export type CardFormat = "story" | "square" | "og";
-export type BoardRow = { rank: number; name: string; avatar: number; score: number };
+/** `points` are guessing points (the ranking); older saved games only have `score`. */
+export type BoardRow = {
+  rank: number;
+  name: string;
+  avatar: number;
+  score: number;
+  points?: number;
+};
 
 export type ShareCardProps = {
   format: CardFormat;
@@ -409,9 +416,22 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
                       style={{
                         font: "600 44px/1 var(--font-mono)",
                         fontVariantNumeric: "tabular-nums",
+                        display: "flex",
+                        alignItems: "baseline",
+                        gap: 8,
                       }}
                     >
-                      {p.score}
+                      {p.points ?? p.score}
+                      {p.points != null && (
+                        <span
+                          style={{
+                            font: "500 22px/1 var(--font-mono)",
+                            color: "var(--text-muted)",
+                          }}
+                        >
+                          pts
+                        </span>
+                      )}
                     </span>
                   </div>
                 ))}

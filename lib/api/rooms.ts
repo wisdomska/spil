@@ -399,7 +399,13 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
 
   if (room.status === "revealed") {
     const [{ data: rows }, { data: awards }, input] = await Promise.all([
-      db().from("results").select("*").eq("room_id", room.id).eq("round", room.round).order("rank"),
+      db()
+        .from("results")
+        .select("*")
+        .eq("room_id", room.id)
+        .eq("round", room.round)
+        .order("rank")
+        .order("spill_score", { ascending: false }),
       db()
         .from("awards")
         .select("*")

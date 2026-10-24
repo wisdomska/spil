@@ -3,6 +3,7 @@ import {
   MIN_ANSWERS_FOR_STATS,
   computeResults,
   countAnswers,
+  rankByGuessing,
   isScored,
   type ResultsInput,
 } from "@/lib/game";
@@ -31,14 +32,22 @@ const row = (r: ReturnType<typeof computeResults>, id: string) => {
 };
 
 describe("computeResults rows", () => {
-  it("scores each player and sorts by score descending", () => {
+  it("scores each player and ranks the best guesser first", () => {
     const r = computeResults(room());
-    expect(r.rows.map((x) => [x.playerId, x.score, x.rank])).toEqual([
-      ["yaw", 100, 1],
-      ["ama", 80, 2],
-      ["zainab", 50, 3],
-      ["kofi", 30, 4],
+    // Everyone guessed 50 about everyone, so whoever's friends sit closest to 50 guessed best.
+    expect(r.rows.map((x) => [x.playerId, x.score, x.mindReader, x.rank])).toEqual([
+      ["yaw", 100, 83, 1],
+      ["ama", 80, 77, 2],
+      ["kofi", 30, 73, 3],
+      ["zainab", 50, 67, 4],
     ]);
+  });
+
+  it("puts players who made no guesses last", () => {
+    const input = room();
+    input.players = input.players.map((p) => (p.id === "yaw" ? { ...p, guesses: {} } : p));
+    const r = computeResults(input);
+    expect(r.rows.at(-1)).toMatchObject({ playerId: "yaw", mindReader: 0, rank: 4 });
   });
 
   it("attaches the label for each score", () => {
@@ -51,15 +60,22 @@ describe("computeResults rows", () => {
 
   it("ties share a rank and the next rank skips (1, 1, 3)", () => {
     const input = room();
+    // Ama and Zainab guess everyone exactly; the higher Spill Score lists first within the tie.
+    const exact = { yaw: 100, ama: 80, zainab: 50, kofi: 30 };
     input.players = input.players.map((p) =>
-      p.id === "ama" ? { ...p, answers: answers(qs, () => "yes") } : p,
+      p.id === "ama" || p.id === "zainab"
+        ? {
+            ...p,
+            guesses: Object.fromEntries(Object.entries(exact).filter(([id]) => id !== p.id)),
+          }
+        : p,
     );
     const r = computeResults(input);
-    expect(r.rows.map((x) => [x.playerId, x.rank])).toEqual([
-      ["ama", 1],
-      ["yaw", 1],
-      ["zainab", 3],
-      ["kofi", 4],
+    expect(r.rows.map((x) => [x.playerId, x.mindReader, x.rank])).toEqual([
+      ["ama", 100, 1],
+      ["zainab", 100, 1],
+      ["yaw", 83, 3],
+      ["kofi", 73, 4],
     ]);
   });
 
@@ -248,6 +264,21 @@ describe("awards via computeResults", () => {
       playerId: "zainab",
       reason: "The room guessed 50. Zainab scored 50. Close enough.",
     });
+  });
+});
+
+describe("rankByGuessing", () => {
+  it("re-ranks stored rows by guessing points, Spill Score breaking ties", () => {
+    const rows = [
+      { id: "senya", score: 27, mindReader: 46 },
+      { id: "steph", score: 20, mindReader: 62 },
+      { id: "kofi", score: 50, mindReader: 46 },
+    ];
+    expect(rankByGuessing(rows).map((r) => [r.id, r.rank])).toEqual([
+      ["steph", 1],
+      ["kofi", 2],
+      ["senya", 2],
+    ]);
   });
 });
 

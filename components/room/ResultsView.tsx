@@ -1,6 +1,11 @@
 "use client";
 
-import { ArrowClockwiseIcon, HourglassMediumIcon, ShareFatIcon } from "@phosphor-icons/react";
+import {
+  ArrowClockwiseIcon,
+  HourglassMediumIcon,
+  ShareFatIcon,
+  TrophyIcon,
+} from "@phosphor-icons/react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -19,8 +24,11 @@ import { SegmentedTabs, TabPanel } from "@/components/ui/SegmentedTabs";
 import { SwitchRow } from "@/components/ui/Switch";
 import { useToast } from "@/components/ui/Toast";
 import type { RoomState } from "@/lib/api/types";
-import { labelById } from "@/lib/game";
+import { labelById, rankByGuessing } from "@/lib/game";
 import { saveLastGame } from "@/lib/share/capture";
+
+/** Wall-clock time for the saved card (called from an effect, never during render). */
+const timestamp = () => Date.now();
 
 type Props = {
   state: RoomState;
@@ -51,7 +59,7 @@ export function ResultsView({
   const results = state.results;
   const host = state.players.find((p) => p.isHost);
 
-  const rows = results?.rows ?? [];
+  const rows = rankByGuessing(results?.rows ?? []);
   const meRow = rows.find((r) => r.playerId === state.me.id);
   const myAward = results?.awards.find((a) => a.playerId === state.me.id);
   const board = rows.map((r) => ({
@@ -59,7 +67,9 @@ export function ResultsView({
     name: r.nickname,
     avatar: r.avatar,
     score: r.score,
+    points: r.mindReader,
   }));
+  const winners = rows.filter((r) => r.rank === 1 && r.mindReader > 0);
   const mind = results?.awards.find((a) => a.award === "mind_reader");
   const mindName = rows.find((r) => r.playerId === mind?.playerId)?.nickname;
 
@@ -68,7 +78,7 @@ export function ResultsView({
     if (!meRow) return;
     saveLastGame({
       room: state.room.code,
-      at: Date.now(),
+      at: timestamp(),
       name: state.me.nickname,
       avatar: state.me.avatar,
       score: meRow.score,
@@ -114,6 +124,20 @@ export function ResultsView({
         </div>
       </div>
 
+      {winners.length > 0 && (
+        <p className="m-0 flex items-center gap-2.5 rounded-card border border-line bg-surface px-4 py-3 text-[15px] leading-[1.4] font-semibold">
+          <TrophyIcon aria-hidden size={20} className="shrink-0 text-accent-ink" />
+          {winners.length > 1
+            ? t("winnerTie", {
+                names: winners.map((w) => w.nickname).join(", "),
+                points: winners[0]!.mindReader,
+              })
+            : winners[0]!.playerId === state.me.id
+              ? t("winnerYou", { points: winners[0]!.mindReader })
+              : t("winner", { name: winners[0]!.nickname, points: winners[0]!.mindReader })}
+        </p>
+      )}
+
       <SegmentedTabs
         label={t("tabs")}
         value={tab}
@@ -155,11 +179,16 @@ export function ResultsView({
                     </span>
                   </div>
                   <span className="font-mono text-[12.5px] leading-[1.2] font-medium text-text-muted">
-                    {t("sub", { guess: r.avgGuessAbout, points: r.mindReader })}
+                    {t("sub", { score: r.score, guess: r.avgGuessAbout })}
                   </span>
                 </div>
-                <span className="font-mono text-[30px] leading-none font-semibold tabular-nums">
-                  {r.score}
+                <span className="grid justify-items-end gap-1">
+                  <span className="font-mono text-[30px] leading-none font-semibold tabular-nums">
+                    {r.mindReader}
+                  </span>
+                  <span className="font-mono text-[11px] leading-none font-medium tracking-[.06em] text-text-muted uppercase">
+                    {t("pts")}
+                  </span>
                 </span>
               </li>
             ))}

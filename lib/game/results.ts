@@ -42,7 +42,10 @@ export interface ResultRow {
   avgGuessAbout: number;
   /** Average accuracy of this player's guesses, 0 to 100; 0 when they made none. */
   mindReader: number;
-  /** 1-based, by score descending. Ties share a rank (1, 1, 3). */
+  /**
+   * 1-based, by guessing (Mind Reader points) descending; players who made no guesses come
+   * last. Ties share a rank (1, 1, 3). Rank 1 wins the round.
+   */
   rank: number;
   spillMode: boolean;
 }
@@ -55,6 +58,21 @@ export interface QuestionStat {
   answered: number;
   /** Nicknames of players with Spill Mode on who said yes. */
   spillNames: string[];
+}
+
+/**
+ * Orders result rows for display: best guesser first (Mind Reader points), Spill Score breaking
+ * ties, equal points sharing a rank (1, 1, 3). Applied on read so rooms finished before the
+ * ranking changed (when rows were ranked by Spill Score) show the right winner too.
+ */
+export function rankByGuessing<T extends { mindReader: number; score: number }>(
+  rows: readonly T[],
+): Array<T & { rank: number }> {
+  const sorted = [...rows].sort((a, b) => b.mindReader - a.mindReader || b.score - a.score);
+  return sorted.map((r) => ({
+    ...r,
+    rank: 1 + sorted.filter((o) => o.mindReader > r.mindReader).length,
+  }));
 }
 
 export interface AnswerCount {
@@ -156,7 +174,11 @@ export function computeResults(input: ResultsInput): Results {
     };
   });
 
-  const ranked = [...stats].sort((a, b) => b.p.score - a.p.score);
+  // The best guesser wins; the Spill Score describes a player and only orders ties.
+  type Stat = (typeof stats)[number];
+  const beats = (o: Stat, s: Stat) =>
+    Number(o.guessCount > 0) - Number(s.guessCount > 0) || o.mindReader - s.mindReader;
+  const ranked = [...stats].sort((a, b) => beats(b, a) || b.p.score - a.p.score);
   const rows: ResultRow[] = ranked.map((s) => ({
     playerId: s.p.player.id,
     nickname: s.p.player.nickname,
@@ -164,7 +186,7 @@ export function computeResults(input: ResultsInput): Results {
     label: labelFor(s.p.score).id,
     avgGuessAbout: s.avgGuessAbout,
     mindReader: s.mindReader,
-    rank: 1 + ranked.filter((o) => o.p.score > s.p.score).length,
+    rank: 1 + ranked.filter((o) => beats(o, s) > 0).length,
     spillMode: s.p.player.spillMode,
   }));
 
