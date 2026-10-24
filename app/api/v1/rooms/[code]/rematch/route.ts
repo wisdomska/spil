@@ -2,7 +2,7 @@ import { codeOf, requireUser, type CodeParams } from "@/lib/api/auth";
 import { fromDbError } from "@/lib/api/errors";
 import { readBody, route } from "@/lib/api/handler";
 import { requireLivePack } from "@/lib/api/packs";
-import { freshState, requireHost, requireMember, requirePhase } from "@/lib/api/rooms";
+import { freshState, requireHost, requireMember, requirePhase, roomFloor } from "@/lib/api/rooms";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { rematch } from "@/lib/validation/schemas";
 
@@ -19,11 +19,12 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   requirePhase(room.room, "revealed");
   const db = getAdminClient();
 
-  const pack = await requireLivePack(body.packId ?? room.room.pack_id);
+  const pack = await requireLivePack(body.packId ?? room.room.pack_id, roomFloor(room.players));
   const { error } = await db
     .from("rooms")
     .update({
       pack_id: pack.id,
+      min_age: pack.minAge,
       question_count: body.questionCount
         ? Math.min(body.questionCount, pack.questionCount)
         : room.room.question_count,
@@ -37,16 +38,6 @@ export const POST = route<CodeParams>(async (request, ctx) => {
     .update({ status: "active" })
     .eq("room_id", room.room.id)
     .eq("status", "sat_out");
-
-  if (pack.isAdult && pack.id !== room.room.pack_id) {
-    await db
-      .from("players")
-      .update({ age_confirmed: false })
-      .eq("room_id", room.room.id)
-      .eq("is_bot", false)
-      .neq("id", room.me.id);
-    await db.from("players").update({ age_confirmed: true }).eq("id", room.me.id);
-  }
 
   const { error: advanceError } = await db.rpc("advance_room", {
     p_room: room.room.id,

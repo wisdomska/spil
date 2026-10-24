@@ -28,6 +28,8 @@ export const GET = route<CodeParams>(async (request, ctx) => {
     hostNickname: players.find((p) => p.id === room.host_player_id)?.nickname ?? null,
     playerCount: active.length,
     maxPlayers: settings.maxPlayers,
+    minAge: pack.min_age as PublicRoom["minAge"],
+    ageLockHours: settings.ageLockHours,
     joined: Boolean(
       userId &&
       players.some(

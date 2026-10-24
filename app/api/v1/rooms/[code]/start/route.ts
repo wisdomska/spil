@@ -3,7 +3,7 @@ import { ApiError, fromDbError } from "@/lib/api/errors";
 import { route } from "@/lib/api/handler";
 import { autoplayBots, findRoom, freshState, requireHost, requireMember } from "@/lib/api/rooms";
 import { getSettings } from "@/lib/flags";
-import { canStart, type PlayerStatus } from "@/lib/game";
+import { canStart, type MinAge, type PlayerStatus } from "@/lib/game";
 import { getAdminClient } from "@/lib/supabase/admin";
 
 /** POST /rooms/:code/start: host starts the round. Draws questions and opens answering. */
@@ -18,12 +18,12 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   const check = canStart({
     status: room.room.status,
     minPlayers: settings.minPlayers,
-    packIsAdult: pack.is_adult,
+    minAge: pack.min_age as MinAge,
     players: room.players.map((p) => ({
       id: p.id,
       status: p.status as PlayerStatus,
       joinedAt: p.joined_at,
-      ageConfirmed: p.age_confirmed || p.is_bot,
+      ageBand: p.age_band,
     })),
   });
   if (!check.ok) throw new ApiError(check.code);

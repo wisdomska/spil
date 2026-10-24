@@ -3,7 +3,7 @@
 import { CheckIcon, InfoIcon } from "@phosphor-icons/react";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import { useTranslations } from "next-intl";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { PackGlyph } from "@/components/brand/PackGlyph";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
@@ -23,8 +23,6 @@ export function defaultCount(total: number, perGame: number) {
   const opts = countOptions(total);
   return opts.find((n) => n >= perGame) ?? opts[opts.length - 1] ?? 0;
 }
-
-const BADGE = { spicy: "badgeSpicy", explicit: "badgeExplicit", intense: "badgeIntense" } as const;
 
 type PackPickerProps = {
   packs: Pack[];
@@ -50,8 +48,14 @@ export function PackPicker({
   const ti = useTranslations("packInfo.purity");
   const tc = useTranslations("common");
   const desktop = useIsDesktop();
-  const [selected, setSelected] = useState(initialPack ?? packs[0]?.id ?? "");
-  const pack = packs.find((p) => p.id === selected) ?? packs[0];
+  // Adult packs come last, under their own heading (SPIL-02). Under 18 never receives them.
+  const ordered = [...packs.filter((p) => p.minAge < 18), ...packs.filter((p) => p.minAge >= 18)];
+  const sections = [
+    { key: "all", title: null, packs: ordered.filter((p) => p.minAge < 18) },
+    { key: "adult", title: t("sectionAdult"), packs: ordered.filter((p) => p.minAge >= 18) },
+  ].filter((section) => section.packs.length > 0);
+  const [selected, setSelected] = useState(initialPack ?? ordered[0]?.id ?? "");
+  const pack = ordered.find((p) => p.id === selected) ?? ordered[0];
   const total = pack?.questionCount ?? 0;
   const [chosen, setChosen] = useState<number | null>(initialCount ?? null);
   const options = countOptions(total);
@@ -64,7 +68,8 @@ export function PackPicker({
   const measure = () => {
     const el = grid.current;
     if (!el) return;
-    const gap = parseFloat(getComputedStyle(el).columnGap) || 12;
+    const first = el.querySelector<HTMLElement>("[data-masonry]");
+    const gap = (first && parseFloat(getComputedStyle(first).columnGap)) || 12;
     const next: Record<string, number> = {};
     el.querySelectorAll<HTMLElement>("[data-pack]").forEach((cell) => {
       next[cell.dataset.pack!] = Math.ceil(
@@ -94,106 +99,127 @@ export function PackPicker({
         aria-label={t("group")}
         value={selected}
         onValueChange={setSelected}
-        className="grid grid-flow-row-dense grid-cols-2 items-start gap-x-3 p-2 lg:grid-cols-3 lg:gap-x-3.5"
-        style={{ gridAutoRows: "4px", rowGap: 0 }}
+        className="grid"
       >
-        {packs.map((p, i) => {
-          const feat = i === 0;
-          const sel = p.id === selected;
-          const adult = p.isAdult;
-          const classic = p.id === "classic";
-          const tile = adult
-            ? "bg-tile-night text-tile-on-night border border-line"
-            : classic
-              ? "bg-accent text-on-accent border border-transparent"
-              : "bg-tile-paper text-tile-on-paper border border-transparent";
-          const glyph = adult
-            ? { background: "var(--adult-badge)", color: "var(--adult-badge-ink)" }
-            : classic
-              ? { background: "var(--tile-night-glyph-ink)", color: "var(--tile-on-night)" }
-              : { background: "var(--accent)", color: "var(--tile-night-glyph-ink)" };
-          const glyphSize = feat ? 60 : desktop ? 52 : 44;
-          const hasInfo = PACK_INFO.has(p.id);
-          return (
+        {sections.map((section) => (
+          <Fragment key={section.key}>
+            {section.title && (
+              <h2 className="m-0 px-2 pt-6 pb-3 text-[14px] leading-none font-semibold tracking-wide text-text-muted uppercase">
+                {section.title}
+              </h2>
+            )}
             <div
-              key={p.id}
-              data-pack={p.id}
-              className="relative grid self-start"
-              style={{
-                gridColumn: feat ? "1 / -1" : "auto",
-                gridRowEnd: `span ${spans[p.id] ?? 50}`,
-              }}
+              data-masonry
+              className="grid grid-flow-row-dense grid-cols-2 items-start gap-x-3 p-2 lg:grid-cols-3 lg:gap-x-3.5"
+              style={{ gridAutoRows: "4px", rowGap: 0 }}
             >
-              <RadioGroup.Item
-                value={p.id}
-                className={cn(
-                  "relative box-border flex min-w-0 flex-col items-start justify-start gap-4 self-start rounded-card text-left hover:brightness-[1.08] active:scale-[.98]",
-                  tile,
-                  feat ? "p-5" : "p-4",
-                  hasInfo && "pb-[76px]",
-                )}
-                style={{
-                  boxShadow: sel ? "0 0 0 3px var(--bg), 0 0 0 6px var(--accent)" : "none",
-                  transform: sel ? "translateY(-2px)" : "none",
-                  transition:
-                    "box-shadow 180ms var(--ease-out), transform 180ms var(--ease-out), filter 150ms ease",
-                }}
-              >
-                <div className="flex w-full flex-col items-start gap-3">
-                  <span
-                    className="grid shrink-0 place-items-center rounded-full"
+              {section.packs.map((p) => {
+                const i = ordered.indexOf(p);
+                const feat = i === 0;
+                const sel = p.id === selected;
+                const adult = p.isAdult;
+                const classic = p.id === "classic";
+                const tile = adult
+                  ? "bg-tile-night text-tile-on-night border border-line"
+                  : classic
+                    ? "bg-accent text-on-accent border border-transparent"
+                    : "bg-tile-paper text-tile-on-paper border border-transparent";
+                const glyph = adult
+                  ? { background: "var(--adult-badge)", color: "var(--adult-badge-ink)" }
+                  : classic
+                    ? { background: "var(--tile-night-glyph-ink)", color: "var(--tile-on-night)" }
+                    : { background: "var(--accent)", color: "var(--tile-night-glyph-ink)" };
+                const glyphSize = feat ? 60 : desktop ? 52 : 44;
+                const hasInfo = PACK_INFO.has(p.id);
+                return (
+                  <div
+                    key={p.id}
+                    data-pack={p.id}
+                    className="relative grid self-start"
                     style={{
-                      ...glyph,
-                      width: glyphSize,
-                      height: glyphSize,
-                      transform: `rotate(${i % 2 ? 6 : -6}deg)`,
+                      gridColumn: feat ? "1 / -1" : "auto",
+                      gridRowEnd: `span ${spans[p.id] ?? 50}`,
                     }}
                   >
-                    <PackGlyph icon={p.icon} />
-                  </span>
-                  {adult && p.heat && (
-                    <span className="inline-flex h-7 items-center rounded-pill border-[1.5px] border-adult-badge-edge bg-adult-badge px-2.5 font-mono text-[12px] leading-none font-bold whitespace-nowrap text-adult-badge-ink">
-                      {t(BADGE[p.heat])}
-                    </span>
-                  )}
-                </div>
-                {sel && (
-                  <span
-                    aria-hidden
-                    className="absolute -top-3 -right-2.5 grid size-10 animate-tick place-items-center rounded-full border-[3px] border-sticker-edge bg-accent text-on-accent"
-                    style={{ boxShadow: "0 0 0 1.5px var(--sticker-ring)", rotate: "8deg" }}
-                  >
-                    <CheckIcon size={20} />
-                  </span>
-                )}
-                <div className="grid w-full gap-1.5 text-left">
-                  <span
-                    className="font-display leading-none font-extrabold tracking-[-.02em] text-balance"
-                    style={{ fontSize: feat ? 36 : 24 }}
-                  >
-                    {p.name}
-                  </span>
-                  <span className="text-[14px] leading-[1.35] text-pretty">{p.blurb}</span>
-                  <span className="mt-1 font-mono text-[13px] leading-none font-medium">
-                    {tc("questions", { count: p.questionCount })}
-                  </span>
-                </div>
-              </RadioGroup.Item>
-              {hasInfo && (
-                <button
-                  type="button"
-                  aria-label={t("howPackWorks", { pack: p.name })}
-                  onClick={() => setInfo(p.id)}
-                  className="absolute bottom-4 left-4 z-[3] box-border flex h-11 items-center justify-center gap-1.5 rounded-pill border border-[var(--tile-info-edge)] bg-transparent text-[14px] leading-none font-semibold whitespace-nowrap text-tile-on-night hover:bg-[var(--tile-info-hover)] lg:px-4 lg:pl-3"
-                  style={{ width: desktop ? "auto" : 44 }}
-                >
-                  <InfoIcon size={20} aria-hidden />
-                  {desktop && <span>{t("howItWorks")}</span>}
-                </button>
-              )}
+                    <RadioGroup.Item
+                      value={p.id}
+                      className={cn(
+                        "relative box-border flex min-w-0 flex-col items-start justify-start gap-4 self-start rounded-card text-left hover:brightness-[1.08] active:scale-[.98]",
+                        tile,
+                        feat ? "p-5" : "p-4",
+                        hasInfo && "pb-[76px]",
+                      )}
+                      style={{
+                        boxShadow: sel ? "0 0 0 3px var(--bg), 0 0 0 6px var(--accent)" : "none",
+                        transform: sel ? "translateY(-2px)" : "none",
+                        transition:
+                          "box-shadow 180ms var(--ease-out), transform 180ms var(--ease-out), filter 150ms ease",
+                      }}
+                    >
+                      <div className="flex w-full flex-col items-start gap-3">
+                        <span
+                          className="grid shrink-0 place-items-center rounded-full"
+                          style={{
+                            ...glyph,
+                            width: glyphSize,
+                            height: glyphSize,
+                            transform: `rotate(${i % 2 ? 6 : -6}deg)`,
+                          }}
+                        >
+                          <PackGlyph icon={p.icon} />
+                        </span>
+                        {adult ? (
+                          <span className="inline-flex h-7 items-center rounded-pill border-[1.5px] border-adult-badge-edge bg-adult-badge px-2.5 font-mono text-[12px] leading-none font-bold whitespace-nowrap text-adult-badge-ink">
+                            {t("badge18")}
+                          </span>
+                        ) : (
+                          p.minAge === 16 && (
+                            <span className="inline-flex h-7 items-center rounded-pill border-[1.5px] border-line px-2.5 font-mono text-[12px] leading-none font-bold whitespace-nowrap">
+                              {t("badge16")}
+                            </span>
+                          )
+                        )}
+                      </div>
+                      {sel && (
+                        <span
+                          aria-hidden
+                          className="absolute -top-3 -right-2.5 grid size-10 animate-tick place-items-center rounded-full border-[3px] border-sticker-edge bg-accent text-on-accent"
+                          style={{ boxShadow: "0 0 0 1.5px var(--sticker-ring)", rotate: "8deg" }}
+                        >
+                          <CheckIcon size={20} />
+                        </span>
+                      )}
+                      <div className="grid w-full gap-1.5 text-left">
+                        <span
+                          className="font-display leading-none font-extrabold tracking-[-.02em] text-balance"
+                          style={{ fontSize: feat ? 36 : 24 }}
+                        >
+                          {p.name}
+                        </span>
+                        <span className="text-[14px] leading-[1.35] text-pretty">{p.blurb}</span>
+                        <span className="mt-1 font-mono text-[13px] leading-none font-medium">
+                          {tc("questions", { count: p.questionCount })}
+                        </span>
+                      </div>
+                    </RadioGroup.Item>
+                    {hasInfo && (
+                      <button
+                        type="button"
+                        aria-label={t("howPackWorks", { pack: p.name })}
+                        onClick={() => setInfo(p.id)}
+                        className="absolute bottom-4 left-4 z-[3] box-border flex h-11 items-center justify-center gap-1.5 rounded-pill border border-[var(--tile-info-edge)] bg-transparent text-[14px] leading-none font-semibold whitespace-nowrap text-tile-on-night hover:bg-[var(--tile-info-hover)] lg:px-4 lg:pl-3"
+                        style={{ width: desktop ? "auto" : 44 }}
+                      >
+                        <InfoIcon size={20} aria-hidden />
+                        {desktop && <span>{t("howItWorks")}</span>}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
+          </Fragment>
+        ))}
       </RadioGroup.Root>
 
       <div

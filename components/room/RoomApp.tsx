@@ -139,7 +139,7 @@ export function RoomApp({ code }: { code: string }) {
 
   const fail = (e: unknown) => {
     const reason = e instanceof ClientApiError ? e.code : "";
-    if (reason === "AGE_PENDING") return toast(tt("ageFirst"), "err");
+    if (reason === "PACK_NOT_ALLOWED") return toast(tt("packNotAllowed"), "err");
     if (reason === "NOT_ENOUGH_PLAYERS")
       return toast(tt("needPlayersProd", { min: state?.room.settings.minPlayers ?? 2 }), "err");
     if (reason === "RATE_LIMITED") return toast(tt("rateLimited"), "err");
@@ -169,8 +169,6 @@ export function RoomApp({ code }: { code: string }) {
   const screen = screenFor(state, revealSeen);
   if (process.env.NODE_ENV !== "production" && screen === "reveal" && !state.results)
     console.error("RoomApp: the reveal screen has no results to show");
-  const needAge =
-    state.room.status === "lobby" && state.room.pack.isAdult && !state.me.ageConfirmed;
 
   if (screen === "reveal" && state.results) {
     return (
@@ -328,26 +326,6 @@ export function RoomApp({ code }: { code: string }) {
         </Button>
         <Button variant="secondary" onClick={() => setLeaving(false)}>
           {c("stay")}
-        </Button>
-      </Sheet>
-
-      <Sheet
-        open={needAge}
-        dismissible={false}
-        title={ts("ageTitle")}
-        description={ts("ageBody", {
-          host: state.players.find((p) => p.isHost)?.nickname ?? "",
-          pack: state.room.pack.name,
-        })}
-      >
-        <Button
-          loading={actions.confirmAge.isPending}
-          onClick={() => actions.confirmAge.mutate(undefined, { onError: fail })}
-        >
-          {ts("ageConfirm")}
-        </Button>
-        <Button variant="secondary" onClick={leave}>
-          {c("leaveRoom")}
         </Button>
       </Sheet>
     </div>

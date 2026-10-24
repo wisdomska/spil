@@ -32,30 +32,24 @@ export const patchAdmin = z.object({ role });
 
 export const qStatus = z.enum(Q_STATUSES);
 const packStatus = z.enum(["live", "draft", "hidden"]);
-const heat = z.enum(["spicy", "explicit", "intense"]);
 
-export const packBody = z
-  .object({
-    name: z.string().trim().min(2).max(40),
-    blurb: z.string().trim().max(140),
-    icon: z.string().trim().min(1).max(40),
-    tone: z.enum(["accent", "inverse", "raised"]),
-    isAdult: z.boolean(),
-    heat: heat.nullable(),
-    region: z
-      .string()
-      .trim()
-      .toUpperCase()
-      .pipe(z.enum(["GH", "NG"]))
-      .nullable()
-      .or(z.literal("").transform(() => null)),
-    status: packStatus,
-    sortOrder: z.number().int().min(0).max(10000),
-  })
-  .refine((p) => (p.isAdult ? p.heat !== null : p.heat === null), {
-    message: "Adult packs need a heat level; other packs have none.",
-    path: ["heat"],
-  });
+export const packBody = z.object({
+  name: z.string().trim().min(2).max(40),
+  blurb: z.string().trim().max(140),
+  icon: z.string().trim().min(1).max(40),
+  tone: z.enum(["accent", "inverse", "raised"]),
+  /** SPIL-02: 13 (everyone), 16 or 18 (adult, black tile). */
+  minAge: z.union([z.literal(13), z.literal(16), z.literal(18)]),
+  region: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .pipe(z.enum(["GH", "NG"]))
+    .nullable()
+    .or(z.literal("").transform(() => null)),
+  status: packStatus,
+  sortOrder: z.number().int().min(0).max(10000),
+});
 
 export const addQuestions = z.object({
   packId: z.string().trim().min(1).max(40),
@@ -87,6 +81,8 @@ export const patchSettings = z
     questionsPerGame: z.number().int().min(5).max(100),
     minPlayers: z.number().int().min(2).max(20),
     maxPlayers: z.number().int().min(3).max(20),
+    /** SPIL-02: hours a minor's age stays locked on their device. */
+    ageLockHours: z.number().int().min(1).max(168),
   })
   .refine((s) => s.maxPlayers >= s.minPlayers, {
     message: "Maximum players must be at least the minimum.",

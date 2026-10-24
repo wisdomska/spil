@@ -6,10 +6,12 @@ import {
   isScoredPlayer as isScoredPhase,
   planAdvance,
   isRoomExpired,
+  youngestFloor,
   nextHost,
   type AnswerValue,
   type AwardId,
   type LabelId,
+  type MinAge,
   type PlayerStatus,
   type ResultsPlayer,
   type RoomStatus,
@@ -28,9 +30,21 @@ type PackRow = Tables["packs"]["Row"];
 const db = () => getAdminClient();
 
 export function packSummary(
-  p: Pick<PackRow, "id" | "name" | "icon" | "is_adult" | "heat">,
+  p: Pick<PackRow, "id" | "name" | "icon" | "min_age" | "heat">,
 ): PackSummary {
-  return { id: p.id, name: p.name, icon: p.icon, isAdult: p.is_adult, heat: p.heat };
+  return {
+    id: p.id,
+    name: p.name,
+    icon: p.icon,
+    isAdult: p.min_age >= 18,
+    heat: p.heat,
+    minAge: p.min_age as MinAge,
+  };
+}
+
+/** The youngest active player's band floor: what the lobby pack picker may offer (SPIL-02). */
+export function roomFloor(players: readonly PlayerRow[]): MinAge {
+  return youngestFloor(players.filter((p) => p.status === "active").map((p) => p.age_band));
 }
 
 /** The live room with this code, or the most recent closed one (so we can say "expired"). */
@@ -126,7 +140,7 @@ const toPhase = (p: PlayerRow) => ({
   joinedAt: p.joined_at,
   answersSubmittedAt: p.answers_submitted_at,
   guessesSubmittedAt: p.guesses_submitted_at,
-  ageConfirmed: p.age_confirmed,
+  ageBand: p.age_band,
   lastSeenAt: p.last_seen_at,
 });
 
@@ -399,7 +413,6 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     rotationSeed: p.rotation_seed,
     isHost: p.id === room.host_player_id,
     isBot: p.is_bot,
-    ageConfirmed: p.age_confirmed || p.is_bot,
     status: p.status as PlayerStatus,
     answered: countFor(p.id),
     // Only this round's: a time from before the round started belongs to the last one.
@@ -434,7 +447,6 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       avatar: me.avatar,
       isHost: me.id === room.host_player_id,
       status: me.status as PlayerStatus,
-      ageConfirmed: me.age_confirmed,
       answersSubmitted: me.answers_submitted_at != null,
       guessesSubmitted: me.guesses_submitted_at != null,
       spillMode: me.spill_mode,

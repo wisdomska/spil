@@ -20,7 +20,9 @@ export type ErrorVariant =
   | "removed"
   | "waking"
   | "server"
-  | "notFoundPage";
+  | "notFoundPage"
+  | "tooYoung"
+  | "ageRestricted";
 
 type Action = { label: string; href?: string; onClick?: () => void };
 
@@ -68,6 +70,9 @@ export function ErrorScreen({
     waking: {},
     server: { cta: retry, alt: home, accent: true },
     notFoundPage: { cta: home, alt: start },
+    // SPIL-02: no retry; the age stays locked on this device for a day.
+    tooYoung: { cta: home },
+    ageRestricted: { cta: start, alt: home },
   };
   const { cta, alt, accent } = map[variant];
   const waking = variant === "waking";

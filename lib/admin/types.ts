@@ -43,8 +43,8 @@ export type AdminPack = {
   blurb: string;
   icon: string;
   tone: "accent" | "inverse" | "raised";
-  isAdult: boolean;
-  heat: "spicy" | "explicit" | "intense" | null;
+  /** SPIL-02: 13, 16 or 18. 18+ packs get the black tile and only reach 18+ players. */
+  minAge: 13 | 16 | 18;
   region: string | null;
   status: "live" | "draft" | "hidden";
   sortOrder: number;
@@ -106,7 +106,12 @@ export type AdminAccount = {
 };
 
 export type SettingsPayload = {
-  settings: { questionsPerGame: number; minPlayers: number; maxPlayers: number };
+  settings: {
+    questionsPerGame: number;
+    minPlayers: number;
+    maxPlayers: number;
+    ageLockHours: number;
+  };
   flags: Record<string, boolean>;
   canResetData: boolean;
 };

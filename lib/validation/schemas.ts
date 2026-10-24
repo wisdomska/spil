@@ -13,7 +13,11 @@ export const nickname = z
 
 export const avatar = z.number().int().min(0).max(23);
 
+/** SPIL-02: only the band ever reaches the server; under_13 is accepted so it can be refused. */
+export const ageBand = z.enum(["under_13", "13_15", "16_17", "18_plus"]);
+
 export const createRoom = z.object({
+  ageBand,
   packId,
   questionCount: z.number().int().min(1).max(100).optional(),
   captchaToken: z.string().optional(),
@@ -22,7 +26,7 @@ export const createRoom = z.object({
 export const joinRoom = z.object({
   nickname: z.string(),
   avatar,
-  ageConfirmed: z.boolean().default(false),
+  ageBand,
 });
 
 export const setPack = z.object({

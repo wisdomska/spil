@@ -33,7 +33,8 @@ export const POST = route<CodeParams>(async (request, ctx) => {
       nickname,
       avatar: Math.floor(Math.random() * 24),
       rotation_seed: randomRotationSeed(),
-      age_confirmed: true,
+      // Test players never hold a room back on age (dev and staging only).
+      age_band: "18_plus" as const,
       is_bot: true,
       spill_mode: Math.random() < 0.5,
     };

@@ -10,13 +10,14 @@ import { IS_PROD } from "@/lib/supabase/env";
 async function read(): Promise<SettingsPayload["settings"]> {
   const { data, error } = await getAdminClient()
     .from("settings")
-    .select("questions_per_game, min_players, max_players")
+    .select("questions_per_game, min_players, max_players, age_lock_hours")
     .maybeSingle();
   if (error) throw new ApiError("INTERNAL");
   return {
     questionsPerGame: data?.questions_per_game ?? 12,
     minPlayers: data?.min_players ?? 2,
     maxPlayers: data?.max_players ?? 12,
+    ageLockHours: data?.age_lock_hours ?? 24,
   };
 }
 
@@ -35,7 +36,7 @@ export const GET = route(async (request): Promise<SettingsPayload> => {
   };
 });
 
-/** PATCH /admin/settings: questions per game, min and max players. Owner only. */
+/** PATCH /admin/settings: questions per game, min and max players, age lock. Owner only. */
 export const PATCH = route(async (request) => {
   const me = await requireAdmin(request, "settings.write");
   const body = await readBody(request, patchSettings);
@@ -45,13 +46,14 @@ export const PATCH = route(async (request) => {
     questions_per_game: body.questionsPerGame,
     min_players: body.minPlayers,
     max_players: body.maxPlayers,
+    age_lock_hours: body.ageLockHours,
   });
   if (error) throw new ApiError("INTERNAL");
   invalidateConfig();
   await audit(
     me,
     "settings_changed",
-    `${body.questionsPerGame} questions, ${body.minPlayers} to ${body.maxPlayers} players`,
+    `${body.questionsPerGame} questions, ${body.minPlayers} to ${body.maxPlayers} players, age lock ${body.ageLockHours} h`,
     before,
     body,
   );

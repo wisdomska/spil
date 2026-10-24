@@ -31,12 +31,13 @@ No other screen scrolls sideways at any viewport.
 
 ## Tickets
 
-| Ticket                      | Status      | 375 px                                                                              | 1280 px                                                                               | Chrome | Safari | Firefox    | QA sign-off                                                                      |
-| --------------------------- | ----------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------ | ------ | ---------- | -------------------------------------------------------------------------------- |
-| SPIL-01                     | Done        | screens/SPIL-01-after-375.png                                                       | screens/SPIL-01-after-1280.png                                                        | pass   | CI     | CI nightly | Unit matrix (2, 3, 12 players), e2e LMGF repro, harness self-test                |
-| SPIL-03                     | Done        | screens/SPIL-03-after-sheet-375.png                                                 | screens/SPIL-03-after-sheet-1280.png                                                  | pass   | CI     | CI nightly | e2e live counts (realtime), own count, force dialog hold; pgTAP for save_answers |
-| SPIL-04                     | Done        | screens/SPIL-04-after-reveal-tie-375.png, screens/SPIL-04-after-results-tie-375.png | screens/SPIL-04-after-reveal-tie-1280.png, screens/SPIL-04-after-results-tie-1280.png | pass   | CI     | CI nightly | Unit tests for groups, places and T ranks; tie fixture checked at 375 and 1280   |
-| SPIL-02, SPIL-05 to SPIL-33 | Not started |                                                                                     |                                                                                       |        |        |            |                                                                                  |
+| Ticket             | Status      | 375 px                                                                                                 | 1280 px                                                                                                    | Chrome | Safari | Firefox    | QA sign-off                                                                                                      |
+| ------------------ | ----------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------ | ------ | ---------- | ---------------------------------------------------------------------------------------------------------------- |
+| SPIL-01            | Done        | screens/SPIL-01-after-375.png                                                                          | screens/SPIL-01-after-1280.png                                                                             | pass   | CI     | CI nightly | Unit matrix (2, 3, 12 players), e2e LMGF repro, harness self-test                                                |
+| SPIL-03            | Done        | screens/SPIL-03-after-sheet-375.png                                                                    | screens/SPIL-03-after-sheet-1280.png                                                                       | pass   | CI     | CI nightly | e2e live counts (realtime), own count, force dialog hold; pgTAP for save_answers                                 |
+| SPIL-04            | Done        | screens/SPIL-04-after-reveal-tie-375.png, screens/SPIL-04-after-results-tie-375.png                    | screens/SPIL-04-after-reveal-tie-1280.png, screens/SPIL-04-after-results-tie-1280.png                      | pass   | CI     | CI nightly | Unit tests for groups, places and T ranks; tie fixture checked at 375 and 1280                                   |
+| SPIL-02            | Done        | screens/SPIL-02-age-gate-375.png, screens/SPIL-02-picker-teen-375.png, screens/SPIL-02-blocked-375.png | screens/SPIL-02-age-gate-1280.png, screens/SPIL-02-picker-adult-1280.png, screens/SPIL-02-blocked-1280.png | pass   | CI     | CI nightly | Unit (bands, filter, start rule), API (create, join, pack change), e2e two contexts, privacy request scan, pgTAP |
+| SPIL-05 to SPIL-33 | Not started |                                                                                                        |                                                                                                            |        |        |            |                                                                                                                  |
 
 ## SPIL-01: Softlock after "Move on without them"
 
@@ -83,3 +84,26 @@ Notes:
 - The spec says "dense ranking" but gives `1 + count(score > mine)` and "T1, T1, 3", which is competition ranking. The examples win (docs/ARCHITECTURE_NOTES.md section 5).
 - The server returns `spillRank` and `tiedWith` per result row; the reveal groups come from the pure `spillGroups` in lib/game.
 - Award tie-breaks still follow SRS 4.3 (earliest submit wins a tied award); that is a product rule, not a ranking, so it is unchanged.
+
+## SPIL-02: Age gate before play and age-based pack filtering
+
+- [x] The host is asked their age before seeing any pack ("STEP 1 OF 2" on /create); guests are asked before the nickname form ("BEFORE YOU JOIN").
+- [x] A 15-year-old sees exactly the five 13+ packs on /create and in the lobby picker, with no hint that others exist. The page HTML has no adult pack names: /create renders only 13+ packs on the server, and older bands fetch theirs after the age screen.
+- [x] An 18+ host sees every pack, with adult packs under "After dark · 18+", last.
+- [x] A 16-year-old opening an 18+ room sees "This room is playing an 18+ pack." and no player row is created (API test checks `playerCount` stays 1). The host is not told.
+- [x] With a 16-year-old (or 13 to 15) in the lobby, the host's picker only offers allowed packs with "Some packs are hidden for this room.", and forcing an 18+ pack through the API returns 409 `PACK_NOT_ALLOWED`. `start_round` refuses it too.
+- [x] Under 13: "SPIL is for ages 13 and up.", no retry, and the age stays locked on the device for the admin-set lock (24 h by default), so a reload still shows the blocked screen.
+- [x] Exact age never leaves the device: only the band is sent (`ageBand`), state never includes a band (API test), `players.age_band` cannot be read by clients (pgTAP), and the e2e test scans every request body and URL for a numeric age.
+- [x] The old 18+ sheet, the lobby "Waiting on ... to confirm 18+." status, the nickname-screen switch, `/confirm-age` and their strings are gone.
+
+Admin cascade:
+
+- [x] Packs: "Minimum age" select (13+ everyone, 16+, 18+ adult) replaces the rating options; the list shows a Min age column. `is_adult` follows `min_age = 18`, so the black tile rule is unchanged.
+- [x] Settings: "Age lock (hours)", 1 to 168, default 24, audited with the other settings.
+- [x] Flags: with "18+ packs" off, adult packs are hidden for every band (`packsForFloor`, unit tested).
+
+Notes:
+
+- Spec conflict: the spec gives 403 for `PACK_NOT_ALLOWED` on create and 409 on pack change. One code has one status here, so it is 409 in both places.
+- Players already in an open room at release keep adult access only if they had ticked 18+. Everyone else defaults to 13 to 15 (the safe default), which can block an open adult lobby from starting until it is recreated.
+- Migration 20261024001000, applied to staging on 2026-10-24.

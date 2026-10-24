@@ -44,10 +44,7 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
   const host = players.find((p) => p.isHost);
   const active = players.filter((p) => p.status === "active");
   const n = active.length;
-  const unconfirmed = room.pack.isAdult
-    ? active.filter((p) => !p.ageConfirmed).map((p) => p.nickname)
-    : [];
-  const canStart = n >= room.settings.minPlayers && unconfirmed.length === 0;
+  const canStart = n >= room.settings.minPlayers;
   const link = inviteLink(room.code);
   const shareText = tr("shareText", { code: room.code });
 
@@ -157,11 +154,7 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
               ) : (
                 <UsersThreeIcon size={18} aria-hidden />
               )}
-              {canStart
-                ? t("ready", { n })
-                : unconfirmed.length
-                  ? t("waitingAge", { names: unconfirmed.join(", ") })
-                  : t("need", { min: room.settings.minPlayers, n })}
+              {canStart ? t("ready", { n }) : t("need", { min: room.settings.minPlayers, n })}
             </span>
             <Button
               block
@@ -171,11 +164,9 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
                 canStart
                   ? onStart()
                   : toast(
-                      unconfirmed.length
-                        ? tt("ageFirst")
-                        : room.testPlayers
-                          ? tt("needPlayers", { min: room.settings.minPlayers })
-                          : tt("needPlayersProd", { min: room.settings.minPlayers }),
+                      room.testPlayers
+                        ? tt("needPlayers", { min: room.settings.minPlayers })
+                        : tt("needPlayersProd", { min: room.settings.minPlayers }),
                       "err",
                     )
               }

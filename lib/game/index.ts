@@ -7,3 +7,4 @@ export * from "./labels";
 export * from "./awards";
 export * from "./results";
 export * from "./phases";
+export * from "./age";

@@ -1,3 +1,4 @@
+import { bandFloor, type AgeBand, type MinAge } from "./age";
 import {
   toMs,
   toMsOrNull,
@@ -26,7 +27,8 @@ export interface PhasePlayer {
   joinedAt: TimeInput;
   answersSubmittedAt?: TimeInput | null;
   guessesSubmittedAt?: TimeInput | null;
-  ageConfirmed?: boolean;
+  /** SPIL-02: the band the player gave on their device; never an exact age. */
+  ageBand?: AgeBand;
   lastSeenAt?: TimeInput | null;
 }
 
@@ -38,22 +40,22 @@ export interface StartInput {
   status: RoomStatus;
   players: readonly PhasePlayer[];
   minPlayers: number;
-  packIsAdult: boolean;
+  /** The pack's minimum age (SPIL-02). */
+  minAge: MinAge;
 }
 
-export type StartError = "WRONG_PHASE" | "NOT_ENOUGH_PLAYERS" | "AGE_PENDING";
+export type StartError = "WRONG_PHASE" | "NOT_ENOUGH_PLAYERS" | "PACK_NOT_ALLOWED";
 
-/** Start needs the lobby, `minPlayers` active players and, for adult packs, everyone's 18+ confirmation. */
-export function canStart({
-  status,
-  players,
-  minPlayers,
-  packIsAdult,
-}: StartInput): Check<StartError> {
+/**
+ * Start needs the lobby, `minPlayers` active players and every active player's age band at or
+ * above the pack's minimum age. A player with no band counts as the youngest (13_15).
+ */
+export function canStart({ status, players, minPlayers, minAge }: StartInput): Check<StartError> {
   if (status !== "lobby") return { ok: false, code: "WRONG_PHASE" };
   const active = activePlayers(players);
   if (active.length < minPlayers) return { ok: false, code: "NOT_ENOUGH_PLAYERS" };
-  if (packIsAdult && active.some((p) => !p.ageConfirmed)) return { ok: false, code: "AGE_PENDING" };
+  if (active.some((p) => bandFloor(p.ageBand ?? "13_15") < minAge))
+    return { ok: false, code: "PACK_NOT_ALLOWED" };
   return { ok: true };
 }
 
@@ -216,7 +218,6 @@ export function nextHost(
 }
 
 export interface RematchPlayer extends PhasePlayer {
-  ageConfirmed: boolean;
   spillMode: boolean;
 }
 
@@ -229,12 +230,11 @@ export interface RematchResult<P extends RematchPlayer> {
 /**
  * Same room, next round: back to the lobby with answers, guesses and Spill Mode cleared
  * (answers and guesses are keyed by round, so the new round starts empty). Players who sat out
- * come back. Switching to an adult pack clears every 18+ confirmation.
+ * come back. Age bands carry over: they never change after joining (SPIL-02).
  */
 export function rematch<P extends RematchPlayer>(
   room: { status: RoomStatus; round: number },
   players: readonly P[],
-  next: { packIsAdult: boolean },
 ): RematchResult<P> {
   if (room.status !== "revealed")
     throw new Error(`Rematch needs a revealed room, got ${room.status}`);
@@ -247,7 +247,6 @@ export function rematch<P extends RematchPlayer>(
       answersSubmittedAt: null,
       guessesSubmittedAt: null,
       spillMode: false,
-      ageConfirmed: next.packIsAdult ? false : p.ageConfirmed,
     })),
   };
 }

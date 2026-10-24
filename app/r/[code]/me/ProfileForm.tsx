@@ -7,15 +7,17 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useBusy } from "@/lib/useBusy";
+import { AgeGate, PlayingAs } from "@/components/age/AgeGate";
 import { Avatar, AVATAR_COUNT } from "@/components/brand/Avatar";
 import { ErrorScreen, type ErrorVariant } from "@/components/site/ErrorScreen";
 import { Button } from "@/components/ui/Button";
 import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
-import { SwitchRow } from "@/components/ui/Switch";
+import { playableBand, useDeviceAge } from "@/lib/age/device";
 import { api, ClientApiError, ensureSession } from "@/lib/api/client";
 import type { PublicRoom } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import { track } from "@/lib/analytics/posthog";
+import { bandFloor } from "@/lib/game";
 
 const ROOM_ERRORS: Record<string, ErrorVariant> = {
   ROOM_NOT_FOUND: "notfound",
@@ -25,17 +27,20 @@ const ROOM_ERRORS: Record<string, ErrorVariant> = {
   OFFLINE: "offline",
 };
 
-/** Nickname, face and (adult packs) the 18+ switch. First player in becomes the host. */
+/**
+ * Age (once per device, SPIL-02), then nickname and face. First player in becomes the host. A
+ * guest below the room's minimum age gets the "18+ room" screen and no player row is made.
+ */
 export function ProfileForm({ code }: { code: string }) {
   const t = useTranslations("profile");
   const router = useRouter();
   const [nick, setNick] = useState("");
   const [avatar, setAvatar] = useState(() => Math.floor(Math.random() * AVATAR_COUNT));
-  const [age, setAge] = useState(false);
-  const [ageErr, setAgeErr] = useState(false);
   const [nickErr, setNickErr] = useState<string | null>(null);
   const [roomErr, setRoomErr] = useState<ErrorVariant | null>(null);
   const [busy, setBusy] = useBusy();
+  const { band: stored, locked, setAge, clearAge } = useDeviceAge();
+  const band = playableBand(stored);
 
   const room = useQuery({
     queryKey: ["room-public", code],
@@ -56,8 +61,9 @@ export function ProfileForm({ code }: { code: string }) {
         : null;
   const shownError = roomErr ?? loadError ?? null;
   if (shownError) return <ErrorScreen variant={shownError} maxPlayers={room.data?.maxPlayers} />;
+  if (stored === "under_13") return <ErrorScreen variant="tooYoung" />;
 
-  if (!room.data) {
+  if (!room.data || stored === undefined) {
     return (
       <main className="mx-auto box-border w-full max-w-[480px] px-5 pt-4">
         <SkeletonGroup label={t("title")} className="gap-4">
@@ -69,21 +75,25 @@ export function ProfileForm({ code }: { code: string }) {
     );
   }
 
-  const adult = room.data.pack.isAdult;
   const isHost = room.data.playerCount === 0;
-  const valid = nick.trim().length >= 2 && (!adult || age);
+  if (!band)
+    return (
+      <AgeGate who={isHost ? "host" : "guest"} onAge={(y) => setAge(y, room.data.ageLockHours)} />
+    );
+  // The room's pack is above this band: say so before the form, and never tell the host.
+  if (bandFloor(band) < room.data.minAge) return <ErrorScreen variant="ageRestricted" />;
+  const valid = nick.trim().length >= 2;
 
   const submit = async () => {
     if (busy) return;
     if (nick.trim().length < 2) return setNickErr(t("errLength"));
-    if (adult && !age) return setAgeErr(true);
     setBusy(true);
     try {
       await ensureSession();
       await api("POST", `/rooms/${code}/join`, {
         nickname: nick,
         avatar,
-        ageConfirmed: adult ? age : false,
+        ageBand: band,
       });
       track("player_joined", { pack: room.data.pack.id, isHost });
       router.replace(`/r/${code}`);
@@ -92,7 +102,8 @@ export function ProfileForm({ code }: { code: string }) {
       setBusy(false);
       if (c === "NAME_TAKEN") return setNickErr(t("errTaken"));
       if (c === "NAME_INVALID") return setNickErr(t("errInvalid"));
-      if (c === "AGE_REQUIRED") return setAgeErr(true);
+      if (c === "AGE_RESTRICTED") return setRoomErr("ageRestricted");
+      if (c === "AGE_TOO_YOUNG") return setRoomErr("tooYoung");
       if (ROOM_ERRORS[c]) return setRoomErr(ROOM_ERRORS[c]!);
       if (c === "NOT_IN_ROOM") return setRoomErr("removed");
       setRoomErr("server");
@@ -101,9 +112,12 @@ export function ProfileForm({ code }: { code: string }) {
 
   return (
     <main className="mx-auto box-border flex w-full max-w-[480px] flex-1 flex-col gap-[22px] px-5 pt-4 pb-7">
-      <h1 className="m-0 font-display text-[40px] leading-[.96] font-extrabold tracking-display">
-        {t("title")}
-      </h1>
+      <div className="grid gap-2.5">
+        <h1 className="m-0 font-display text-[40px] leading-[.96] font-extrabold tracking-display">
+          {t("title")}
+        </h1>
+        <PlayingAs band={band} locked={locked} onNotYou={clearAge} />
+      </div>
       <div className="grid gap-2">
         <label htmlFor="spil-nick" className="text-[14px] leading-none font-semibold">
           {t("nickname")}
@@ -157,18 +171,6 @@ export function ProfileForm({ code }: { code: string }) {
           ))}
         </RadioGroup.Root>
       </fieldset>
-      {adult && (
-        <SwitchRow
-          checked={age}
-          onCheckedChange={(v) => {
-            setAge(v);
-            setAgeErr(false);
-          }}
-          invalid={ageErr}
-          title={t("adult")}
-          description={t("adultBody", { pack: room.data.pack.name })}
-        />
-      )}
       <div className="mt-auto grid gap-2.5">
         <span className="flex items-center gap-2 text-[14px] leading-[1.4] font-medium text-text-muted">
           <LockSimpleIcon size={18} aria-hidden />

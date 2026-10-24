@@ -561,14 +561,14 @@ Base path `/api/v1`. JSON, camelCase. Auth via Supabase session cookie (`@supaba
 
 | Method | Path | Who | Body → Response | Errors |
 |---|---|---|---|---|
-| GET | `/packs` | anyone | → `Pack[]` (live with ≥1 live question, `questionCount`) | |
-| POST | `/rooms` | session + Turnstile | `{packId}` → `{code}` (room in lobby, no player yet) | RATE_LIMITED (10/h/user), PACK_UNAVAILABLE |
-| GET | `/rooms/:code` | anyone | → `{code, status, pack:{name,icon,isAdult,heat}, hostNickname, playerCount, maxPlayers}` | ROOM_NOT_FOUND, ROOM_EXPIRED |
-| POST | `/rooms/:code/join` | session | `{nickname, avatar, ageConfirmed}` → `{playerId}`. First player becomes host | ROOM_FULL, GAME_STARTED, ROOM_EXPIRED, NAME_TAKEN, NAME_INVALID, AGE_REQUIRED |
+| GET | `/packs?band=` | anyone | → `Pack[]` (live with ≥1 live question, `questionCount`, `minAge`), only packs whose `minAge` the band reaches; no band means 13+ (SPIL-02) | |
+| GET | `/rooms/:code/packs` | host | → `{packs, someHidden}`: packs for the room's youngest player (SPIL-02) | NOT_HOST |
+| POST | `/rooms` | session + Turnstile | `{ageBand, packId}` → `{code}` (room in lobby, no player yet; `rooms.min_age` from the pack) | RATE_LIMITED (10/h/user), PACK_UNAVAILABLE, AGE_TOO_YOUNG, PACK_NOT_ALLOWED |
+| GET | `/rooms/:code` | anyone | → `{code, status, pack:{name,icon,isAdult,heat,minAge}, hostNickname, playerCount, maxPlayers, minAge, ageLockHours}` | ROOM_NOT_FOUND, ROOM_EXPIRED |
+| POST | `/rooms/:code/join` | session | `{nickname, avatar, ageBand}` → `{playerId}`. First player becomes host. A band below `rooms.min_age` is refused before any player row exists | ROOM_FULL, GAME_STARTED, ROOM_EXPIRED, NAME_TAKEN, NAME_INVALID, AGE_TOO_YOUNG, AGE_RESTRICTED |
 | GET | `/rooms/:code/state` | member | → `RoomState` (below) | NOT_IN_ROOM |
-| PATCH | `/rooms/:code/pack` | host, lobby | `{packId}` → state. Adult pack clears `age_confirmed` | NOT_HOST, WRONG_PHASE |
-| POST | `/rooms/:code/confirm-age` | member | `{}` → state | |
-| POST | `/rooms/:code/start` | host, lobby | `{}` → state (calls `start_round`) | NOT_HOST, NOT_ENOUGH_PLAYERS, AGE_PENDING |
+| PATCH | `/rooms/:code/pack` | host, lobby | `{packId}` → state. The pack must suit the youngest player; updates `rooms.min_age` | NOT_HOST, WRONG_PHASE, PACK_NOT_ALLOWED |
+| POST | `/rooms/:code/start` | host, lobby | `{}` → state (calls `start_round`) | NOT_HOST, NOT_ENOUGH_PLAYERS, PACK_NOT_ALLOWED |
 | PUT | `/rooms/:code/answers` | member, answering, not submitted | `{answers:[{questionId, value:'yes'\|'no'\|'skip'}]}` → `{saved}` | WRONG_PHASE, ALREADY_SUBMITTED, UNKNOWN_QUESTION |
 | POST | `/rooms/:code/answers/submit` | member | `{}` → state. When all active players submitted → `advance_room(answering→guessing)` | INCOMPLETE |
 | PUT | `/rooms/:code/guesses` | member, guessing | `{guesses:[{targetId, value}]}` → `{saved}` | WRONG_PHASE, INVALID_TARGET |

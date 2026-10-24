@@ -30,8 +30,9 @@ export const PATCH = route<Ctx>(async (request, { params }) => {
       blurb: body.blurb,
       icon: body.icon,
       tone: body.tone,
-      is_adult: body.isAdult,
-      heat: body.heat,
+      min_age: body.minAge,
+      // is_adult stays in step with min_age for anything that still reads it.
+      is_adult: body.minAge === 18,
       region: body.region,
       status: body.status,
       sort_order: body.sortOrder,

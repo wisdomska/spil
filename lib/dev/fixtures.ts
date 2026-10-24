@@ -66,7 +66,6 @@ export function fixtureState({
     rotationSeed: i,
     isHost: p.id === hostId,
     isBot: false,
-    ageConfirmed: true,
     status: "active",
     answered: done.has(p.id) ? 12 : p.id === "kofi" ? 7 : 9,
     lastAnswerAt:
@@ -112,6 +111,7 @@ export function fixtureState({
         name: pack?.name ?? "Classic",
         icon: "cards",
         isAdult: pack?.adult ?? false,
+        minAge: pack?.adult ? 18 : 13,
         heat: pack?.adult ? "spicy" : null,
       },
       questionCount: total,
@@ -127,7 +127,6 @@ export function fixtureState({
       avatar: 0,
       isHost: me.isHost,
       status: "active",
-      ageConfirmed: true,
       answersSubmitted: me.answersSubmitted,
       guessesSubmitted: me.guessesSubmitted,
       spillMode: false,

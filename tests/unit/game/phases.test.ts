@@ -33,7 +33,7 @@ const p = (id: string, joinedAt: number, extra: Partial<PhasePlayer> = {}): Phas
   joinedAt,
   answersSubmittedAt: null,
   guessesSubmittedAt: null,
-  ageConfirmed: false,
+  ageBand: "18_plus",
   lastSeenAt: NOW,
   ...extra,
 });
@@ -53,35 +53,44 @@ describe("transitions", () => {
 
 describe("canStart", () => {
   it("needs the lobby", () => {
-    expect(
-      canStart({ status: "answering", players: lobby, minPlayers: 3, packIsAdult: false }),
-    ).toEqual({ ok: false, code: "WRONG_PHASE" });
+    expect(canStart({ status: "answering", players: lobby, minPlayers: 3, minAge: 13 })).toEqual({
+      ok: false,
+      code: "WRONG_PHASE",
+    });
   });
 
   it("needs min_players active players", () => {
-    expect(
-      canStart({ status: "lobby", players: lobby, minPlayers: 3, packIsAdult: false }),
-    ).toEqual({
+    expect(canStart({ status: "lobby", players: lobby, minPlayers: 3, minAge: 13 })).toEqual({
       ok: true,
     });
     const withLeaver = [...lobby.slice(0, 2), { ...lobby[2]!, status: "left" as const }];
-    expect(
-      canStart({ status: "lobby", players: withLeaver, minPlayers: 3, packIsAdult: false }),
-    ).toEqual({ ok: false, code: "NOT_ENOUGH_PLAYERS" });
+    expect(canStart({ status: "lobby", players: withLeaver, minPlayers: 3, minAge: 13 })).toEqual({
+      ok: false,
+      code: "NOT_ENOUGH_PLAYERS",
+    });
   });
 
-  it("adult packs need every active player's 18+ confirmation", () => {
-    expect(canStart({ status: "lobby", players: lobby, minPlayers: 3, packIsAdult: true })).toEqual(
-      {
-        ok: false,
-        code: "AGE_PENDING",
-      },
-    );
-    const confirmed = lobby.map((x) => ({ ...x, ageConfirmed: true }));
-    const withRemoved = [...confirmed, p("gone", 9, { status: "removed" })];
+  it("every active player's band must reach the pack's minimum age (SPIL-02)", () => {
+    const withMinor = [...lobby.slice(0, 2), { ...lobby[2]!, ageBand: "16_17" as const }];
+    expect(canStart({ status: "lobby", players: withMinor, minPlayers: 3, minAge: 18 })).toEqual({
+      ok: false,
+      code: "PACK_NOT_ALLOWED",
+    });
+    expect(canStart({ status: "lobby", players: withMinor, minPlayers: 3, minAge: 16 })).toEqual({
+      ok: true,
+    });
+    const minorLeft = [...withMinor.slice(0, 2), { ...withMinor[2]!, status: "removed" as const }];
     expect(
-      canStart({ status: "lobby", players: withRemoved, minPlayers: 3, packIsAdult: true }),
+      canStart({ status: "lobby", players: [...minorLeft, p("x", 9)], minPlayers: 3, minAge: 18 }),
     ).toEqual({ ok: true });
+  });
+
+  it("a player with no band counts as 13 to 15", () => {
+    const unknown = lobby.map((x) => ({ ...x, ageBand: undefined }));
+    expect(canStart({ status: "lobby", players: unknown, minPlayers: 3, minAge: 16 })).toEqual({
+      ok: false,
+      code: "PACK_NOT_ALLOWED",
+    });
   });
 });
 
@@ -274,19 +283,17 @@ describe("rematch", () => {
   const players: RematchPlayer[] = [
     {
       ...p("h", 1, { answersSubmittedAt: NOW, guessesSubmittedAt: NOW }),
-      ageConfirmed: true,
       spillMode: true,
     },
     {
       ...p("a", 2, { status: "sat_out", answersSubmittedAt: NOW }),
-      ageConfirmed: true,
       spillMode: false,
     },
-    { ...p("b", 3, { status: "removed" }), ageConfirmed: false, spillMode: true },
+    { ...p("b", 3, { status: "removed" }), spillMode: true },
   ];
 
   it("returns to the lobby on the next round with submissions and Spill Mode cleared", () => {
-    const r = rematch({ status: "revealed", round: 2 }, players, { packIsAdult: false });
+    const r = rematch({ status: "revealed", round: 2 }, players);
     expect(r.status).toBe("lobby");
     expect(r.round).toBe(3);
     expect(
@@ -294,23 +301,21 @@ describe("rematch", () => {
     ).toBe(true);
     expect(r.players.every((x) => !x.spillMode)).toBe(true);
     expect(r.players.map((x) => x.status)).toEqual(["active", "active", "removed"]);
-    expect(r.players.map((x) => x.ageConfirmed)).toEqual([true, true, false]);
+    expect(r.players.map((x) => x.ageBand)).toEqual(["18_plus", "18_plus", "18_plus"]);
   });
 
-  it("switching to an adult pack clears every 18+ confirmation", () => {
-    const r = rematch({ status: "revealed", round: 1 }, players, { packIsAdult: true });
-    expect(r.players.every((x) => !x.ageConfirmed)).toBe(true);
+  it("age bands carry over to the next round (SPIL-02)", () => {
+    const r = rematch({ status: "revealed", round: 1 }, players);
+    expect(r.players.map((x) => x.ageBand)).toEqual(players.map((x) => x.ageBand));
   });
 
   it("only runs from revealed", () => {
-    expect(() =>
-      rematch({ status: "guessing", round: 1 }, players, { packIsAdult: false }),
-    ).toThrow();
+    expect(() => rematch({ status: "guessing", round: 1 }, players)).toThrow();
   });
 
   it("does not mutate the input players", () => {
-    rematch({ status: "revealed", round: 1 }, players, { packIsAdult: true });
-    expect(players[0]!.ageConfirmed).toBe(true);
+    rematch({ status: "revealed", round: 1 }, players);
+    expect(players[0]!.status).toBe("active");
     expect(players[0]!.spillMode).toBe(true);
   });
 });

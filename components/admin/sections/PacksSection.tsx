@@ -28,13 +28,13 @@ import { PACK_ICONS, PackGlyph } from "@/components/brand/PackGlyph";
 import { Button } from "@/components/ui/Button";
 import type { AdminPack } from "@/lib/admin/types";
 
-type Rating = "all" | "spicy" | "explicit" | "intense";
+const MIN_AGES = [13, 16, 18] as const;
 type Form = {
   name: string;
   blurb: string;
   icon: string;
   tone: AdminPack["tone"];
-  rating: Rating;
+  minAge: AdminPack["minAge"];
   region: string;
   status: AdminPack["status"];
   sortOrder: string;
@@ -51,7 +51,7 @@ const blank: Form = {
   blurb: "",
   icon: "cards",
   tone: "accent",
-  rating: "all",
+  minAge: 13,
   region: "",
   status: "draft",
   sortOrder: "100",
@@ -83,7 +83,7 @@ export function PacksSection() {
             blurb: p.blurb,
             icon: p.icon,
             tone: p.tone,
-            rating: p.isAdult ? (p.heat ?? "spicy") : "all",
+            minAge: p.minAge,
             region: p.region ?? "",
             status: p.status,
             sortOrder: String(p.sortOrder),
@@ -108,8 +108,7 @@ export function PacksSection() {
       blurb: form.blurb.trim(),
       icon: form.icon,
       tone: form.tone,
-      isAdult: form.rating !== "all",
-      heat: form.rating === "all" ? null : form.rating,
+      minAge: form.minAge,
       region: form.region || null,
       status: form.status,
       sortOrder: Math.max(0, Math.min(10000, parseInt(form.sortOrder, 10) || 0)),
@@ -168,7 +167,7 @@ export function PacksSection() {
           cols={[
             { label: t("cols.pack") },
             { label: t("cols.questions"), width: 110, right: true, noPhone: true },
-            { label: t("cols.rating"), width: 130, noPhone: true },
+            { label: t("cols.minAge"), width: 110, noPhone: true },
             { label: t("cols.status"), width: 110 },
             { label: t("cols.games"), width: 90, right: true, wide: true },
             { label: t("cols.updated"), width: 120, wide: true },
@@ -191,7 +190,7 @@ export function PacksSection() {
                 {p.liveQuestions} / {p.totalQuestions}
               </Td>
               <Td mono nowrap noPhone>
-                {t(`rating.${p.isAdult ? (p.heat ?? "spicy") : "all"}`)}
+                {t(`minAgeShort.${p.minAge}`)}
               </Td>
               <Td>
                 <StatusLabel status={p.status} />
@@ -273,11 +272,18 @@ export function PacksSection() {
             </Select>
           </FieldRow>
         </div>
-        <FieldRow id="pk-rating" label={t("ratingLabel")}>
-          <Select id="pk-rating" value={form.rating} onChange={set("rating")}>
-            {(["all", "spicy", "explicit", "intense"] as const).map((v) => (
+        <FieldRow id="pk-min-age" label={t("minAgeLabel")} hint={t("minAgeHint")}>
+          <Select
+            id="pk-min-age"
+            value={String(form.minAge)}
+            onChange={(e) => {
+              setForm((f) => ({ ...f, minAge: Number(e.target.value) as AdminPack["minAge"] }));
+              setError(null);
+            }}
+          >
+            {MIN_AGES.map((v) => (
               <option key={v} value={v}>
-                {t(`ratings.${v}`)}
+                {t(`minAges.${v}`)}
               </option>
             ))}
           </Select>

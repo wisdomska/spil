@@ -138,29 +138,6 @@ test("host leaves the lobby and the next player takes over", async ({ browser })
   await guest.context.close();
 });
 
-test("adult pack: joiners must confirm 18+, and a switch makes everyone confirm", async ({
-  browser,
-  baseURL,
-}) => {
-  const host = await newPlayer(browser, "Ama");
-  const code = await hostRoom(host, { pack: "Classic" });
-  const guest = await newPlayer(browser, "Kofi");
-  await joinRoom(guest, code);
-  await apiPlayer(baseURL!, "Efua").then((p) => p.join(code));
-  // Host switches to After Dark from the lobby.
-  await host.page.getByRole("link", { name: /Change pack/ }).click();
-  await host.page.getByRole("radio", { name: /After Dark/ }).click();
-  await host.page.getByRole("button", { name: /Continue with After Dark/ }).click();
-  await expect(guest.page.getByRole("dialog", { name: "This room is now 18+" })).toBeVisible({
-    timeout: 40_000,
-  });
-  await expect(host.page.getByText(/Waiting on .* to confirm 18\+/)).toBeVisible();
-  await guest.page.getByRole("button", { name: "I am 18 or older" }).click();
-  await expect(guest.page.getByRole("dialog", { name: "This room is now 18+" })).toBeHidden();
-  await host.context.close();
-  await guest.context.close();
-});
-
 test("offline answers queue on the phone and send when back online", async ({
   browser,
   baseURL,

@@ -5,7 +5,13 @@ import { IS_PROD } from "./supabase/env";
 export type FlagKey =
   "polling_only" | "adult_packs_enabled" | "test_players" | "payments_enabled" | "party_mode";
 
-export type Settings = { questionsPerGame: number; maxPlayers: number; minPlayers: number };
+export type Settings = {
+  questionsPerGame: number;
+  maxPlayers: number;
+  minPlayers: number;
+  /** Hours a minor's age stays locked on their device (SPIL-02). */
+  ageLockHours: number;
+};
 
 // Settings and flags change rarely (admin edits); a short in-memory cache saves two queries on
 // every request. Admin writes call invalidateConfig() so their own instance updates at once.
@@ -22,12 +28,13 @@ export async function getSettings(): Promise<Settings> {
   if (settingsCache && Date.now() - settingsCache.at < TTL_MS) return settingsCache.value;
   const { data } = await getAdminClient()
     .from("settings")
-    .select("questions_per_game, max_players, min_players")
+    .select("questions_per_game, max_players, min_players, age_lock_hours")
     .maybeSingle();
   const value = {
     questionsPerGame: data?.questions_per_game ?? 12,
     maxPlayers: data?.max_players ?? 12,
     minPlayers: data?.min_players ?? 2,
+    ageLockHours: data?.age_lock_hours ?? 24,
   };
   settingsCache = { at: Date.now(), value };
   return value;

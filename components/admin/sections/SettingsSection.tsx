@@ -64,6 +64,7 @@ function GameSettings() {
     questionsPerGame: String(s.questionsPerGame),
     minPlayers: String(s.minPlayers),
     maxPlayers: String(s.maxPlayers),
+    ageLockHours: String(s.ageLockHours),
   };
   const field = (key: string, label: string, hint: string, min: number, max: number) => (
     <FieldRow key={key} id={`set-${key}`} label={label} hint={hint}>
@@ -87,13 +88,20 @@ function GameSettings() {
     const qn = Number(vals.questionsPerGame);
     const mn = Number(vals.minPlayers);
     const mx = Number(vals.maxPlayers);
+    const lock = Number(vals.ageLockHours);
     if (!Number.isInteger(qn) || qn < 5 || qn > 100) return setError(t("rangeQuestions"));
     if (!Number.isInteger(mn) || mn < 2 || mn > 20) return setError(t("rangeMin"));
     if (!Number.isInteger(mx) || mx < mn || mx > 20) return setError(t("rangeMax"));
+    if (!Number.isInteger(lock) || lock < 1 || lock > 168) return setError(t("rangeAgeLock"));
     setBusy(true);
     const res = await run(
       () =>
-        adminApi("PATCH", "/settings", { questionsPerGame: qn, minPlayers: mn, maxPlayers: mx }),
+        adminApi("PATCH", "/settings", {
+          questionsPerGame: qn,
+          minPlayers: mn,
+          maxPlayers: mx,
+          ageLockHours: lock,
+        }),
       { ok: t("saved") },
     );
     setBusy(false);
@@ -116,6 +124,9 @@ function GameSettings() {
             {field("questionsPerGame", t("questionsPerGame"), t("questionsPerGameHint"), 5, 100)}
             {field("minPlayers", t("minPlayers"), t("minPlayersHint"), 2, 20)}
             {field("maxPlayers", t("maxPlayers"), t("maxPlayersHint"), 3, 20)}
+          </div>
+          <div className="grid gap-[18px] sm:grid-cols-3 sm:gap-4">
+            {field("ageLockHours", t("ageLockHours"), t("ageLockHoursHint"), 1, 168)}
           </div>
           <ErrorLine>{error}</ErrorLine>
           <div>

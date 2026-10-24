@@ -124,8 +124,7 @@ d("admin content", () => {
       blurb: "Integration test pack.",
       icon: "cards",
       tone: "raised",
-      isAdult: false,
-      heat: null,
+      minAge: 13,
       region: null,
       status: "draft",
       sortOrder: 999,
@@ -183,8 +182,7 @@ d("admin content", () => {
       blurb: pack.blurb,
       icon: "fire",
       tone: "accent",
-      isAdult: true,
-      heat: "spicy",
+      minAge: 18,
       region: "gh",
       status: "hidden",
       sortOrder: 998,
@@ -193,7 +191,7 @@ d("admin content", () => {
     const after = (await lead.call("GET", "/admin/packs")).body.find(
       (p: { id: string }) => p.id === packId,
     );
-    expect(after).toMatchObject({ icon: "fire", isAdult: true, heat: "spicy", region: "GH" });
+    expect(after).toMatchObject({ icon: "fire", minAge: 18, region: "GH" });
   });
 
   it("lets moderators hide but nothing else", async () => {
@@ -261,7 +259,7 @@ d("admin content", () => {
     expect(delPack.status, JSON.stringify(delPack.body)).toBe(200);
     packId = "";
     // Classic always has rooms in CI and staging (the game tests create them).
-    const room = await player.call("POST", "/rooms", { packId: "classic" });
+    const room = await player.call("POST", "/rooms", { ageBand: "18_plus", packId: "classic" });
     expect(room.status).toBe(200);
     expect(code(await owner.call("DELETE", "/admin/packs/classic"))).toBe("PACK_IN_USE");
   });
@@ -269,12 +267,12 @@ d("admin content", () => {
 
 d("admin moderation", () => {
   it("closes a room", async () => {
-    const created = await player.call("POST", "/rooms", { packId: "classic" });
+    const created = await player.call("POST", "/rooms", { ageBand: "18_plus", packId: "classic" });
     const roomCode: string = created.body.code;
     await player.call("POST", `/rooms/${roomCode}/join`, {
+      ageBand: "18_plus",
       nickname: "Closer",
       avatar: 1,
-      ageConfirmed: true,
     });
     const rooms = await mod.call("GET", "/admin/rooms");
     const room = rooms.body.find((r: { code: string; status: string }) => r.code === roomCode);
@@ -290,10 +288,15 @@ d("admin moderation", () => {
     const host = await anonPlayer();
     const guest = await anonPlayer();
     created.push(host.userId, guest.userId);
-    const room = await host.call("POST", "/rooms", { packId: "classic" });
+    const room = await host.call("POST", "/rooms", { ageBand: "18_plus", packId: "classic" });
     const roomCode: string = room.body.code;
-    await host.call("POST", `/rooms/${roomCode}/join`, { nickname: "Host", avatar: 2 });
+    await host.call("POST", `/rooms/${roomCode}/join`, {
+      ageBand: "18_plus",
+      nickname: "Host",
+      avatar: 2,
+    });
     const joined = await guest.call("POST", `/rooms/${roomCode}/join`, {
+      ageBand: "18_plus",
       nickname: "Rude Name",
       avatar: 3,
     });

@@ -26,6 +26,8 @@ insert into public.packs (id, name, blurb, icon, tone, is_adult, heat, region, s
   ('kink', 'Kink Curious', 'Toys, roles and safe words. 18+ only.', 'key', 'raised', true, 'explicit', null, 'live', 80),
   ('nolimits', 'No Limits', 'The most intense pack we have. Proceed carefully.', 'fire', 'accent', true, 'intense', null, 'live', 90),
   ('purity', 'The Purity 100', 'All 100 classic purity questions. Your Spill Score is the flip side.', 'list-checks', 'accent', true, 'intense', null, 'draft', 100);
+-- SPIL-02: adult packs are for 18 and over; everything else is 13+ (the column default).
+update public.packs set min_age = 18 where is_adult;
 
 -- Classic (classic): 12 from the prototype
 insert into public.questions (pack_id, text) values

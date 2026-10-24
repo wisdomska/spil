@@ -22,10 +22,17 @@ export async function phone(browser: Browser, size: keyof typeof VIEWPORT = "gue
   return { context, page };
 }
 
-/** SPIL-02 age gate: answers it when it is shown, does nothing when the device skips it. */
+/**
+ * SPIL-02 age gate: answers it when it is shown, does nothing when the device already gave an
+ * age. Waits for the page to show either the age screen or what comes after it.
+ */
 export async function passAgeGate(page: Page, age = 25) {
   const heading = page.getByRole("heading", { name: "How old are you?" });
-  if (!(await heading.isVisible({ timeout: 1500 }).catch(() => false))) return;
+  const after = page.getByRole("heading", {
+    name: /What should we call you\?|Pick your poison\.|SPIL is for ages 13|18\+ pack/,
+  });
+  await heading.or(after).first().waitFor({ timeout: 30_000 });
+  if (!(await heading.isVisible())) return;
   await page.getByLabel("Your age").fill(String(age));
   await page.getByRole("button", { name: "Continue", exact: true }).click();
 }

@@ -1,5 +1,5 @@
 // Shared API contract between route handlers and the client (docs/TECH_SPEC.md section 12).
-import type { AnswerValue, AwardId, LabelId, PlayerStatus, RoomStatus } from "@/lib/game";
+import type { AnswerValue, AwardId, LabelId, MinAge, PlayerStatus, RoomStatus } from "@/lib/game";
 
 export type HeatLevel = "spicy" | "explicit" | "intense";
 export type PackTone = "accent" | "inverse" | "raised";
@@ -8,8 +8,11 @@ export type PackSummary = {
   id: string;
   name: string;
   icon: string;
+  /** True when minAge is 18. */
   isAdult: boolean;
   heat: HeatLevel | null;
+  /** SPIL-02: players whose age band starts below this never see the pack. */
+  minAge: MinAge;
 };
 
 export type Pack = PackSummary & {
@@ -29,6 +32,10 @@ export type PublicRoom = {
   maxPlayers: number;
   /** True when the caller already plays in this room. */
   joined: boolean;
+  /** The room's minimum age; a guest whose band starts below it cannot join (SPIL-02). */
+  minAge: MinAge;
+  /** How long a minor's age stays locked on the device, in hours (admin setting). */
+  ageLockHours: number;
 };
 
 export type StatePlayer = {
@@ -38,8 +45,6 @@ export type StatePlayer = {
   rotationSeed: number;
   isHost: boolean;
   isBot: boolean;
-  /** Confirmed 18+ for the current pack (adult packs only matter). */
-  ageConfirmed: boolean;
   status: PlayerStatus;
   /** Answers saved this round (count only; never the values). */
   answered: number;
@@ -102,7 +107,6 @@ export type RoomState = {
     avatar: number;
     isHost: boolean;
     status: PlayerStatus;
-    ageConfirmed: boolean;
     answersSubmitted: boolean;
     guessesSubmitted: boolean;
     spillMode: boolean;

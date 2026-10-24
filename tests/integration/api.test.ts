@@ -10,14 +10,14 @@ const d = enabled ? describe : describe.skip;
 async function fullRoom(n: number, packId = "classic", questionCount = 5) {
   const players = await Promise.all(Array.from({ length: n }, () => anonPlayer()));
   const [host] = players;
-  const created = await host!.call("POST", "/rooms", { packId, questionCount });
+  const created = await host!.call("POST", "/rooms", { ageBand: "18_plus", packId, questionCount });
   expect(created.status).toBe(200);
   const roomCode: string = created.body.code;
   for (const [i, p] of players.entries()) {
     const joined = await p.call("POST", `/rooms/${roomCode}/join`, {
+      ageBand: "18_plus",
       nickname: `Player ${i + 1}`,
       avatar: i,
-      ageConfirmed: true,
     });
     expect(joined.status, JSON.stringify(joined.body)).toBe(200);
   }
@@ -77,13 +77,13 @@ d("public endpoints", () => {
 
   it("validates bodies", async () => {
     const p = await anonPlayer();
-    const res = await p.call("POST", "/rooms", { packId: 12 });
+    const res = await p.call("POST", "/rooms", { ageBand: "18_plus", packId: 12 });
     expect(code(res)).toBe("BAD_REQUEST");
   });
 
   it("POST /rooms rejects a draft pack", async () => {
     const p = await anonPlayer();
-    const res = await p.call("POST", "/rooms", { packId: "purity" });
+    const res = await p.call("POST", "/rooms", { ageBand: "18_plus", packId: "purity" });
     expect(code(res)).toBe("PACK_UNAVAILABLE");
   });
 
@@ -120,11 +120,13 @@ d("a full game with 3 players", () => {
     expect(code(await guest.call("POST", `/rooms/${room.roomCode}/start`))).toBe("NOT_HOST");
     const late = await anonPlayer();
     const dup = await late.call("POST", `/rooms/${room.roomCode}/join`, {
+      ageBand: "18_plus",
       nickname: "player 2",
       avatar: 3,
     });
     expect(code(dup)).toBe("NAME_TAKEN");
     const rude = await late.call("POST", `/rooms/${room.roomCode}/join`, {
+      ageBand: "18_plus",
       nickname: "Sh1t head",
       avatar: 3,
     });
@@ -139,6 +141,7 @@ d("a full game with 3 players", () => {
 
     const late = await anonPlayer();
     const tooLate = await late.call("POST", `/rooms/${room.roomCode}/join`, {
+      ageBand: "18_plus",
       nickname: "Late",
       avatar: 1,
     });
@@ -247,8 +250,12 @@ d("host tools", () => {
 
   it("start needs the minimum players", async () => {
     const host = await anonPlayer();
-    const created = await host.call("POST", "/rooms", { packId: "classic" });
-    await host.call("POST", `/rooms/${created.body.code}/join`, { nickname: "Solo", avatar: 0 });
+    const created = await host.call("POST", "/rooms", { ageBand: "18_plus", packId: "classic" });
+    await host.call("POST", `/rooms/${created.body.code}/join`, {
+      ageBand: "18_plus",
+      nickname: "Solo",
+      avatar: 0,
+    });
     expect(code(await host.call("POST", `/rooms/${created.body.code}/start`))).toBe(
       "NOT_ENOUGH_PLAYERS",
     );
@@ -259,31 +266,111 @@ d("host tools", () => {
     expect((await room.host.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);
   });
 
-  it("adult packs need everyone's 18+ confirmation", async () => {
+  it("an adult room starts when everyone is 18 or older", async () => {
     const room = await fullRoom(3);
     await room.host.call("PATCH", `/rooms/${room.roomCode}/pack`, { packId: "afterdark" });
-    expect(code(await room.host.call("POST", `/rooms/${room.roomCode}/start`))).toBe("AGE_PENDING");
-    for (const p of room.players.slice(1))
-      await p.call("POST", `/rooms/${room.roomCode}/confirm-age`);
     const started = await room.host.call("POST", `/rooms/${room.roomCode}/start`);
     expect(started.body.room.status).toBe("answering");
   });
 
-  it("joining an adult room requires ageConfirmed", async () => {
-    const host = await anonPlayer();
-    const created = await host.call("POST", "/rooms", { packId: "afterdark" });
-    const res = await host.call("POST", `/rooms/${created.body.code}/join`, {
-      nickname: "Ama",
+  it("SPIL-02: under 13 cannot create or join", async () => {
+    const kid = await anonPlayer();
+    expect(code(await kid.call("POST", "/rooms", { ageBand: "under_13", packId: "classic" }))).toBe(
+      "AGE_TOO_YOUNG",
+    );
+    const room = await fullRoom(1);
+    const res = await kid.call("POST", `/rooms/${room.roomCode}/join`, {
+      ageBand: "under_13",
+      nickname: "Kid",
       avatar: 0,
     });
-    expect(code(res)).toBe("AGE_REQUIRED");
+    expect(code(res)).toBe("AGE_TOO_YOUNG");
+  });
+
+  it("SPIL-02: a 13 to 15 host cannot create an 18+ room", async () => {
+    const teen = await anonPlayer();
+    const res = await teen.call("POST", "/rooms", { ageBand: "13_15", packId: "afterdark" });
+    expect(res.status).toBe(409);
+    expect(code(res)).toBe("PACK_NOT_ALLOWED");
+  });
+
+  it("SPIL-02: a 16 to 17 guest cannot join an 18+ room, and no player is created", async () => {
+    const host = await anonPlayer();
+    const created = await host.call("POST", "/rooms", { ageBand: "18_plus", packId: "afterdark" });
+    const roomCode = created.body.code;
+    await host.call("POST", `/rooms/${roomCode}/join`, {
+      ageBand: "18_plus",
+      nickname: "Host",
+      avatar: 0,
+    });
+    const guest = await anonPlayer();
+    const res = await guest.call("POST", `/rooms/${roomCode}/join`, {
+      ageBand: "16_17",
+      nickname: "Kwame",
+      avatar: 1,
+    });
+    expect(res.status).toBe(403);
+    expect(code(res)).toBe("AGE_RESTRICTED");
+    const preview = await guest.call("GET", `/rooms/${roomCode}`);
+    expect(preview.body).toMatchObject({ playerCount: 1, joined: false, minAge: 18 });
+  });
+
+  it("SPIL-02: with a minor in the lobby the host cannot pick or force an 18+ pack", async () => {
+    const host = await anonPlayer();
+    const created = await host.call("POST", "/rooms", { ageBand: "18_plus", packId: "classic" });
+    const roomCode = created.body.code;
+    await host.call("POST", `/rooms/${roomCode}/join`, {
+      ageBand: "18_plus",
+      nickname: "Host",
+      avatar: 0,
+    });
+    const teen = await anonPlayer();
+    await teen.call("POST", `/rooms/${roomCode}/join`, {
+      ageBand: "13_15",
+      nickname: "Esi",
+      avatar: 1,
+    });
+
+    const offered = await host.call("GET", `/rooms/${roomCode}/packs`);
+    expect(offered.body.someHidden).toBe(true);
+    expect(offered.body.packs.every((p: { minAge: number }) => p.minAge <= 13)).toBe(true);
+
+    const forced = await host.call("PATCH", `/rooms/${roomCode}/pack`, { packId: "afterdark" });
+    expect(forced.status).toBe(409);
+    expect(code(forced)).toBe("PACK_NOT_ALLOWED");
+    expect(code(await teen.call("GET", `/rooms/${roomCode}/packs`))).toBe("NOT_HOST");
+  });
+
+  it("SPIL-02: the pack list depends on the band and never leaks adult packs", async () => {
+    const p = await anonPlayer();
+    const teen = await p.call("GET", "/packs?band=13_15");
+    expect(teen.body.length).toBeGreaterThan(0);
+    expect(teen.body.every((x: { minAge: number }) => x.minAge === 13)).toBe(true);
+    const none = await p.call("GET", "/packs");
+    expect(none.body.every((x: { minAge: number }) => x.minAge === 13)).toBe(true);
+    const adult = await p.call("GET", "/packs?band=18_plus");
+    expect(adult.body.some((x: { minAge: number }) => x.minAge === 18)).toBe(true);
+  });
+
+  it("SPIL-02: state never carries an age band", async () => {
+    const room = await fullRoom(2);
+    const state = await room.host.call("GET", `/rooms/${room.roomCode}/state`);
+    expect(JSON.stringify(state.body)).not.toMatch(/age_?band|ageConfirmed/i);
   });
 
   it("test players fill the room and play themselves", async () => {
     const host = await anonPlayer();
-    const created = await host.call("POST", "/rooms", { packId: "classic", questionCount: 5 });
+    const created = await host.call("POST", "/rooms", {
+      ageBand: "18_plus",
+      packId: "classic",
+      questionCount: 5,
+    });
     const roomCode = created.body.code;
-    await host.call("POST", `/rooms/${roomCode}/join`, { nickname: "Host", avatar: 0 });
+    await host.call("POST", `/rooms/${roomCode}/join`, {
+      ageBand: "18_plus",
+      nickname: "Host",
+      avatar: 0,
+    });
     const added = await host.call("POST", `/rooms/${roomCode}/test-players`, { count: 2 });
     if (added.status === 403) return; // flag off on this environment
     expect(added.body.players).toHaveLength(3);

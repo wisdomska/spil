@@ -1,5 +1,6 @@
 import { expect, type Browser, type BrowserContext, type Page } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
+import { passAgeGate } from "./harness";
 
 export type Player = { page: Page; context: BrowserContext; name: string };
 
@@ -13,11 +14,12 @@ export async function newPlayer(browser: Browser, name: string) {
 /** Host: Start a room, pick a pack and length, set a profile, land in the lobby. Returns the code. */
 export async function hostRoom(
   host: Player,
-  opts: { pack?: string; count?: number; adult?: boolean } = {},
+  opts: { pack?: string; count?: number; age?: number } = {},
 ) {
   const { page } = host;
   await page.goto("/");
   await page.getByRole("link", { name: "Start a room" }).first().click();
+  await passAgeGate(page, opts.age ?? 25);
   await expect(page.getByRole("heading", { name: "Pick your poison." })).toBeVisible();
   if (opts.pack)
     await page
@@ -29,27 +31,27 @@ export async function hostRoom(
   await page.getByRole("button", { name: /^Continue with/ }).click();
   await page.waitForURL(/\/r\/[A-Z0-9]{4}\/me$/);
   const code = page.url().match(/\/r\/([A-Z0-9]{4})\/me/)![1]!;
-  await fillProfile(page, host.name, opts.adult);
+  await fillProfile(page, host.name);
   await page.getByRole("button", { name: "Open the lobby" }).click();
   await page.waitForURL(new RegExp(`/r/${code}$`));
   await expect(page.getByRole("heading", { name: "In the room" })).toBeVisible();
   return code;
 }
 
-export async function fillProfile(page: Page, name: string, adult = false) {
+export async function fillProfile(page: Page, name: string) {
   await page.getByLabel("Nickname").fill(name);
   await page.getByRole("radio", { name: "Avatar 5" }).click();
-  if (adult) await page.getByRole("switch", { name: /18 or older/ }).click();
 }
 
 /** Guest: Join with code, set a profile, land in the lobby. */
-export async function joinRoom(guest: Player, code: string, adult = false) {
+export async function joinRoom(guest: Player, code: string, age = 25) {
   const { page } = guest;
   await page.goto("/join");
   await page.getByLabel("Room code").fill(code);
   await page.getByRole("button", { name: "Join with code" }).click();
   await page.waitForURL(new RegExp(`/r/${code}/me$`));
-  await fillProfile(page, guest.name, adult);
+  await passAgeGate(page, age);
+  await fillProfile(page, guest.name);
   await page.getByRole("button", { name: "Join the room" }).click();
   await page.waitForURL(new RegExp(`/r/${code}$`));
   await expect(page.getByText(/Waiting for .* to start/)).toBeVisible();
@@ -115,11 +117,11 @@ export async function apiPlayer(baseURL: string, name: string) {
   };
   return {
     name,
-    join: (code: string, adult = false) =>
+    join: (code: string, ageBand: "13_15" | "16_17" | "18_plus" = "18_plus") =>
       call("POST", `/rooms/${code}/join`, {
         nickname: name,
         avatar: name.length % 24,
-        ageConfirmed: adult,
+        ageBand,
       }),
     answerAll: async (code: string, yesEvery = 2) => {
       // The host's Start may still be in flight; questions appear once the round has begun.

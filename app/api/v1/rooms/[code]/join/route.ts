@@ -1,9 +1,9 @@
 import { codeOf, requireUser, type CodeParams } from "@/lib/api/auth";
 import { ApiError, fromDbError } from "@/lib/api/errors";
 import { readBody, route } from "@/lib/api/handler";
-import { checkJoinable, findRoom, loadPack, loadPlayers } from "@/lib/api/rooms";
+import { checkJoinable, findRoom, loadPlayers } from "@/lib/api/rooms";
 import { getSettings } from "@/lib/flags";
-import { randomRotationSeed } from "@/lib/game";
+import { bandFloor, randomRotationSeed, type AgeBand } from "@/lib/game";
 import { rateLimit } from "@/lib/ratelimit";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { isProfane } from "@/lib/validation/profanity";
@@ -15,6 +15,9 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   const code = await codeOf(ctx);
   const body = await readBody(request, joinRoom);
   await rateLimit("join", userId);
+
+  // SPIL-02: the band decides who may join; it is never shown to the host or other players.
+  if (body.ageBand === "under_13") throw new ApiError("AGE_TOO_YOUNG");
 
   const nick = nicknameSchema.safeParse(body.nickname);
   if (!nick.success || isProfane(nick.data)) throw new ApiError("NAME_INVALID");
@@ -34,8 +37,13 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   checkJoinable(room, active.length, settings.maxPlayers);
   if (!room) throw new ApiError("ROOM_NOT_FOUND");
 
-  const pack = await loadPack(room.pack_id);
-  if (pack.is_adult && !body.ageConfirmed) throw new ApiError("AGE_REQUIRED");
+  // Below the room's minimum age: refused before any player row exists, and nothing is logged.
+  if (bandFloor(body.ageBand) < room.min_age) throw new ApiError("AGE_RESTRICTED");
+  // A band never goes up after joining: coming back keeps the lower of the two.
+  const band: AgeBand =
+    existing && bandFloor(existing.age_band) < bandFloor(body.ageBand)
+      ? existing.age_band
+      : body.ageBand;
 
   const taken = players.some(
     (p) =>
@@ -49,7 +57,7 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   const fields = {
     nickname: nick.data,
     avatar: body.avatar,
-    age_confirmed: pack.is_adult ? true : body.ageConfirmed,
+    age_band: band,
     status: "active" as const,
     last_seen_at: new Date().toISOString(),
   };

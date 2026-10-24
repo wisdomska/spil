@@ -308,6 +308,7 @@ export type Database = {
           icon: string;
           id: string;
           is_adult: boolean;
+          min_age: number;
           name: string;
           region: string | null;
           sort_order: number;
@@ -321,6 +322,7 @@ export type Database = {
           icon: string;
           id: string;
           is_adult?: boolean;
+          min_age?: number;
           name: string;
           region?: string | null;
           sort_order?: number;
@@ -334,6 +336,7 @@ export type Database = {
           icon?: string;
           id?: string;
           is_adult?: boolean;
+          min_age?: number;
           name?: string;
           region?: string | null;
           sort_order?: number;
@@ -345,6 +348,7 @@ export type Database = {
       };
       players: {
         Row: {
+          age_band: Database["public"]["Enums"]["age_band"];
           age_confirmed: boolean;
           answered_count: number;
           answers_submitted_at: string | null;
@@ -364,6 +368,7 @@ export type Database = {
           user_id: string;
         };
         Insert: {
+          age_band?: Database["public"]["Enums"]["age_band"];
           age_confirmed?: boolean;
           answered_count?: number;
           answers_submitted_at?: string | null;
@@ -383,6 +388,7 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          age_band?: Database["public"]["Enums"]["age_band"];
           age_confirmed?: boolean;
           answered_count?: number;
           answers_submitted_at?: string | null;
@@ -642,6 +648,7 @@ export type Database = {
           guessing_at: string | null;
           host_player_id: string | null;
           id: string;
+          min_age: number;
           pack_id: string;
           question_count: number | null;
           ready_at: string | null;
@@ -660,6 +667,7 @@ export type Database = {
           guessing_at?: string | null;
           host_player_id?: string | null;
           id?: string;
+          min_age?: number;
           pack_id: string;
           question_count?: number | null;
           ready_at?: string | null;
@@ -678,6 +686,7 @@ export type Database = {
           guessing_at?: string | null;
           host_player_id?: string | null;
           id?: string;
+          min_age?: number;
           pack_id?: string;
           question_count?: number | null;
           ready_at?: string | null;
@@ -713,6 +722,7 @@ export type Database = {
       };
       settings: {
         Row: {
+          age_lock_hours: number;
           id: boolean;
           max_players: number;
           min_players: number;
@@ -720,6 +730,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          age_lock_hours?: number;
           id?: boolean;
           max_players?: number;
           min_players?: number;
@@ -727,6 +738,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          age_lock_hours?: number;
           id?: boolean;
           max_players?: number;
           min_players?: number;
@@ -799,6 +811,7 @@ export type Database = {
           guessing_at: string | null;
           host_player_id: string | null;
           id: string;
+          min_age: number;
           pack_id: string;
           question_count: number | null;
           ready_at: string | null;
@@ -814,6 +827,10 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      band_floor: {
+        Args: { b: Database["public"]["Enums"]["age_band"] };
+        Returns: number;
       };
       can_access_room_topic: { Args: { p_topic: string }; Returns: boolean };
       check_rate_limit: {
@@ -855,6 +872,7 @@ export type Database = {
     };
     Enums: {
       admin_role: "owner" | "content_lead" | "moderator";
+      age_band: "13_15" | "16_17" | "18_plus";
       answer_value: "yes" | "no" | "skip";
       heat_level: "spicy" | "explicit" | "intense";
       message_status: "new" | "read" | "archived";
@@ -987,6 +1005,7 @@ export const Constants = {
   public: {
     Enums: {
       admin_role: ["owner", "content_lead", "moderator"],
+      age_band: ["13_15", "16_17", "18_plus"],
       answer_value: ["yes", "no", "skip"],
       heat_level: ["spicy", "explicit", "intense"],
       message_status: ["new", "read", "archived"],

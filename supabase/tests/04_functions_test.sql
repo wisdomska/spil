@@ -292,39 +292,31 @@ select is(
 );
 select is((select count(*)::int from public.results where room_id = 'b0000000-0000-0000-0000-000000000001' and round = 1), 3, 'earlier round results are kept');
 
--- start_round: switching to an adult pack ---------------------------------------------------------
+-- start_round: switching to an adult pack (SPIL-02 age bands) ------------------------------
 select tests.as_postgres();
 update public.rooms set status = 'revealed', final_round = 2 where id = 'b0000000-0000-0000-0000-000000000001';
 
+-- Fixture players have the default band 13_15, so an 18+ pack is refused outright.
 select tests.as_service();
-select lives_ok(
+select throws_ok(
   $$ select public.start_round('b0000000-0000-0000-0000-000000000001', 'afterdark', 5) $$,
-  'start_round accepts a switch to an adult pack'
+  'P0001',
+  'PACK_NOT_ALLOWED',
+  'start_round refuses an 18+ pack while a player is under 18'
 );
-select is((select status::text from public.rooms where id = 'b0000000-0000-0000-0000-000000000001'), 'lobby', 'adult pack switch waits in lobby');
-select is((select round from public.rooms where id = 'b0000000-0000-0000-0000-000000000001'), 3, 'adult pack switch still opens the next round');
-select is((select pack_id from public.rooms where id = 'b0000000-0000-0000-0000-000000000001'), 'afterdark', 'adult pack is selected');
-select is(
-  (select count(*)::int from public.players where room_id = 'b0000000-0000-0000-0000-000000000001' and age_confirmed),
-  0,
-  'switching to an adult pack leaves players unconfirmed'
-);
-select is(
-  (select count(*)::int from public.room_questions where room_id = 'b0000000-0000-0000-0000-000000000001' and round = 3),
-  0,
-  'no questions are drawn until everyone confirms'
-);
+select is((select status::text from public.rooms where id = 'b0000000-0000-0000-0000-000000000001'), 'revealed', 'refused switch leaves the room as it was');
+select is((select pack_id from public.rooms where id = 'b0000000-0000-0000-0000-000000000001'), 'classic', 'refused switch keeps the pack');
 
 select tests.as_postgres();
-update public.players set age_confirmed = true where room_id = 'b0000000-0000-0000-0000-000000000001';
+update public.players set age_band = '18_plus' where room_id = 'b0000000-0000-0000-0000-000000000001';
 
 select tests.as_service();
 select lives_ok(
   $$ select public.start_round('b0000000-0000-0000-0000-000000000001', 'afterdark', 5) $$,
-  'start_round starts once everyone confirmed'
+  'start_round starts an 18+ pack when everyone is 18 or older'
 );
 select is((select status::text from public.rooms where id = 'b0000000-0000-0000-0000-000000000001'), 'answering', 'adult round is answering');
-select is((select round from public.rooms where id = 'b0000000-0000-0000-0000-000000000001'), 3, 'round does not go up twice');
+select is((select round from public.rooms where id = 'b0000000-0000-0000-0000-000000000001'), 3, 'adult round opens the next round');
 select is(
   (select count(*)::int from public.room_questions where room_id = 'b0000000-0000-0000-0000-000000000001' and round = 3),
   5,

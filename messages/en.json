@@ -35,6 +35,21 @@
     "questions": "{count} questions",
     "packLine": "{pack}, {count} questions"
   },
+  "age": {
+    "kickerHost": "STEP 1 OF 2",
+    "kickerGuest": "BEFORE YOU JOIN",
+    "title": "How old are you?",
+    "helper": "We use this to show packs that fit you. We only keep your age group, never your exact age.",
+    "label": "Your age",
+    "error": "Enter your real age.",
+    "cta": "Continue",
+    "privacy": "No signup. Your age group stays on this device and in this room only.",
+    "playingAs": "Playing as {band}",
+    "notYou": "Not you?",
+    "band13": "13 to 15",
+    "band16": "16 to 17",
+    "band18": "18+"
+  },
   "theme": {
     "label": "Theme",
     "dark": "Dark",
@@ -60,7 +75,7 @@
     "cardSaved": "Card saved.",
     "savedInstead": "Sharing is not available here, so we saved it instead.",
     "noPacks": "No packs are live right now.",
-    "ageFirst": "Everyone has to confirm they are 18+ first.",
+    "packNotAllowed": "That pack isn't available for this room.",
     "needPlayers": "Need {min} players. Add a test player or share the code.",
     "needPlayersProd": "Need {min} players. Share the code to get more in.",
     "spillOn": "Spill Mode on. This room can see your answers.",
@@ -138,11 +153,12 @@
     "minutes": "{n, plural, one {About # minute of answering.} other {About # minutes of answering.}}",
     "scoringInfo": "How scoring works for this pack",
     "continue": "Continue with {pack}",
-    "badgeSpicy": "18+",
-    "badgeExplicit": "18+ Explicit",
-    "badgeIntense": "18+ Intense",
+    "badge18": "18+",
+    "badge16": "16+",
     "aboutPack": "About this pack",
-    "empty": "No packs are live right now."
+    "empty": "No packs are live right now.",
+    "sectionAdult": "After dark · 18+",
+    "someHidden": "Some packs are hidden for this room."
   },
   "packInfo": {
     "purity": {
@@ -171,8 +187,6 @@
     "errInvalid": "Pick a different nickname. That one is not allowed.",
     "face": "Pick your face",
     "avatarGroup": "Avatar",
-    "adult": "I'm 18 or older",
-    "adultBody": "{pack} has adult content. We don't store your age.",
     "noSignup": "No signup. This name lives in this room only.",
     "openLobby": "Open the lobby",
     "joinRoom": "Join the room"
@@ -197,7 +211,6 @@
     "alone": "It's just you so far. Share the invite link so your friends can join.",
     "ready": "{n} in. Everyone ready?",
     "need": "Need {min} players to start. {n} here.",
-    "waitingAge": "Waiting on {names} to confirm 18+.",
     "start": "Start the game",
     "addTest": "Add a test player",
     "changePack": "Change pack: {pack}",
@@ -337,9 +350,6 @@
     "domain": "spil-party.vercel.app"
   },
   "sheet": {
-    "ageTitle": "This room is now 18+",
-    "ageBody": "{host} switched to {pack}. It has sexual content. Confirm you are 18 or older to stay in the room.",
-    "ageConfirm": "I am 18 or older",
     "leaveTitle": "Leave this room?",
     "leaveHostNext": "You are the host. The next player in the room takes over.",
     "leaveHostOnly": "You are the only real player, so the room closes.",
@@ -405,6 +415,16 @@
       "sticker": "Nothing here",
       "title": "This page doesn't exist.",
       "body": "The link might be old, or it was typed wrong."
+    },
+    "tooYoung": {
+      "sticker": "Not yet",
+      "title": "SPIL is for ages 13 and up.",
+      "body": "Come back when you're 13. We'll keep the scores warm."
+    },
+    "ageRestricted": {
+      "sticker": "18+ room",
+      "title": "This room is playing an 18+ pack.",
+      "body": "Ask the host to switch packs, or start your own room."
     }
   },
   "pages": {
@@ -431,7 +451,7 @@
       "title": "Privacy",
       "lede": "Short version: only your score is shared. Your answers stay yours.",
       "h1": "What we collect",
-      "p1": "A nickname, the avatar you pick, your answers and your guesses, all tied to one room. No email, no phone number, no contacts.",
+      "p1": "A nickname, the avatar you pick, your age group (13 to 15, 16 to 17 or 18+), your answers and your guesses, all tied to one room. No email, no phone number, no contacts, and never your exact age.",
       "h2": "Who sees what",
       "p2": "Other players see your nickname, avatar, score, label and awards. Your yes and no answers are never shown unless you switch on Spill Mode, and then only to that room.",
       "h3": "Question stats",
@@ -622,16 +642,15 @@
       "cols": {
         "pack": "Pack",
         "questions": "Questions",
-        "rating": "Rating",
+        "minAge": "Min age",
         "status": "Status",
         "games": "Games",
         "updated": "Updated"
       },
-      "rating": {
-        "all": "All",
-        "spicy": "18+",
-        "explicit": "18+ Explicit",
-        "intense": "18+ Intense"
+      "minAgeShort": {
+        "13": "13+",
+        "16": "16+",
+        "18": "18+"
       },
       "questionsAction": "Questions",
       "edit": "Edit",
@@ -647,12 +666,12 @@
         "raised": "Paper",
         "inverse": "Ink"
       },
-      "ratingLabel": "Rating (sets the tile colour: 18+ packs are black)",
-      "ratings": {
-        "all": "Everyone",
-        "spicy": "18+ Spicy (age check)",
-        "explicit": "18+ Explicit (age check)",
-        "intense": "18+ Intense (age check)"
+      "minAgeLabel": "Minimum age",
+      "minAgeHint": "Players younger than this never see the pack. 18+ packs get the black tile.",
+      "minAges": {
+        "13": "13+ (everyone)",
+        "16": "16+",
+        "18": "18+ (adult)"
       },
       "region": "Region",
       "regions": {
@@ -843,11 +862,14 @@
       "minPlayersHint": "The host cannot start below this. 2 to 20.",
       "maxPlayers": "Maximum players per room",
       "maxPlayersHint": "Joining is blocked once a room is full. Up to 20.",
+      "ageLockHours": "Age lock (hours)",
+      "ageLockHoursHint": "How long a player under 18 cannot change the age they gave on their phone. 1 to 168.",
       "save": "Save settings",
       "saved": "Settings saved. New rooms use them.",
       "rangeQuestions": "Questions per game must be between 5 and 100.",
       "rangeMin": "Minimum players must be between 2 and 20.",
       "rangeMax": "Maximum players must be between the minimum and 20.",
+      "rangeAgeLock": "Age lock must be between 1 and 168 hours.",
       "flags": "Feature flags",
       "flagSaved": "{name} is {on, select, yes {on} other {off}}.",
       "flag": {

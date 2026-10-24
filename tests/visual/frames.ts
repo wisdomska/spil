@@ -22,7 +22,15 @@ const PUBLIC_ROOM = (pack: "classic" | "afterdark", status = "lobby", playerCoun
   playerCount,
   maxPlayers: 12,
   joined: false,
+  minAge: pack === "classic" ? 13 : 18,
+  ageLockHours: 24,
 });
+
+/** SPIL-02: the age screen comes first; frames after it start with an 18+ band on the device. */
+const withAge = (page: Page) =>
+  page.addInitScript(() =>
+    localStorage.setItem("spil.age", JSON.stringify({ band: "18_plus", setAt: Date.now() })),
+  );
 
 /** Answers the public room lookup without touching the database, so join states are exact. */
 async function mockRoom(page: Page, body: unknown, status = 200) {
@@ -48,6 +56,7 @@ const joinError = (code: string, error: string, room?: unknown) => async (page: 
 
 const profile = (pack: "classic" | "afterdark", error = false) => async (page: Page) => {
   await mockRoom(page, PUBLIC_ROOM(pack, "lobby", 0));
+  await withAge(page);
   await page.goto("/r/K7QX/me");
   await page.getByLabel("Nickname").fill(error ? "A" : "Ama");
   await page.getByRole("radio", { name: pack === "afterdark" ? "Avatar 17" : "Avatar 1", exact: true }).click();
@@ -76,7 +85,14 @@ const MOBILE: Array<[string, string, (page: Page) => Promise<void>]> = [
   ["Join, expired", "join-expired", joinError("OLD1", "ROOM_EXPIRED")],
   ["Join, room full", "join-full", joinError("FULL", "", { ...PUBLIC_ROOM("classic", "lobby", 12) })],
   ["Join, already started", "join-started", joinError("LATE", "", { ...PUBLIC_ROOM("classic", "answering", 5) })],
-  ["Pack picker", "packs", route("/create")],
+  [
+    "Pack picker",
+    "packs",
+    async (page) => {
+      await withAge(page);
+      await route("/create")(page);
+    },
+  ],
   ["Profile setup", "profile", profile("classic")],
   ["Profile, nickname error", "profile-error", profile("classic", true)],
   ["Profile, After Dark age check", "profile-spicy", profile("afterdark")],

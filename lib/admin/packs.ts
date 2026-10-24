@@ -11,8 +11,7 @@ type PackRow = {
   blurb: string;
   icon: string;
   tone: AdminPack["tone"];
-  is_adult: boolean;
-  heat: AdminPack["heat"];
+  min_age: number;
   region: string | null;
   status: AdminPack["status"];
   sort_order: number;
@@ -24,8 +23,7 @@ export const packSnapshot = (p: PackRow) => ({
   blurb: p.blurb,
   icon: p.icon,
   tone: p.tone,
-  isAdult: p.is_adult,
-  heat: p.heat,
+  minAge: p.min_age as AdminPack["minAge"],
   region: p.region,
   status: p.status,
   sortOrder: p.sort_order,

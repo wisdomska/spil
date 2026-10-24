@@ -260,7 +260,7 @@ describe("Guessing and results", () => {
 
 describe("Rematch", () => {
   function afterRematch(nextPack: string) {
-    const { packs, questions } = content();
+    const { questions } = content();
     const round = playedRound();
     // Answers and guesses are stored per round, so the new round starts with none.
     const store = round.players.map((p) => ({
@@ -271,11 +271,9 @@ describe("Rematch", () => {
     }));
     const players: RematchPlayer[] = round.players.map((p) => ({
       ...p,
-      ageConfirmed: true,
       spillMode: p.spillMode,
     }));
-    const pack = packs.find((p) => p.id === nextPack)!;
-    const next = rematch({ status: "revealed", round: 1 }, players, { packIsAdult: pack.isAdult });
+    const next = rematch({ status: "revealed", round: 1 }, players);
     const qids = drawQuestions(questions, nextPack, QUESTIONS_PER_GAME, seededRng(2)).map(
       (q) => q.id,
     );
@@ -290,11 +288,6 @@ describe("Rematch", () => {
     expect(
       next.players.every((p) => p.answersSubmittedAt === null && p.guessesSubmittedAt === null),
     ).toBe(true);
-  });
-
-  it("Switching to an 18+ pack leaves players unconfirmed", () => {
-    const { next } = afterRematch("sheets");
-    expect(next.players.filter((p) => !p.ageConfirmed)).toHaveLength(3);
   });
 
   it("New questions come from the new pack", () => {
