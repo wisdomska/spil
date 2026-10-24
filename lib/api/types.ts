@@ -9,6 +9,8 @@ import type {
   PlayerStatus,
   RoomStatus,
   Crowned,
+  FlagQuestion,
+  LoneFlag,
   HotTake,
   LikelyQuestion,
   PackFormat,
@@ -167,6 +169,10 @@ export type RoomState = {
     likely?: LikelyQuestion[];
     /** Most Likely To: each player's strongest pick, by player id. */
     crowned?: Record<string, Crowned>;
+    /** Red Flag, Green Flag: each scenario's split once 3 or more answered. */
+    flags?: FlagQuestion[];
+    /** Red Flag, Green Flag: the scenario each player was most outnumbered on, by player id. */
+    lone?: Record<string, LoneFlag>;
     /** Exact guesses, for the reveal's Bullseye stamps (SPIL-09, SPIL-11). */
     exact: Array<{ guesserId: string; targetId: string }>;
     awards: AwardRow[];

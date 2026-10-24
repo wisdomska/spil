@@ -26,6 +26,7 @@ import {
   spillGroups,
   verdictBand,
   type GroupStep,
+  type FlagQuestion,
   type LikelyQuestion,
   type PercentQuestion,
 } from "@/lib/game";
@@ -52,6 +53,8 @@ type Props = {
   average?: boolean;
   /** Most Likely To: one slide per prompt with the room's pick and the vote counts. */
   likely?: LikelyQuestion[];
+  /** Red Flag, Green Flag: one slide per scenario with the room's split. */
+  flags?: FlagQuestion[];
   /** Dev fixtures only: hold the stage at this many ms into the slide. */
   freezeAt?: number;
 };
@@ -77,6 +80,7 @@ export function RevealStage({
   percent,
   average = false,
   likely,
+  flags,
   freezeAt,
 }: Props) {
   const t = useTranslations("reveal");
@@ -90,10 +94,10 @@ export function RevealStage({
     () =>
       percent
         ? revealSlides(percent.length, awards.length, "question")
-        : likely
-          ? revealSlides(likely.length, awards.length, "question")
+        : likely || flags
+          ? revealSlides((likely ?? flags)!.length, awards.length, "question")
           : revealSlides(groups.length, awards.length),
-    [percent, likely, groups, awards],
+    [percent, likely, flags, groups, awards],
   );
   const slide = slides[Math.min(reveal.index, slides.length - 1)];
   const startedAt = Date.parse(reveal.at);
@@ -111,6 +115,7 @@ export function RevealStage({
   const group = slide?.kind === "group" ? groups[slide.group] : undefined;
   const question = slide?.kind === "question" ? percent?.[slide.question] : undefined;
   const prompt = slide?.kind === "question" ? likely?.[slide.question] : undefined;
+  const scenario = slide?.kind === "question" ? flags?.[slide.question] : undefined;
   // The vessel fills to the share of votes the room's pick got.
   const promptShare = prompt
     ? Math.round(((prompt.tally[0]?.count ?? 0) / Math.max(1, prompt.voters)) * 100)
@@ -121,9 +126,10 @@ export function RevealStage({
   useEffect(() => {
     if (!slide) return;
     lastStep.current = null;
-    const score = group?.score ?? question?.actual ?? (prompt ? promptShare : 0);
+    const score =
+      group?.score ?? question?.actual ?? (prompt ? promptShare : (scenario?.greenShare ?? 0));
     const at = (ms: number) => {
-      if (group || question || prompt) {
+      if (group || question || prompt || scenario) {
         const g = group ? groupStep(ms, topBeat) : questionStep(ms);
         count.set(
           g.step === "fill"
@@ -165,6 +171,7 @@ export function RevealStage({
     question,
     prompt,
     promptShare,
+    scenario,
     topBeat,
     minMs,
     startedAt,
@@ -203,12 +210,14 @@ export function RevealStage({
     slide.kind === "award"
       ? t("awardsCounter", { n: slide.award + 1, total: awards.length })
       : slide.kind === "question"
-        ? likely
-          ? t("promptCounter", { n: slide.question + 1, total: likely.length })
-          : t(average ? "takeCounter" : "questionCounter", {
-              n: slide.question + 1,
-              total: percent?.length ?? 0,
-            })
+        ? flags
+          ? t("scenarioCounter", { n: slide.question + 1, total: flags.length })
+          : likely
+            ? t("promptCounter", { n: slide.question + 1, total: likely.length })
+            : t(average ? "takeCounter" : "questionCounter", {
+                n: slide.question + 1,
+                total: percent?.length ?? 0,
+              })
         : t("counter", { n: slide.group + 1, total: groups.length });
 
   return (
@@ -387,6 +396,18 @@ export function RevealStage({
           stamped={stamped}
           reduced={reduced}
           height={desktop ? 300 : 220}
+        />
+      )}
+
+      {scenario && (
+        <FlagSlide
+          scenario={scenario}
+          count={count}
+          pct={pct}
+          step={step}
+          stamped={stamped}
+          reduced={reduced}
+          height={desktop ? 320 : 260}
         />
       )}
 
@@ -721,6 +742,83 @@ function LikelySlide({
       )}
       <span className="sr-only" aria-live="polite">
         {stamped ? t("announceLikely", { names, count: most, total: prompt.voters }) : ""}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * Red Flag, Green Flag: the scenario, the vessel filling to the green share, then the room's
+ * verdict stamped and the split. Never who swiped what.
+ */
+function FlagSlide({
+  scenario,
+  count,
+  pct,
+  step,
+  stamped,
+  reduced,
+  height,
+}: {
+  scenario: FlagQuestion;
+  count: MotionValue<number>;
+  pct: MotionValue<string>;
+  step: GroupStep;
+  stamped: boolean;
+  reduced: boolean;
+  height: number;
+}) {
+  const t = useTranslations("reveal");
+  const filling = step === "fill" || stamped;
+  const verdict =
+    scenario.verdict === "green"
+      ? t("flagGreen")
+      : scenario.verdict === "red"
+        ? t("flagRed")
+        : t("flagSplit");
+  return (
+    <div className="flex flex-1 flex-col gap-[18px]">
+      <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] text-text-muted">
+        {t("flagKicker")}
+      </span>
+      <h2 className="m-0 font-display text-[28px] leading-[1.05] font-extrabold tracking-[-.02em] text-balance">
+        {scenario.text}
+      </h2>
+      <div className="relative">
+        <Vessel
+          level={filling ? count : 0}
+          num={filling ? pct : ""}
+          height={height}
+          fontSize={88}
+          radius={24}
+        />
+        {stamped && (
+          <span
+            className={cn(
+              "absolute bottom-[-14px] left-[-6px] rounded-pill border-4 border-sticker-edge px-3.5 py-2 font-display text-[22px] leading-none font-extrabold shadow-[0_0_0_1.5px_var(--sticker-ring)]",
+              scenario.verdict === "green"
+                ? "bg-accent text-on-accent"
+                : "bg-inverse text-on-inverse",
+              reduced ? "animate-[fade_300ms_both]" : "animate-slap",
+            )}
+            style={{ rotate: "-4deg" }}
+          >
+            {verdict}
+          </span>
+        )}
+      </div>
+      {step === "verdict" && (
+        <p
+          className={cn(
+            "m-0 mt-2 font-mono text-[15px] leading-none font-medium text-text-muted",
+            reduced ? "animate-[fade_300ms_both]" : "animate-[rise_300ms_var(--ease-out)_both]",
+          )}
+        >
+          {t("flagSplitLine", { green: scenario.greenShare, red: 100 - scenario.greenShare })}
+        </p>
+      )}
+      <span className="sr-only" aria-live="polite">
+        {stamped ? t("announceFlag", { verdict, green: scenario.greenShare }) : ""}
       </span>
     </div>
   );

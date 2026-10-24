@@ -162,6 +162,7 @@ export function RoomApp({ code }: { code: string }) {
             : undefined
         }
         likely={state.room.mode === "most_likely" ? state.results.likely : undefined}
+        flags={state.room.mode === "red_green" ? state.results.flags : undefined}
         average={state.room.mode === "hot_takes"}
         reveal={state.room.reveal!}
         isHost={state.me.isHost}
@@ -176,8 +177,9 @@ export function RoomApp({ code }: { code: string }) {
   const results = state.results?.rows ?? [];
   const hot = state.room.mode === "hot_takes";
   const likely = state.room.mode === "most_likely";
+  const flags = state.room.mode === "red_green";
   // Modes without a Spill Score show points for reading the room in the roster.
-  const pointsOnly = hot || likely;
+  const pointsOnly = hot || likely || flags;
   const statusFor = (id: string) => {
     const p = state.players.find((x) => x.id === id);
     if (!p) return "";
@@ -279,6 +281,7 @@ export function RoomApp({ code }: { code: string }) {
           <QuestionView
             key={state.room.round}
             state={state}
+            flags={flags}
             onDone={() => actions.submitAnswers.mutateAsync(undefined).catch(fail)}
           />
         )}

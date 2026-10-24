@@ -36,7 +36,8 @@
     "packLine": "{pack}, {count} questions",
     "quickCheck": "Quick check",
     "statements": "{count} statements",
-    "prompts": "{count} prompts"
+    "prompts": "{count} prompts",
+    "scenarios": "{count} scenarios"
   },
   "age": {
     "kickerHost": "STEP 1 OF 2",
@@ -260,7 +261,14 @@
     "voteAsk": "Who's most likely to",
     "voteHint": "Votes are secret. Pick anyone but yourself.",
     "voteAria": "Prompt {n} of {total}. Most likely to {text}",
-    "likelyPrefix": "Most likely to"
+    "likelyPrefix": "Most likely to",
+    "flagPrefix": "Green flag or red flag?",
+    "flagAria": "Scenario {n} of {total}. {text}",
+    "green": "Green flag",
+    "red": "Red flag",
+    "stampGreen": "GREEN",
+    "stampRed": "RED",
+    "flagSwipe": "Swipe right for green"
   },
   "report": {
     "title": "Report this question",
@@ -365,7 +373,14 @@
     "likelyPick": "{count} of {total} votes",
     "likelyTie": "Tied on {count} of {total} votes",
     "votes": "{count, plural, one {# vote} other {# votes}}",
-    "announceLikely": "{names}, with {count} of {total} votes."
+    "announceLikely": "{names}, with {count} of {total} votes.",
+    "scenarioCounter": "SCENARIO {n} OF {total}",
+    "flagKicker": "THE ROOM SAYS",
+    "flagGreen": "Green flag",
+    "flagRed": "Red flag",
+    "flagSplit": "Split down the middle",
+    "flagSplitLine": "{green}% green, {red}% red",
+    "announceFlag": "{verdict}. {green} percent said green."
   },
   "results": {
     "headline": "You're a",
@@ -419,7 +434,14 @@
     "crownedNone": "The room did not pick you this round.",
     "likelyPoints": "You voted with the room for {points} points.",
     "likelyStatsNote": "Vote counts only. Nobody sees who voted for whom.",
-    "likelyStatsPick": "Room's pick: {names} ({count} of {total})"
+    "likelyStatsPick": "Room's pick: {names} ({count} of {total})",
+    "loneKicker": "YOUR LONE FLAG",
+    "loneLine": "You said {side}. {against}% of the room said {other}.",
+    "loneNone": "You were in step with the room on every scenario.",
+    "flagPoints": "You were in step with the room for {points} points.",
+    "flagStatsNote": "Splits only. Nobody sees who swiped what.",
+    "sideGreen": "green",
+    "sideRed": "red"
   },
   "share": {
     "title": "Your card",
@@ -1099,6 +1121,10 @@
     "most_likely": {
       "name": "Most Likely To",
       "body": "Vote for who in the room would do it. Votes stay secret."
+    },
+    "red_green": {
+      "name": "Red Flag, Green Flag",
+      "body": "Swipe friendship and crush scenarios green or red, then see the split."
     }
   }
 }

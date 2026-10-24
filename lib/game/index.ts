@@ -12,3 +12,4 @@ export * from "./reveal";
 export * from "./modes";
 export * from "./percentage";
 export * from "./mostLikely";
+export * from "./flags";

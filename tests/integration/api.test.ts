@@ -276,7 +276,7 @@ d("host tools", () => {
     const notBuilt = await host.call("POST", "/rooms", {
       ageBand: "18_plus",
       packId: "classic",
-      mode: "red_green",
+      mode: "rank_room",
     });
     expect(code(notBuilt)).toBe("MODE_UNAVAILABLE");
 
@@ -470,6 +470,45 @@ d("host tools", () => {
     // Who voted for whom is never sent.
     expect(JSON.stringify(revealed.body)).not.toContain("myVotes");
     expect(JSON.stringify(revealed.body.results.likely)).not.toContain(aId);
+  });
+
+  it("Red Flag, Green Flag: green or red swipes, no guessing, splits only", async () => {
+    const host = await anonPlayer();
+    const wrongPack = await host.call("POST", "/rooms", {
+      ageBand: "18_plus",
+      packId: "classic",
+      mode: "red_green",
+    });
+    expect(code(wrongPack)).toBe("PACK_NOT_ALLOWED");
+
+    const room = await fullRoom(3, "red_green", 5, "red_green");
+    const [a, b, c] = room.players as [Player, Player, Player];
+    expect((await a.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);
+    const state = await a.call("GET", `/rooms/${room.roomCode}/state`);
+    const rating = await a.call("PUT", `/rooms/${room.roomCode}/ratings`, {
+      ratings: [{ questionId: state.body.questions[0].id, value: 50 }],
+    });
+    expect(code(rating)).toBe("WRONG_PHASE");
+
+    // Green, green, red on every scenario: 67% green.
+    await answerAll(a, room.roomCode, () => "yes");
+    await answerAll(b, room.roomCode, () => "yes");
+    const last = await answerAll(c, room.roomCode, () => "no");
+    expect(last.status).toBe(200);
+    const ready = await a.call("GET", `/rooms/${room.roomCode}/state`);
+    expect(ready.body.room.status).toBe("ready");
+
+    const revealed = await a.call("POST", `/rooms/${room.roomCode}/advance`, { from: "ready" });
+    const flags = revealed.body.results.flags;
+    expect(flags).toHaveLength(5);
+    expect(flags[0]).toMatchObject({ green: 2, red: 1, greenShare: 67, verdict: "green" });
+    const cId = (await c.call("GET", `/rooms/${room.roomCode}/state`)).body.me.id;
+    expect(revealed.body.results.lone[cId]).toMatchObject({ side: "red", against: 67 });
+    expect(
+      revealed.body.results.rows.find((r: { playerId: string }) => r.playerId === cId),
+    ).toMatchObject({ mindReader: 0 });
+    expect(revealed.body.results.rows[0].mindReader).toBe(50);
+    expect(revealed.body.room.reveal.total).toBe(5 + revealed.body.results.awards.length);
   });
 
   it("two players are enough to start", async () => {

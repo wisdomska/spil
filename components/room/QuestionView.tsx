@@ -36,11 +36,13 @@ const OUT_EASE = [0.23, 1, 0.32, 1] as const;
 type Props = {
   state: RoomState;
   onDone: () => Promise<unknown>;
+  /** Red Flag, Green Flag: the same swipe, read as green (yes) or red (no). */
+  flags?: boolean;
   /** Dev fixtures only: show a mid-drag card, saving or offline. */
   preview?: { dragX?: number; saving?: boolean; offline?: boolean };
 };
 
-export function QuestionView({ state, onDone, preview }: Props) {
+export function QuestionView({ state, onDone, flags = false, preview }: Props) {
   const t = useTranslations("question");
   const tr = useTranslations("report");
   const tt = useTranslations("toast");
@@ -244,7 +246,7 @@ export function QuestionView({ state, onDone, preview }: Props) {
         <motion.div
           key={`${q.id}-${rise}`}
           role="group"
-          aria-label={t("aria", { n: qi + 1, total, text: q.text })}
+          aria-label={t(flags ? "flagAria" : "aria", { n: qi + 1, total, text: q.text })}
           drag={reduced || finishing ? false : "x"}
           dragSnapToOrigin={false}
           dragElastic={1}
@@ -261,18 +263,18 @@ export function QuestionView({ state, onDone, preview }: Props) {
             style={{ opacity: yesOpacity, rotate: -10 }}
             className="pointer-events-none absolute top-[18px] left-[18px] rounded-pill border-4 border-sticker-edge bg-accent px-3.5 py-2 font-display text-[22px] leading-none font-extrabold text-on-accent shadow-[0_0_0_1.5px_var(--sticker-ring)]"
           >
-            {t("stampYes")}
+            {t(flags ? "stampGreen" : "stampYes")}
           </motion.span>
           <motion.span
             aria-hidden
             style={{ opacity: noOpacity, rotate: 9 }}
             className="pointer-events-none absolute top-[18px] right-[18px] rounded-pill border-4 border-sticker-edge bg-inverse px-3.5 py-2 font-display text-[22px] leading-none font-extrabold text-on-inverse shadow-[0_0_0_1.5px_var(--sticker-ring)]"
           >
-            {t("stampNo")}
+            {t(flags ? "stampRed" : "stampNo")}
           </motion.span>
           <div className="grid gap-3">
             <span className="text-[15px] leading-none font-semibold text-text-muted">
-              {t("haveYouEver")}
+              {t(flags ? "flagPrefix" : "haveYouEver")}
             </span>
             <span className="font-display text-question leading-[1.05] font-extrabold tracking-[-.02em] text-pretty">
               {q.text}
@@ -282,7 +284,7 @@ export function QuestionView({ state, onDone, preview }: Props) {
             <span>{t("code", { n: qi + 1 })}</span>
             <span className="flex items-center gap-1.5 whitespace-nowrap">
               <HandSwipeRightIcon size={18} aria-hidden />
-              {t("swipe")}
+              {t(flags ? "flagSwipe" : "swipe")}
             </span>
           </div>
         </motion.div>
@@ -295,7 +297,7 @@ export function QuestionView({ state, onDone, preview }: Props) {
           aria-disabled={finishing || undefined}
           className={`${ANS} border-text bg-transparent text-text`}
         >
-          {t("no")}
+          {t(flags ? "red" : "no")}
         </button>
         <button
           type="button"
@@ -303,7 +305,7 @@ export function QuestionView({ state, onDone, preview }: Props) {
           aria-disabled={finishing || undefined}
           className={`${ANS} border-accent bg-accent text-on-accent`}
         >
-          {t("yes")}
+          {t(flags ? "green" : "yes")}
         </button>
       </div>
       <div className="flex min-h-[22px] items-center justify-between gap-3">
@@ -329,7 +331,7 @@ export function QuestionView({ state, onDone, preview }: Props) {
         open={report}
         onOpenChange={setReport}
         title={tr("title")}
-        description={`${t("haveYouEver")} ${q.text}`}
+        description={flags ? q.text : `${t("haveYouEver")} ${q.text}`}
       >
         <div className="grid gap-2">
           {(["tooPersonal", "offensive", "typo", "notForGroup"] as const).map((k) => (

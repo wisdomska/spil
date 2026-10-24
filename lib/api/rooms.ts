@@ -6,6 +6,9 @@ import {
   mostLikelyResults,
   ratesStatements,
   votesForPlayers,
+  flagResults,
+  skipsGuessing,
+  swipesFlags,
   isMode,
   modeMinPlayers,
   roomPercentResults,
@@ -336,7 +339,12 @@ export async function finalize(room: RoomRow, players: PlayerRow[]) {
   const input = await resultsInput(room, players);
   const percent = readResults(room, input);
   const results =
-    percent ?? (votesForPlayers(roomMode(room)) ? mostLikelyResults(input) : computeResults(input));
+    percent ??
+    (votesForPlayers(roomMode(room))
+      ? mostLikelyResults(input)
+      : swipesFlags(roomMode(room))
+        ? flagResults(input)
+        : computeResults(input));
   if (percent) {
     // Keep each guess's points on its input, so this round never changes later.
     const updates = percent.percentQuestions.flatMap((q) =>
@@ -405,8 +413,9 @@ export async function advancePhaseIfReady(room: RoomRow, players: PlayerRow[]): 
   const questionTargets =
     room.status === "guessing" && guessesQuestions(roomMode(room))
       ? (await percentTargets(room, players)).length
-      : // Most Likely To has nothing to guess: everyone locks and the room goes to Lights down.
-        room.status === "guessing" && votesForPlayers(roomMode(room))
+      : // Most Likely To and Red Flag, Green Flag have nothing to guess: everyone locks and the
+        // room goes to Lights down.
+        room.status === "guessing" && skipsGuessing(roomMode(room))
         ? 0
         : undefined;
   const plan = planAdvance(room.status, players.map(toPhase), { questionTargets });
@@ -553,7 +562,7 @@ export async function autoplayBots(room: RoomRow) {
           await db().from("players").update({ guesses_submitted_at: now }).eq("id", bot.id);
         }),
     );
-  } else if (room.status === "guessing" && !votesForPlayers(roomMode(room))) {
+  } else if (room.status === "guessing" && !skipsGuessing(roomMode(room))) {
     const targets = players.filter((p) => p.status === "active" || p.status === "sat_out");
     await Promise.all(
       bots
@@ -673,7 +682,7 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       hideNameOnCard: me.hide_name_on_card,
       // Read the room modes: the question ids this player guesses about; classic: player ids.
       targets:
-        room.status === "guessing" && !votesForPlayers(roomMode(room))
+        room.status === "guessing" && !skipsGuessing(roomMode(room))
           ? guessesQuestions(roomMode(room))
             ? (await percentTargets(room, players)).map((q) => q.id)
             : guessTargets(players.map(toPhase), me.id).map((p) => p.id)
@@ -741,13 +750,18 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     const read = readResults(room, input);
     const percent: PercentQuestion[] = read?.percentQuestions ?? [];
     const likely = votesForPlayers(roomMode(room)) ? mostLikelyResults(input) : null;
+    const flags = swipesFlags(roomMode(room)) ? flagResults(input) : null;
     state.room.reveal = {
       index: room.reveal_index,
       at: room.reveal_at ?? room.revealed_at ?? new Date().toISOString(),
       total: guessesQuestions(roomMode(room))
         ? revealSlides(percent.length, awardRows.length, "question").length
-        : likely
-          ? revealSlides(likely.likely.length, awardRows.length, "question").length
+        : likely || flags
+          ? revealSlides(
+              likely?.likely.length ?? flags?.flags.length ?? 0,
+              awardRows.length,
+              "question",
+            ).length
           : revealSlides(
               spillGroups((rows ?? []).map((r) => ({ score: r.spill_score }))).length,
               awardRows.length,
@@ -761,6 +775,9 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       // Most Likely To: vote counts per prompt (never who voted for whom) and each player's pick.
       likely: likely?.likely,
       crowned: likely?.crowned,
+      // Red Flag, Green Flag: each scenario's split, and each player's most outnumbered swipe.
+      flags: flags?.flags,
+      lone: flags?.lone,
       exact: computed.guessPoints
         .filter((g) => g.points - (g.closest ? CLOSEST_BONUS : 0) === 10)
         .map((g) => ({ guesserId: g.guesserId, targetId: g.targetId })),
@@ -819,6 +836,10 @@ export async function revealPlan(room: RoomRow, players: PlayerRow[]) {
   if (votesForPlayers(roomMode(room))) {
     const prompts = mostLikelyResults(await resultsInput(room, players)).likely.length;
     return { groups: prompts, slides: revealSlides(prompts, awards, "question") };
+  }
+  if (swipesFlags(roomMode(room))) {
+    const scenarios = flagResults(await resultsInput(room, players)).flags.length;
+    return { groups: scenarios, slides: revealSlides(scenarios, awards, "question") };
   }
   const groups = spillGroups((rows ?? []).map((r) => ({ score: r.spill_score }))).length;
   return { groups, slides: revealSlides(groups, awards) };

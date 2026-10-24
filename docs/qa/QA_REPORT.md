@@ -276,3 +276,15 @@ Notes:
 - [x] Test players vote too.
 - Tests: unit `tests/unit/game/mostLikely.test.ts`, API (pack mismatch, self vote refused, vote replaced, no guessing, tallies, crowned, points, no voter ids), e2e `tests/e2e/most-likely.spec.ts` (three phones end to end). pgTAP `15_most_likely_test.sql`. Screens checked at 375 wide: vote, reveal and results.
 - Migration 20261024001900, applied to staging; production at the Batch 1 release.
+
+### Red Flag, Green Flag (Batch 1, game mode 4)
+
+- [x] /create offers Red Flag, Green Flag; it lists only scenario packs (Red Flag, Green Flag, 36 friendship and crush scenarios, 13+). Tiles count scenarios.
+- [x] Needs 3 players (the plan said 2; with 2 a split would give the other player's answer away, so it follows the 3 answer privacy rule like the other modes).
+- [x] Answering is the yes or no swipe, read as Green flag (right, yes) or Red flag (left, no), with GREEN and RED stamps. Offline queueing, skips and reporting work as in classic.
+- [x] No guessing phase: the room goes straight to Lights down after the last swipe.
+- [x] Points: 10 for every swipe on the room's side (a strict majority); an even split earns nothing. Only the Mind Reader and Clueless awards.
+- [x] Reveal: one slide per scenario 3 or more answered: the vessel fills to the green share, a Green flag, Red flag or Split down the middle sticker, then "67% green, 33% red". Never who swiped what.
+- [x] Results lead with "Your lone flag", the scenario you were most outnumbered on, shown only to you, or "You were in step with the room on every scenario." No Spill Score labels, Spill Mode, share card or points explainer; the Questions tab shows each split.
+- Tests: unit `tests/unit/game/flags.test.ts`, API (pack mismatch, ratings refused, no guessing, splits, lone flag, points), e2e `tests/e2e/red-green.spec.ts` (three phones end to end). pgTAP `16_red_green_test.sql`. Screens checked at 375 wide: swipe, reveal and results.
+- Migration 20261024002000, applied to staging; production at the Batch 1 release.

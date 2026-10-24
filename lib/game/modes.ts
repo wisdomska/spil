@@ -33,7 +33,8 @@ export const MODE_RULES: Readonly<Record<Mode, ModeRule>> = {
   hot_takes: { minPlayers: 3, available: true, adultOnly: false },
   // With 2 players every vote would name the only other player.
   most_likely: { minPlayers: 3, available: true, adultOnly: false },
-  red_green: { minPlayers: 2, available: false, adultOnly: false },
+  // A split of 2 answers would give the other player's answer away, so 3 like the others.
+  red_green: { minPlayers: 3, available: true, adultOnly: false },
   rank_room: { minPlayers: 3, available: false, adultOnly: false },
   imposter: { minPlayers: 3, available: false, adultOnly: false },
   two_truths: { minPlayers: 3, available: false, adultOnly: false },
@@ -65,15 +66,31 @@ export function ratesStatements(mode: Mode): boolean {
   return mode === "hot_takes";
 }
 
-export type PackFormat = "yes_no" | "statements" | "prompts";
+export type PackFormat = "yes_no" | "statements" | "prompts" | "flags";
 
 /** Most Likely To: players vote for a player on each prompt; there is no guessing phase. */
 export function votesForPlayers(mode: Mode): boolean {
   return mode === "most_likely";
 }
 
-/** The kind of pack a mode plays: statements, prompts, or yes or no questions. */
+/** Red Flag, Green Flag: swipe scenarios green or red (stored as yes or no answers). */
+export function swipesFlags(mode: Mode): boolean {
+  return mode === "red_green";
+}
+
+/** Modes with no guessing phase: the room goes from answering straight to Lights down. */
+export function skipsGuessing(mode: Mode): boolean {
+  return votesForPlayers(mode) || swipesFlags(mode);
+}
+
+/** Modes that answer with the yes or no swipe (Red Flag, Green Flag reads it as green or red). */
+export function answersYesNo(mode: Mode): boolean {
+  return modeFormat(mode) === "yes_no" || swipesFlags(mode);
+}
+
+/** The kind of pack a mode plays: statements, prompts, scenarios, or yes or no questions. */
 export function modeFormat(mode: Mode): PackFormat {
   if (ratesStatements(mode)) return "statements";
+  if (swipesFlags(mode)) return "flags";
   return votesForPlayers(mode) ? "prompts" : "yes_no";
 }
