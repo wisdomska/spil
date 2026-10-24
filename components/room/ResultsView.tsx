@@ -56,6 +56,9 @@ export function ResultsView({
   const results = state.results;
   const host = state.players.find((p) => p.isHost);
   const hot = state.room.mode === "hot_takes";
+  const likely = state.room.mode === "most_likely";
+  // Modes without a Spill Score: no labels, Spill Mode or share card.
+  const noSpill = hot || likely;
 
   const rows = rankByGuessing(results?.rows ?? []);
   const ranks = rows.map((r) => r.rank);
@@ -78,7 +81,7 @@ export function ResultsView({
   // Keep this game's card on the device so the landing page can offer it again.
   useEffect(() => {
     // The saved card is about a Spill Score, which Hot Takes does not have.
-    if (!meRow || hot) return;
+    if (!meRow || noSpill) return;
     saveLastGame({
       room: state.room.code,
       at: timestamp(),
@@ -99,9 +102,12 @@ export function ResultsView({
   const pct = state.room.mode !== "classic";
   const solo = (meRow?.guessedBy ?? 0) === 0;
   // Room Percentage: nobody guesses about players; the points are for reading the room.
-  const anyGuesses = pct
-    ? (results.percent ?? []).some((q) => q.guesses.length > 0)
-    : rows.some((r) => (r.guessedBy ?? 0) > 0);
+  const anyGuesses =
+    state.room.mode === "most_likely"
+      ? (results.likely ?? []).length > 0
+      : pct
+        ? (results.percent ?? []).some((q) => q.guesses.length > 0)
+        : rows.some((r) => (r.guessedBy ?? 0) > 0);
   const band = verdictBand(gap);
   const verdict =
     band === "well" ? t("verdictWell") : band === "little" ? t("verdictLittle") : t("verdictNone");
@@ -109,7 +115,13 @@ export function ResultsView({
 
   return (
     <div className="flex flex-col gap-[22px]">
-      {hot ? (
+      {likely ? (
+        <CrownedHeader
+          crowned={results.crowned?.[state.me.id]}
+          points={meRow?.mindReader ?? 0}
+          anyGuesses={anyGuesses}
+        />
+      ) : hot ? (
         <HotTakeHeader
           take={results.hottest?.[state.me.id]}
           points={meRow?.mindReader ?? 0}
@@ -204,7 +216,7 @@ export function ResultsView({
                     <span className="font-display text-[19px] leading-none font-bold">
                       {r.nickname}
                     </span>
-                    {!hot && (
+                    {!noSpill && (
                       <span
                         style={labelStickerStyle(
                           labelById(r.label).name as LabelName,
@@ -216,7 +228,7 @@ export function ResultsView({
                       </span>
                     )}
                   </div>
-                  {!hot && (
+                  {!noSpill && (
                     <span className="font-mono text-[13px] leading-[1.2] font-medium text-text-muted">
                       {!pct && (r.guessedBy ?? 0) > 0
                         ? t("sub", { score: r.score, guess: r.avgGuessAbout })
@@ -237,7 +249,7 @@ export function ResultsView({
               </li>
             ))}
           </ol>
-          {anyGuesses && (
+          {anyGuesses && !likely && (
             <button
               type="button"
               onClick={() => setExplain(true)}
@@ -278,7 +290,9 @@ export function ResultsView({
           </div>
         </TabPanel>
         <TabPanel value="questions" className="outline-none">
-          {hot ? (
+          {likely ? (
+            <LikelyStats likely={results.likely ?? []} rows={rows} />
+          ) : hot ? (
             <HotStats
               percent={results.percent ?? []}
               note={t("hotStatsNote")}
@@ -325,7 +339,7 @@ export function ResultsView({
         </TabPanel>
       </SegmentedTabs>
 
-      {!hot && (
+      {!noSpill && (
         <SwitchRow
           checked={state.me.spillMode}
           onCheckedChange={(on) => {
@@ -338,7 +352,7 @@ export function ResultsView({
       )}
 
       <div className="flex gap-2.5 pb-2">
-        {!hot && (
+        {!noSpill && (
           <button
             type="button"
             onClick={() => setShare(true)}
@@ -465,6 +479,87 @@ function HotStats({
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+/** Most Likely To: the prompt the room picked you for most strongly, and your points. */
+function CrownedHeader({
+  crowned,
+  points,
+  anyGuesses,
+}: {
+  crowned: { text: string; count: number; voters: number } | undefined;
+  points: number;
+  anyGuesses: boolean;
+}) {
+  const t = useTranslations("results");
+  const share = crowned ? Math.round((crowned.count / Math.max(1, crowned.voters)) * 100) : 0;
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_108px] items-end gap-[18px]">
+      <div className="grid gap-2.5">
+        <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] text-text-muted">
+          {t("crownedKicker")}
+        </span>
+        <h1 className="m-0 font-display text-[30px] leading-[1.02] font-extrabold tracking-display text-balance">
+          {crowned ? crowned.text : t("crownedNone")}
+        </h1>
+        <p className="m-0 text-[16px] leading-[1.45] text-text-muted">
+          {crowned && t("crownedLine", { count: crowned.count, total: crowned.voters })}{" "}
+          {anyGuesses && t("likelyPoints", { points })}
+        </p>
+      </div>
+      {crowned && <Vessel level={share} num={`${share}%`} height={136} fontSize={44} radius={18} />}
+    </div>
+  );
+}
+
+/** Most Likely To questions tab: each prompt's pick and counts, never who voted for whom. */
+function LikelyStats({
+  likely,
+  rows,
+}: {
+  likely: Array<{
+    questionId: string;
+    text: string;
+    voters: number;
+    top: string[];
+    tally: Array<{ playerId: string; count: number }>;
+  }>;
+  rows: Array<{ playerId: string; nickname: string }>;
+}) {
+  const t = useTranslations("results");
+  const tq = useTranslations("question");
+  const name = (id: string) => rows.find((r) => r.playerId === id)?.nickname ?? "";
+  return (
+    <div className="grid gap-4">
+      <p className="m-0 text-[14px] leading-[1.45] text-text-muted">{t("likelyStatsNote")}</p>
+      {likely.length === 0 && <p className="m-0 text-[15px] text-text-muted">{t("statsEmpty")}</p>}
+      {likely.map((q) => {
+        const most = q.tally[0]?.count ?? 0;
+        return (
+          <div key={q.questionId} className="grid gap-2 border-b border-line pb-4">
+            <span className="font-display text-[18px] leading-[1.2] font-bold">
+              {tq("likelyPrefix")} {q.text}
+            </span>
+            <div className="flex items-center gap-3">
+              <div className="h-1.5 flex-1 rounded-pill bg-surface-raised">
+                <div
+                  className="h-1.5 rounded-pill bg-text"
+                  style={{ width: `${(most / Math.max(1, q.voters)) * 100}%` }}
+                />
+              </div>
+            </div>
+            <span className="text-[14px] leading-[1.3] font-medium text-text-muted">
+              {t("likelyStatsPick", {
+                names: q.top.map(name).join(", "),
+                count: most,
+                total: q.voters,
+              })}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }

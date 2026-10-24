@@ -11,3 +11,4 @@ export * from "./age";
 export * from "./reveal";
 export * from "./modes";
 export * from "./percentage";
+export * from "./mostLikely";

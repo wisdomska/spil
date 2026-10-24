@@ -2,7 +2,6 @@ import { codeOf, requireUser, type CodeParams } from "@/lib/api/auth";
 import { ApiError, fromDbError } from "@/lib/api/errors";
 import { readBody, route } from "@/lib/api/handler";
 import { isScoredPlayer, requireMember, requirePhase, roomMode } from "@/lib/api/rooms";
-import { guessesQuestions } from "@/lib/game";
 import { rateLimit } from "@/lib/ratelimit";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { putGuesses } from "@/lib/validation/schemas";
@@ -15,8 +14,8 @@ export const PUT = route<CodeParams>(async (request, ctx) => {
   const room = await requireMember(code, userId);
   await rateLimit("guesses", room.me.id);
   requirePhase(room.room, "guessing");
-  // Read the room modes guess one number per question (PUT /percent), never about players.
-  if (guessesQuestions(roomMode(room.room))) throw new ApiError("WRONG_PHASE");
+  // Only classic guesses about players; the read the room modes use PUT /percent.
+  if (roomMode(room.room) !== "classic") throw new ApiError("WRONG_PHASE");
   if (room.me.guesses_submitted_at) throw new ApiError("ALREADY_SUBMITTED");
 
   const targets = new Set(room.players.filter(isScoredPlayer).map((p) => p.id));

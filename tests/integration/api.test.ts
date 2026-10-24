@@ -276,7 +276,7 @@ d("host tools", () => {
     const notBuilt = await host.call("POST", "/rooms", {
       ageBand: "18_plus",
       packId: "classic",
-      mode: "most_likely",
+      mode: "red_green",
     });
     expect(code(notBuilt)).toBe("MODE_UNAVAILABLE");
 
@@ -411,6 +411,65 @@ d("host tools", () => {
     });
     for (const x of revealed.body.results.awards)
       expect(["mind_reader", "clueless"]).toContain(x.award);
+  });
+
+  it("Most Likely To: secret votes for others, no guessing, counts only", async () => {
+    const host = await anonPlayer();
+    const wrongPack = await host.call("POST", "/rooms", {
+      ageBand: "18_plus",
+      packId: "hot_takes",
+      mode: "most_likely",
+    });
+    expect(code(wrongPack)).toBe("PACK_NOT_ALLOWED");
+
+    const room = await fullRoom(3, "most_likely", 5, "most_likely");
+    const [a, b, c] = room.players as [Player, Player, Player];
+    expect((await a.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);
+    const state = await a.call("GET", `/rooms/${room.roomCode}/state`);
+    const qs: Array<{ id: string }> = state.body.questions;
+    const id = (p: Player) =>
+      p.call("GET", `/rooms/${room.roomCode}/state`).then((s) => s.body.me.id);
+    const [aId, bId, cId] = await Promise.all([id(a), id(b), id(c)]);
+
+    const vote = (p: Player, pick: (i: number) => string) =>
+      p.call("PUT", `/rooms/${room.roomCode}/votes`, {
+        votes: qs.map((q, i) => ({ questionId: q.id, targetId: pick(i) })),
+      });
+    expect(code(await vote(a, () => aId))).toBe("INVALID_TARGET");
+    expect(code(await a.call("POST", `/rooms/${room.roomCode}/answers/submit`))).toBe("INCOMPLETE");
+    // First vote for c, then change to b: one vote per prompt.
+    await vote(a, () => cId);
+    expect((await vote(a, () => bId)).body.answered).toBe(5);
+    await vote(b, () => cId);
+    await vote(c, () => bId);
+    for (const p of [a, b, c])
+      expect((await p.call("POST", `/rooms/${room.roomCode}/answers/submit`)).status).toBe(200);
+
+    // Nothing to guess: straight to Lights down.
+    const ready = await a.call("GET", `/rooms/${room.roomCode}/state`);
+    expect(ready.body.room.status).toBe("ready");
+    const revealed = await a.call("POST", `/rooms/${room.roomCode}/advance`, { from: "ready" });
+    expect(revealed.body.room.status).toBe("revealed");
+    const likely = revealed.body.results.likely;
+    expect(likely).toHaveLength(5);
+    // b has 2 votes (a and c), c has 1 (b).
+    expect(likely[0].top).toEqual([bId]);
+    expect(likely[0].tally).toEqual([
+      { playerId: bId, count: 2 },
+      { playerId: cId, count: 1 },
+    ]);
+    expect(revealed.body.results.crowned[bId]).toMatchObject({ count: 2, voters: 3 });
+    const pts = Object.fromEntries(
+      revealed.body.results.rows.map((r: { playerId: string; mindReader: number }) => [
+        r.playerId,
+        r.mindReader,
+      ]),
+    );
+    expect(pts).toEqual({ [aId]: 50, [bId]: 0, [cId]: 50 });
+    expect(revealed.body.room.reveal.total).toBe(5 + revealed.body.results.awards.length);
+    // Who voted for whom is never sent.
+    expect(JSON.stringify(revealed.body)).not.toContain("myVotes");
+    expect(JSON.stringify(revealed.body.results.likely)).not.toContain(aId);
   });
 
   it("two players are enough to start", async () => {

@@ -209,7 +209,14 @@ export function PackPicker({
                         </span>
                         <span className="text-[14px] leading-[1.35] text-pretty">{p.blurb}</span>
                         <span className="mt-1 font-mono text-[13px] leading-none font-medium">
-                          {tc("questions", { count: p.questionCount })}
+                          {tc(
+                            p.format === "statements"
+                              ? "statements"
+                              : p.format === "prompts"
+                                ? "prompts"
+                                : "questions",
+                            { count: p.questionCount },
+                          )}
                         </span>
                       </div>
                     </RadioGroup.Item>
@@ -367,10 +374,10 @@ function PackPreview({
                   key={text}
                   className="grid gap-1.5 rounded-card border border-line bg-surface p-4"
                 >
-                  {/* Statements (Hot Takes) read on their own; questions start with "Have you ever". */}
+                  {/* Statements (Hot Takes) read on their own; prompts and questions get their opener. */}
                   {pack?.format !== "statements" && (
                     <span className="text-[13px] leading-none font-semibold text-text-muted">
-                      {tq("haveYouEver")}
+                      {pack?.format === "prompts" ? tq("likelyPrefix") : tq("haveYouEver")}
                     </span>
                   )}
                   <span className="text-[17px] leading-[1.35] font-semibold text-pretty">

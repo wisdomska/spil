@@ -31,7 +31,8 @@ export const MODE_RULES: Readonly<Record<Mode, ModeRule>> = {
   room_percentage: { minPlayers: 3, available: true, adultOnly: false },
   // Averages of 2 ratings would give the other player's rating away, as with Room Percentage.
   hot_takes: { minPlayers: 3, available: true, adultOnly: false },
-  most_likely: { minPlayers: 3, available: false, adultOnly: false },
+  // With 2 players every vote would name the only other player.
+  most_likely: { minPlayers: 3, available: true, adultOnly: false },
   red_green: { minPlayers: 2, available: false, adultOnly: false },
   rank_room: { minPlayers: 3, available: false, adultOnly: false },
   imposter: { minPlayers: 3, available: false, adultOnly: false },
@@ -64,9 +65,15 @@ export function ratesStatements(mode: Mode): boolean {
   return mode === "hot_takes";
 }
 
-export type PackFormat = "yes_no" | "statements";
+export type PackFormat = "yes_no" | "statements" | "prompts";
 
-/** The kind of pack a mode plays: statements for Hot Takes, yes or no questions otherwise. */
+/** Most Likely To: players vote for a player on each prompt; there is no guessing phase. */
+export function votesForPlayers(mode: Mode): boolean {
+  return mode === "most_likely";
+}
+
+/** The kind of pack a mode plays: statements, prompts, or yes or no questions. */
 export function modeFormat(mode: Mode): PackFormat {
-  return ratesStatements(mode) ? "statements" : "yes_no";
+  if (ratesStatements(mode)) return "statements";
+  return votesForPlayers(mode) ? "prompts" : "yes_no";
 }

@@ -26,6 +26,7 @@ import {
   spillGroups,
   verdictBand,
   type GroupStep,
+  type LikelyQuestion,
   type PercentQuestion,
 } from "@/lib/game";
 import { playSound, primeSound, useSoundSetting } from "@/lib/sound";
@@ -49,6 +50,8 @@ type Props = {
   percent?: PercentQuestion[];
   /** Hot Takes: the number is the room's average rating, not a yes share. */
   average?: boolean;
+  /** Most Likely To: one slide per prompt with the room's pick and the vote counts. */
+  likely?: LikelyQuestion[];
   /** Dev fixtures only: hold the stage at this many ms into the slide. */
   freezeAt?: number;
 };
@@ -73,6 +76,7 @@ export function RevealStage({
   onSkip,
   percent,
   average = false,
+  likely,
   freezeAt,
 }: Props) {
   const t = useTranslations("reveal");
@@ -86,8 +90,10 @@ export function RevealStage({
     () =>
       percent
         ? revealSlides(percent.length, awards.length, "question")
-        : revealSlides(groups.length, awards.length),
-    [percent, groups, awards],
+        : likely
+          ? revealSlides(likely.length, awards.length, "question")
+          : revealSlides(groups.length, awards.length),
+    [percent, likely, groups, awards],
   );
   const slide = slides[Math.min(reveal.index, slides.length - 1)];
   const startedAt = Date.parse(reveal.at);
@@ -104,15 +110,20 @@ export function RevealStage({
 
   const group = slide?.kind === "group" ? groups[slide.group] : undefined;
   const question = slide?.kind === "question" ? percent?.[slide.question] : undefined;
+  const prompt = slide?.kind === "question" ? likely?.[slide.question] : undefined;
+  // The vessel fills to the share of votes the room's pick got.
+  const promptShare = prompt
+    ? Math.round(((prompt.tally[0]?.count ?? 0) / Math.max(1, prompt.voters)) * 100)
+    : 0;
   const topBeat = slide ? hasTopBeat(slide, groups.length) : false;
   const minMs = slide ? slideMinMs(slide, groups.length) : 0;
 
   useEffect(() => {
     if (!slide) return;
     lastStep.current = null;
-    const score = group?.score ?? question?.actual ?? 0;
+    const score = group?.score ?? question?.actual ?? (prompt ? promptShare : 0);
     const at = (ms: number) => {
-      if (group || question) {
+      if (group || question || prompt) {
         const g = group ? groupStep(ms, topBeat) : questionStep(ms);
         count.set(
           g.step === "fill"
@@ -148,7 +159,19 @@ export function RevealStage({
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [slide, group, question, topBeat, minMs, startedAt, reduced, count, freezeAt]);
+  }, [
+    slide,
+    group,
+    question,
+    prompt,
+    promptShare,
+    topBeat,
+    minMs,
+    startedAt,
+    reduced,
+    count,
+    freezeAt,
+  ]);
 
   // Host with Auto on: move on a moment after Next unlocks.
   useEffect(() => {
@@ -180,10 +203,12 @@ export function RevealStage({
     slide.kind === "award"
       ? t("awardsCounter", { n: slide.award + 1, total: awards.length })
       : slide.kind === "question"
-        ? t(average ? "takeCounter" : "questionCounter", {
-            n: slide.question + 1,
-            total: percent?.length ?? 0,
-          })
+        ? likely
+          ? t("promptCounter", { n: slide.question + 1, total: likely.length })
+          : t(average ? "takeCounter" : "questionCounter", {
+              n: slide.question + 1,
+              total: percent?.length ?? 0,
+            })
         : t("counter", { n: slide.group + 1, total: groups.length });
 
   return (
@@ -349,6 +374,19 @@ export function RevealStage({
               ? t(average ? "announceAverage" : "announceQuestion", { n: question.actual })
               : ""
           }
+        />
+      )}
+
+      {prompt && (
+        <LikelySlide
+          prompt={prompt}
+          rows={rows}
+          count={count}
+          pct={pct}
+          step={step}
+          stamped={stamped}
+          reduced={reduced}
+          height={desktop ? 300 : 220}
         />
       )}
 
@@ -578,6 +616,111 @@ function QuestionSlide({
       )}
       <span className="sr-only" aria-live="polite">
         {announce}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * Most Likely To: the prompt, the vessel filling to the pick's share of the votes, the room's
+ * pick stamped, then every player who got votes with their count. Never who voted for whom.
+ */
+function LikelySlide({
+  prompt,
+  rows,
+  count,
+  pct,
+  step,
+  stamped,
+  reduced,
+  height,
+}: {
+  prompt: LikelyQuestion;
+  rows: ResultRow[];
+  count: MotionValue<number>;
+  pct: MotionValue<string>;
+  step: GroupStep;
+  stamped: boolean;
+  reduced: boolean;
+  height: number;
+}) {
+  const t = useTranslations("reveal");
+  const who = (id: string) => rows.find((r) => r.playerId === id);
+  const top = prompt.top.map(who).filter((r) => r !== undefined);
+  const most = prompt.tally[0]?.count ?? 0;
+  const filling = step === "fill" || stamped;
+  const names = top.map((r) => r.nickname).join(", ");
+  return (
+    <div className="flex flex-1 flex-col gap-[18px]">
+      <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] text-text-muted">
+        {t("likelyKicker")}
+      </span>
+      <h2 className="m-0 font-display text-[28px] leading-[1.05] font-extrabold tracking-[-.02em] text-balance">
+        {prompt.text}
+      </h2>
+      <div className="relative">
+        <Vessel
+          level={filling ? count : 0}
+          num={filling ? pct : ""}
+          height={height}
+          fontSize={80}
+          radius={24}
+        />
+      </div>
+      {stamped && (
+        <div
+          className={cn(
+            "grid gap-2",
+            reduced ? "animate-[fade_300ms_both]" : "animate-[rise_300ms_var(--ease-out)_both]",
+          )}
+        >
+          <div className="flex flex-wrap items-center gap-3">
+            {top.map((r) => (
+              <span key={r.playerId} className="flex items-center gap-2.5">
+                <Avatar n={r.avatar} size={48} label={r.nickname} />
+                <span className="font-display text-[30px] leading-none font-extrabold tracking-[-.03em]">
+                  {r.nickname}
+                </span>
+              </span>
+            ))}
+          </div>
+          <span className="font-mono text-[14px] leading-none font-medium text-text-muted">
+            {top.length > 1
+              ? t("likelyTie", { count: most, total: prompt.voters })
+              : t("likelyPick", { count: most, total: prompt.voters })}
+          </span>
+        </div>
+      )}
+      {step === "verdict" && prompt.tally.length > top.length && (
+        <ul
+          className={cn(
+            "m-0 grid list-none gap-2.5 p-0",
+            reduced
+              ? "animate-[fade_300ms_both]"
+              : "animate-[rise_300ms_80ms_var(--ease-out)_both]",
+          )}
+        >
+          {prompt.tally
+            .filter((x) => !prompt.top.includes(x.playerId))
+            .map((x) => {
+              const r = who(x.playerId);
+              if (!r) return null;
+              return (
+                <li key={x.playerId} className="flex items-center gap-3">
+                  <Avatar n={r.avatar} size={32} label={r.nickname} />
+                  <span className="min-w-0 flex-1 truncate text-[16px] leading-none font-semibold">
+                    {r.nickname}
+                  </span>
+                  <span className="font-mono text-[14px] leading-none font-medium text-text-muted tabular-nums">
+                    {t("votes", { count: x.count })}
+                  </span>
+                </li>
+              );
+            })}
+        </ul>
+      )}
+      <span className="sr-only" aria-live="polite">
+        {stamped ? t("announceLikely", { names, count: most, total: prompt.voters }) : ""}
       </span>
     </div>
   );

@@ -264,3 +264,15 @@ Notes:
 - Also fixed for Room Percentage: guesses about players are refused in read the room modes.
 - Tests: unit `tests/unit/game/hotTakes.test.ts` (plus the shared core still passing `percentage.test.ts`), API (pack and mode mismatch, private ratings, progress, averages, hottest take, awards), e2e `tests/e2e/hot-takes.spec.ts` (three phones end to end). pgTAP `14_hot_takes_test.sql`. Screens checked at 375 wide: rating, reveal and results.
 - Migration 20261024001800, applied to staging; production at the Batch 1 release.
+
+### Most Likely To (Batch 1, game mode 3)
+
+- [x] /create offers Most Likely To; it lists only prompt packs (Most Likely To, 36 light prompts, 13+). Pack tiles count statements and prompts instead of questions.
+- [x] Needs 3 players. Each prompt: pick anyone still in the game except yourself; votes are secret and a new vote replaces the old one. Progress counts votes live.
+- [x] No guessing phase: when the last vote is in, the room goes straight to Lights down.
+- [x] Points: 10 for every vote that matched the room's pick (any of them when tied). A prompt needs 3 or more votes to count. Only the Mind Reader and Clueless awards.
+- [x] Reveal: one slide per prompt: the vessel fills to the pick's share of the votes, the pick is named with "2 of 3 votes" (or tied), then everyone else who got votes with their count. Never who voted for whom; the API test checks voter ids never appear in the tallies.
+- [x] Results lead with "The room says you're most likely to" and your strongest prompt, then your points. No Spill Score labels, Spill Mode, share card or points explainer; the Questions tab shows each prompt's pick and count.
+- [x] Test players vote too.
+- Tests: unit `tests/unit/game/mostLikely.test.ts`, API (pack mismatch, self vote refused, vote replaced, no guessing, tallies, crowned, points, no voter ids), e2e `tests/e2e/most-likely.spec.ts` (three phones end to end). pgTAP `15_most_likely_test.sql`. Screens checked at 375 wide: vote, reveal and results.
+- Migration 20261024001900, applied to staging; production at the Batch 1 release.

@@ -70,6 +70,14 @@ export const advance = z.object({
 
 export const playerTarget = z.object({ playerId: z.uuid() });
 
+/** Most Likely To: one vote per prompt, for another player in the room. */
+export const putVotes = z.object({
+  votes: z
+    .array(z.object({ questionId: z.uuid(), targetId: z.uuid() }))
+    .min(1)
+    .max(100),
+});
+
 /** Hot Takes: ratings of the round's statements, 0 to 100. */
 export const putRatings = z.object({
   ratings: z

@@ -34,7 +34,9 @@
     "footerNav": "Footer",
     "questions": "{count} questions",
     "packLine": "{pack}, {count} questions",
-    "quickCheck": "Quick check"
+    "quickCheck": "Quick check",
+    "statements": "{count} statements",
+    "prompts": "{count} prompts"
   },
   "age": {
     "kickerHost": "STEP 1 OF 2",
@@ -253,7 +255,12 @@
     "rateLower": "Lower rating",
     "rateRaise": "Raise rating",
     "rateLow": "0 nope",
-    "rateHigh": "100 so true"
+    "rateHigh": "100 so true",
+    "previousPrompt": "Previous prompt",
+    "voteAsk": "Who's most likely to",
+    "voteHint": "Votes are secret. Pick anyone but yourself.",
+    "voteAria": "Prompt {n} of {total}. Most likely to {text}",
+    "likelyPrefix": "Most likely to"
   },
   "report": {
     "title": "Report this question",
@@ -352,7 +359,13 @@
     "takeCounter": "TAKE {n} OF {total}",
     "average": "Room average {n}",
     "avgGuessPoints": "{value} · {points, plural, one {# point} other {# points}}",
-    "announceAverage": "The room averaged {n}."
+    "announceAverage": "The room averaged {n}.",
+    "promptCounter": "PROMPT {n} OF {total}",
+    "likelyKicker": "MOST LIKELY TO",
+    "likelyPick": "{count} of {total} votes",
+    "likelyTie": "Tied on {count} of {total} votes",
+    "votes": "{count, plural, one {# vote} other {# votes}}",
+    "announceLikely": "{names}, with {count} of {total} votes."
   },
   "results": {
     "headline": "You're a",
@@ -400,7 +413,13 @@
     "hottestNone": "Not enough ratings to compare this round.",
     "hotPoints": "You read the room for {points} points.",
     "hotStatsNote": "Averages show once 3 or more people rated a statement. Ratings stay private.",
-    "hotStatsCount": "Average {n} from {count} ratings"
+    "hotStatsCount": "Average {n} from {count} ratings",
+    "crownedKicker": "THE ROOM SAYS YOU'RE MOST LIKELY TO",
+    "crownedLine": "{count} of {total} votes.",
+    "crownedNone": "The room did not pick you this round.",
+    "likelyPoints": "You voted with the room for {points} points.",
+    "likelyStatsNote": "Vote counts only. Nobody sees who voted for whom.",
+    "likelyStatsPick": "Room's pick: {names} ({count} of {total})"
   },
   "share": {
     "title": "Your card",
@@ -1076,6 +1095,10 @@
     "hot_takes": {
       "name": "Hot Takes",
       "body": "Rate spicy opinions from 0 to 100, then guess the room's average."
+    },
+    "most_likely": {
+      "name": "Most Likely To",
+      "body": "Vote for who in the room would do it. Votes stay secret."
     }
   }
 }
