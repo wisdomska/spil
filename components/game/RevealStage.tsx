@@ -166,7 +166,7 @@ export function RevealStage({
       : t("counter", { n: slide.group + 1, total: groups.length });
 
   return (
-    <div className="mx-auto box-border flex min-h-[100dvh] w-full max-w-[560px] flex-col gap-[18px] px-5 pt-[18px] pb-[calc(96px+env(safe-area-inset-bottom))]">
+    <div className="mx-auto box-border flex min-h-[100dvh] w-full max-w-[560px] flex-col gap-[18px] overflow-x-clip px-5 pt-[18px] pb-[calc(96px+env(safe-area-inset-bottom))]">
       <div className="flex items-center justify-between gap-2">
         <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] whitespace-pre text-text-muted">
           {counter}
