@@ -93,8 +93,13 @@ const gap = (c: AwardCandidate) => c.score - c.avgGuessAbout;
  * Mind Reader and Clueless only consider players who made at least one guess, unless nobody did.
  * Returns an empty list when there are no candidates.
  */
+/** SRS 4.3: no awards below this many scored players. */
+export const MIN_PLAYERS_FOR_AWARDS = 3;
+/** SRS 4.3: Clueless only appears in rooms of this size or more. */
+export const MIN_PLAYERS_FOR_CLUELESS = 5;
+
 export function pickAwards(candidates: readonly AwardCandidate[]): AwardResult[] {
-  if (candidates.length === 0) return [];
+  if (candidates.length < MIN_PLAYERS_FOR_AWARDS) return [];
   const guessers = candidates.filter((c) => c.guessCount > 0);
   const readers = guessers.length > 0 ? guessers : candidates;
 
@@ -113,13 +118,20 @@ export function pickAwards(candidates: readonly AwardCandidate[]): AwardResult[]
     desc((c) => c.mindReader),
     asc((c) => time(c.guessesSubmittedAt)),
   );
-  const dark = best(
-    candidates,
-    desc(gap),
-    desc((c) => Math.abs(gap(c))),
-  );
+  // Dark Horse needs someone who scored above what the room guessed (a positive gap).
+  const surprises = candidates.filter((c) => gap(c) > 0);
+  const dark =
+    surprises.length > 0
+      ? best(
+          surprises,
+          desc(gap),
+          desc((c) => Math.abs(gap(c))),
+        )
+      : null;
+  // Open Book is the opposite story, so it goes to someone other than the Dark Horse.
+  const openPool = dark ? candidates.filter((c) => c !== dark) : candidates;
   const open = best(
-    candidates,
+    openPool.length > 0 ? openPool : candidates,
     asc((c) => Math.abs(gap(c))),
   );
   const clue = best(
@@ -128,11 +140,11 @@ export function pickAwards(candidates: readonly AwardCandidate[]): AwardResult[]
     desc((c) => time(c.guessesSubmittedAt)),
   );
 
-  const winners: Record<AwardId, [AwardCandidate, string]> = {
+  const winners: Record<AwardId, [AwardCandidate, string] | null> = {
     top_spiller: [top, `Highest score in the room. ${top.score} out of 100.`],
     saint_of_the_room: [saint, `Scored ${saint.score}. Either a saint or a very good liar.`],
     mind_reader: [mind, `Closest guesses in the room. ${mind.mindReader} points.`],
-    dark_horse: [
+    dark_horse: dark && [
       dark,
       `The room guessed ${dark.avgGuessAbout}. ${dark.nickname} scored ${dark.score}.`,
     ],
@@ -140,11 +152,14 @@ export function pickAwards(candidates: readonly AwardCandidate[]): AwardResult[]
       open,
       `The room guessed ${open.avgGuessAbout}. ${open.nickname} scored ${open.score}. Close enough.`,
     ],
-    clueless: [clue, `Furthest guesses in the room. ${clue.nickname}, really?`],
+    clueless:
+      candidates.length >= MIN_PLAYERS_FOR_CLUELESS
+        ? [clue, `Furthest guesses in the room. ${clue.nickname}, really?`]
+        : null,
   };
 
-  return AWARDS.map((meta, i) => {
-    const [winner, reason] = winners[meta.id];
-    return { ...meta, award: meta.id, playerId: winner.playerId, reason, position: i + 1 };
-  });
+  return AWARDS.flatMap((meta) => {
+    const won = winners[meta.id];
+    return won ? [{ ...meta, award: meta.id, playerId: won[0].playerId, reason: won[1] }] : [];
+  }).map((a, i) => ({ ...a, position: i + 1 }));
 }

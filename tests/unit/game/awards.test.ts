@@ -18,6 +18,10 @@ function cand(id: string, extra: Partial<AwardCandidate> = {}): AwardCandidate {
   };
 }
 
+/** Extra players who never win a "low" award, to reach the 5-player Clueless minimum. */
+const crowd = (k: number) =>
+  Array.from({ length: k }, (_, i) => cand(`zz${i}`, { mindReader: 50, score: 55 }));
+
 const winner = (cs: AwardCandidate[], award: AwardId) =>
   pickAwards(cs).find((a) => a.award === award)?.playerId;
 
@@ -39,11 +43,9 @@ describe("pickAwards", () => {
     expect(pickAwards([])).toEqual([]);
   });
 
-  it("gives all six awards to a lone player", () => {
-    const awards = pickAwards([cand("solo")]);
-    expect(awards).toHaveLength(6);
-    expect(awards.every((a) => a.playerId === "solo")).toBe(true);
-    expect(awards.map((a) => a.position)).toEqual([1, 2, 3, 4, 5, 6]);
+  it("gives no awards below 3 players (SRS 4.3)", () => {
+    expect(pickAwards([cand("solo")])).toEqual([]);
+    expect(pickAwards([cand("a", { score: 27 }), cand("b", { score: 20 })])).toEqual([]);
   });
 
   it("picks each winner by its rule and writes the prototype reason copy", () => {
@@ -52,8 +54,10 @@ describe("pickAwards", () => {
       cand("efua", { score: 9, avgGuessAbout: 30, mindReader: 60 }),
       cand("zainab", { score: 50, avgGuessAbout: 52, mindReader: 91 }),
       cand("kofi", { score: 71, avgGuessAbout: 40, mindReader: 33 }),
+      cand("yaw", { score: 40, avgGuessAbout: 45, mindReader: 50 }),
     ];
     const awards = pickAwards(cs);
+    expect(awards.map((a) => a.position)).toEqual([1, 2, 3, 4, 5, 6]);
     expect(awards.map((a) => [a.award, a.playerId, a.reason])).toEqual([
       ["top_spiller", "ama", "Highest score in the room. 82 out of 100."],
       ["saint_of_the_room", "efua", "Scored 9. Either a saint or a very good liar."],
@@ -107,12 +111,30 @@ describe("pickAwards", () => {
     expect(winner(cs, "dark_horse")).toBe("c");
   });
 
-  it("Dark Horse can be negative when everyone was overestimated", () => {
+  it("gives no Dark Horse when nobody beat the room's guess (SRS 4.3: positive gap)", () => {
     const cs = [
       cand("a", { score: 30, avgGuessAbout: 70 }),
       cand("b", { score: 40, avgGuessAbout: 50 }),
+      cand("c", { score: 20, avgGuessAbout: 21 }),
     ];
-    expect(winner(cs, "dark_horse")).toBe("b");
+    expect(winner(cs, "dark_horse")).toBeUndefined();
+    expect(pickAwards(cs).map((a) => a.position)).toEqual([1, 2, 3, 4]);
+  });
+
+  it("does not give Open Book to the Dark Horse", () => {
+    const cs = [
+      cand("a", { score: 52, avgGuessAbout: 50 }),
+      cand("b", { score: 30, avgGuessAbout: 40 }),
+      cand("c", { score: 20, avgGuessAbout: 45 }),
+    ];
+    expect(winner(cs, "dark_horse")).toBe("a");
+    expect(winner(cs, "open_book")).toBe("b");
+  });
+
+  it("shows Clueless only in rooms of 5 or more (SRS 4.3)", () => {
+    const four = [cand("a"), cand("b"), cand("c"), cand("d")];
+    expect(winner(four, "clueless")).toBeUndefined();
+    expect(winner([...four, cand("e")], "clueless")).toBeDefined();
   });
 
   it("Open Book is the smallest absolute gap, tie to earliest join", () => {
@@ -129,6 +151,7 @@ describe("pickAwards", () => {
       cand("a", { mindReader: 20, guessesSubmittedAt: 100 }),
       cand("b", { mindReader: 20, guessesSubmittedAt: 900 }),
       cand("c", { mindReader: 80 }),
+      ...crowd(2),
     ];
     expect(winner(cs, "clueless")).toBe("b");
   });
@@ -137,6 +160,7 @@ describe("pickAwards", () => {
     const cs = [
       cand("a", { mindReader: 20, guessesSubmittedAt: 900 }),
       cand("b", { mindReader: 20, guessesSubmittedAt: null }),
+      ...crowd(3),
     ];
     expect(winner(cs, "clueless")).toBe("b");
   });
@@ -146,6 +170,7 @@ describe("pickAwards", () => {
       cand("a", { mindReader: 0, guessCount: 0 }),
       cand("b", { mindReader: 40 }),
       cand("c", { mindReader: 60 }),
+      ...crowd(2),
     ];
     expect(winner(cs, "clueless")).toBe("b");
     expect(winner(cs, "mind_reader")).toBe("c");
@@ -155,9 +180,12 @@ describe("pickAwards", () => {
     const cs = [
       cand("a", { mindReader: 0, guessCount: 0 }),
       cand("b", { mindReader: 0, guessCount: 0 }),
+      cand("c", { mindReader: 0, guessCount: 0 }),
+      cand("d", { mindReader: 0, guessCount: 0 }),
+      cand("e", { mindReader: 0, guessCount: 0 }),
     ];
     expect(winner(cs, "mind_reader")).toBe("a");
-    expect(winner(cs, "clueless")).toBe("b");
+    expect(winner(cs, "clueless")).toBe("e");
   });
 
   it("breaks full ties by earliest join, then player id", () => {
@@ -168,8 +196,9 @@ describe("pickAwards", () => {
       cand("c", { ...tie, joinedAt: 0 }),
     ];
     expect(winner(cs, "top_spiller")).toBe("c");
-    expect(winner(cs.slice(0, 2), "top_spiller")).toBe("a");
-    expect(winner(cs.slice(0, 2).reverse(), "top_spiller")).toBe("a");
+    const pair = [...cs.slice(0, 2), cand("d", { score: 10 })];
+    expect(winner(pair, "top_spiller")).toBe("a");
+    expect(winner([...pair].reverse(), "top_spiller")).toBe("a");
   });
 
   it("does not depend on input order", () => {

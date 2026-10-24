@@ -218,7 +218,7 @@ describe("sat_out and departed players", () => {
 });
 
 describe("awards via computeResults", () => {
-  it("gives six awards in reveal order", () => {
+  it("gives the awards in reveal order (no Clueless below 5 players)", () => {
     const r = computeResults(room());
     expect(r.awards.map((a) => a.award)).toEqual([
       "top_spiller",
@@ -226,7 +226,6 @@ describe("awards via computeResults", () => {
       "mind_reader",
       "dark_horse",
       "open_book",
-      "clueless",
     ]);
     expect(r.awards[0]).toMatchObject({
       playerId: "yaw",
@@ -260,9 +259,11 @@ describe("question stats", () => {
         ? { ...p, answers: { ...p.answers, q0: "skip" as const } }
         : p,
     );
-    const ids = computeResults(input).questionStats.map((s) => s.questionId);
-    expect(ids).not.toContain("q0");
-    expect(ids).toHaveLength(9);
+    const stats = computeResults(input).questionStats;
+    // Still listed so players see what was asked, but the count is withheld.
+    expect(stats).toHaveLength(10);
+    expect(stats.find((s) => s.questionId === "q0")).toMatchObject({ yes: null, answered: 2 });
+    expect(stats.at(-1)?.questionId).toBe("q0");
   });
 
   it("can relax the threshold (prototype behaviour)", () => {
@@ -285,8 +286,8 @@ describe("question stats", () => {
   it("counts yes and answered, sorted by yes share then draw order", () => {
     const stats = computeResults(room()).questionStats;
     expect(stats[0]).toMatchObject({ questionId: "q0", yes: 4, answered: 4 });
-    expect(stats.map((s) => s.yes / s.answered)).toEqual(
-      [...stats.map((s) => s.yes / s.answered)].sort((a, b) => b - a),
+    expect(stats.map((s) => (s.yes ?? 0) / s.answered)).toEqual(
+      [...stats.map((s) => (s.yes ?? 0) / s.answered)].sort((a, b) => b - a),
     );
     expect(stats.map((s) => s.questionId)).toEqual([
       "q0",

@@ -68,7 +68,8 @@ export type AwardRow = {
 export type QuestionStatRow = {
   questionId: string;
   text: string;
-  yes: number;
+  /** Null when fewer than 3 answered (the count would expose someone's answers). */
+  yes: number | null;
   answered: number;
   spillNames: string[];
 };

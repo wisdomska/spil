@@ -176,7 +176,10 @@ d("a full game with 3 players", () => {
     });
     expect(revealed.body.room.status).toBe("revealed");
     expect(revealed.body.results.rows).toHaveLength(3);
-    expect(revealed.body.results.awards).toHaveLength(6);
+    // Three players: awards are given, but Clueless needs 5 or more (SRS 4.3).
+    const awardIds = revealed.body.results.awards.map((x: { award: string }) => x.award);
+    expect(awardIds).toContain("top_spiller");
+    expect(awardIds).not.toContain("clueless");
     expect(revealed.body.results.rows[0].score).toBe(80);
 
     // Second reveal is refused (phase moved), results unchanged.

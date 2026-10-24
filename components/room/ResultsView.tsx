@@ -167,6 +167,9 @@ export function ResultsView({
         </TabPanel>
         <TabPanel value="awards" className="outline-none">
           <div className="grid gap-[18px]">
+            {results.awards.length === 0 && (
+              <p className="m-0 text-[15px] leading-[1.45] text-text-muted">{t("awardsNone")}</p>
+            )}
             {results.awards.map((a, i) => {
               const who = rows.find((r) => r.playerId === a.playerId);
               return (
@@ -203,17 +206,23 @@ export function ResultsView({
                 <span className="font-display text-[18px] leading-[1.2] font-bold">
                   {tq("haveYouEver")} {q.text}
                 </span>
-                <div className="flex items-center gap-3">
-                  <div className="h-1.5 flex-1 rounded-pill bg-surface-raised">
-                    <div
-                      className="h-1.5 rounded-pill bg-text"
-                      style={{ width: `${q.answered ? (q.yes / q.answered) * 100 : 0}%` }}
-                    />
-                  </div>
-                  <span className="font-mono text-[14px] leading-none font-medium">
-                    {t("statsCount", { yes: q.yes, n: q.answered })}
+                {q.yes === null ? (
+                  <span className="font-mono text-[13px] leading-none font-medium text-text-muted">
+                    {t("statsHidden")}
                   </span>
-                </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <div className="h-1.5 flex-1 rounded-pill bg-surface-raised">
+                      <div
+                        className="h-1.5 rounded-pill bg-text"
+                        style={{ width: `${q.answered ? (q.yes / q.answered) * 100 : 0}%` }}
+                      />
+                    </div>
+                    <span className="font-mono text-[14px] leading-none font-medium">
+                      {t("statsCount", { yes: q.yes, n: q.answered })}
+                    </span>
+                  </div>
+                )}
                 <span className="text-[14px] leading-[1.3] font-medium text-text-muted">
                   {q.spillNames.length
                     ? t("spillYes", { names: q.spillNames.join(", ") })

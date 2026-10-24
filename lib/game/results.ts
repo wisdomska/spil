@@ -50,7 +50,8 @@ export interface ResultRow {
 export interface QuestionStat {
   questionId: string;
   text: string;
-  yes: number;
+  /** Null when fewer than MIN_ANSWERS_FOR_STATS answered: a count would expose someone. */
+  yes: number | null;
   answered: number;
   /** Nicknames of players with Spill Mode on who said yes. */
   spillNames: string[];
@@ -190,17 +191,19 @@ export function computeResults(input: ResultsInput): Results {
         stat: {
           questionId: q.id,
           text: q.text,
-          yes: yesSayers.length,
+          yes: answered >= min ? yesSayers.length : null,
           answered,
           spillNames: yesSayers.filter((a) => a.p.player.spillMode).map((a) => a.p.player.nickname),
         },
       };
     })
-    .filter(({ stat }) => stat.answered > 0 && stat.answered >= min)
-    .sort(
-      (a, b) =>
-        b.stat.yes / b.stat.answered - a.stat.yes / a.stat.answered || a.position - b.position,
-    )
+    .filter(({ stat }) => stat.answered > 0)
+    // Counted questions first, most-yes first; the rest keep the order they were asked in.
+    .sort((a, b) => {
+      const ra = a.stat.yes === null ? -1 : a.stat.yes / a.stat.answered;
+      const rb = b.stat.yes === null ? -1 : b.stat.yes / b.stat.answered;
+      return rb - ra || a.position - b.position;
+    })
     .map(({ stat }) => stat);
 
   return { rows, awards: pickAwards(candidates), questionStats };

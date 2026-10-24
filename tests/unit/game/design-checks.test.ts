@@ -192,8 +192,14 @@ describe("Guessing and results", () => {
     expect(r.rows.find((x) => x.playerId === "h1")?.avgGuessAbout).toBe(75);
   });
 
-  it("Six awards are given", () => {
-    expect(computeResults(playedRound()).awards).toHaveLength(6);
+  it("Awards follow the room-size rules", () => {
+    // Four players: no Clueless (5+ only), and nobody beat the room's guess, so no Dark Horse.
+    expect(computeResults(playedRound()).awards.map((a) => a.award)).toEqual([
+      "top_spiller",
+      "saint_of_the_room",
+      "mind_reader",
+      "open_book",
+    ]);
   });
 
   it("Top Spiller is the highest score", () => {
@@ -216,10 +222,11 @@ describe("Guessing and results", () => {
     expect(computeResults({ ...round, minAnswersForStats: 1 }).questionStats).toHaveLength(
       round.qids.length,
     );
-    // Production applies the 3+ answers rule: Zainab skipped the first question, leaving it at 2.
+    // Production lists it too but withholds the count: Zainab skipped it, leaving 3 answers... or fewer.
     const stats = computeResults(round).questionStats;
-    expect(stats).toHaveLength(round.qids.length - 1);
-    expect(stats.map((s) => s.questionId)).not.toContain(round.qids[0]);
+    expect(stats).toHaveLength(round.qids.length);
+    const first = stats.find((s) => s.questionId === round.qids[0]);
+    expect(first?.yes === null || first!.answered >= 3).toBe(true);
   });
 
   it("Spill Mode names only opted-in players", () => {
