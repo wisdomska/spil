@@ -31,16 +31,17 @@ No other screen scrolls sideways at any viewport.
 
 ## Tickets
 
-| Ticket                      | Status      | 375 px                                                                                                 | 1280 px                                                                                                    | Chrome | Safari | Firefox    | QA sign-off                                                                                                      |
-| --------------------------- | ----------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------ | ------ | ---------- | ---------------------------------------------------------------------------------------------------------------- |
-| SPIL-01                     | Done        | screens/SPIL-01-after-375.png                                                                          | screens/SPIL-01-after-1280.png                                                                             | pass   | CI     | CI nightly | Unit matrix (2, 3, 12 players), e2e LMGF repro, harness self-test                                                |
-| SPIL-03                     | Done        | screens/SPIL-03-after-sheet-375.png                                                                    | screens/SPIL-03-after-sheet-1280.png                                                                       | pass   | CI     | CI nightly | e2e live counts (realtime), own count, force dialog hold; pgTAP for save_answers                                 |
-| SPIL-04                     | Done        | screens/SPIL-04-after-reveal-tie-375.png, screens/SPIL-04-after-results-tie-375.png                    | screens/SPIL-04-after-reveal-tie-1280.png, screens/SPIL-04-after-results-tie-1280.png                      | pass   | CI     | CI nightly | Unit tests for groups, places and T ranks; tie fixture checked at 375 and 1280                                   |
-| SPIL-02                     | Done        | screens/SPIL-02-age-gate-375.png, screens/SPIL-02-picker-teen-375.png, screens/SPIL-02-blocked-375.png | screens/SPIL-02-age-gate-1280.png, screens/SPIL-02-picker-adult-1280.png, screens/SPIL-02-blocked-1280.png | pass   | CI     | CI nightly | Unit (bands, filter, start rule), API (create, join, pack change), e2e two contexts, privacy request scan, pgTAP |
-| SPIL-08                     | Done        | screens/SPIL-08-picker-375.png, screens/SPIL-08-preview-375.png                                        | screens/SPIL-08-selected-1280.png, screens/SPIL-08-preview-1280.png                                        | pass   | CI     | CI nightly | e2e sticky CTA at 375 x 812, single selection, preview pick, preview age check; unit CSV and roles; pgTAP        |
-| SPIL-06                     | Done        | screens/SPIL-06-safety-375.png, screens/SPIL-06-footer-375.png, screens/SPIL-06-tabs-320.png           | screens/SPIL-06-safety-1280.png, screens/SPIL-06-terms-1280.png, screens/SPIL-06-footer-1280.png           | pass   | CI     | CI nightly | e2e every link from footer and tab bar, no sideways scroll at 320, spec copy; a11y route list includes /safety   |
-| SPIL-05                     | Done        | screens/SPIL-05-botcheck-375.png                                                                       | screens/SPIL-05-botcheck-1280.png                                                                          | pass   | CI     | CI nightly | e2e forced refusal: inline error, toast, visible check, then the room is created; unit browser family; pgTAP     |
-| SPIL-07, SPIL-09 to SPIL-33 | Not started |                                                                                                        |                                                                                                            |        |        |            |                                                                                                                  |
+| Ticket             | Status      | 375 px                                                                                                 | 1280 px                                                                                                    | Chrome | Safari | Firefox    | QA sign-off                                                                                                      |
+| ------------------ | ----------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------ | ------ | ---------- | ---------------------------------------------------------------------------------------------------------------- |
+| SPIL-01            | Done        | screens/SPIL-01-after-375.png                                                                          | screens/SPIL-01-after-1280.png                                                                             | pass   | CI     | CI nightly | Unit matrix (2, 3, 12 players), e2e LMGF repro, harness self-test                                                |
+| SPIL-03            | Done        | screens/SPIL-03-after-sheet-375.png                                                                    | screens/SPIL-03-after-sheet-1280.png                                                                       | pass   | CI     | CI nightly | e2e live counts (realtime), own count, force dialog hold; pgTAP for save_answers                                 |
+| SPIL-04            | Done        | screens/SPIL-04-after-reveal-tie-375.png, screens/SPIL-04-after-results-tie-375.png                    | screens/SPIL-04-after-reveal-tie-1280.png, screens/SPIL-04-after-results-tie-1280.png                      | pass   | CI     | CI nightly | Unit tests for groups, places and T ranks; tie fixture checked at 375 and 1280                                   |
+| SPIL-02            | Done        | screens/SPIL-02-age-gate-375.png, screens/SPIL-02-picker-teen-375.png, screens/SPIL-02-blocked-375.png | screens/SPIL-02-age-gate-1280.png, screens/SPIL-02-picker-adult-1280.png, screens/SPIL-02-blocked-1280.png | pass   | CI     | CI nightly | Unit (bands, filter, start rule), API (create, join, pack change), e2e two contexts, privacy request scan, pgTAP |
+| SPIL-08            | Done        | screens/SPIL-08-picker-375.png, screens/SPIL-08-preview-375.png                                        | screens/SPIL-08-selected-1280.png, screens/SPIL-08-preview-1280.png                                        | pass   | CI     | CI nightly | e2e sticky CTA at 375 x 812, single selection, preview pick, preview age check; unit CSV and roles; pgTAP        |
+| SPIL-06            | Done        | screens/SPIL-06-safety-375.png, screens/SPIL-06-footer-375.png, screens/SPIL-06-tabs-320.png           | screens/SPIL-06-safety-1280.png, screens/SPIL-06-terms-1280.png, screens/SPIL-06-footer-1280.png           | pass   | CI     | CI nightly | e2e every link from footer and tab bar, no sideways scroll at 320, spec copy; a11y route list includes /safety   |
+| SPIL-05            | Done        | screens/SPIL-05-botcheck-375.png                                                                       | screens/SPIL-05-botcheck-1280.png                                                                          | pass   | CI     | CI nightly | e2e forced refusal: inline error, toast, visible check, then the room is created; unit browser family; pgTAP     |
+| SPIL-07            | Done        | n/a (no visual change)                                                                                 | n/a                                                                                                        | pass   | CI     | CI nightly | unit scope coverage walk, CI HTML check, full desktop e2e (26 passed)                                            |
+| SPIL-09 to SPIL-33 | Not started |                                                                                                        |                                                                                                            |        |        |            |                                                                                                                  |
 
 ## SPIL-01: Softlock after "Move on without them"
 
@@ -158,3 +159,24 @@ Notes:
 - Same handling on the contact form, the other endpoint that checks Turnstile. Joining a room does not use Turnstile.
 - Failures are logged to `captcha_events` with Cloudflare's error codes, the hostname and the browser family only (no IP, no user agent).
 - Owner step (Cloudflare dashboard): the production widget must list spil-party.vercel.app. Preview and local use Cloudflare's test keys, so they need no hostnames. A spike on the new tile usually means a hostname is missing.
+
+## SPIL-07: Split the message catalog per route
+
+- [x] No admin string appears in any public page HTML: `scripts/check-public-html.mjs` fetches /, /create, /join, /r/TEST, /r/TEST/me, /how-to-play, /contact and /safety and fails on admin keys (dangerBody, auditNote, flagSaved). It runs in CI after the app starts.
+- [x] Landing page HTML size drops: before and after, from the local production build:
+
+| Page         | Before       | After        |
+| ------------ | ------------ | ------------ |
+| /            | 82,502 bytes | 52,089 bytes |
+| /create      | 58,154       | 28,196       |
+| /join        | 54,163       | 21,670       |
+| /r/TEST      | 54,393       | 28,133       |
+| /r/TEST/me   | 55,884       | 23,919       |
+| /how-to-play | 64,737       | 31,438       |
+| /contact     | 58,664       | 26,083       |
+
+Notes:
+
+- The root layout passes only `common`, `toast` and `error`. Each route wraps its client components in `IntlScope` with its own namespaces (`lib/i18n/pick.ts`). The admin console gets `admin` only inside its session gate; the sign-in and reset pages get just their sub-namespaces.
+- `tests/unit/i18n-coverage.test.ts` walks each route's imports from its client entry points and fails if any namespace or key it uses is missing from that route's scope, so a missing string fails CI instead of showing a raw key.
+- The dev fixture screens and kitchen sink keep the whole catalog.

@@ -33,7 +33,8 @@
     "designedBy": "Designed & Developed by Senya",
     "footerNav": "Footer",
     "questions": "{count} questions",
-    "packLine": "{pack}, {count} questions"
+    "packLine": "{pack}, {count} questions",
+    "quickCheck": "Quick check"
   },
   "age": {
     "kickerHost": "STEP 1 OF 2",
@@ -164,8 +165,7 @@
     "sectionEveryday": "Everyday",
     "sectionLife": "Life stages",
     "sectionAdult": "After dark · 18+",
-    "someHidden": "Some packs are hidden for this room.",
-    "quickCheck": "Quick check"
+    "someHidden": "Some packs are hidden for this room."
   },
   "packInfo": {
     "purity": {

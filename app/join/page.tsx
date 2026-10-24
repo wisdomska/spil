@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
+import { IntlScope } from "@/components/site/IntlScope";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { JoinForm } from "./JoinForm";
 
@@ -20,7 +21,9 @@ export default async function JoinPage() {
         </h1>
         <p className="m-0 text-[17px] leading-[1.5] text-text-muted">{t("lede")}</p>
         <Suspense>
-          <JoinForm />
+          <IntlScope scope="join">
+            <JoinForm />
+          </IntlScope>
         </Suspense>
       </main>
     </div>

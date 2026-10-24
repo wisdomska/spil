@@ -104,6 +104,8 @@ jobs:
           pnpm build
           pnpm start > /tmp/next.log 2>&1 &
           for i in $(seq 1 60); do curl -fsS http://localhost:3000/api/health && break; sleep 2; done
+      - name: No admin strings in public pages (SPIL-07)
+        run: node scripts/check-public-html.mjs http://localhost:3000
       - name: API integration tests
         run: pnpm test:api
         env:

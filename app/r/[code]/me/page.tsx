@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
+import { IntlScope } from "@/components/site/IntlScope";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { ProfileForm } from "./ProfileForm";
 
@@ -11,7 +12,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
 async function Profile({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
-  return <ProfileForm code={code.toUpperCase()} />;
+  return (
+    <IntlScope scope="profile">
+      <ProfileForm code={code.toUpperCase()} />
+    </IntlScope>
+  );
 }
 
 export default function ProfilePage({ params }: PageProps<"/r/[code]/me">) {

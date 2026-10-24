@@ -5,6 +5,7 @@ import { fontVariables } from "./fonts";
 import { Grain } from "@/components/brand/Grain";
 import { Telemetry } from "@/components/site/Telemetry";
 import { Providers } from "./providers";
+import { BASE_SCOPE, pickMessages } from "@/lib/i18n/pick";
 import { THEME_COLOR } from "@/lib/theme-color";
 import "./globals.css";
 
@@ -33,7 +34,8 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const messages = await getMessages();
+  // SPIL-07: only what every page needs; routes add their own namespaces with IntlScope.
+  const messages = pickMessages(await getMessages(), BASE_SCOPE);
   return (
     <html lang="en" data-theme="dark" className={fontVariables}>
       <body>

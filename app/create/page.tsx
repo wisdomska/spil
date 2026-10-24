@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { IntlScope } from "@/components/site/IntlScope";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { livePacks } from "@/lib/api/packs";
 import { getSettings } from "@/lib/flags";
@@ -19,11 +20,13 @@ async function Picker() {
   await connection();
   const [packs, settings] = await Promise.all([livePacks(13), getSettings()]);
   return (
-    <CreateRoom
-      packs={packs}
-      questionsPerGame={settings.questionsPerGame}
-      ageLockHours={settings.ageLockHours}
-    />
+    <IntlScope scope="create">
+      <CreateRoom
+        packs={packs}
+        questionsPerGame={settings.questionsPerGame}
+        ageLockHours={settings.ageLockHours}
+      />
+    </IntlScope>
   );
 }
 

@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { ConsoleShell } from "@/components/admin/ConsoleShell";
+import { IntlScope } from "@/components/site/IntlScope";
 import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
 import { findAdmin } from "@/lib/admin/server";
 import { getUserId } from "@/lib/supabase/server";
@@ -15,7 +16,12 @@ async function Gate({ children }: { children: React.ReactNode }) {
   const userId = await getUserId();
   const me = userId ? await findAdmin(userId) : null;
   if (!me) redirect("/admin/login");
-  return <ConsoleShell me={me}>{children}</ConsoleShell>;
+  // SPIL-07: the console's strings only reach a signed-in admin.
+  return (
+    <IntlScope scope="admin">
+      <ConsoleShell me={me}>{children}</ConsoleShell>
+    </IntlScope>
+  );
 }
 
 async function ShellSkeleton() {

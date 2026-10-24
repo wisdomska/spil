@@ -33,7 +33,7 @@ const TOKEN_WAIT_MS = 5_000;
  * then. With no site key configured (local and CI) it resolves "" and the server skips the check.
  */
 export function useTurnstile() {
-  const t = useTranslations("packs");
+  const t = useTranslations("common");
   const holder = useRef<HTMLDivElement>(null);
   const visibleHolder = useRef<HTMLDivElement>(null);
   const widget = useRef<string | null>(null);

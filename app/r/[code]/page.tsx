@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { RoomApp } from "@/components/room/RoomApp";
+import { IntlScope } from "@/components/site/IntlScope";
 
 export async function generateMetadata({ params }: PageProps<"/r/[code]">): Promise<Metadata> {
   const { code } = await params;
@@ -17,7 +18,11 @@ export async function generateMetadata({ params }: PageProps<"/r/[code]">): Prom
 
 async function Room({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
-  return <RoomApp code={code.toUpperCase()} />;
+  return (
+    <IntlScope scope="room">
+      <RoomApp code={code.toUpperCase()} />
+    </IntlScope>
+  );
 }
 
 export default function RoomPage({ params }: PageProps<"/r/[code]">) {
