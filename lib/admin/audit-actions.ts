@@ -7,6 +7,7 @@ export const AUDIT_ACTIONS = [
   "signed_out",
   "password_reset",
   "room_closed",
+  "room_advanced",
   "pack_created",
   "pack_edited",
   "pack_deleted",

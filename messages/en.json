@@ -589,6 +589,7 @@
       "chips": {
         "all": "All",
         "active": "Active",
+        "stuck": "Stuck",
         "finished": "Finished",
         "closed": "Closed"
       },
@@ -606,7 +607,14 @@
       "closeTitle": "Close room {code}?",
       "closeBody": "Everyone in it is sent back to the start screen. This cannot be undone.",
       "closeCta": "Close room",
-      "closed": "Room {code} closed."
+      "closed": "Room {code} closed.",
+      "stuck": "Stuck",
+      "stuckHint": "No change for 20 minutes",
+      "advance": "Force advance",
+      "advanceTitle": "Move room {code} on?",
+      "advanceBody": "Players who have not finished sit out this phase, as if the host tapped Move on without them. In Lights down this starts the reveal.",
+      "advanceCta": "Force advance",
+      "advanced": "Room {code} moved on."
     },
     "packs": {
       "new": "New pack",
@@ -802,6 +810,7 @@
         "signed_out": "Signed out",
         "password_reset": "Reset password",
         "room_closed": "Closed room",
+        "room_advanced": "Forced a room on",
         "pack_created": "Created pack",
         "pack_edited": "Edited pack",
         "pack_deleted": "Deleted pack",

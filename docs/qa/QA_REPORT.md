@@ -52,6 +52,13 @@ Notes:
 - The spec also shows the skip button "whenever every connected player is locked or has no targets". Auto-lock covers the second half. A disconnected guesser is covered by "Move on without them" and the 60 s skip, so presence is not a server rule.
 - In guessing, the room now waits for players who sat out answering (they can still guess), as the spec's ready rule asks.
 
+Admin cascade (screens/SPIL-01-admin-rooms-375.png, screens/SPIL-01-admin-rooms-1280.png):
+
+- [x] Rooms: a "Stuck" tag and filter chip for rooms in answering, guessing or Lights down with no change for 20 minutes (`isStuck`, unit tested).
+- [x] Rooms: "Force advance" on live rooms, `POST /admin/rooms/:id/advance`. It runs the same server code as the host's "Move on without them" (`forceAdvance`). Close already existed.
+- [x] Role check: new permission `rooms.advance` for owner and moderator (matrix test updated). Audit entry `room_advanced` ("Forced a room on") with the phase before and after. e2e: `tests/e2e/admin-rooms.spec.ts`.
+- No new tables, so "Reset all data" needs no change.
+
 ## SPIL-03: Live answer progress is stale
 
 - [x] The host sees the guest's count change within 1 s per answer in realtime mode (`tests/e2e/progress.spec.ts` checks each of 3 answers within 2 s, end to end through the database). Polling mode: the 5 s poll carries `answered` and `lastAnswerAt` per player.

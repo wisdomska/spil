@@ -1,6 +1,6 @@
 "use client";
 
-import { LockSimpleIcon } from "@phosphor-icons/react";
+import { FastForwardIcon, LockSimpleIcon } from "@phosphor-icons/react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import {
@@ -25,7 +25,7 @@ import {
 } from "@/components/admin/ui";
 import type { AdminRoom } from "@/lib/admin/types";
 
-type Chip = "all" | "active" | "finished" | "closed";
+type Chip = "all" | "active" | "stuck" | "finished" | "closed";
 
 export function RoomsSection() {
   const t = useTranslations("admin.rooms");
@@ -44,11 +44,12 @@ export function RoomsSection() {
     (r) =>
       (!sq || r.code.toLowerCase().includes(sq)) &&
       (chip === "all" ||
+        (chip === "stuck" && r.stuck) ||
         (chip === "closed"
           ? r.status === "closed"
           : chip === "finished"
             ? r.status === "revealed"
-            : r.status !== "closed" && r.status !== "revealed")),
+            : chip === "active" && r.status !== "closed" && r.status !== "revealed")),
   );
   const shown = rows.slice(0, paging.limit);
 
@@ -71,7 +72,7 @@ export function RoomsSection() {
           setChip(c);
           paging.reset();
         }}
-        items={(["all", "active", "finished", "closed"] as const).map((c) => ({
+        items={(["all", "active", "stuck", "finished", "closed"] as const).map((c) => ({
           value: c,
           label: t(`chips.${c}`),
         }))}
@@ -113,11 +114,37 @@ export function RoomsSection() {
               </Td>
               <Td nowrap>
                 <StatusLabel status={r.status} />
+                {r.stuck && (
+                  <span
+                    title={t("stuckHint")}
+                    className="ml-2 rounded-pill bg-surface-raised px-2 py-1 align-middle text-[12px] leading-none font-semibold text-text-muted"
+                  >
+                    {t("stuck")}
+                  </span>
+                )}
               </Td>
               <Td muted nowrap noPhone>
                 {ago(r.createdAt)}
               </Td>
               <ActionsTd>
+                {(r.status === "answering" || r.status === "guessing" || r.status === "ready") && (
+                  <RowAction
+                    icon={FastForwardIcon}
+                    label={t("advance")}
+                    onClick={() =>
+                      setConfirm({
+                        title: t("advanceTitle", { code: r.code }),
+                        body: t("advanceBody"),
+                        cta: t("advanceCta"),
+                        run: async () => {
+                          await run(() => adminApi("POST", `/rooms/${r.id}/advance`), {
+                            ok: t("advanced", { code: r.code }),
+                          });
+                        },
+                      })
+                    }
+                  />
+                )}
                 {r.status !== "closed" && (
                   <RowAction
                     icon={LockSimpleIcon}

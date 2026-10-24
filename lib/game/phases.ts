@@ -161,6 +161,15 @@ export function autoAdvance(
   return planAdvance(status, players).to;
 }
 
+/** A live room with no change for this long shows as stuck in the admin console (SPIL-01). */
+export const STUCK_AFTER_MS = 20 * 60 * 1000;
+
+/** In answering, guessing or ready and untouched for 20 minutes: worth an admin's look. */
+export function isStuck(room: { status: RoomStatus; updatedAt: TimeInput }, now: TimeInput) {
+  const live = room.status === "answering" || room.status === "guessing" || room.status === "ready";
+  return live && toMs(now) - toMs(room.updatedAt) >= STUCK_AFTER_MS;
+}
+
 /** The host may skip to the reveal once guessing has run this long (SPIL-01). */
 export const SKIP_TO_REVEAL_MS = 60 * 1000;
 

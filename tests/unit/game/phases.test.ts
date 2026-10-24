@@ -8,6 +8,8 @@ import {
   allGuessed,
   autoAdvance,
   canSkipToReveal,
+  isStuck,
+  STUCK_AFTER_MS,
   guessTargets,
   planAdvance,
   SKIP_TO_REVEAL_MS,
@@ -395,5 +397,20 @@ describe("skip to the reveal (SPIL-01)", () => {
     expect(canSkipToReveal({ status: "guessing", guessingAt: at + 1 }, NOW)).toBe(false);
     expect(canSkipToReveal({ status: "ready", guessingAt: at }, NOW)).toBe(false);
     expect(canSkipToReveal({ status: "guessing", guessingAt: null }, NOW)).toBe(false);
+  });
+});
+
+describe("stuck rooms (SPIL-01)", () => {
+  it("a live phase untouched for 20 minutes is stuck", () => {
+    const old = NOW - STUCK_AFTER_MS;
+    for (const status of ["answering", "guessing", "ready"] as const) {
+      expect(isStuck({ status, updatedAt: old }, NOW)).toBe(true);
+      expect(isStuck({ status, updatedAt: old + 1 }, NOW)).toBe(false);
+    }
+  });
+
+  it("lobby, revealed and closed rooms are never stuck", () => {
+    for (const status of ["lobby", "revealed", "closed"] as const)
+      expect(isStuck({ status, updatedAt: 0 }, NOW)).toBe(false);
   });
 });

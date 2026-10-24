@@ -33,6 +33,8 @@ export type AdminRoom = {
   players: number;
   status: "lobby" | "answering" | "guessing" | "ready" | "revealed" | "closed";
   createdAt: string;
+  /** Live phase with no change for 20 minutes (SPIL-01). */
+  stuck: boolean;
 };
 
 export type AdminPack = {

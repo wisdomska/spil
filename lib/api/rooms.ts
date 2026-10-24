@@ -267,6 +267,40 @@ export async function advancePhaseIfReady(room: RoomRow, players: PlayerRow[]): 
   return next;
 }
 
+const FORCE_NEXT = { answering: "guessing", guessing: "ready" } as const;
+
+/**
+ * Moves a live room on one phase without waiting: the host's "Move on without them" and the
+ * admin's Force advance. Answering and guessing mark unfinished players sat_out first; ready
+ * computes and saves results (idempotent). Returns false when the room is not in a phase that
+ * can be forced.
+ */
+export async function forceAdvance(room: RoomRow): Promise<boolean> {
+  if (room.status === "ready") {
+    await finalize(room, await loadPlayers(room.id));
+    return true;
+  }
+  if (room.status !== "answering" && room.status !== "guessing") return false;
+  const column = room.status === "answering" ? "answers_submitted_at" : "guesses_submitted_at";
+  await db()
+    .from("players")
+    .update({ status: "sat_out" })
+    .eq("room_id", room.id)
+    .eq("status", "active")
+    .is(column, null);
+  const { data, error } = await db().rpc("advance_room", {
+    p_room: room.id,
+    p_from: room.status,
+    p_to: FORCE_NEXT[room.status],
+  });
+  if (error && error.message !== "WRONG_PHASE") throw fromDbError(error);
+  if (data && (data as RoomRow).status === "guessing") {
+    const next = await advancePhaseIfReady(data as RoomRow, await loadPlayers(room.id));
+    if (next.status === "guessing") await autoplayBots(next);
+  }
+  return true;
+}
+
 /**
  * Test players (dev and staging only): answer and guess instantly when a phase opens, with a
  * random lean so scores spread out. Then the room may advance.

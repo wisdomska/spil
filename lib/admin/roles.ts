@@ -9,6 +9,7 @@ export type Permission =
   | "overview.read"
   | "rooms.read"
   | "rooms.close"
+  | "rooms.advance"
   | "packs.read"
   | "packs.write"
   | "questions.read"
@@ -33,6 +34,7 @@ export const PERMISSIONS: Record<Permission, readonly AdminRole[]> = {
   "overview.read": ALL,
   "rooms.read": OWNER_MOD,
   "rooms.close": OWNER_MOD,
+  "rooms.advance": OWNER_MOD,
   // Moderators read packs only to filter questions; they never edit them.
   "packs.read": ALL,
   "packs.write": OWNER_LEAD,
