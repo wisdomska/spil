@@ -15,8 +15,14 @@ export type PackSummary = {
   minAge: MinAge;
 };
 
+/** SPIL-08: where a pack sits in the picker. */
+export type PackSection = "everyday" | "life" | "after_dark";
+
 export type Pack = PackSummary & {
   blurb: string;
+  section: PackSection;
+  /** 1 to 5 drops in the preview. */
+  spice: number;
   tone: PackTone;
   region: string | null;
   questionCount: number;

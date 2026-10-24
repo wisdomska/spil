@@ -3,7 +3,7 @@ import { getFlags } from "@/lib/flags";
 import { packsForFloor, type MinAge } from "@/lib/game";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { ApiError, fromDbError } from "./errors";
-import type { Pack } from "./types";
+import type { Pack, PackSection } from "./types";
 
 /** Live packs with at least one live question, in admin sort order (spec section 12). */
 async function allLivePacks(): Promise<Pack[]> {
@@ -27,6 +27,8 @@ async function allLivePacks(): Promise<Pack[]> {
       isAdult: p.min_age >= 18,
       heat: p.heat,
       minAge: p.min_age as MinAge,
+      section: p.section as PackSection,
+      spice: p.spice,
       region: p.region,
       sortOrder: p.sort_order,
       questionCount: counts.get(p.id) ?? 0,
@@ -40,6 +42,25 @@ async function allLivePacks(): Promise<Pack[]> {
 export async function livePacks(floor: MinAge): Promise<Pack[]> {
   const [packs, flags] = await Promise.all([allLivePacks(), getFlags()]);
   return packsForFloor(packs, floor, flags.adult_packs_enabled);
+}
+
+/**
+ * Up to three questions for a pack's preview (SPIL-08): the ones marked as samples, otherwise
+ * the pack's oldest live questions.
+ */
+export async function previewQuestions(packId: string): Promise<string[]> {
+  const db = getAdminClient();
+  const pick = (samples: boolean) => {
+    let q = db.from("questions").select("text").eq("pack_id", packId).eq("status", "live");
+    if (samples) q = q.eq("is_sample", true);
+    return q.order("updated_at").order("id").limit(3);
+  };
+  const marked = await pick(true);
+  if (marked.error) throw fromDbError(marked.error);
+  if ((marked.data ?? []).length > 0) return marked.data!.map((q) => q.text);
+  const first = await pick(false);
+  if (first.error) throw fromDbError(first.error);
+  return (first.data ?? []).map((q) => q.text);
 }
 
 /** A live pack the floor may play, or PACK_UNAVAILABLE / PACK_NOT_ALLOWED. */

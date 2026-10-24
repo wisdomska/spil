@@ -31,6 +31,8 @@ export const PATCH = route<Ctx>(async (request, { params }) => {
       icon: body.icon,
       tone: body.tone,
       min_age: body.minAge,
+      section: body.section,
+      spice: body.spice,
       // is_adult stays in step with min_age for anything that still reads it.
       is_adult: body.minAge === 18,
       region: body.region,

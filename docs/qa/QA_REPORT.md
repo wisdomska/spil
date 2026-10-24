@@ -31,13 +31,14 @@ No other screen scrolls sideways at any viewport.
 
 ## Tickets
 
-| Ticket             | Status      | 375 px                                                                                                 | 1280 px                                                                                                    | Chrome | Safari | Firefox    | QA sign-off                                                                                                      |
-| ------------------ | ----------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------ | ------ | ---------- | ---------------------------------------------------------------------------------------------------------------- |
-| SPIL-01            | Done        | screens/SPIL-01-after-375.png                                                                          | screens/SPIL-01-after-1280.png                                                                             | pass   | CI     | CI nightly | Unit matrix (2, 3, 12 players), e2e LMGF repro, harness self-test                                                |
-| SPIL-03            | Done        | screens/SPIL-03-after-sheet-375.png                                                                    | screens/SPIL-03-after-sheet-1280.png                                                                       | pass   | CI     | CI nightly | e2e live counts (realtime), own count, force dialog hold; pgTAP for save_answers                                 |
-| SPIL-04            | Done        | screens/SPIL-04-after-reveal-tie-375.png, screens/SPIL-04-after-results-tie-375.png                    | screens/SPIL-04-after-reveal-tie-1280.png, screens/SPIL-04-after-results-tie-1280.png                      | pass   | CI     | CI nightly | Unit tests for groups, places and T ranks; tie fixture checked at 375 and 1280                                   |
-| SPIL-02            | Done        | screens/SPIL-02-age-gate-375.png, screens/SPIL-02-picker-teen-375.png, screens/SPIL-02-blocked-375.png | screens/SPIL-02-age-gate-1280.png, screens/SPIL-02-picker-adult-1280.png, screens/SPIL-02-blocked-1280.png | pass   | CI     | CI nightly | Unit (bands, filter, start rule), API (create, join, pack change), e2e two contexts, privacy request scan, pgTAP |
-| SPIL-05 to SPIL-33 | Not started |                                                                                                        |                                                                                                            |        |        |            |                                                                                                                  |
+| Ticket                                 | Status      | 375 px                                                                                                 | 1280 px                                                                                                    | Chrome | Safari | Firefox    | QA sign-off                                                                                                      |
+| -------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------ | ------ | ---------- | ---------------------------------------------------------------------------------------------------------------- |
+| SPIL-01                                | Done        | screens/SPIL-01-after-375.png                                                                          | screens/SPIL-01-after-1280.png                                                                             | pass   | CI     | CI nightly | Unit matrix (2, 3, 12 players), e2e LMGF repro, harness self-test                                                |
+| SPIL-03                                | Done        | screens/SPIL-03-after-sheet-375.png                                                                    | screens/SPIL-03-after-sheet-1280.png                                                                       | pass   | CI     | CI nightly | e2e live counts (realtime), own count, force dialog hold; pgTAP for save_answers                                 |
+| SPIL-04                                | Done        | screens/SPIL-04-after-reveal-tie-375.png, screens/SPIL-04-after-results-tie-375.png                    | screens/SPIL-04-after-reveal-tie-1280.png, screens/SPIL-04-after-results-tie-1280.png                      | pass   | CI     | CI nightly | Unit tests for groups, places and T ranks; tie fixture checked at 375 and 1280                                   |
+| SPIL-02                                | Done        | screens/SPIL-02-age-gate-375.png, screens/SPIL-02-picker-teen-375.png, screens/SPIL-02-blocked-375.png | screens/SPIL-02-age-gate-1280.png, screens/SPIL-02-picker-adult-1280.png, screens/SPIL-02-blocked-1280.png | pass   | CI     | CI nightly | Unit (bands, filter, start rule), API (create, join, pack change), e2e two contexts, privacy request scan, pgTAP |
+| SPIL-08                                | Done        | screens/SPIL-08-picker-375.png, screens/SPIL-08-preview-375.png                                        | screens/SPIL-08-selected-1280.png, screens/SPIL-08-preview-1280.png                                        | pass   | CI     | CI nightly | e2e sticky CTA at 375 x 812, single selection, preview pick, preview age check; unit CSV and roles; pgTAP        |
+| SPIL-05 to SPIL-07, SPIL-09 to SPIL-33 | Not started |                                                                                                        |                                                                                                            |        |        |            |                                                                                                                  |
 
 ## SPIL-01: Softlock after "Move on without them"
 
@@ -107,3 +108,23 @@ Notes:
 - Spec conflict: the spec gives 403 for `PACK_NOT_ALLOWED` on create and 409 on pack change. One code has one status here, so it is 409 in both places.
 - Players already in an open room at release keep adult access only if they had ticked 18+. Everyone else defaults to 13 to 15 (the safe default), which can block an open adult lobby from starting until it is recreated.
 - Migration 20261024001000, applied to staging on 2026-10-24.
+
+## SPIL-08: Pack picker: sticky CTA, sections, selection state, previews
+
+- [x] On a 375 x 812 viewport the Continue button is always visible without scrolling: the count and Continue sit in a bar stuck to the bottom (below 1024 px full width with a blur; at 1024 px and up, sticky at the bottom of the content column). e2e checks it before and after scrolling.
+- [x] Only the chosen tile looks selected: every tile shares one base style (light for 13+, dark for 18+), Classic lost its orange fill and got a "Starter" pill, and the chosen tile alone has the 2 px accent ring with a 2 px offset and the check badge. e2e checks exactly one radio is checked.
+- [x] Preview opens on every tile, shows 3 sample questions, a 1 to 5 spice meter and "Pick {pack}", and picking updates the picker and the Continue label.
+- [x] Sections: Everyday, Life stages, After dark · 18+ (the last only for 18+ players).
+- [x] Default count 10, options 5 · 10 · 15 · 20 · All.
+
+Admin cascade:
+
+- [x] Packs: "Picker section" and "Spice" fields.
+- [x] Questions: "Use as preview" switch in the edit dialog (writers only; moderators still only hide), a "Preview" tag in the list, and CSV columns `is_sample` (import and export) plus `min_age`, `section` and `spice` for reference in the export.
+- [x] Settings: default questions per game is 10.
+
+Notes:
+
+- The preview endpoint checks the age band like the pack list, so a minor cannot read an adult pack's questions through the API (e2e).
+- Spice values for the existing packs are a starting point (Classic 2, 9 to 5 1, After Dark 3, Between the Sheets 4, Kink Curious 4, No Limits 5, others 2); the admin can change them.
+- Migration 20261024001100, applied to staging on 2026-10-24.

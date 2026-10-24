@@ -103,6 +103,8 @@ describe("question edits by role", () => {
     expect(canPatchQuestion("moderator", { status: "hidden", text: "new text here" })).toBe(false);
     expect(canPatchQuestion("moderator", { status: "hidden", packId: "work" })).toBe(false);
     expect(canPatchQuestion(null, { status: "hidden" })).toBe(false);
+    expect(canPatchQuestion("moderator", { status: "hidden", isSample: true })).toBe(false);
+    expect(canPatchQuestion("content_lead", { isSample: true })).toBe(true);
   });
 });
 

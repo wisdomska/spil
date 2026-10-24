@@ -4,7 +4,7 @@
 
 -- Settings singleton
 insert into public.settings (id, questions_per_game, max_players, min_players)
-values (true, 12, 12, 2);
+values (true, 10, 12, 2);
 
 -- Feature flags (local values; test players are never on in production)
 insert into public.feature_flags (key, enabled) values
@@ -28,6 +28,10 @@ insert into public.packs (id, name, blurb, icon, tone, is_adult, heat, region, s
   ('purity', 'The Purity 100', 'All 100 classic purity questions. Your Spill Score is the flip side.', 'list-checks', 'accent', true, 'intense', null, 'draft', 100);
 -- SPIL-02: adult packs are for 18 and over; everything else is 13+ (the column default).
 update public.packs set min_age = 18 where is_adult;
+-- SPIL-08: picker sections and spice.
+update public.packs set section = 'life' where id in ('campus', 'work', 'roadtrip');
+update public.packs set section = 'after_dark' where min_age >= 18;
+update public.packs set spice = case id when 'work' then 1 when 'afterdark' then 3 when 'purity' then 3 when 'sheets' then 4 when 'kink' then 4 when 'nolimits' then 5 else 2 end;
 
 -- Classic (classic): 12 from the prototype
 insert into public.questions (pack_id, text) values

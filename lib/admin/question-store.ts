@@ -10,6 +10,7 @@ type Row = {
   pack_id: string;
   text: string;
   status: QStatus;
+  is_sample: boolean;
   yes_count: number;
   answered_count: number;
   report_count: number;
@@ -21,6 +22,7 @@ const toQuestion = (q: Row): AdminQuestion => ({
   packId: q.pack_id,
   text: q.text,
   status: q.status,
+  isSample: q.is_sample,
   yes: q.yes_count,
   answered: q.answered_count,
   reports: q.report_count,
@@ -33,7 +35,9 @@ export async function listQuestions(filter: { packId?: string; status?: QStatus 
   const rows = await fetchAll<Row>((from, to) => {
     let q = db
       .from("questions")
-      .select("id, pack_id, text, status, yes_count, answered_count, report_count, updated_at")
+      .select(
+        "id, pack_id, text, status, is_sample, yes_count, answered_count, report_count, updated_at",
+      )
       .order("updated_at", { ascending: false })
       .order("id");
     if (filter.packId) q = q.eq("pack_id", filter.packId);
@@ -46,7 +50,9 @@ export async function listQuestions(filter: { packId?: string; status?: QStatus 
 export async function findQuestion(id: string) {
   const { data } = await getAdminClient()
     .from("questions")
-    .select("id, pack_id, text, status, yes_count, answered_count, report_count, updated_at")
+    .select(
+      "id, pack_id, text, status, is_sample, yes_count, answered_count, report_count, updated_at",
+    )
     .eq("id", id)
     .maybeSingle();
   if (!data) throw new ApiError("NOT_FOUND", "No question with that id.");
@@ -76,21 +82,26 @@ export function hasDuplicate(
 
 /** Inserts in chunks so a large import stays under request size limits. */
 export async function insertQuestions(
-  rows: Array<{ packId: string; text: string; status: QStatus }>,
+  rows: Array<{ packId: string; text: string; status: QStatus; isSample?: boolean }>,
 ) {
   const db = getAdminClient();
   for (let i = 0; i < rows.length; i += 500) {
-    const { error } = await db
-      .from("questions")
-      .insert(
-        rows.slice(i, i + 500).map((r) => ({ pack_id: r.packId, text: r.text, status: r.status })),
-      );
+    const { error } = await db.from("questions").insert(
+      rows.slice(i, i + 500).map((r) => ({
+        pack_id: r.packId,
+        text: r.text,
+        status: r.status,
+        is_sample: r.isSample ?? false,
+      })),
+    );
     if (error) throw new ApiError("INTERNAL");
   }
 }
 
 export async function packNames() {
-  const { data, error } = await getAdminClient().from("packs").select("id, name");
+  const { data, error } = await getAdminClient()
+    .from("packs")
+    .select("id, name, min_age, section, spice");
   if (error) throw new ApiError("INTERNAL");
   return data ?? [];
 }

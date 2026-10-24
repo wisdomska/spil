@@ -311,7 +311,9 @@ export type Database = {
           min_age: number;
           name: string;
           region: string | null;
+          section: string;
           sort_order: number;
+          spice: number;
           status: Database["public"]["Enums"]["pack_status"];
           tone: Database["public"]["Enums"]["pack_tone"];
           updated_at: string;
@@ -325,7 +327,9 @@ export type Database = {
           min_age?: number;
           name: string;
           region?: string | null;
+          section?: string;
           sort_order?: number;
+          spice?: number;
           status?: Database["public"]["Enums"]["pack_status"];
           tone?: Database["public"]["Enums"]["pack_tone"];
           updated_at?: string;
@@ -339,7 +343,9 @@ export type Database = {
           min_age?: number;
           name?: string;
           region?: string | null;
+          section?: string;
           sort_order?: number;
+          spice?: number;
           status?: Database["public"]["Enums"]["pack_status"];
           tone?: Database["public"]["Enums"]["pack_tone"];
           updated_at?: string;
@@ -421,6 +427,7 @@ export type Database = {
         Row: {
           answered_count: number;
           id: string;
+          is_sample: boolean;
           pack_id: string;
           report_count: number;
           status: Database["public"]["Enums"]["q_status"];
@@ -431,6 +438,7 @@ export type Database = {
         Insert: {
           answered_count?: number;
           id?: string;
+          is_sample?: boolean;
           pack_id: string;
           report_count?: number;
           status?: Database["public"]["Enums"]["q_status"];
@@ -441,6 +449,7 @@ export type Database = {
         Update: {
           answered_count?: number;
           id?: string;
+          is_sample?: boolean;
           pack_id?: string;
           report_count?: number;
           status?: Database["public"]["Enums"]["q_status"];

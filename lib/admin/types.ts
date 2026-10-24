@@ -45,6 +45,9 @@ export type AdminPack = {
   tone: "accent" | "inverse" | "raised";
   /** SPIL-02: 13, 16 or 18. 18+ packs get the black tile and only reach 18+ players. */
   minAge: 13 | 16 | 18;
+  /** SPIL-08: picker section and 1 to 5 spice drops. */
+  section: "everyday" | "life" | "after_dark";
+  spice: number;
   region: string | null;
   status: "live" | "draft" | "hidden";
   sortOrder: number;
@@ -59,6 +62,8 @@ export type AdminQuestion = {
   packId: string;
   text: string;
   status: QStatus;
+  /** SPIL-08: shown in the pack preview. */
+  isSample: boolean;
   yes: number;
   answered: number;
   reports: number;

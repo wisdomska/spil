@@ -7,7 +7,7 @@ import type { ImportSummary } from "@/lib/admin/types";
 
 /**
  * POST /admin/questions/import: bulk CSV import. Columns: `question` plus `pack_id` or `pack`
- * (id or name), optional `status`. Nothing is written when any row has an error, so a fixed
+ * (id or name), optional `status` and `is_sample` (true or false). Nothing is written when any row has an error, so a fixed
  * file can simply be imported again.
  */
 export const POST = route(async (request): Promise<ImportSummary> => {

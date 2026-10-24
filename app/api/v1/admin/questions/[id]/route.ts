@@ -9,13 +9,14 @@ import { getAdminClient } from "@/lib/supabase/admin";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-const snap = (q: { packId: string; text: string; status: string }) => ({
+const snap = (q: { packId: string; text: string; status: string; isSample: boolean }) => ({
   pack: q.packId,
   text: q.text,
   status: q.status,
+  preview: q.isSample,
 });
 
-/** PATCH /admin/questions/:id: edit text, pack or status. Moderators may only hide. */
+/** PATCH /admin/questions/:id: edit text, pack, status or preview mark. Moderators may only hide. */
 export const PATCH = route<Ctx>(async (request, { params }) => {
   const me = await requireAdmin(request, "questions.hide");
   const { id } = await params;
@@ -26,6 +27,7 @@ export const PATCH = route<Ctx>(async (request, { params }) => {
     packId: body.packId ?? before.packId,
     text: body.text !== undefined ? normalizeQuestion(body.text) : before.text,
     status: body.status ?? before.status,
+    isSample: body.isSample ?? before.isSample,
   };
   if (body.text !== undefined) {
     const problem = checkQuestion(next.text);
@@ -40,10 +42,16 @@ export const PATCH = route<Ctx>(async (request, { params }) => {
     throw new ApiError("DUPLICATE");
   const { error } = await getAdminClient()
     .from("questions")
-    .update({ pack_id: next.packId, text: next.text, status: next.status })
+    .update({
+      pack_id: next.packId,
+      text: next.text,
+      status: next.status,
+      is_sample: next.isSample,
+    })
     .eq("id", id);
   if (error) throw new ApiError("INTERNAL");
-  const onlyStatus = body.text === undefined && body.packId === undefined;
+  const onlyStatus =
+    body.text === undefined && body.packId === undefined && body.isSample === undefined;
   const action = !onlyStatus
     ? "question_edited"
     : next.status === "hidden"

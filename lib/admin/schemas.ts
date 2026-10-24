@@ -40,6 +40,9 @@ export const packBody = z.object({
   tone: z.enum(["accent", "inverse", "raised"]),
   /** SPIL-02: 13 (everyone), 16 or 18 (adult, black tile). */
   minAge: z.union([z.literal(13), z.literal(16), z.literal(18)]),
+  /** SPIL-08: picker section and spice (1 to 5). */
+  section: z.enum(["everyday", "life", "after_dark"]),
+  spice: z.number().int().min(1).max(5),
   region: z
     .string()
     .trim()
@@ -62,6 +65,8 @@ export const patchQuestion = z
     text: z.string().max(400).optional(),
     packId: z.string().trim().min(1).max(40).optional(),
     status: qStatus.optional(),
+    /** SPIL-08: use as a pack preview question. */
+    isSample: z.boolean().optional(),
   })
   .refine((v) => Object.values(v).some((x) => x !== undefined), "Nothing to change.");
 

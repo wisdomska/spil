@@ -146,17 +146,22 @@
     "title": "Pick your poison.",
     "lede": "One pack per room. You can change it from the lobby before the game starts.",
     "group": "Question pack",
-    "howItWorks": "How it works",
     "howPackWorks": "How {pack} works",
     "howMany": "How many questions?",
     "all": "All {n}",
     "minutes": "{n, plural, one {About # minute of answering.} other {About # minutes of answering.}}",
-    "scoringInfo": "How scoring works for this pack",
     "continue": "Continue with {pack}",
     "badge18": "18+",
     "badge16": "16+",
+    "starter": "Starter",
+    "preview": "Preview",
+    "previewAria": "Preview {pack}",
+    "spice": "Spice: {n} of 5",
+    "pick": "Pick {pack}",
     "aboutPack": "About this pack",
     "empty": "No packs are live right now.",
+    "sectionEveryday": "Everyday",
+    "sectionLife": "Life stages",
     "sectionAdult": "After dark · 18+",
     "someHidden": "Some packs are hidden for this room."
   },
@@ -673,6 +678,14 @@
         "16": "16+",
         "18": "18+ (adult)"
       },
+      "section": "Picker section",
+      "sections": {
+        "everyday": "Everyday",
+        "life": "Life stages",
+        "after_dark": "After dark (18+)"
+      },
+      "spice": "Spice",
+      "spiceHint": "1 to 5 drops in the pack preview.",
       "region": "Region",
       "regions": {
         "all": "Everywhere",
@@ -754,11 +767,15 @@
         "no_pack_column": "the header needs a pack_id or pack column",
         "unknown_pack": "no pack with that id or name",
         "bad_status": "status must be live, draft or hidden",
+        "bad_is_sample": "is_sample must be true or false",
         "too_short": "the question is too short",
         "too_long": "the question is over 120 characters",
         "too_many_rows": "import at most 2,000 rows at a time",
         "empty": "the file has no rows"
-      }
+      },
+      "sample": "Use as preview",
+      "sampleHint": "The pack preview shows up to 3 of these. With none marked, it shows the first 3.",
+      "sampleTag": "Preview"
     },
     "reports": {
       "chips": {

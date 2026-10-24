@@ -102,8 +102,8 @@ describe("question import", () => {
     expect(r.errors).toEqual([]);
     expect(r.duplicates).toBe(2);
     expect(r.rows).toEqual([
-      { packId: "work", text: "faked a sick day?", status: "draft" },
-      { packId: "classic", text: "danced on a table?", status: "hidden" },
+      { packId: "work", text: "faked a sick day?", status: "draft", isSample: false },
+      { packId: "classic", text: "danced on a table?", status: "hidden", isSample: false },
     ]);
   });
 
@@ -112,8 +112,12 @@ describe("question import", () => {
       {
         packId: "work",
         packName: "Renamed",
+        minAge: 13,
+        section: "life",
+        spice: 1,
         text: "sent a reply-all by mistake?",
         status: "live",
+        isSample: true,
         answered: 4,
         yes: 1,
         reports: 0,
@@ -124,8 +128,18 @@ describe("question import", () => {
     const r = parseQuestionImport(exported, packs, []);
     expect(r.errors).toEqual([]);
     expect(r.rows).toEqual([
-      { packId: "work", text: "sent a reply-all by mistake?", status: "live" },
+      { packId: "work", text: "sent a reply-all by mistake?", status: "live", isSample: true },
     ]);
+  });
+
+  it("reads is_sample and rejects anything but true or false (SPIL-08)", () => {
+    const csv = [
+      "pack_id,question,is_sample",
+      "work,faked a sick day?,yes",
+      "work,quit by text?,maybe",
+    ].join("\r\n");
+    const r = parseQuestionImport(csv, packs, []);
+    expect(r.errors).toEqual([{ line: 3, error: "bad_is_sample" }]);
   });
 
   it("reports bad rows with their line numbers", () => {

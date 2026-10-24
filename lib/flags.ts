@@ -31,7 +31,7 @@ export async function getSettings(): Promise<Settings> {
     .select("questions_per_game, max_players, min_players, age_lock_hours")
     .maybeSingle();
   const value = {
-    questionsPerGame: data?.questions_per_game ?? 12,
+    questionsPerGame: data?.questions_per_game ?? 10,
     maxPlayers: data?.max_players ?? 12,
     minPlayers: data?.min_players ?? 2,
     ageLockHours: data?.age_lock_hours ?? 24,

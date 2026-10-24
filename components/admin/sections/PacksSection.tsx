@@ -35,6 +35,8 @@ type Form = {
   icon: string;
   tone: AdminPack["tone"];
   minAge: AdminPack["minAge"];
+  section: AdminPack["section"];
+  spice: string;
   region: string;
   status: AdminPack["status"];
   sortOrder: string;
@@ -52,6 +54,8 @@ const blank: Form = {
   icon: "cards",
   tone: "accent",
   minAge: 13,
+  section: "everyday",
+  spice: "2",
   region: "",
   status: "draft",
   sortOrder: "100",
@@ -84,6 +88,8 @@ export function PacksSection() {
             icon: p.icon,
             tone: p.tone,
             minAge: p.minAge,
+            section: p.section,
+            spice: String(p.spice),
             region: p.region ?? "",
             status: p.status,
             sortOrder: String(p.sortOrder),
@@ -109,6 +115,8 @@ export function PacksSection() {
       icon: form.icon,
       tone: form.tone,
       minAge: form.minAge,
+      section: form.section,
+      spice: Math.max(1, Math.min(5, parseInt(form.spice, 10) || 1)),
       region: form.region || null,
       status: form.status,
       sortOrder: Math.max(0, Math.min(10000, parseInt(form.sortOrder, 10) || 0)),
@@ -269,6 +277,26 @@ export function PacksSection() {
               <option value="">{t("regions.all")}</option>
               <option value="GH">{t("regions.GH")}</option>
               <option value="NG">{t("regions.NG")}</option>
+            </Select>
+          </FieldRow>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FieldRow id="pk-section" label={t("section")}>
+            <Select id="pk-section" value={form.section} onChange={set("section")}>
+              {(["everyday", "life", "after_dark"] as const).map((v) => (
+                <option key={v} value={v}>
+                  {t(`sections.${v}`)}
+                </option>
+              ))}
+            </Select>
+          </FieldRow>
+          <FieldRow id="pk-spice" label={t("spice")} hint={t("spiceHint")}>
+            <Select id="pk-spice" value={form.spice} onChange={set("spice")}>
+              {["1", "2", "3", "4", "5"].map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
             </Select>
           </FieldRow>
         </div>

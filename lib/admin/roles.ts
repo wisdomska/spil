@@ -98,13 +98,19 @@ export type QuestionPatch = {
   text?: string;
   packId?: string;
   status?: "live" | "draft" | "hidden";
+  isSample?: boolean;
 };
 
 /** Moderators may only set a question to hidden; owners and content leads may change anything. */
 export function canPatchQuestion(role: AdminRole | null | undefined, patch: QuestionPatch) {
   if (can(role, "questions.write")) return true;
   if (!can(role, "questions.hide")) return false;
-  return patch.text === undefined && patch.packId === undefined && patch.status === "hidden";
+  return (
+    patch.text === undefined &&
+    patch.packId === undefined &&
+    patch.isSample === undefined &&
+    patch.status === "hidden"
+  );
 }
 
 type AdminLike = { userId: string; role: AdminRole };

@@ -36,12 +36,13 @@ import {
   type ConfirmState,
 } from "@/components/admin/ui";
 import { Button } from "@/components/ui/Button";
+import { SwitchRow } from "@/components/ui/Switch";
 import { useToast } from "@/components/ui/Toast";
 import { yesRate, type QStatus } from "@/lib/admin/questions";
 import { can } from "@/lib/admin/roles";
 import type { AdminPack, AdminQuestion, ImportSummary } from "@/lib/admin/types";
 
-type Form = { text: string; packId: string; status: QStatus };
+type Form = { text: string; packId: string; status: QStatus; isSample: boolean };
 const STATUSES = ["live", "draft", "hidden"] as const;
 
 export function QuestionsSection() {
@@ -61,7 +62,12 @@ export function QuestionsSection() {
   const [status, setStatus] = useState<"all" | QStatus>("all");
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<{ id: string | null } | null>(null);
-  const [form, setForm] = useState<Form>({ text: "", packId: "", status: "live" });
+  const [form, setForm] = useState<Form>({
+    text: "",
+    packId: "",
+    status: "live",
+    isSample: false,
+  });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState<ConfirmState>(null);
@@ -88,8 +94,13 @@ export function QuestionsSection() {
     setEditing({ id: x?.id ?? null });
     setForm(
       x
-        ? { text: x.text, packId: x.packId, status: x.status }
-        : { text: "", packId: pack !== "all" ? pack : (packList[0]?.id ?? ""), status: "live" },
+        ? { text: x.text, packId: x.packId, status: x.status, isSample: x.isSample }
+        : {
+            text: "",
+            packId: pack !== "all" ? pack : (packList[0]?.id ?? ""),
+            status: "live",
+            isSample: false,
+          },
     );
   };
 
@@ -109,6 +120,7 @@ export function QuestionsSection() {
             text: lines.join(" "),
             packId: form.packId,
             status: form.status,
+            isSample: form.isSample,
           }),
         { ok: t("saved"), quiet: true, errors: textErrors },
       );
@@ -268,7 +280,14 @@ export function QuestionsSection() {
             const rate = yesRate(x.yes, x.answered);
             return (
               <Tr key={x.id}>
-                <Td className="min-w-[200px] min-[1100px]:min-w-[260px]">{x.text}</Td>
+                <Td className="min-w-[200px] min-[1100px]:min-w-[260px]">
+                  {x.text}
+                  {x.isSample && (
+                    <span className="ml-2 rounded-pill bg-surface-raised px-2 py-1 align-middle text-[12px] leading-none font-semibold whitespace-nowrap text-text-muted">
+                      {t("sampleTag")}
+                    </span>
+                  )}
+                </Td>
                 <Td muted nowrap noPhone>
                   {packName(x.packId)}
                 </Td>
@@ -354,6 +373,16 @@ export function QuestionsSection() {
             ))}
           </Select>
         </FieldRow>
+        {editing?.id && (
+          <SwitchRow
+            id="qn-sample"
+            look="plain"
+            checked={form.isSample}
+            onCheckedChange={(v) => setForm((f) => ({ ...f, isSample: v }))}
+            title={t("sample")}
+            description={t("sampleHint")}
+          />
+        )}
       </FormDialog>
 
       <ImportDialog open={importing} onClose={() => setImporting(false)} />

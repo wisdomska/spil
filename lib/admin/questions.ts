@@ -35,13 +35,14 @@ export type ImportError =
   | "no_pack_column"
   | "unknown_pack"
   | "bad_status"
+  | "bad_is_sample"
   | "too_short"
   | "too_long"
   | "too_many_rows"
   | "empty";
 
 export type ImportResult = {
-  rows: Array<{ packId: string; text: string; status: QStatus }>;
+  rows: Array<{ packId: string; text: string; status: QStatus; isSample: boolean }>;
   duplicates: number;
   errors: Array<{ line: number; error: ImportError }>;
 };
@@ -69,6 +70,7 @@ export function parseQuestionImport(
   const idCol = header.indexOf("pack_id");
   const packCol = header.indexOf("pack");
   const statusCol = header.indexOf("status");
+  const sampleCol = header.indexOf("is_sample");
   if (qCol < 0) result.errors.push({ line: 1, error: "no_question_column" });
   if (idCol < 0 && packCol < 0) result.errors.push({ line: 1, error: "no_pack_column" });
   if (result.errors.length) return result;
@@ -99,7 +101,11 @@ export function parseQuestionImport(
       return;
     }
     seen.add(key);
-    result.rows.push({ packId, text, status });
+    const rawSample = cell(sampleCol).toLowerCase();
+    const isSample = ["true", "yes", "1"].includes(rawSample);
+    if (rawSample && !isSample && !["false", "no", "0"].includes(rawSample))
+      return result.errors.push({ line, error: "bad_is_sample" });
+    result.rows.push({ packId, text, status, isSample });
   });
   return result;
 }
@@ -107,8 +113,13 @@ export function parseQuestionImport(
 export type ExportQuestion = {
   packId: string;
   packName: string;
+  /** SPIL-02 and SPIL-08 pack fields, for reference; import ignores them. */
+  minAge: number;
+  section: string;
+  spice: number;
   text: string;
   status: QStatus;
+  isSample: boolean;
   answered: number;
   yes: number;
   reports: number;
@@ -119,6 +130,10 @@ export const EXPORT_HEADER = [
   "pack",
   "question",
   "status",
+  "is_sample",
+  "min_age",
+  "section",
+  "spice",
   "answered",
   "yes_rate",
   "reports",
@@ -129,7 +144,7 @@ export function yesRate(yes: number, answered: number): number | null {
   return answered > 0 ? Math.round((yes / answered) * 100) : null;
 }
 
-/** The export is also a valid import file (pack_id, question and status columns). */
+/** The export is also a valid import file (pack_id, question, status and is_sample columns). */
 export function questionsToCsv(list: ReadonlyArray<ExportQuestion>) {
   return toCsv(
     EXPORT_HEADER,
@@ -140,6 +155,10 @@ export function questionsToCsv(list: ReadonlyArray<ExportQuestion>) {
         q.packName,
         `Have you ever ${q.text}`,
         q.status,
+        q.isSample ? "true" : "false",
+        q.minAge,
+        q.section,
+        q.spice,
         q.answered,
         rate === null ? "" : `${rate}%`,
         q.reports,

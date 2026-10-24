@@ -103,7 +103,7 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
   if (!band) return <AgeGate who="host" onAge={(years) => setAge(years, ageLockHours)} />;
 
   return (
-    <main className="mx-auto box-border flex w-full max-w-[880px] flex-1 flex-col gap-5 px-5 pt-4 pb-7">
+    <main className="mx-auto box-border flex w-full max-w-[880px] flex-1 flex-col gap-5 px-5 pt-4">
       <div className="grid gap-2.5">
         <h1 className="m-0 font-display text-display-l font-extrabold tracking-display">
           {t("title")}
@@ -118,6 +118,7 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
         <PackPicker
           packs={packs}
           questionsPerGame={questionsPerGame}
+          band={band}
           initialPack={params.get("pack") ?? undefined}
           cta={(name) => t("continue", { pack: name })}
           busy={busy}

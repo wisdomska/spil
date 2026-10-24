@@ -12,6 +12,8 @@ type PackRow = {
   icon: string;
   tone: AdminPack["tone"];
   min_age: number;
+  section: string;
+  spice: number;
   region: string | null;
   status: AdminPack["status"];
   sort_order: number;
@@ -24,6 +26,8 @@ export const packSnapshot = (p: PackRow) => ({
   icon: p.icon,
   tone: p.tone,
   minAge: p.min_age as AdminPack["minAge"],
+  section: p.section as AdminPack["section"],
+  spice: p.spice,
   region: p.region,
   status: p.status,
   sortOrder: p.sort_order,

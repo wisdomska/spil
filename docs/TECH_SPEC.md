@@ -563,6 +563,7 @@ Base path `/api/v1`. JSON, camelCase. Auth via Supabase session cookie (`@supaba
 |---|---|---|---|---|
 | GET | `/packs?band=` | anyone | → `Pack[]` (live with ≥1 live question, `questionCount`, `minAge`), only packs whose `minAge` the band reaches; no band means 13+ (SPIL-02) | |
 | GET | `/rooms/:code/packs` | host | → `{packs, someHidden}`: packs for the room's youngest player (SPIL-02) | NOT_HOST |
+| GET | `/packs/:id/preview?band=` | anyone | → `{questions}`: up to 3 questions marked `is_sample`, else the pack's first 3 live ones. The band must reach the pack's minimum age (SPIL-08) | PACK_UNAVAILABLE, PACK_NOT_ALLOWED |
 | POST | `/rooms` | session + Turnstile | `{ageBand, packId}` → `{code}` (room in lobby, no player yet; `rooms.min_age` from the pack) | RATE_LIMITED (10/h/user), PACK_UNAVAILABLE, AGE_TOO_YOUNG, PACK_NOT_ALLOWED |
 | GET | `/rooms/:code` | anyone | → `{code, status, pack:{name,icon,isAdult,heat,minAge}, hostNickname, playerCount, maxPlayers, minAge, ageLockHours}` | ROOM_NOT_FOUND, ROOM_EXPIRED |
 | POST | `/rooms/:code/join` | session | `{nickname, avatar, ageBand}` → `{playerId}`. First player becomes host. A band below `rooms.min_age` is refused before any player row exists | ROOM_FULL, GAME_STARTED, ROOM_EXPIRED, NAME_TAKEN, NAME_INVALID, AGE_TOO_YOUNG, AGE_RESTRICTED |

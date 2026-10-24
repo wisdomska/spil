@@ -12,10 +12,19 @@ export const GET = route(async (request) => {
   const status = Q_STATUSES.includes(rawStatus as QStatus) ? (rawStatus as QStatus) : undefined;
   const search = params.get("q")?.trim().toLowerCase();
   const [questions, packs] = await Promise.all([listQuestions({ packId, status }), packNames()]);
-  const name = new Map(packs.map((p) => [p.id, p.name]));
+  const byId = new Map(packs.map((p) => [p.id, p]));
   const list = questions
     .filter((q) => !search || q.text.toLowerCase().includes(search))
-    .map((q) => ({ ...q, packName: name.get(q.packId) ?? q.packId }));
+    .map((q) => {
+      const p = byId.get(q.packId);
+      return {
+        ...q,
+        packName: p?.name ?? q.packId,
+        minAge: p?.min_age ?? 13,
+        section: p?.section ?? "everyday",
+        spice: p?.spice ?? 2,
+      };
+    });
   return new Response(questionsToCsv(list), {
     headers: {
       "content-type": "text/csv; charset=utf-8",

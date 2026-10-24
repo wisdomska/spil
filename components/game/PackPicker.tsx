@@ -1,18 +1,29 @@
 "use client";
 
-import { CheckIcon, InfoIcon } from "@phosphor-icons/react";
+import { CheckIcon, DropIcon, EyeIcon, InfoIcon } from "@phosphor-icons/react";
 import * as RadioGroup from "@radix-ui/react-radio-group";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { PackGlyph } from "@/components/brand/PackGlyph";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
-import type { Pack } from "@/lib/api/types";
+import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
+import { api } from "@/lib/api/client";
+import type { Pack, PackSection } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
+import type { AgeBand } from "@/lib/game";
 import { useIsDesktop } from "@/lib/useMedia";
 
 const PACK_INFO = new Set(["purity"]);
-const COUNT_OPTIONS = [5, 10, 15, 20, 30, 50];
+/** SPIL-08: 5 · 10 · 15 · 20 · All. */
+const COUNT_OPTIONS = [5, 10, 15, 20];
+const SECTIONS: readonly PackSection[] = ["everyday", "life", "after_dark"];
+const SECTION_KEY = {
+  everyday: "sectionEveryday",
+  life: "sectionLife",
+  after_dark: "sectionAdult",
+} as const;
 
 /** Options under the pack's size, plus "All n" (App: qnOpts). */
 export function countOptions(total: number) {
@@ -27,6 +38,8 @@ export function defaultCount(total: number, perGame: number) {
 type PackPickerProps = {
   packs: Pack[];
   questionsPerGame: number;
+  /** The player's band: the preview endpoint checks it like the pack list does. */
+  band: AgeBand;
   initialPack?: string;
   initialCount?: number;
   cta: (packName: string) => string;
@@ -34,10 +47,15 @@ type PackPickerProps = {
   onContinue: (packId: string, questionCount: number) => void;
 };
 
-/** Masonry pack grid with a featured first tile, question count picker and CTA (App: packs). */
+/**
+ * Pack picker (SPIL-08): packs grouped into sections, one tile style (light for 13+, dark for
+ * 18+), exactly one selected tile, a preview for every pack, and the count and Continue button
+ * in a bar that stays on screen.
+ */
 export function PackPicker({
   packs,
   questionsPerGame,
+  band,
   initialPack,
   initialCount,
   cta,
@@ -48,12 +66,11 @@ export function PackPicker({
   const ti = useTranslations("packInfo.purity");
   const tc = useTranslations("common");
   const desktop = useIsDesktop();
-  // Adult packs come last, under their own heading (SPIL-02). Under 18 never receives them.
-  const ordered = [...packs.filter((p) => p.minAge < 18), ...packs.filter((p) => p.minAge >= 18)];
-  const sections = [
-    { key: "all", title: null, packs: ordered.filter((p) => p.minAge < 18) },
-    { key: "adult", title: t("sectionAdult"), packs: ordered.filter((p) => p.minAge >= 18) },
-  ].filter((section) => section.packs.length > 0);
+  const sections = SECTIONS.map((key) => ({
+    key,
+    packs: packs.filter((p) => (p.minAge >= 18 ? "after_dark" : p.section) === key),
+  })).filter((s) => s.packs.length > 0);
+  const ordered = sections.flatMap((s) => s.packs);
   const [selected, setSelected] = useState(initialPack ?? ordered[0]?.id ?? "");
   const pack = ordered.find((p) => p.id === selected) ?? ordered[0];
   const total = pack?.questionCount ?? 0;
@@ -61,6 +78,7 @@ export function PackPicker({
   const options = countOptions(total);
   const count = chosen && options.includes(chosen) ? chosen : defaultCount(total, questionsPerGame);
   const [info, setInfo] = useState<string | null>(null);
+  const [preview, setPreview] = useState<Pack | null>(null);
 
   // Masonry: 4px rows; each tile spans its measured height.
   const grid = useRef<HTMLDivElement>(null);
@@ -103,11 +121,9 @@ export function PackPicker({
       >
         {sections.map((section) => (
           <Fragment key={section.key}>
-            {section.title && (
-              <h2 className="m-0 px-2 pt-6 pb-3 text-[14px] leading-none font-semibold tracking-wide text-text-muted uppercase">
-                {section.title}
-              </h2>
-            )}
+            <h2 className="m-0 px-2 pt-6 pb-3 text-[14px] leading-none font-semibold tracking-wide text-text-muted uppercase">
+              {t(SECTION_KEY[section.key])}
+            </h2>
             <div
               data-masonry
               className="grid grid-flow-row-dense grid-cols-2 items-start gap-x-3 p-2 lg:grid-cols-3 lg:gap-x-3.5"
@@ -115,54 +131,41 @@ export function PackPicker({
             >
               {section.packs.map((p) => {
                 const i = ordered.indexOf(p);
-                const feat = i === 0;
                 const sel = p.id === selected;
-                const adult = p.isAdult;
-                const classic = p.id === "classic";
-                const tile = adult
-                  ? "bg-tile-night text-tile-on-night border border-line"
-                  : classic
-                    ? "bg-accent text-on-accent border border-transparent"
-                    : "bg-tile-paper text-tile-on-paper border border-transparent";
-                const glyph = adult
-                  ? { background: "var(--adult-badge)", color: "var(--adult-badge-ink)" }
-                  : classic
-                    ? { background: "var(--tile-night-glyph-ink)", color: "var(--tile-on-night)" }
-                    : { background: "var(--accent)", color: "var(--tile-night-glyph-ink)" };
-                const glyphSize = feat ? 60 : desktop ? 52 : 44;
+                const adult = p.minAge >= 18;
                 const hasInfo = PACK_INFO.has(p.id);
+                const tileButton = adult
+                  ? "border-[var(--tile-info-edge)] text-tile-on-night hover:bg-[var(--tile-info-hover)]"
+                  : "border-line-strong text-tile-on-paper hover:bg-[color-mix(in_oklab,var(--tile-on-paper)_8%,transparent)]";
                 return (
                   <div
                     key={p.id}
                     data-pack={p.id}
                     className="relative grid self-start"
-                    style={{
-                      gridColumn: feat ? "1 / -1" : "auto",
-                      gridRowEnd: `span ${spans[p.id] ?? 50}`,
-                    }}
+                    style={{ gridRowEnd: `span ${spans[p.id] ?? 50}` }}
                   >
                     <RadioGroup.Item
                       value={p.id}
                       className={cn(
-                        "relative box-border flex min-w-0 flex-col items-start justify-start gap-4 self-start rounded-card text-left hover:brightness-[1.08] active:scale-[.98]",
-                        tile,
-                        feat ? "p-5" : "p-4",
-                        hasInfo && "pb-[76px]",
+                        "relative box-border flex min-w-0 flex-col items-start justify-start gap-4 self-start rounded-card border p-4 pb-[72px] text-left hover:brightness-[1.08] active:scale-[.98]",
+                        adult
+                          ? "border-line bg-tile-night text-tile-on-night"
+                          : "border-transparent bg-tile-paper text-tile-on-paper",
                       )}
                       style={{
-                        boxShadow: sel ? "0 0 0 3px var(--bg), 0 0 0 6px var(--accent)" : "none",
-                        transform: sel ? "translateY(-2px)" : "none",
-                        transition:
-                          "box-shadow 180ms var(--ease-out), transform 180ms var(--ease-out), filter 150ms ease",
+                        // 2 px ring with a 2 px offset; only the chosen tile has it.
+                        boxShadow: sel ? "0 0 0 2px var(--bg), 0 0 0 4px var(--accent)" : "none",
+                        transition: "box-shadow 180ms var(--ease-out), filter 150ms ease",
                       }}
                     >
-                      <div className="flex w-full flex-col items-start gap-3">
+                      <div className="flex w-full flex-wrap items-center gap-2">
                         <span
                           className="grid shrink-0 place-items-center rounded-full"
                           style={{
-                            ...glyph,
-                            width: glyphSize,
-                            height: glyphSize,
+                            background: adult ? "var(--adult-badge)" : "var(--accent)",
+                            color: adult ? "var(--adult-badge-ink)" : "var(--tile-night-glyph-ink)",
+                            width: desktop ? 52 : 44,
+                            height: desktop ? 52 : 44,
                             transform: `rotate(${i % 2 ? 6 : -6}deg)`,
                           }}
                         >
@@ -172,10 +175,14 @@ export function PackPicker({
                           <span className="inline-flex h-7 items-center rounded-pill border-[1.5px] border-adult-badge-edge bg-adult-badge px-2.5 font-mono text-[12px] leading-none font-bold whitespace-nowrap text-adult-badge-ink">
                             {t("badge18")}
                           </span>
+                        ) : p.minAge === 16 ? (
+                          <span className="inline-flex h-7 items-center rounded-pill border-[1.5px] border-line-strong px-2.5 font-mono text-[12px] leading-none font-bold whitespace-nowrap">
+                            {t("badge16")}
+                          </span>
                         ) : (
-                          p.minAge === 16 && (
-                            <span className="inline-flex h-7 items-center rounded-pill border-[1.5px] border-line px-2.5 font-mono text-[12px] leading-none font-bold whitespace-nowrap">
-                              {t("badge16")}
+                          p.id === "classic" && (
+                            <span className="inline-flex h-7 items-center rounded-pill bg-accent px-2.5 text-[12px] leading-none font-bold whitespace-nowrap text-on-accent">
+                              {t("starter")}
                             </span>
                           )
                         )}
@@ -190,10 +197,7 @@ export function PackPicker({
                         </span>
                       )}
                       <div className="grid w-full gap-1.5 text-left">
-                        <span
-                          className="font-display leading-none font-extrabold tracking-[-.02em] text-balance"
-                          style={{ fontSize: feat ? 36 : 24 }}
-                        >
+                        <span className="font-display text-[24px] leading-none font-extrabold tracking-[-.02em] text-balance">
                           {p.name}
                         </span>
                         <span className="text-[14px] leading-[1.35] text-pretty">{p.blurb}</span>
@@ -202,18 +206,33 @@ export function PackPicker({
                         </span>
                       </div>
                     </RadioGroup.Item>
-                    {hasInfo && (
+                    <div className="absolute bottom-4 left-4 z-[3] flex gap-1.5">
                       <button
                         type="button"
-                        aria-label={t("howPackWorks", { pack: p.name })}
-                        onClick={() => setInfo(p.id)}
-                        className="absolute bottom-4 left-4 z-[3] box-border flex h-11 items-center justify-center gap-1.5 rounded-pill border border-[var(--tile-info-edge)] bg-transparent text-[14px] leading-none font-semibold whitespace-nowrap text-tile-on-night hover:bg-[var(--tile-info-hover)] lg:px-4 lg:pl-3"
-                        style={{ width: desktop ? "auto" : 44 }}
+                        aria-label={t("previewAria", { pack: p.name })}
+                        onClick={() => setPreview(p)}
+                        className={cn(
+                          "flex h-11 items-center gap-1.5 rounded-pill border bg-transparent px-3 text-[14px] leading-none font-semibold whitespace-nowrap",
+                          tileButton,
+                        )}
                       >
-                        <InfoIcon size={20} aria-hidden />
-                        {desktop && <span>{t("howItWorks")}</span>}
+                        <EyeIcon size={14} aria-hidden />
+                        {t("preview")}
                       </button>
-                    )}
+                      {hasInfo && (
+                        <button
+                          type="button"
+                          aria-label={t("howPackWorks", { pack: p.name })}
+                          onClick={() => setInfo(p.id)}
+                          className={cn(
+                            "grid size-11 place-items-center rounded-pill border bg-transparent",
+                            tileButton,
+                          )}
+                        >
+                          <InfoIcon size={18} aria-hidden />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -222,30 +241,32 @@ export function PackPicker({
         ))}
       </RadioGroup.Root>
 
+      {/* Count and Continue stay on screen at every size (SPIL-08). */}
       <div
         className={cn(
-          "mt-auto px-2",
-          desktop
-            ? "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-8 gap-y-2.5 pt-2"
-            : "grid gap-5 pt-1",
+          "sticky bottom-0 z-[5] -mx-5 mt-auto border-t border-line bg-surface/90 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] backdrop-blur-[14px]",
+          "lg:mx-0 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-x-8 lg:rounded-t-card lg:px-5",
         )}
       >
-        <div className={desktop ? "contents" : "grid gap-2.5"}>
-          <span id="spil-qn" className="col-start-1 text-[15px] leading-none font-semibold">
+        <div className="grid gap-2">
+          <span id="spil-qn" className="sr-only">
             {t("howMany")}
+          </span>
+          <span className="text-[13px] leading-none text-text-muted">
+            {t("minutes", { n: minutes })}
           </span>
           <RadioGroup.Root
             aria-labelledby="spil-qn"
             value={String(count)}
             onValueChange={(v) => setChosen(Number(v))}
-            className="col-start-1 row-start-2 flex flex-wrap gap-2"
+            className="flex flex-wrap gap-1.5"
           >
             {options.map((n) => (
               <RadioGroup.Item
                 key={n}
                 value={String(n)}
                 className={cn(
-                  "h-12 min-w-14 rounded-pill border-[1.5px] px-[18px] text-[15px] leading-none font-semibold tabular-nums hover:border-text",
+                  "h-11 min-w-12 rounded-pill border-[1.5px] px-3.5 text-[15px] leading-none font-semibold tabular-nums hover:border-text",
                   n === count
                     ? "border-accent bg-accent-soft text-accent-ink"
                     : "border-line-strong bg-transparent text-text",
@@ -255,26 +276,23 @@ export function PackPicker({
               </RadioGroup.Item>
             ))}
           </RadioGroup.Root>
-          <span className="col-start-1 text-[14px] leading-[1.4] text-text-muted">
-            {t("minutes", { n: minutes })}
-          </span>
-          {PACK_INFO.has(pack.id) && (
-            <button
-              type="button"
-              onClick={() => setInfo(pack.id)}
-              className="col-start-1 -ml-2.5 flex h-11 items-center gap-1.5 justify-self-start rounded-pill border-0 bg-transparent pr-3.5 pl-2.5 text-[14px] leading-none font-semibold text-accent-ink hover:bg-surface-raised"
-            >
-              <InfoIcon size={18} aria-hidden />
-              {t("scoringInfo")}
-            </button>
-          )}
         </div>
-        <div className={desktop ? "col-start-2 row-start-2 min-w-80" : "w-full"}>
-          <Button block size="md" loading={busy} onClick={() => onContinue(pack.id, count)}>
+        <div className="mt-3 lg:mt-0 lg:min-w-80">
+          <Button block loading={busy} onClick={() => onContinue(pack.id, count)}>
             {cta(pack.name)}
           </Button>
         </div>
       </div>
+
+      <PackPreview
+        pack={preview}
+        band={band}
+        onClose={() => setPreview(null)}
+        onPick={(id) => {
+          setSelected(id);
+          setPreview(null);
+        }}
+      />
 
       <Sheet open={info !== null} onOpenChange={(o) => !o && setInfo(null)} title={ti("title")}>
         <div className="grid min-w-0 gap-4">
@@ -290,5 +308,74 @@ export function PackPicker({
         <Button onClick={() => setInfo(null)}>{tc("gotIt")}</Button>
       </Sheet>
     </>
+  );
+}
+
+/** Three sample questions, a spice meter and "Pick {pack}" (SPIL-08). */
+function PackPreview({
+  pack,
+  band,
+  onClose,
+  onPick,
+}: {
+  pack: Pack | null;
+  band: AgeBand;
+  onClose: () => void;
+  onPick: (id: string) => void;
+}) {
+  const t = useTranslations("packs");
+  const tq = useTranslations("question");
+  const q = useQuery({
+    queryKey: ["pack-preview", pack?.id, band],
+    queryFn: () => api<{ questions: string[] }>("GET", `/packs/${pack!.id}/preview?band=${band}`),
+    enabled: Boolean(pack),
+    staleTime: 5 * 60_000,
+  });
+  return (
+    <Sheet open={pack !== null} onOpenChange={(o) => !o && onClose()} title={pack?.name ?? ""}>
+      {pack && (
+        <>
+          <div
+            role="img"
+            aria-label={t("spice", { n: pack.spice })}
+            className="flex items-center gap-1"
+          >
+            {[1, 2, 3, 4, 5].map((n) => (
+              <DropIcon
+                key={n}
+                size={22}
+                aria-hidden
+                weight={n <= pack.spice ? "fill" : "regular"}
+                className={n <= pack.spice ? "text-accent" : "text-text-muted"}
+              />
+            ))}
+          </div>
+          {q.data ? (
+            <ul className="m-0 grid list-none gap-2.5 p-0">
+              {q.data.questions.map((text) => (
+                <li
+                  key={text}
+                  className="grid gap-1.5 rounded-card border border-line bg-surface p-4"
+                >
+                  <span className="text-[13px] leading-none font-semibold text-text-muted">
+                    {tq("haveYouEver")}
+                  </span>
+                  <span className="text-[17px] leading-[1.35] font-semibold text-pretty">
+                    {text}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <SkeletonGroup label={t("previewAria", { pack: pack.name })} className="gap-2.5">
+              {[0, 1, 2].map((n) => (
+                <Skeleton key={n} className="h-[76px] rounded-card" />
+              ))}
+            </SkeletonGroup>
+          )}
+          <Button onClick={() => onPick(pack.id)}>{t("pick", { pack: pack.name })}</Button>
+        </>
+      )}
+    </Sheet>
   );
 }
