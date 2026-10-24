@@ -1,9 +1,16 @@
 import { codeOf, requireUser, type CodeParams } from "@/lib/api/auth";
 import { ApiError, fromDbError } from "@/lib/api/errors";
 import { route } from "@/lib/api/handler";
-import { autoplayBots, findRoom, freshState, requireHost, requireMember } from "@/lib/api/rooms";
+import {
+  autoplayBots,
+  findRoom,
+  freshState,
+  requireHost,
+  requireMember,
+  roomMode,
+} from "@/lib/api/rooms";
 import { getSettings } from "@/lib/flags";
-import { canStart, type MinAge, type PlayerStatus } from "@/lib/game";
+import { canStart, modeMinPlayers, type MinAge, type PlayerStatus } from "@/lib/game";
 import { getAdminClient } from "@/lib/supabase/admin";
 
 /** POST /rooms/:code/start: host starts the round. Draws questions and opens answering. */
@@ -17,7 +24,7 @@ export const POST = route<CodeParams>(async (request, ctx) => {
 
   const check = canStart({
     status: room.room.status,
-    minPlayers: settings.minPlayers,
+    minPlayers: modeMinPlayers(roomMode(room.room), settings.minPlayers),
     minAge: pack.min_age as MinAge,
     players: room.players.map((p) => ({
       id: p.id,

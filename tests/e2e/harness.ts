@@ -47,11 +47,18 @@ export async function fillProfile(page: Page, nickname: string) {
 /** Host: age gate, pack and length, nickname, lobby. Returns the room code. */
 export async function createRoom(
   page: Page,
-  { age = 25, pack, count, nickname = "Host" }: Opts & { pack?: string; count?: number } = {},
+  {
+    age = 25,
+    pack,
+    count,
+    nickname = "Host",
+    mode,
+  }: Opts & { pack?: string; count?: number; mode?: string } = {},
 ) {
   await page.goto("/create");
   await passAgeGate(page, age);
   await expect(page.getByRole("heading", { name: "Pick your poison." })).toBeVisible();
+  if (mode) await page.getByRole("radio", { name: new RegExp(`^${mode}`) }).click();
   if (pack)
     await page
       .getByRole("radio", { name: new RegExp(pack, "i") })

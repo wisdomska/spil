@@ -308,6 +308,94 @@ export type Database = {
         };
         Relationships: [];
       };
+      mode_inputs: {
+        Row: {
+          body: string | null;
+          closest: boolean;
+          id: string;
+          kind: string;
+          player_id: string;
+          points: number | null;
+          question_id: string | null;
+          room_id: string;
+          round: number;
+          target_id: string | null;
+          updated_at: string;
+          value: number | null;
+        };
+        Insert: {
+          body?: string | null;
+          closest?: boolean;
+          id?: string;
+          kind: string;
+          player_id: string;
+          points?: number | null;
+          question_id?: string | null;
+          room_id: string;
+          round: number;
+          target_id?: string | null;
+          updated_at?: string;
+          value?: number | null;
+        };
+        Update: {
+          body?: string | null;
+          closest?: boolean;
+          id?: string;
+          kind?: string;
+          player_id?: string;
+          points?: number | null;
+          question_id?: string | null;
+          room_id?: string;
+          round?: number;
+          target_id?: string | null;
+          updated_at?: string;
+          value?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "mode_inputs_player_id_fkey";
+            columns: ["player_id"];
+            isOneToOne: false;
+            referencedRelation: "players";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "mode_inputs_player_id_fkey";
+            columns: ["player_id"];
+            isOneToOne: false;
+            referencedRelation: "players_public";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "mode_inputs_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "mode_inputs_room_id_fkey";
+            columns: ["room_id"];
+            isOneToOne: false;
+            referencedRelation: "rooms";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "mode_inputs_target_id_fkey";
+            columns: ["target_id"];
+            isOneToOne: false;
+            referencedRelation: "players";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "mode_inputs_target_id_fkey";
+            columns: ["target_id"];
+            isOneToOne: false;
+            referencedRelation: "players_public";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       pack_plays: {
         Row: {
           day: string;
@@ -691,6 +779,7 @@ export type Database = {
           host_player_id: string | null;
           id: string;
           min_age: number;
+          mode: string;
           pack_id: string;
           question_count: number | null;
           ready_at: string | null;
@@ -712,6 +801,7 @@ export type Database = {
           host_player_id?: string | null;
           id?: string;
           min_age?: number;
+          mode?: string;
           pack_id: string;
           question_count?: number | null;
           ready_at?: string | null;
@@ -733,6 +823,7 @@ export type Database = {
           host_player_id?: string | null;
           id?: string;
           min_age?: number;
+          mode?: string;
           pack_id?: string;
           question_count?: number | null;
           ready_at?: string | null;
@@ -860,6 +951,7 @@ export type Database = {
           host_player_id: string | null;
           id: string;
           min_age: number;
+          mode: string;
           pack_id: string;
           question_count: number | null;
           ready_at: string | null;
@@ -900,6 +992,16 @@ export type Database = {
       save_answers: {
         Args: {
           p_answers: Json;
+          p_player: string;
+          p_room: string;
+          p_round: number;
+        };
+        Returns: number;
+      };
+      save_mode_inputs: {
+        Args: {
+          p_inputs: Json;
+          p_kind: string;
           p_player: string;
           p_room: string;
           p_round: number;

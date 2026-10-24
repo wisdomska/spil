@@ -1,5 +1,14 @@
 // Shared API contract between route handlers and the client (docs/TECH_SPEC.md section 12).
-import type { AnswerValue, AwardId, LabelId, MinAge, PlayerStatus, RoomStatus } from "@/lib/game";
+import type {
+  AnswerValue,
+  AwardId,
+  LabelId,
+  MinAge,
+  Mode,
+  PercentQuestion,
+  PlayerStatus,
+  RoomStatus,
+} from "@/lib/game";
 
 export type HeatLevel = "spicy" | "explicit" | "intense";
 export type PackTone = "accent" | "inverse" | "raised";
@@ -105,6 +114,8 @@ export type RoomState = {
     revealedAt?: string;
     /** SPIL-11: the slide every phone shows, when it began, and how many there are. */
     reveal?: { index: number; at: string; total: number };
+    /** The game mode this round plays (Batch 1). */
+    mode: Mode;
     /** When guessing opened; the host may skip to the reveal 60 s later. */
     guessingAt?: string;
     settings: { minPlayers: number; maxPlayers: number };
@@ -131,9 +142,16 @@ export type RoomState = {
   questions?: Array<{ id: string; text: string }>;
   myAnswers?: Record<string, AnswerValue>;
   myGuesses?: Record<string, number>;
+  /** Room Percentage, while guessing: the questions to guess the room's yes share for. */
+  percentQuestions?: Array<{ id: string; text: string }>;
+  /** Room Percentage: my guesses so far, by question id. */
+  myPercent?: Record<string, number>;
   /** Only when revealed. */
   results?: {
-    rows: ResultRow[]; /** Exact guesses, for the reveal's Bullseye stamps (SPIL-09, SPIL-11). */
+    rows: ResultRow[];
+    /** Room Percentage: each scored question with the room's real share and every guess. */
+    percent?: PercentQuestion[];
+    /** Exact guesses, for the reveal's Bullseye stamps (SPIL-09, SPIL-11). */
     exact: Array<{ guesserId: string; targetId: string }>;
     awards: AwardRow[];
     questionStats: QuestionStatRow[];

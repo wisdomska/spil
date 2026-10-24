@@ -9,7 +9,7 @@ select tables_are(
     'packs', 'questions', 'settings', 'feature_flags',
     'rooms', 'room_questions', 'players', 'answers', 'guesses', 'results', 'awards',
     'reports', 'messages', 'admins', 'audit_log', 'rate_limits', 'stats_daily', 'pack_plays',
-    'captcha_events'
+    'captcha_events', 'mode_inputs'
   ],
   'public schema has exactly the spec tables'
 );

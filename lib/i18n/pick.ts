@@ -28,7 +28,7 @@ export const BASE_SCOPE = ["common", "toast", "error"] as const;
 /** Client namespaces per route. The admin console alone gets "admin", after its session check. */
 export const SCOPES = {
   landing: ["landing", "awards", "card"],
-  create: ["age", "packs", "packInfo", "question"],
+  create: ["age", "packs", "packInfo", "question", "modes"],
   join: ["join"],
   profile: ["profile", "age"],
   room: [
@@ -46,12 +46,13 @@ export const SCOPES = {
     "sheet",
     "labels",
     "awards",
+    "modes",
     "landing.headline",
     "landing.headlineEmphasis",
   ],
   contact: ["pages.contactPage"],
   adminAuth: ["admin.badge", "admin.title", "admin.login", "admin.reset", "admin.common"],
-  admin: ["admin"],
+  admin: ["admin", "modes"],
 } as const satisfies Record<string, readonly string[]>;
 
 export type Scope = keyof typeof SCOPES;

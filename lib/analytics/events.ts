@@ -1,7 +1,7 @@
 // Typed analytics events (SRS 14.2). Properties never include answers, guesses or question text.
 export type AnalyticsEvents = {
   landing_viewed: Record<string, never>;
-  room_created: { pack: string; questionCount: number };
+  room_created: { pack: string; questionCount: number; mode: string };
   room_link_opened: { via: "link" | "code" };
   player_joined: { pack: string; isHost: boolean };
   game_started: { pack: string; players: number; questionCount: number };

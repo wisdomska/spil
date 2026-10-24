@@ -239,3 +239,15 @@ Notes:
 - [x] Cascade: with nobody else to guess about, the round goes straight from answering to Lights down (no guess screen), the reveal leaves out the room-guess line and the "Off by" verdict, and the results leave out Mind Reader points, the points explainer, the winner line and awards. The result line reads "You scored {n}. Play with friends to see how well they know you."
 - Tests: unit (solo results), API (a solo room starts and lands on Lights down), e2e `tests/e2e/solo.spec.ts` (whole solo round).
 - Migration 20261024001500, applied to staging.
+
+### Room Percentage (Batch 1, game mode 1)
+
+- [x] /create offers the game before the pack (Spill Score or Room Percentage); only built modes show, adult-only ones only for 18+ hosts. The API refuses a mode that is not built (MODE_UNAVAILABLE).
+- [x] Needs 3 players: with 2 the lobby says so and Start is refused (NOT_ENOUGH_PLAYERS). The lobby shows "Game: Room Percentage".
+- [x] Answering is unchanged. Guessing asks "What share of the room said yes?" for each question 3 or more people answered (fewer would give answers away), on the vessel with no label sticker, a % unit and 0% nobody / 100% everyone captions. Saved debounced; the last lock submits.
+- [x] Points: the Mind Reader bands on the distance to the real share, +3 for the closest when 3 or more guessed. Results rank by those points; Dark Horse and Open Book are left out.
+- [x] Reveal: one host-paced slide per scored question: the question, the real share filling the vessel, then each guess with its points, Closest and Bullseye stamps. Then the awards.
+- [x] Classic rooms are unchanged (results carry no percent data).
+- [x] Admin rooms table shows each room's game.
+- Tests: unit `tests/unit/game/percentage.test.ts`, API (mode refused, 3 needed, question targets, scoring, reveal length), e2e `tests/e2e/percentage.spec.ts` (three phones end to end). pgTAP `13_game_modes_test.sql`.
+- Migrations 20261024001600 and 20261024001700, applied to staging; production at the Batch 1 release.

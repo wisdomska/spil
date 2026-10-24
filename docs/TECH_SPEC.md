@@ -564,7 +564,7 @@ Base path `/api/v1`. JSON, camelCase. Auth via Supabase session cookie (`@supaba
 | GET | `/packs?band=` | anyone | → `Pack[]` (live with ≥1 live question, `questionCount`, `minAge`), only packs whose `minAge` the band reaches; no band means 13+ (SPIL-02) | |
 | GET | `/rooms/:code/packs` | host | → `{packs, someHidden}`: packs for the room's youngest player (SPIL-02) | NOT_HOST |
 | GET | `/packs/:id/preview?band=` | anyone | → `{questions}`: up to 3 questions marked `is_sample`, else the pack's first 3 live ones. The band must reach the pack's minimum age (SPIL-08) | PACK_UNAVAILABLE, PACK_NOT_ALLOWED |
-| POST | `/rooms` | session + Turnstile | `{ageBand, packId}` → `{code}` (room in lobby, no player yet; `rooms.min_age` from the pack) | RATE_LIMITED (10/h/user), PACK_UNAVAILABLE, AGE_TOO_YOUNG, PACK_NOT_ALLOWED |
+| POST | `/rooms` | session + Turnstile | `{ageBand, packId, mode?}` → `{code}` (room in lobby, no player yet; `rooms.min_age` from the pack; mode defaults to classic) | RATE_LIMITED (10/h/user), PACK_UNAVAILABLE, AGE_TOO_YOUNG, PACK_NOT_ALLOWED, MODE_UNAVAILABLE |
 | GET | `/rooms/:code` | anyone | → `{code, status, pack:{name,icon,isAdult,heat,minAge}, hostNickname, playerCount, maxPlayers, minAge, ageLockHours}` | ROOM_NOT_FOUND, ROOM_EXPIRED |
 | POST | `/rooms/:code/join` | session | `{nickname, avatar, ageBand}` → `{playerId}`. First player becomes host. A band below `rooms.min_age` is refused before any player row exists | ROOM_FULL, GAME_STARTED, ROOM_EXPIRED, NAME_TAKEN, NAME_INVALID, AGE_TOO_YOUNG, AGE_RESTRICTED |
 | GET | `/rooms/:code/state` | member | → `RoomState` (below) | NOT_IN_ROOM |
@@ -578,6 +578,7 @@ Base path `/api/v1`. JSON, camelCase. Auth via Supabase session cookie (`@supaba
 | POST | `/rooms/:code/skip-to-reveal` | host, guessing, 60 s after guessing opened | `{}` → state. Locks everyone still guessing with the guesses they have; the room moves to ready (SPIL-01) | NOT_HOST, WRONG_PHASE, TOO_EARLY |
 | POST | `/rooms/:code/reveal/next` | host, revealed | `{expected}` → state. Moves every phone to the next reveal slide; ignored when `expected` is stale, refused before the slide has had its time (SPIL-11) | NOT_HOST, WRONG_PHASE, TOO_EARLY |
 | POST | `/rooms/:code/reveal/skip` | host, revealed | `{}` → state. Ends the reveal on every phone (SPIL-11) | NOT_HOST, WRONG_PHASE |
+| PUT | `/rooms/:code/percent` | member, guessing, Room Percentage | `{ guesses: [{ questionId, value 0 to 100 }] }` → `{ saved, total }`. Only questions 3 or more answered | WRONG_PHASE, ALREADY_SUBMITTED, UNKNOWN_QUESTION |
 | POST | `/rooms/:code/kick` | host, lobby | `{playerId}` → state | NOT_HOST, WRONG_PHASE |
 | POST | `/rooms/:code/nudge` | host | `{playerId}` → `{}` (1 per target per minute) | RATE_LIMITED |
 | PATCH | `/rooms/:code/me` | member | `{spillMode?, hideNameOnCard?, nickname?, avatar?}` → state | |

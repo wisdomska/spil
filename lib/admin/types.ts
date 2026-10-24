@@ -31,6 +31,7 @@ export type AdminRoom = {
   id: string;
   code: string;
   packName: string;
+  mode: string;
   hostNickname: string | null;
   players: number;
   status: "lobby" | "answering" | "guessing" | "ready" | "revealed" | "closed";

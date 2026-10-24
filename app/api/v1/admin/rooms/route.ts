@@ -14,7 +14,7 @@ export const GET = route(async (request): Promise<AdminRoom[]> => {
   const [rooms, packs] = await Promise.all([
     db
       .from("rooms")
-      .select("id, code, pack_id, status, host_player_id, created_at, updated_at")
+      .select("id, code, pack_id, mode, status, host_player_id, created_at, updated_at")
       .order("created_at", { ascending: false })
       .limit(LIMIT),
     db.from("packs").select("id, name"),
@@ -42,6 +42,7 @@ export const GET = route(async (request): Promise<AdminRoom[]> => {
     id: r.id,
     code: r.code,
     packName: packName.get(r.pack_id) ?? r.pack_id,
+    mode: r.mode,
     hostNickname: r.host_player_id ? (byId.get(r.host_player_id)?.nickname ?? null) : null,
     players: active.get(r.id) ?? 0,
     status: r.status,

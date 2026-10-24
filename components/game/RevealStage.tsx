@@ -19,12 +19,14 @@ import {
   groupStep,
   hasTopBeat,
   labelById,
+  questionStep,
   REVEAL_MS,
   revealSlides,
   slideMinMs,
   spillGroups,
   verdictBand,
   type GroupStep,
+  type PercentQuestion,
 } from "@/lib/game";
 import { playSound, primeSound, useSoundSetting } from "@/lib/sound";
 import { useIsDesktop } from "@/lib/useMedia";
@@ -43,6 +45,8 @@ type Props = {
   nexting?: boolean;
   /** Host: jump every phone to the results. */
   onSkip: () => void;
+  /** Room Percentage: one slide per scored question instead of per tie group. */
+  percent?: PercentQuestion[];
   /** Dev fixtures only: hold the stage at this many ms into the slide. */
   freezeAt?: number;
 };
@@ -65,6 +69,7 @@ export function RevealStage({
   onNext,
   nexting,
   onSkip,
+  percent,
   freezeAt,
 }: Props) {
   const t = useTranslations("reveal");
@@ -74,13 +79,20 @@ export function RevealStage({
   const desktop = useIsDesktop();
   const sound = useSoundSetting();
   const groups = useMemo(() => spillGroups(rows), [rows]);
-  const slides = useMemo(() => revealSlides(groups.length, awards.length), [groups, awards]);
+  const slides = useMemo(
+    () =>
+      percent
+        ? revealSlides(percent.length, awards.length, "question")
+        : revealSlides(groups.length, awards.length),
+    [percent, groups, awards],
+  );
   const slide = slides[Math.min(reveal.index, slides.length - 1)];
   const startedAt = Date.parse(reveal.at);
 
   // One clock per slide: the step only re-renders when it changes; the count is a motion value.
   const count = useMotionValue(0);
   const num = useTransform(count, (v) => String(Math.round(v)));
+  const pct = useTransform(count, (v) => `${Math.round(v)}%`);
   const [step, setStep] = useState<GroupStep>("intro");
   const [elapsed, setElapsed] = useState(0);
   const [ready, setReady] = useState(false);
@@ -88,16 +100,17 @@ export function RevealStage({
   const lastStep = useRef<GroupStep | null>(null);
 
   const group = slide?.kind === "group" ? groups[slide.group] : undefined;
+  const question = slide?.kind === "question" ? percent?.[slide.question] : undefined;
   const topBeat = slide ? hasTopBeat(slide, groups.length) : false;
   const minMs = slide ? slideMinMs(slide, groups.length) : 0;
 
   useEffect(() => {
     if (!slide) return;
     lastStep.current = null;
-    const score = group?.score ?? 0;
+    const score = group?.score ?? question?.actual ?? 0;
     const at = (ms: number) => {
-      if (group) {
-        const g = groupStep(ms, topBeat);
+      if (group || question) {
+        const g = group ? groupStep(ms, topBeat) : questionStep(ms);
         count.set(
           g.step === "fill"
             ? reduced
@@ -132,7 +145,7 @@ export function RevealStage({
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [slide, group, topBeat, minMs, startedAt, reduced, count, freezeAt]);
+  }, [slide, group, question, topBeat, minMs, startedAt, reduced, count, freezeAt]);
 
   // Host with Auto on: move on a moment after Next unlocks.
   useEffect(() => {
@@ -163,7 +176,9 @@ export function RevealStage({
   const counter =
     slide.kind === "award"
       ? t("awardsCounter", { n: slide.award + 1, total: awards.length })
-      : t("counter", { n: slide.group + 1, total: groups.length });
+      : slide.kind === "question"
+        ? t("questionCounter", { n: slide.question + 1, total: percent?.length ?? 0 })
+        : t("counter", { n: slide.group + 1, total: groups.length });
 
   return (
     <div className="mx-auto box-border flex min-h-[100dvh] w-full max-w-[560px] flex-col gap-[18px] overflow-x-clip px-5 pt-[18px] pb-[calc(96px+env(safe-area-inset-bottom))]">
@@ -304,6 +319,25 @@ export function RevealStage({
         </div>
       )}
 
+      {question && (
+        <QuestionSlide
+          question={question}
+          rows={rows}
+          count={count}
+          pct={pct}
+          step={step}
+          stamped={stamped}
+          reduced={reduced}
+          height={desktop ? 360 : 300}
+          kicker={stamped ? t("saidYes", { n: question.actual }) : t("nextUp")}
+          guessText={(value, points) => t("guessPoints", { value, points })}
+          closest={t("closest")}
+          bullseye={t("bullseye")}
+          none={t("noGuesses")}
+          announce={stamped ? t("announceQuestion", { n: question.actual }) : ""}
+        />
+      )}
+
       {slide.kind === "award" && (
         <AwardSlide
           award={awards[slide.award]}
@@ -417,6 +451,120 @@ function PlayerVessel({
           </span>
         )}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Room Percentage: the question, the room's real yes share filling the vessel, then everyone's
+ * guess with its points, closest first. Bullseye marks an exact guess.
+ */
+function QuestionSlide({
+  question,
+  rows,
+  count,
+  pct,
+  step,
+  stamped,
+  reduced,
+  height,
+  kicker,
+  guessText,
+  closest,
+  bullseye,
+  none,
+  announce,
+}: {
+  question: PercentQuestion;
+  rows: ResultRow[];
+  count: MotionValue<number>;
+  pct: MotionValue<string>;
+  step: GroupStep;
+  stamped: boolean;
+  reduced: boolean;
+  height: number;
+  kicker: string;
+  guessText: (value: number, points: number) => string;
+  closest: string;
+  bullseye: string;
+  none: string;
+  announce: string;
+}) {
+  const filling = step === "fill" || stamped;
+  const guesses = [...question.guesses].sort(
+    (a, b) =>
+      Math.abs(a.value - question.actual) - Math.abs(b.value - question.actual) ||
+      b.points - a.points,
+  );
+  const STAMP =
+    "rounded-pill border-2 border-sticker-edge bg-accent px-1.5 py-0.5 font-display text-[10px] leading-none font-extrabold whitespace-nowrap text-on-accent uppercase";
+  return (
+    <div className="flex flex-1 flex-col gap-[18px]">
+      <span
+        key={stamped ? "share" : "next"}
+        className={cn(
+          "font-mono text-[13px] leading-none font-medium tracking-[.06em] text-text-muted",
+          stamped && "animate-[fade_300ms_both]",
+        )}
+      >
+        {kicker}
+      </span>
+      <h2 className="m-0 font-display text-[28px] leading-[1.05] font-extrabold tracking-[-.02em] text-balance">
+        {question.text}
+      </h2>
+      <Vessel
+        level={filling ? count : 0}
+        num={filling ? pct : ""}
+        height={height}
+        fontSize={96}
+        radius={24}
+      />
+      {step === "verdict" && (
+        <ul
+          className={cn(
+            "m-0 grid list-none gap-2.5 p-0",
+            reduced ? "animate-[fade_300ms_both]" : "animate-[rise_300ms_var(--ease-out)_both]",
+          )}
+        >
+          {guesses.length === 0 && (
+            <li className="text-[16px] leading-[1.4] font-medium text-text-muted">{none}</li>
+          )}
+          {guesses.map((g) => {
+            const who = rows.find((r) => r.playerId === g.playerId);
+            if (!who) return null;
+            return (
+              <li key={g.playerId} className="flex items-center gap-3">
+                <Avatar n={who.avatar} size={32} label={who.nickname} />
+                <span className="min-w-0 flex-1 truncate text-[16px] leading-none font-semibold">
+                  {who.nickname}
+                </span>
+                {g.value === question.actual && (
+                  <span
+                    className={STAMP}
+                    style={{ boxShadow: "0 0 0 1px var(--sticker-ring)", rotate: "-6deg" }}
+                  >
+                    {bullseye}
+                  </span>
+                )}
+                {g.closest && g.value !== question.actual && (
+                  <span
+                    className={STAMP}
+                    style={{ boxShadow: "0 0 0 1px var(--sticker-ring)", rotate: "-6deg" }}
+                  >
+                    {closest}
+                  </span>
+                )}
+                <span className="font-mono text-[14px] leading-none font-medium whitespace-nowrap text-text-muted tabular-nums">
+                  {guessText(g.value, g.points)}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <span className="sr-only" aria-live="polite">
+        {announce}
+      </span>
     </div>
   );
 }

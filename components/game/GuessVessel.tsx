@@ -21,6 +21,10 @@ type Props = {
   raiseLabel: string;
   lowCaption: string;
   highCaption: string;
+  /** The label sticker beside the level (Spill Scores); off for percentages. */
+  showLabel?: boolean;
+  /** Shown after the number, like "%". */
+  unit?: string;
 };
 
 /**
@@ -38,6 +42,8 @@ export function GuessVessel({
   raiseLabel,
   lowCaption,
   highCaption,
+  showLabel = true,
+  unit = "",
 }: Props) {
   const reduced = useReducedMotion() ?? false;
   const wide = useMedia("(min-width: 640px)");
@@ -78,7 +84,13 @@ export function GuessVessel({
         }}
       >
         <div style={{ opacity: value === null ? 0.4 : 1, transition: "opacity 200ms ease" }}>
-          <Vessel level={shown} num={value ?? ""} height={height} fontSize={120} radius={24} />
+          <Vessel
+            level={shown}
+            num={value === null ? "" : `${value}${unit}`}
+            height={height}
+            fontSize={120}
+            radius={24}
+          />
         </div>
         {value === null ? (
           <span
@@ -88,7 +100,7 @@ export function GuessVessel({
             <HandPointingIcon size={18} />
             {hint}
           </span>
-        ) : (
+        ) : showLabel ? (
           <span
             aria-hidden
             className="pointer-events-none absolute right-[-8px]"
@@ -100,7 +112,7 @@ export function GuessVessel({
           >
             {sticker}
           </span>
-        )}
+        ) : null}
       </div>
       <div className="flex items-center gap-3">
         <button

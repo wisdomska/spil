@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { AgeGate, PlayingAs } from "@/components/age/AgeGate";
+import { ModePicker } from "@/components/game/ModePicker";
 import { PackPicker } from "@/components/game/PackPicker";
 import { ErrorScreen } from "@/components/site/ErrorScreen";
 import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
@@ -14,7 +15,7 @@ import { playableBand, useDeviceAge } from "@/lib/age/device";
 import { api, ClientApiError, ensureSession } from "@/lib/api/client";
 import type { Pack } from "@/lib/api/types";
 import { track } from "@/lib/analytics/posthog";
-import { bandFloor } from "@/lib/game";
+import { bandFloor, type Mode } from "@/lib/game";
 import { useBusy } from "@/lib/useBusy";
 
 type Props = {
@@ -40,6 +41,7 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
   const inRoom = Boolean(room && (mode === "pack" || mode === "rematch"));
   const { getToken, element, challenge, showChallenge } = useTurnstile();
   const [error, setError] = useState<string | null>(null);
+  const [game, setGame] = useState<Mode>("classic");
   const [busy, setBusy] = useBusy();
   const { band: stored, locked, setAge, clearAge } = useDeviceAge();
   const band = playableBand(stored);
@@ -90,11 +92,12 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
       }
       const { code } = await api<{ code: string }>("POST", "/rooms", {
         ageBand: band,
+        mode: game,
         packId,
         questionCount,
         captchaToken: captchaToken || undefined,
       });
-      track("room_created", { pack: packId, questionCount });
+      track("room_created", { pack: packId, questionCount, mode: game });
       router.push(`/r/${code}/me`);
     } catch (e) {
       const code = e instanceof ClientApiError ? e.code : "";
@@ -110,7 +113,9 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
                 ? tt("noPacks")
                 : code === "PACK_NOT_ALLOWED"
                   ? tt("packNotAllowed")
-                  : tt("somethingWrong"),
+                  : code === "MODE_UNAVAILABLE"
+                    ? tt("modeUnavailable")
+                    : tt("somethingWrong"),
       );
     }
   };
@@ -128,6 +133,7 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
         {!inRoom && <PlayingAs band={band} locked={locked} onNotYou={clearAge} />}
       </div>
       <p className="m-0 text-[17px] leading-[1.5] text-text-muted">{t("lede")}</p>
+      {!inRoom && <ModePicker value={game} onChange={setGame} floor={floor} />}
       {inRoom && forRoom.data?.someHidden && (
         <p className="m-0 text-[14px] leading-[1.4] text-text-muted">{t("someHidden")}</p>
       )}

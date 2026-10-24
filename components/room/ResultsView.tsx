@@ -94,8 +94,12 @@ export function ResultsView({
   const guess = meRow?.avgGuessAbout ?? 0;
   const gap = Math.abs(score - guess);
   // Solo: nobody guessed, so there is no room guess, no points and no winner (cascade).
+  const pct = state.room.mode === "room_percentage";
   const solo = (meRow?.guessedBy ?? 0) === 0;
-  const anyGuesses = rows.some((r) => (r.guessedBy ?? 0) > 0);
+  // Room Percentage: nobody guesses about players; the points are for reading the room.
+  const anyGuesses = pct
+    ? (results.percent ?? []).some((q) => q.guesses.length > 0)
+    : rows.some((r) => (r.guessedBy ?? 0) > 0);
   const band = verdictBand(gap);
   const verdict =
     band === "well" ? t("verdictWell") : band === "little" ? t("verdictLittle") : t("verdictNone");
@@ -112,7 +116,13 @@ export function ResultsView({
             </span>
           </h1>
           <p className="m-0 text-[16px] leading-[1.45] text-text-muted">
-            {solo ? t("lineSolo", { score }) : t("line", { score, guess, verdict })}
+            {pct
+              ? anyGuesses
+                ? t("linePercent", { score, points: meRow?.mindReader ?? 0 })
+                : t("lineSolo", { score })
+              : solo
+                ? t("lineSolo", { score })
+                : t("line", { score, guess, verdict })}
           </p>
         </div>
         <div className="relative">
@@ -195,7 +205,7 @@ export function ResultsView({
                     </span>
                   </div>
                   <span className="font-mono text-[13px] leading-[1.2] font-medium text-text-muted">
-                    {(r.guessedBy ?? 0) > 0
+                    {!pct && (r.guessedBy ?? 0) > 0
                       ? t("sub", { score: r.score, guess: r.avgGuessAbout })
                       : t("subSolo", { score: r.score })}
                   </span>
@@ -359,7 +369,9 @@ export function ResultsView({
             ))}
           </tbody>
         </table>
-        <p className="m-0 text-[14px] leading-[1.45] text-text-muted">{t("pointsNote")}</p>
+        <p className="m-0 text-[14px] leading-[1.45] text-text-muted">
+          {pct ? t("pointsNotePercent") : t("pointsNote")}
+        </p>
       </Sheet>
     </div>
   );

@@ -17,6 +17,7 @@ import { useAnswerQueue } from "@/lib/room/answerQueue";
 import { roomKey, useRoomActions, useRoomState } from "@/lib/room/useRoom";
 import { GuessView } from "./GuessView";
 import { LobbyView } from "./LobbyView";
+import { PercentGuessView } from "./PercentGuessView";
 import { QuestionView } from "./QuestionView";
 import { ReadyView } from "./ReadyView";
 import { ResultsView } from "./ResultsView";
@@ -153,6 +154,7 @@ export function RoomApp({ code }: { code: string }) {
         rows={state.results.rows}
         awards={state.results.awards}
         exact={state.results.exact}
+        percent={state.room.mode === "room_percentage" ? state.results.percent : undefined}
         reveal={state.room.reveal!}
         isHost={state.me.isHost}
         hostName={state.players.find((p) => p.isHost)?.nickname ?? ""}
@@ -264,7 +266,16 @@ export function RoomApp({ code }: { code: string }) {
             }}
           />
         )}
-        {screen === "guess" && (
+        {screen === "guess" && state.room.mode === "room_percentage" && (
+          <PercentGuessView
+            key={state.room.round}
+            state={state}
+            skipping={actions.skipToReveal.isPending}
+            onSkip={skip}
+            onDone={() => actions.submitGuesses.mutateAsync(undefined).catch(fail)}
+          />
+        )}
+        {screen === "guess" && state.room.mode !== "room_percentage" && (
           <GuessView
             key={state.room.round}
             state={state}

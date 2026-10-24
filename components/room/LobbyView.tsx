@@ -23,6 +23,7 @@ type Props = {
 
 export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props) {
   const t = useTranslations("lobby");
+  const tm = useTranslations("modes");
   const tr = useTranslations("room");
   const tt = useTranslations("toast");
   const c = useTranslations("common");
@@ -173,6 +174,11 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
             >
               {t("changePack", { pack: room.pack.name })}
             </Link>
+            {room.mode !== "classic" && (
+              <p className="m-0 text-center font-mono text-[13px] leading-none font-medium text-text-muted">
+                {tm("inLobby", { mode: tm(`${room.mode}.name`) })}
+              </p>
+            )}
           </>
         ) : (
           <div

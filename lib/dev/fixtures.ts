@@ -108,6 +108,7 @@ export function fixtureState({
       code: "K7QX",
       status,
       round: 1,
+      mode: "classic",
       pack: {
         id: pack?.id ?? "classic",
         name: pack?.name ?? "Classic",

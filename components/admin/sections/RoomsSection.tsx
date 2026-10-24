@@ -29,6 +29,7 @@ type Chip = "all" | "active" | "stuck" | "finished" | "closed";
 
 export function RoomsSection() {
   const t = useTranslations("admin.rooms");
+  const tm = useTranslations("modes");
   const tn = useTranslations("admin.nav");
   const tc = useTranslations("admin.common");
   const q = useAdminQuery<AdminRoom[]>("/rooms");
@@ -87,6 +88,7 @@ export function RoomsSection() {
           cols={[
             { label: t("cols.code"), width: 90 },
             { label: t("cols.pack"), noPhone: true },
+            { label: t("cols.mode"), noPhone: true },
             { label: t("cols.host"), wide: true },
             { label: t("cols.players"), width: 90, right: true, noPhone: true },
             { label: t("cols.status"), width: 130 },
@@ -106,6 +108,9 @@ export function RoomsSection() {
               </Td>
               <Td nowrap noPhone>
                 {r.packName}
+              </Td>
+              <Td nowrap noPhone>
+                {tm(`${r.mode as "classic"}.name`)}
               </Td>
               <Td wide nowrap muted={!r.hostNickname}>
                 {r.hostNickname ?? t("hostLeft")}

@@ -143,11 +143,19 @@ export interface AdvancePlan {
  * locked. Ready waits for the host to tap Reveal. Locks only ever go one way, so applying a plan
  * computed from a slightly old read is safe.
  */
-export function planAdvance(status: RoomStatus, players: readonly PhasePlayer[]): AdvancePlan {
+export function planAdvance(
+  status: RoomStatus,
+  players: readonly PhasePlayer[],
+  opts: {
+    /** Modes where players guess about questions (Room Percentage): how many they can guess. */
+    questionTargets?: number;
+  } = {},
+): AdvancePlan {
   if (status === "answering") return { lock: [], to: allAnswered(players) ? "guessing" : null };
   if (status !== "guessing") return { lock: [], to: null };
+  const targets = (id: string) => opts.questionTargets ?? guessTargets(players, id).length;
   const lock = guessingPlayers(players)
-    .filter((p) => p.guessesSubmittedAt == null && guessTargets(players, p.id).length === 0)
+    .filter((p) => p.guessesSubmittedAt == null && targets(p.id) === 0)
     .map((p) => p.id);
   const after = players.map((p) =>
     lock.includes(p.id) ? { ...p, guessesSubmittedAt: p.guessesSubmittedAt ?? 0 } : p,

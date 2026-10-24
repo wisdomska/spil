@@ -7,10 +7,15 @@ import { anonPlayer, BASE, code, enabled, type Player } from "./helpers";
 
 const d = enabled ? describe : describe.skip;
 
-async function fullRoom(n: number, packId = "classic", questionCount = 5) {
+async function fullRoom(n: number, packId = "classic", questionCount = 5, mode = "classic") {
   const players = await Promise.all(Array.from({ length: n }, () => anonPlayer()));
   const [host] = players;
-  const created = await host!.call("POST", "/rooms", { ageBand: "18_plus", packId, questionCount });
+  const created = await host!.call("POST", "/rooms", {
+    ageBand: "18_plus",
+    packId,
+    questionCount,
+    mode,
+  });
   expect(created.status).toBe(200);
   const roomCode: string = created.body.code;
   for (const [i, p] of players.entries()) {
@@ -264,6 +269,71 @@ d("host tools", () => {
     expect((await host.call("POST", `/rooms/${roomCode}/start`)).status).toBe(200);
     const done = await answerAll(host, roomCode, () => "yes");
     expect(done.body.room.status).toBe("ready");
+  });
+
+  it("Room Percentage: needs 3, guesses only questions 3 answered, scores the room share", async () => {
+    const host = await anonPlayer();
+    const notBuilt = await host.call("POST", "/rooms", {
+      ageBand: "18_plus",
+      packId: "classic",
+      mode: "hot_takes",
+    });
+    expect(code(notBuilt)).toBe("MODE_UNAVAILABLE");
+
+    const pair = await fullRoom(2, "classic", 5, "room_percentage");
+    const lobby = await pair.host.call("GET", `/rooms/${pair.roomCode}/state`);
+    expect(lobby.body.room.mode).toBe("room_percentage");
+    expect(lobby.body.room.settings.minPlayers).toBeGreaterThanOrEqual(3);
+    expect(code(await pair.host.call("POST", `/rooms/${pair.roomCode}/start`))).toBe(
+      "NOT_ENOUGH_PLAYERS",
+    );
+
+    const room = await fullRoom(3, "classic", 5, "room_percentage");
+    const [a, b, c] = room.players as [Player, Player, Player];
+    expect((await a.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);
+    await answerAll(a, room.roomCode, () => "yes");
+    await answerAll(b, room.roomCode, (i) => (i < 2 ? "yes" : "no"));
+    const moved = await answerAll(c, room.roomCode, (i) => (i < 4 ? "no" : "skip"));
+    expect(moved.body.room.status).toBe("guessing");
+
+    // The fifth question has 2 answers, so nobody guesses it (it would give answers away).
+    const state = await a.call("GET", `/rooms/${room.roomCode}/state`);
+    const qs: Array<{ id: string }> = state.body.percentQuestions;
+    expect(qs).toHaveLength(4);
+    expect(state.body.me.targets).toEqual(qs.map((q) => q.id));
+    // Nobody's answers are in anyone's state.
+    expect(JSON.stringify(state.body)).not.toContain('"yes"');
+    expect(code(await a.call("POST", `/rooms/${room.roomCode}/guesses/submit`))).toBe("INCOMPLETE");
+    const stray = await a.call("PUT", `/rooms/${room.roomCode}/guesses`, {
+      guesses: [{ targetId: state.body.players[1].id, value: 50 }],
+    });
+    expect(stray.status).toBeGreaterThanOrEqual(400);
+
+    // Real shares: 67, 67, 33, 33. a is exact, b says 50, c says 0.
+    const shares = [67, 67, 33, 33];
+    const put = (p: Player, value: (i: number) => number) =>
+      p.call("PUT", `/rooms/${room.roomCode}/percent`, {
+        guesses: qs.map((q, i) => ({ questionId: q.id, value: value(i) })),
+      });
+    expect((await put(a, (i) => shares[i]!)).status).toBe(200);
+    expect((await put(b, () => 50)).status).toBe(200);
+    expect((await put(c, () => 0)).status).toBe(200);
+    for (const p of [a, b, c])
+      expect((await p.call("POST", `/rooms/${room.roomCode}/guesses/submit`)).status).toBe(200);
+
+    const revealed = await a.call("POST", `/rooms/${room.roomCode}/advance`, { from: "ready" });
+    expect(revealed.body.room.status).toBe("revealed");
+    const percent: Array<{ actual: number; guesses: Array<{ points: number; closest: boolean }> }> =
+      revealed.body.results.percent;
+    expect(percent.map((q) => q.actual)).toEqual(shares);
+    const top = revealed.body.results.rows[0];
+    expect(top.playerId).toBe(state.body.me.id);
+    // Exact (10) and closest (+3) on each of the 4 questions.
+    expect(top.mindReader).toBe(52);
+    expect(revealed.body.room.reveal.total).toBe(4 + revealed.body.results.awards.length);
+    const awardIds = revealed.body.results.awards.map((x: { award: string }) => x.award);
+    expect(awardIds).not.toContain("open_book");
+    expect(awardIds).not.toContain("dark_horse");
   });
 
   it("two players are enough to start", async () => {

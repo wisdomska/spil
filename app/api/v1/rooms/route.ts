@@ -2,7 +2,7 @@ import { requireUser } from "@/lib/api/auth";
 import { ApiError, fromDbError } from "@/lib/api/errors";
 import { clientIp, readBody, route } from "@/lib/api/handler";
 import { requireLivePack } from "@/lib/api/packs";
-import { bandFloor, generateCode } from "@/lib/game";
+import { bandFloor, generateCode, MODE_RULES } from "@/lib/game";
 import { rateLimit } from "@/lib/ratelimit";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { verifyTurnstile } from "@/lib/turnstile";
@@ -18,6 +18,8 @@ export const POST = route(async (request) => {
   // SPIL-02: the host's band only; the exact age never leaves their device.
   if (body.ageBand === "under_13") throw new ApiError("AGE_TOO_YOUNG");
   const floor = bandFloor(body.ageBand);
+  const rule = MODE_RULES[body.mode];
+  if (!rule.available || (rule.adultOnly && floor < 18)) throw new ApiError("MODE_UNAVAILABLE");
   await rateLimit("roomCreate", userId);
   await verifyTurnstile(body.captchaToken, clientIp(request), "create_room", request);
   const pack = await requireLivePack(body.packId, floor);
@@ -34,6 +36,7 @@ export const POST = route(async (request) => {
       created_by: userId,
       question_count: questionCount,
       min_age: pack.minAge,
+      mode: body.mode,
     });
     if (!error) return { code };
     if (error.code !== "23505") throw fromDbError(error);

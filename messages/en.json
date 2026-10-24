@@ -85,7 +85,8 @@
     "somethingWrong": "Something went wrong. Try again.",
     "rateLimited": "Slow down a little. Try again in a minute.",
     "botCheck": "We couldn't confirm you're a person. Try again, or turn off your VPN if you use one.",
-    "offline": "You're offline. Check your connection and try again."
+    "offline": "You're offline. Check your connection and try again.",
+    "modeUnavailable": "That game is not available for this room."
   },
   "landing": {
     "headline": "Your friends think they know you.",
@@ -284,7 +285,15 @@
     "nothingTitle": "Everyone else sat out this round.",
     "nothingBody": "Your score still counts. The reveal starts when the others lock in.",
     "drag": "Drag the liquid",
-    "noGuess": "No guess yet"
+    "noGuess": "No guess yet",
+    "percentCount": "Question {n} of {total}",
+    "percentAsk": "What share of the room said yes?",
+    "percentAria": "Your guess for: {question}",
+    "percentValueText": "{value} percent",
+    "nobody": "0% nobody",
+    "everyone": "100% everyone",
+    "percentNothingTitle": "Too few answers to guess this round.",
+    "percentNothingBody": "A question needs 3 or more answers before the room can guess it. The reveal starts when the others lock in."
   },
   "ready": {
     "title": "Everyone's guessed.",
@@ -318,7 +327,13 @@
     "auto": "Auto",
     "soundOn": "Sound on",
     "soundOff": "Sound off",
-    "bullseye": "Bullseye"
+    "bullseye": "Bullseye",
+    "questionCounter": "QUESTION {n} OF {total}",
+    "saidYes": "{n}% said yes",
+    "guessPoints": "{value}% · {points, plural, one {# point} other {# points}}",
+    "closest": "Closest",
+    "noGuesses": "Nobody guessed this one.",
+    "announceQuestion": "{n} percent of the room said yes."
   },
   "results": {
     "headline": "You're a",
@@ -358,7 +373,9 @@
     "pointsClosest": "Closest in the room",
     "pointsNote": "Points add up over every guess you lock in. The closest bonus needs 3 or more guesses on a player.",
     "lineSolo": "You scored {score}. Play with friends to see how well they know you.",
-    "subSolo": "Spill Score {score}"
+    "subSolo": "Spill Score {score}",
+    "linePercent": "You scored {score}. You read the room for {points} points.",
+    "pointsNotePercent": "Points add up over every question you guess. The closest bonus needs 3 or more guesses on a question."
   },
   "share": {
     "title": "Your card",
@@ -678,7 +695,8 @@
         "host": "Host",
         "players": "Players",
         "status": "Status",
-        "started": "Started"
+        "started": "Started",
+        "mode": "Game"
       },
       "empty": "No rooms yet. Start one from the game.",
       "hostLeft": "Left",
@@ -1016,6 +1034,19 @@
       "dangerConfirmTitle": "Reset all data?",
       "dangerConfirmBody": "Every room, report, message and play stat is wiped. Only on staging and local.",
       "dataReset": "Data reset."
+    }
+  },
+  "modes": {
+    "group": "Game",
+    "min": "{n, plural, one {Solo or more} other {# or more players}}",
+    "inLobby": "Game: {mode}",
+    "classic": {
+      "name": "Spill Score",
+      "body": "Answer yes or no, then guess each other's Spill Score."
+    },
+    "room_percentage": {
+      "name": "Room Percentage",
+      "body": "Answer yes or no, then guess what share of the room said yes."
     }
   }
 }

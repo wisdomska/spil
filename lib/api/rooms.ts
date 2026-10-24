@@ -1,6 +1,12 @@
 import "server-only";
 import {
   computeResults,
+  guessesQuestions,
+  isMode,
+  modeMinPlayers,
+  roomPercentResults,
+  type Mode,
+  type PercentQuestion,
   guessTargets,
   revealSlides,
   spillGroups,
@@ -9,6 +15,7 @@ import {
   isScoredPlayer as isScoredPhase,
   planAdvance,
   isRoomExpired,
+  MIN_ANSWERS_FOR_STATS,
   youngestFloor,
   nextHost,
   type AnswerValue,
@@ -195,12 +202,40 @@ async function roundGuesses(room: RoomRow) {
   return data ?? [];
 }
 
+async function roundInputs(room: RoomRow, kind: "percent") {
+  const { data, error } = await db()
+    .from("mode_inputs")
+    .select("player_id, question_id, value")
+    .eq("room_id", room.id)
+    .eq("round", room.round)
+    .eq("kind", kind);
+  if (error) throw fromDbError(error);
+  return data ?? [];
+}
+
+export const roomMode = (room: RoomRow): Mode => (isMode(room.mode) ? room.mode : "classic");
+
+/**
+ * Room Percentage: the questions a player can guess the room's share for, the ones 3 or more
+ * scored players answered (so a share never gives an answer away).
+ */
+export async function percentTargets(room: RoomRow, players: PlayerRow[]) {
+  const [questions, answers] = await Promise.all([currentQuestions(room), roundAnswers(room)]);
+  const scored = new Set(players.filter(isScoredPlayer).map((p) => p.id));
+  return questions.filter(
+    (q) =>
+      answers.filter((a) => a.question_id === q.id && scored.has(a.player_id) && a.value !== "skip")
+        .length >= MIN_ANSWERS_FOR_STATS,
+  );
+}
+
 /** Builds the results input from this round's rows. */
 async function resultsInput(room: RoomRow, players: PlayerRow[]) {
-  const [questions, answers, guesses] = await Promise.all([
+  const [questions, answers, guesses, percents] = await Promise.all([
     currentQuestions(room),
     roundAnswers(room),
     roundGuesses(room),
+    guessesQuestions(roomMode(room)) ? roundInputs(room, "percent") : Promise.resolve([]),
   ]);
   const byPlayer = (id: string) =>
     Object.fromEntries(
@@ -210,8 +245,17 @@ async function resultsInput(room: RoomRow, players: PlayerRow[]) {
     Object.fromEntries(
       guesses.filter((g) => g.guesser_id === id).map((g) => [g.target_id, g.value]),
     );
-  const input: { questions: typeof questions; players: ResultsPlayer[] } = {
+  const percentGuesses: Record<string, Record<string, number>> = {};
+  for (const p of percents)
+    if (p.question_id && p.value != null)
+      (percentGuesses[p.player_id] ??= {})[p.question_id] = p.value;
+  const input: {
+    questions: typeof questions;
+    players: ResultsPlayer[];
+    percentGuesses: typeof percentGuesses;
+  } = {
     questions,
+    percentGuesses,
     players: players.map((p) => ({
       id: p.id,
       nickname: p.nickname,
@@ -230,7 +274,25 @@ async function resultsInput(room: RoomRow, players: PlayerRow[]) {
 /** ready -> revealed: compute with lib/game and persist via the idempotent save_results. */
 export async function finalize(room: RoomRow, players: PlayerRow[]) {
   const input = await resultsInput(room, players);
-  const results = computeResults(input);
+  const percent = guessesQuestions(roomMode(room)) ? roomPercentResults(input) : null;
+  const results = percent ?? computeResults(input);
+  if (percent) {
+    // Keep each guess's points on its input, so this round never changes later.
+    const updates = percent.percentQuestions.flatMap((q) =>
+      q.guesses.map((g) =>
+        db()
+          .from("mode_inputs")
+          .update({ points: g.points, closest: g.closest })
+          .eq("player_id", g.playerId)
+          .eq("round", room.round)
+          .eq("kind", "percent")
+          .eq("question_id", q.questionId),
+      ),
+    );
+    const done = await Promise.all(updates);
+    const failed = done.find((r) => r.error);
+    if (failed?.error) throw fromDbError(failed.error);
+  }
   // SPIL-09: keep each guess's points on its row, so this round never changes later.
   const valueOf = new Map(input.players.map((p) => [p.id, p.guesses]));
   if (results.guessPoints.length) {
@@ -279,7 +341,11 @@ export async function finalize(room: RoomRow, players: PlayerRow[]) {
  * the same object when nothing changed, a new one when it locked anyone or moved on.
  */
 export async function advancePhaseIfReady(room: RoomRow, players: PlayerRow[]): Promise<RoomRow> {
-  const plan = planAdvance(room.status, players.map(toPhase));
+  const questionTargets =
+    room.status === "guessing" && guessesQuestions(roomMode(room))
+      ? (await percentTargets(room, players)).length
+      : undefined;
+  const plan = planAdvance(room.status, players.map(toPhase), { questionTargets });
   if (plan.lock.length) {
     const { error } = await db()
       .from("players")
@@ -460,10 +526,14 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       status: room.status,
       round: room.round,
       pack: packSummary(pack),
+      mode: roomMode(room),
       questionCount: room.question_count ?? settings.questionsPerGame,
       revealedAt: room.revealed_at ?? undefined,
       guessingAt: room.guessing_at ?? undefined,
-      settings: { minPlayers: settings.minPlayers, maxPlayers: settings.maxPlayers },
+      settings: {
+        minPlayers: modeMinPlayers(roomMode(room), settings.minPlayers),
+        maxPlayers: settings.maxPlayers,
+      },
       testPlayers: flags.test_players,
       pollingOnly: flags.polling_only,
       channel: `room:${room.id}`,
@@ -478,9 +548,12 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       guessesSubmitted: me.guesses_submitted_at != null,
       spillMode: me.spill_mode,
       hideNameOnCard: me.hide_name_on_card,
+      // Room Percentage: the question ids this player guesses about; classic: player ids.
       targets:
         room.status === "guessing"
-          ? guessTargets(players.map(toPhase), me.id).map((p) => p.id)
+          ? guessesQuestions(roomMode(room))
+            ? (await percentTargets(room, players)).map((q) => q.id)
+            : guessTargets(players.map(toPhase), me.id).map((p) => p.id)
           : [],
     },
     players: statePlayers,
@@ -499,6 +572,18 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     state.myGuesses = Object.fromEntries(
       guesses.filter((g) => g.guesser_id === me.id).map((g) => [g.target_id, g.value]),
     );
+    if (room.status === "guessing" && guessesQuestions(roomMode(room))) {
+      const [targets, mine] = await Promise.all([
+        percentTargets(room, players),
+        roundInputs(room, "percent"),
+      ]);
+      state.percentQuestions = targets;
+      state.myPercent = Object.fromEntries(
+        mine
+          .filter((i) => i.player_id === me.id && i.question_id && i.value != null)
+          .map((i) => [i.question_id!, i.value!]),
+      );
+    }
   }
 
   if (room.status === "revealed") {
@@ -528,15 +613,22 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       (rows ?? []).map((r) => ({ playerId: r.player_id, score: r.spill_score })),
     );
     const awardRows = awards ?? [];
+    const percent: PercentQuestion[] = guessesQuestions(roomMode(room))
+      ? roomPercentResults(input).percentQuestions
+      : [];
     state.room.reveal = {
       index: room.reveal_index,
       at: room.reveal_at ?? room.revealed_at ?? new Date().toISOString(),
-      total: revealSlides(
-        spillGroups((rows ?? []).map((r) => ({ score: r.spill_score }))).length,
-        awardRows.length,
-      ).length,
+      total: guessesQuestions(roomMode(room))
+        ? revealSlides(percent.length, awardRows.length, "question").length
+        : revealSlides(
+            spillGroups((rows ?? []).map((r) => ({ score: r.spill_score }))).length,
+            awardRows.length,
+          ).length,
     };
     state.results = {
+      // Only Room Percentage reveals by question; classic rooms leave it out.
+      percent: guessesQuestions(roomMode(room)) ? percent : undefined,
       exact: computed.guessPoints
         .filter((g) => g.points - (g.closest ? CLOSEST_BONUS : 0) === 10)
         .map((g) => ({ guesserId: g.guesserId, targetId: g.targetId })),
@@ -570,6 +662,30 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
   }
 
   return state;
+}
+
+/**
+ * The reveal's slides for a revealed room (SPIL-11): classic has one per tie group, Room
+ * Percentage one per scored question; then one per award.
+ */
+export async function revealPlan(room: RoomRow, players: PlayerRow[]) {
+  const [{ data: rows, error }, { count, error: awardsError }] = await Promise.all([
+    db().from("results").select("spill_score").eq("room_id", room.id).eq("round", room.round),
+    db()
+      .from("awards")
+      .select("award", { count: "exact", head: true })
+      .eq("room_id", room.id)
+      .eq("round", room.round),
+  ]);
+  if (error) throw fromDbError(error);
+  if (awardsError) throw fromDbError(awardsError);
+  const awards = count ?? 0;
+  if (guessesQuestions(roomMode(room))) {
+    const questions = roomPercentResults(await resultsInput(room, players)).percentQuestions.length;
+    return { groups: questions, slides: revealSlides(questions, awards, "question") };
+  }
+  const groups = spillGroups((rows ?? []).map((r) => ({ score: r.spill_score }))).length;
+  return { groups, slides: revealSlides(groups, awards) };
 }
 
 /** Reloads everything after a write and returns the caller's fresh state. */

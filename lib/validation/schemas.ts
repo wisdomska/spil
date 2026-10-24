@@ -16,8 +16,23 @@ export const avatar = z.number().int().min(0).max(23);
 /** SPIL-02: only the band ever reaches the server; under_13 is accepted so it can be refused. */
 export const ageBand = z.enum(["under_13", "13_15", "16_17", "18_plus"]);
 
+/** Game modes (Batch 1); the server also checks the mode is available and fits the room. */
+export const mode = z.enum([
+  "classic",
+  "room_percentage",
+  "hot_takes",
+  "most_likely",
+  "red_green",
+  "rank_room",
+  "imposter",
+  "two_truths",
+  "who_said",
+  "spill_or_skip",
+]);
+
 export const createRoom = z.object({
   ageBand,
+  mode: mode.default("classic"),
   packId,
   questionCount: z.number().int().min(1).max(100).optional(),
   captchaToken: z.string().optional(),
@@ -54,6 +69,14 @@ export const advance = z.object({
 });
 
 export const playerTarget = z.object({ playerId: z.uuid() });
+
+/** Room Percentage: guesses of the room's yes share, by question. */
+export const putPercent = z.object({
+  guesses: z
+    .array(z.object({ questionId: z.uuid(), value: z.number().int().min(0).max(100) }))
+    .min(1)
+    .max(100),
+});
 
 /** SPIL-11: the slide the host is moving on from. */
 export const revealNext = z.object({ expected: z.number().int().min(0).max(1000) });

@@ -1,8 +1,8 @@
 import { codeOf, requireUser, type CodeParams } from "@/lib/api/auth";
 import { ApiError, fromDbError } from "@/lib/api/errors";
 import { readBody, route } from "@/lib/api/handler";
-import { freshState, requireHost, requireMember, requirePhase } from "@/lib/api/rooms";
-import { checkRevealNext, revealSlides, spillGroups } from "@/lib/game";
+import { freshState, requireHost, requireMember, requirePhase, revealPlan } from "@/lib/api/rooms";
+import { checkRevealNext } from "@/lib/game";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { revealNext } from "@/lib/validation/schemas";
 
@@ -18,22 +18,7 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   const room = await requireMember(code, userId);
   requireHost(room);
   requirePhase(room.room, "revealed");
-  const db = getAdminClient();
-  const [rows, awards] = await Promise.all([
-    db
-      .from("results")
-      .select("spill_score")
-      .eq("room_id", room.room.id)
-      .eq("round", room.room.round),
-    db
-      .from("awards")
-      .select("award", { count: "exact", head: true })
-      .eq("room_id", room.room.id)
-      .eq("round", room.room.round),
-  ]);
-  if (rows.error) throw fromDbError(rows.error);
-  const groups = spillGroups((rows.data ?? []).map((r) => ({ score: r.spill_score }))).length;
-  const slides = revealSlides(groups, awards.count ?? 0);
+  const { groups, slides } = await revealPlan(room.room, room.players);
   const startedAt = Date.parse(room.room.reveal_at ?? room.room.revealed_at ?? "");
   const check = checkRevealNext({
     index: room.room.reveal_index,
@@ -45,7 +30,7 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   if (check === "too_early") throw new ApiError("TOO_EARLY");
   if (check === "ok") {
     // Only moves on from the expected slide, so two taps can never skip one.
-    const { error } = await db
+    const { error } = await getAdminClient()
       .from("rooms")
       .update({ reveal_index: expected + 1, reveal_at: new Date().toISOString() })
       .eq("id", room.room.id)
