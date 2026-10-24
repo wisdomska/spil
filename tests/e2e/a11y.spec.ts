@@ -62,7 +62,7 @@ test("keyboard only: landing to age screen to pack picker with visible focus", a
       const style = getComputedStyle(el);
       return { text: el.textContent?.trim().slice(0, 40), outline: style.outlineStyle };
     });
-    if (focused?.text === "Start a room") {
+    if (focused?.text === "Start a game") {
       expect(focused.outline).not.toBe("none");
       await page.keyboard.press("Enter");
       // SPIL-02: the age screen comes first and works from the keyboard too.
@@ -73,7 +73,7 @@ test("keyboard only: landing to age screen to pack picker with visible focus", a
       return;
     }
   }
-  throw new Error("Start a room was not reachable by keyboard");
+  throw new Error("Start a game was not reachable by keyboard");
 });
 
 // Phones as narrow as 375 px: no screen may scroll sideways (every design frame's app state).

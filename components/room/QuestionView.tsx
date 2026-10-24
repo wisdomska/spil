@@ -2,12 +2,10 @@
 
 import {
   ArrowLeftIcon,
-  CheckIcon,
   FlagIcon,
   HandSwipeRightIcon,
   LockSimpleIcon,
   WifiSlashIcon,
-  XIcon,
 } from "@phosphor-icons/react";
 import {
   animate,
@@ -297,7 +295,6 @@ export function QuestionView({ state, onDone, preview }: Props) {
           aria-disabled={finishing || undefined}
           className={`${ANS} border-text bg-transparent text-text`}
         >
-          <XIcon size={22} aria-hidden />
           {t("no")}
         </button>
         <button
@@ -306,7 +303,6 @@ export function QuestionView({ state, onDone, preview }: Props) {
           aria-disabled={finishing || undefined}
           className={`${ANS} border-accent bg-accent text-on-accent`}
         >
-          <CheckIcon size={22} aria-hidden />
           {t("yes")}
         </button>
       </div>

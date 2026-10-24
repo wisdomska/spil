@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  CheckCircleIcon,
-  CheckIcon,
-  CopyIcon,
-  CrownSimpleIcon,
-  RobotIcon,
-  ShareNetworkIcon,
-  SwapIcon,
-  UsersThreeIcon,
-  XIcon,
-} from "@phosphor-icons/react";
+import { CheckCircleIcon, CrownSimpleIcon, UsersThreeIcon, XIcon } from "@phosphor-icons/react";
 import { useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -63,7 +53,6 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
             onClick={() => setInviting(true)}
             className="flex h-14 items-center justify-center gap-2 rounded-pill border-[1.5px] border-text bg-transparent px-[18px] text-[17px] leading-none font-semibold whitespace-nowrap text-text hover:bg-surface-raised"
           >
-            <ShareNetworkIcon size={22} aria-hidden />
             {tr("shareInvite")}
           </button>
           <button
@@ -71,11 +60,6 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
             onClick={copy}
             className="flex h-14 items-center justify-center gap-2 rounded-pill border border-line bg-transparent px-5 text-[15px] leading-none font-semibold whitespace-nowrap text-text hover:bg-surface-raised"
           >
-            {copied ? (
-              <CheckIcon size={18} aria-hidden className="animate-icon-in" />
-            ) : (
-              <CopyIcon size={18} aria-hidden />
-            )}
             {copied ? tr("copied") : tr("copyLink")}
           </button>
         </div>
@@ -175,11 +159,11 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
                     )
               }
             >
-              {t("start")}
+              {/* Owner request: one player plays solo, and the button says so. */}
+              {n === 1 && canStart ? t("playSolo") : t("start")}
             </Button>
             {room.testPlayers && (
               <Button variant="ghost" size="md" onClick={onAddTest}>
-                <RobotIcon size={18} aria-hidden />
                 {t("addTest")}
               </Button>
             )}
@@ -187,7 +171,6 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
               href={`/create?room=${room.code}&mode=pack&pack=${room.pack.id}`}
               className="flex h-12 items-center justify-center gap-2 rounded-pill text-[15px] leading-none font-semibold text-text-muted no-underline hover:bg-surface-raised hover:text-text"
             >
-              <SwapIcon size={18} aria-hidden />
               {t("changePack", { pack: room.pack.name })}
             </Link>
           </>

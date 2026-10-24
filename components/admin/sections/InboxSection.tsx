@@ -45,7 +45,7 @@ export function InboxSection() {
         ? m.status === "new"
         : m.status !== "archived",
   );
-  const shown = rows.slice(0, paging.limit);
+  const shown = paging.slice(rows);
 
   const setStatus = (m: AdminMessage, status: AdminMessage["status"], ok: string) =>
     run(() => adminApi("PATCH", `/messages/${m.id}`, { status }), { ok });
@@ -80,8 +80,9 @@ export function InboxSection() {
           empty={rows.length === 0}
           emptyText={t("empty")}
           total={rows.length}
-          shown={shown.length}
-          onMore={paging.more}
+          page={paging.page}
+          size={paging.size}
+          onPage={paging.setPage}
         >
           {shown.map((m) => {
             const fresh = m.status === "new";

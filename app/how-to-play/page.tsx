@@ -1,4 +1,3 @@
-import { DoorOpenIcon, PlusCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
 import { cacheLife } from "next/cache";
 import Link from "next/link";
@@ -52,14 +51,12 @@ export default async function HowToPlay() {
         </span>
         <div className="flex flex-wrap gap-2.5">
           <Link href="/create" className={`${ACCENT} h-14 flex-[1_1_200px] px-6 text-[17px]`}>
-            <PlusCircleIcon size={20} aria-hidden />
             {c("startRoom")}
           </Link>
           <Link
             href="/join"
             className={`${OUTLINE} h-14 flex-[1_1_200px] px-6 text-[17px] hover:bg-surface`}
           >
-            <DoorOpenIcon size={20} aria-hidden />
             {c("joinWithCode")}
           </Link>
         </div>

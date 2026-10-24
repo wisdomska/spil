@@ -1,6 +1,5 @@
 "use client";
 
-import { FastForwardIcon } from "@phosphor-icons/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
@@ -26,7 +25,6 @@ export function SkipToReveal({ state, onSkip, skipping }: Props) {
   if (!state.me.isHost || !ready) return null;
   return (
     <Button variant="secondary" block loading={skipping} onClick={onSkip}>
-      <FastForwardIcon size={20} aria-hidden />
       {t("skipToReveal")}
     </Button>
   );

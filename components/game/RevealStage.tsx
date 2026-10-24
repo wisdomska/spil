@@ -1,6 +1,6 @@
 "use client";
 
-import { FastForwardIcon, SpeakerHighIcon, SpeakerSlashIcon } from "@phosphor-icons/react";
+import { SpeakerHighIcon, SpeakerSlashIcon } from "@phosphor-icons/react";
 import { useMotionValue, useReducedMotion, useTransform, type MotionValue } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -204,7 +204,6 @@ export function RevealStage({
                 onClick={onSkip}
                 className="flex h-12 items-center gap-2 rounded-pill border-[1.5px] border-line bg-transparent px-[18px] text-[15px] leading-none font-semibold text-text hover:bg-surface-raised"
               >
-                <FastForwardIcon size={18} aria-hidden />
                 {t("skip")}
               </button>
             </>

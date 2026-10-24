@@ -9,9 +9,8 @@ test.beforeEach(({}, info) => {
 test("one player can play a whole round alone", async ({ browser }) => {
   const { page, context } = await phone(browser, "guest");
   await createRoom(page, { pack: "classic", count: 5, nickname: "Senya" });
-  await expect(
-    page.getByText("Just you. Start solo, or share the invite link first."),
-  ).toBeVisible();
+  await expect(page.getByText("Ready to play solo.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Play solo" })).toBeVisible();
   await startGame(page);
   await answerAll(page, "YYNNY");
 

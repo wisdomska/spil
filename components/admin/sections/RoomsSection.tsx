@@ -51,7 +51,7 @@ export function RoomsSection() {
             ? r.status === "revealed"
             : chip === "active" && r.status !== "closed" && r.status !== "revealed")),
   );
-  const shown = rows.slice(0, paging.limit);
+  const shown = paging.slice(rows);
 
   return (
     <>
@@ -95,8 +95,9 @@ export function RoomsSection() {
           empty={rows.length === 0}
           emptyText={t("empty")}
           total={rows.length}
-          shown={shown.length}
-          onMore={paging.more}
+          page={paging.page}
+          size={paging.size}
+          onPage={paging.setPage}
         >
           {shown.map((r) => (
             <Tr key={r.id}>

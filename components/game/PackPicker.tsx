@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckIcon, DropIcon, EyeIcon, InfoIcon } from "@phosphor-icons/react";
+import { CheckIcon, DropIcon, InfoIcon } from "@phosphor-icons/react";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
@@ -223,7 +223,6 @@ export function PackPicker({
                           tileButton,
                         )}
                       >
-                        <EyeIcon size={14} aria-hidden />
                         {t("preview")}
                       </button>
                       {hasInfo && (

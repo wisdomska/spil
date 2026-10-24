@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeftIcon, EnvelopeSimpleIcon } from "@phosphor-icons/react";
+import { EnvelopeSimpleIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -222,7 +222,6 @@ export function ResetForm() {
           onClick={() => rememberEmail(email.trim())}
           className="flex h-12 items-center justify-center gap-2 rounded-pill text-[15px] leading-none font-semibold text-text no-underline hover:bg-surface-raised hover:text-text"
         >
-          <ArrowLeftIcon aria-hidden size={18} />
           {t("back")}
         </Link>
       </form>

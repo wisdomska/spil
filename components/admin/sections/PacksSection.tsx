@@ -1,10 +1,10 @@
 "use client";
 
-import { ListBulletsIcon, PencilSimpleIcon, PlusIcon } from "@phosphor-icons/react";
+import { ListBulletsIcon, PencilSimpleIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { FieldRow, Input, Select, TextArea } from "@/components/admin/fields";
+import { FieldRow, Input, Select, TextArea, NumberInput } from "@/components/admin/fields";
 import {
   ActionsTd,
   adminApi,
@@ -155,13 +155,12 @@ export function PacksSection() {
   };
 
   const list = q.data ?? [];
-  const shown = list.slice(0, paging.limit);
+  const shown = paging.slice(list);
 
   return (
     <>
       <PageHeader title={tn("packs")}>
         <Button size="md" onClick={() => open(null)} className="px-[18px]">
-          <PlusIcon aria-hidden size={18} />
           {t("new")}
         </Button>
       </PageHeader>
@@ -183,8 +182,9 @@ export function PacksSection() {
           empty={list.length === 0}
           emptyText={t("empty")}
           total={list.length}
-          shown={shown.length}
-          onMore={paging.more}
+          page={paging.page}
+          size={paging.size}
+          onPage={paging.setPage}
         >
           {shown.map((p) => (
             <Tr key={p.id}>
@@ -332,15 +332,18 @@ export function PacksSection() {
             </Select>
           </FieldRow>
           <FieldRow id="pk-order" label={t("order")}>
-            <Input
+            <NumberInput
               id="pk-order"
-              type="number"
-              inputMode="numeric"
               min={0}
               max={10000}
               value={form.sortOrder}
-              onChange={set("sortOrder")}
+              onValueChange={(v) => {
+                setForm((f) => ({ ...f, sortOrder: v }));
+                setError(null);
+              }}
               title={t("orderHint")}
+              decreaseLabel={tc("decrease", { field: t("order") })}
+              increaseLabel={tc("increase", { field: t("order") })}
             />
           </FieldRow>
         </div>

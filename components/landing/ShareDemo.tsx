@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  DeviceMobileIcon,
-  DownloadSimpleIcon,
-  EyeSlashIcon,
-  InfoIcon,
-  SquareIcon,
-} from "@phosphor-icons/react";
+import { DeviceMobileIcon, EyeSlashIcon, InfoIcon, SquareIcon } from "@phosphor-icons/react";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import { useTranslations } from "next-intl";
 import { useRef, useState, useSyncExternalStore } from "react";
@@ -150,7 +144,6 @@ export function ShareDemo() {
         {last ? (
           <div className="flex flex-wrap items-center gap-3">
             <Button onClick={download} loading={busy}>
-              <DownloadSimpleIcon size={18} aria-hidden />
               {t("downloadPng")}
             </Button>
             <span className="text-[13px] leading-[1.4] font-medium text-text-muted">

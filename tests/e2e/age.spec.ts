@@ -72,7 +72,7 @@ test("16-year-old opening an 18+ room is blocked, no player is created (SPIL-02)
   await expect(
     guest.page.getByRole("heading", { name: "This room is playing an 18+ pack." }),
   ).toBeVisible();
-  await expect(guest.page.getByRole("link", { name: "Start a room" })).toBeVisible();
+  await expect(guest.page.getByRole("link", { name: "Start a game" })).toBeVisible();
   await expect(guest.page.getByLabel("Nickname")).toHaveCount(0);
 
   // The host's lobby never changes: still just the host, and no word about who tried.

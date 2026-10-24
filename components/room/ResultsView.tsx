@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  ArrowClockwiseIcon,
-  HourglassMediumIcon,
-  InfoIcon,
-  ShareFatIcon,
-  TrophyIcon,
-} from "@phosphor-icons/react";
+import { HourglassMediumIcon, TrophyIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -225,7 +219,6 @@ export function ResultsView({
               onClick={() => setExplain(true)}
               className="mt-3 -ml-2.5 flex h-11 items-center gap-1.5 rounded-pill border-0 bg-transparent pr-3.5 pl-2.5 text-[14px] leading-none font-semibold text-accent-ink hover:bg-surface-raised"
             >
-              <InfoIcon size={18} aria-hidden />
               {t("howPoints")}
             </button>
           )}
@@ -315,7 +308,6 @@ export function ResultsView({
           onClick={() => setShare(true)}
           className="flex h-14 flex-1 items-center justify-center gap-2 rounded-pill border-[1.5px] border-text bg-transparent text-[17px] leading-none font-semibold text-text hover:bg-surface-raised"
         >
-          <ShareFatIcon size={20} aria-hidden />
           {t("share")}
         </button>
         {state.me.isHost ? (
@@ -323,7 +315,6 @@ export function ResultsView({
             href={`/create?room=${state.room.code}&mode=rematch&pack=${state.room.pack.id}`}
             className="flex h-14 flex-1 items-center justify-center gap-2 rounded-pill bg-accent text-[17px] leading-none font-semibold text-on-accent no-underline hover:text-on-accent hover:shadow-[inset_0_0_0_99px_var(--press-glow)] active:scale-[.97]"
           >
-            <ArrowClockwiseIcon size={20} aria-hidden />
             {t("rematch")}
           </Link>
         ) : (

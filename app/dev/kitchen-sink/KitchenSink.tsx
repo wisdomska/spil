@@ -67,7 +67,7 @@ export function KitchenSink() {
 
       <Section title="Buttons">
         <div className="flex flex-wrap gap-2.5">
-          <Button>Start a room</Button>
+          <Button>Start a game</Button>
           <Button variant="secondary">Join with code</Button>
           <Button variant="ghost" size="md">
             Paste code

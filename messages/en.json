@@ -8,7 +8,7 @@
   },
   "common": {
     "brand": "SPIL",
-    "startRoom": "Start a room",
+    "startRoom": "Start a game",
     "joinWithCode": "Join with code",
     "howToPlay": "How to play",
     "back": "Back",
@@ -61,7 +61,7 @@
     "menu": "Choose theme"
   },
   "toast": {
-    "linkCopied": "Link copied. Drop it in the group chat.",
+    "linkCopied": "Link copied. Share it with your friends.",
     "linkCopiedNoShare": "Link copied. Sharing is not available on this device.",
     "pasteInApp": "Link copied. Paste it in {app}.",
     "removed": "Removed {name}.",
@@ -207,7 +207,7 @@
     "shareText": "Join my SPIL room. Code {code}",
     "shareInvite": "Share invite",
     "inviteTitle": "Invite your friends",
-    "inviteBody": "Send the link wherever your group chats. They tap it and they're in.",
+    "inviteBody": "Share the link with your friends. They tap it and they're in.",
     "moreApps": "More"
   },
   "lobby": {
@@ -222,7 +222,8 @@
     "changePack": "Change pack: {pack}",
     "remove": "Remove {name}",
     "guestWait": "Waiting for {host} to start. Grab a drink.",
-    "readySolo": "Just you. Start solo, or share the invite link first."
+    "readySolo": "Ready to play solo.",
+    "playSolo": "Play solo"
   },
   "question": {
     "offline": "You're offline. Keep going, your answers send when you're back.",
@@ -470,7 +471,7 @@
       "title": "How to play",
       "lede": "A round takes about 15 minutes. {min, plural, one {Play solo, or bring friends with a phone each.} other {You need # or more people and a phone each.}}",
       "h1": "Start or join a room",
-      "p1": "The host taps Start a room, picks a pack and shares the link or the four character code. Everyone else taps Join with code. No account, just a nickname and a face.",
+      "p1": "The host taps Start a game, picks a pack and shares the link or the four character code. Everyone else taps Join with code. No account, just a nickname and a face.",
       "h2": "Answer in private",
       "p2": "The host picks how many “Have you ever…” questions to play. Swipe right for yes, left for no, or use the buttons. Nobody sees your answers unless you switch on Spill Mode at the end.",
       "h3": "Guess everyone's score",
@@ -599,8 +600,6 @@
       "done": "Done",
       "edit": "Edit",
       "all": "All",
-      "showMore": "Show more ({count} left)",
-      "showing": "Showing {shown} of {total}",
       "nothing": "Nothing here yet.",
       "loading": "Loading",
       "loadFailed": "Could not load this. Try again.",
@@ -615,7 +614,14 @@
       "forbidden": "Your role cannot do that.",
       "somethingWrong": "Something went wrong. Try again.",
       "rateLimited": "Slow down a little. Try again in a minute.",
-      "haveYouEver": "Have you ever {text}"
+      "haveYouEver": "Have you ever {text}",
+      "pagination": "Pages",
+      "range": "{from} to {to} of {total}",
+      "previous": "Previous",
+      "next": "Next",
+      "pageOf": "Page {page} of {pages}",
+      "decrease": "Lower {field}",
+      "increase": "Raise {field}"
     },
     "status": {
       "live": "Live",

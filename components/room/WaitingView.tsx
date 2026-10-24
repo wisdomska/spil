@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  BellRingingIcon,
-  CheckIcon,
-  HourglassMediumIcon,
-  SkipForwardIcon,
-} from "@phosphor-icons/react";
+import { CheckIcon, HourglassMediumIcon } from "@phosphor-icons/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Avatar } from "@/components/brand/Avatar";
@@ -147,7 +142,6 @@ export function WaitingView({
             onClick={() => onNudge(others)}
             softDisabled={!others.length}
           >
-            <BellRingingIcon size={20} aria-hidden />
             {others.length === 1 ? t("nudgeOne", { name: others[0]!.nickname }) : t("nudgeMany")}
           </Button>
           <Button
@@ -160,7 +154,6 @@ export function WaitingView({
               setSheet(true);
             }}
           >
-            <SkipForwardIcon size={20} aria-hidden />
             {t("force")}
           </Button>
         </div>

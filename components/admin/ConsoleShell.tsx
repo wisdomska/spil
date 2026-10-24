@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ArrowSquareOutIcon,
   CardsIcon,
   ChartBarIcon,
   ClockCounterClockwiseIcon,
@@ -138,7 +137,6 @@ function GameLink() {
       rel="noreferrer"
       className="flex h-12 items-center gap-2.5 rounded-pill px-3 text-[14px] leading-none font-semibold text-text-muted no-underline hover:bg-surface-raised hover:text-text lg:h-11"
     >
-      <ArrowSquareOutIcon aria-hidden size={18} />
       {t("openGame")}
     </a>
   );

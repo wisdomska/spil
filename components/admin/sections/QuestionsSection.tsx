@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  DownloadSimpleIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  PencilSimpleIcon,
-  PlusIcon,
-  UploadSimpleIcon,
-} from "@phosphor-icons/react";
+import { EyeIcon, EyeSlashIcon, PencilSimpleIcon, UploadSimpleIcon } from "@phosphor-icons/react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -82,7 +75,7 @@ export function QuestionsSection() {
       (status === "all" || x.status === status) &&
       (!sq || x.text.toLowerCase().includes(sq)),
   );
-  const shown = rows.slice(0, paging.limit);
+  const shown = paging.slice(rows);
 
   const textErrors = {
     DUPLICATE: editing?.id ? t("duplicate") : t("allDuplicates"),
@@ -200,7 +193,6 @@ export function QuestionsSection() {
       <PageHeader title={tn("questions")}>
         {canWrite && (
           <Button size="md" onClick={() => open(null)} className="px-[18px]">
-            <PlusIcon aria-hidden size={18} />
             {t("add")}
           </Button>
         )}
@@ -230,16 +222,10 @@ export function QuestionsSection() {
             </option>
           ))}
         </Select>
-        <OutlineButton onClick={exportCsv}>
-          <DownloadSimpleIcon aria-hidden size={18} />
-          {tc("exportCsv")}
-        </OutlineButton>
+        <OutlineButton onClick={exportCsv}>{tc("exportCsv")}</OutlineButton>
         {canWrite && (
           <>
-            <OutlineButton onClick={() => setImporting(true)}>
-              <UploadSimpleIcon aria-hidden size={18} />
-              {t("import")}
-            </OutlineButton>
+            <OutlineButton onClick={() => setImporting(true)}>{t("import")}</OutlineButton>
           </>
         )}
       </div>
@@ -273,8 +259,9 @@ export function QuestionsSection() {
           empty={rows.length === 0}
           emptyText={t("empty")}
           total={rows.length}
-          shown={shown.length}
-          onMore={paging.more}
+          page={paging.page}
+          size={paging.size}
+          onPage={paging.setPage}
         >
           {shown.map((x) => {
             const rate = yesRate(x.yes, x.answered);

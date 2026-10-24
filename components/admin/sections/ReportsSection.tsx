@@ -38,7 +38,7 @@ export function ReportsSection() {
   const [confirm, setConfirm] = useState<ConfirmState>(null);
 
   const rows = (q.data ?? []).filter((r) => chip === "all" || r.status === chip);
-  const shown = rows.slice(0, paging.limit);
+  const shown = paging.slice(rows);
 
   const subject = (r: AdminReport) => {
     if (r.type === "nickname" || (!r.questionId && r.playerId))
@@ -89,8 +89,9 @@ export function ReportsSection() {
           empty={rows.length === 0}
           emptyText={chip === "open" ? t("emptyOpen") : t("empty")}
           total={rows.length}
-          shown={shown.length}
-          onMore={paging.more}
+          page={paging.page}
+          size={paging.size}
+          onPage={paging.setPage}
         >
           {shown.map((r) => (
             <Tr key={r.id}>

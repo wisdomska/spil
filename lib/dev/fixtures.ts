@@ -88,6 +88,7 @@ export function fixtureState({
       avgGuessAbout: p.guess,
       mindReader: p.mr,
       bullseyes: p.id === "zainab" ? 2 : 0,
+      guessedBy: players - 1,
       rank: i + 1,
     }));
   const awards: AwardRow[] = AWARDS.map(([award, playerId, reason], i) => ({
@@ -117,7 +118,7 @@ export function fixtureState({
       },
       questionCount: total,
       revealedAt: undefined,
-      settings: { minPlayers: 3, maxPlayers: 12 },
+      settings: { minPlayers: 1, maxPlayers: 12 },
       testPlayers: true,
       pollingOnly: false,
       channel: "room:fixture",

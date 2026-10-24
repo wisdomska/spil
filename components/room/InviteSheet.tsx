@@ -2,8 +2,6 @@
 
 import {
   ChatTextIcon,
-  CheckIcon,
-  CopyIcon,
   DiscordLogoIcon,
   EnvelopeSimpleIcon,
   FacebookLogoIcon,
@@ -218,11 +216,6 @@ export function InviteSheet({
           onClick={copy}
           className="flex h-11 shrink-0 items-center gap-2 rounded-pill border-0 bg-text px-4 text-[15px] leading-none font-semibold text-bg hover:brightness-[1.08]"
         >
-          {copied ? (
-            <CheckIcon size={18} aria-hidden className="animate-icon-in" />
-          ) : (
-            <CopyIcon size={18} aria-hidden />
-          )}
           {copied ? t("copied") : t("copyLink")}
         </button>
       </div>

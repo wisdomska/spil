@@ -182,7 +182,7 @@ export function OutlineButton({
     <button
       type="button"
       className={cn(
-        "inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-pill border-[1.5px] bg-transparent px-4 text-[15px] leading-none font-semibold whitespace-nowrap active:scale-[.97]",
+        "inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-pill border-[1.5px] bg-transparent px-4 text-[15px] leading-none font-semibold whitespace-nowrap active:scale-[.97] disabled:pointer-events-none disabled:opacity-40",
         danger
           ? "border-error text-error hover:bg-accent-soft"
           : "border-line text-text hover:bg-surface-raised",
@@ -268,8 +268,9 @@ export function DataTable({
   empty,
   emptyText,
   total,
-  shown,
-  onMore,
+  page,
+  size,
+  onPage,
   caption,
 }: {
   cols: Col[];
@@ -277,11 +278,16 @@ export function DataTable({
   empty: boolean;
   emptyText: string;
   total: number;
-  shown: number;
-  onMore: () => void;
+  page: number;
+  size: number;
+  onPage: (page: number) => void;
   caption: string;
 }) {
   const t = useTranslations("admin.common");
+  const pages = Math.max(1, Math.ceil(total / size));
+  const current = Math.min(page, pages);
+  const from = (current - 1) * size + 1;
+  const to = Math.min(total, current * size);
   return (
     <div className="overflow-auto rounded-card border border-line bg-surface">
       <table className="w-full border-collapse text-[14px] leading-[1.35]">
@@ -310,13 +316,26 @@ export function DataTable({
         </thead>
         <tbody>{children}</tbody>
       </table>
-      {total > shown && (
-        <div className="flex items-center justify-between gap-3 border-t border-line px-3.5 py-3">
+      {pages > 1 && (
+        <nav
+          aria-label={t("pagination")}
+          className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-3.5 py-3"
+        >
           <span className="font-mono text-[13px] leading-none text-text-muted">
-            {t("showing", { shown, total })}
+            {t("range", { from, to, total })}
           </span>
-          <OutlineButton onClick={onMore}>{t("showMore", { count: total - shown })}</OutlineButton>
-        </div>
+          <div className="flex items-center gap-2">
+            <OutlineButton disabled={current <= 1} onClick={() => onPage(current - 1)}>
+              {t("previous")}
+            </OutlineButton>
+            <span className="min-w-[96px] text-center font-mono text-[13px] leading-none text-text-muted">
+              {t("pageOf", { page: current, pages })}
+            </span>
+            <OutlineButton disabled={current >= pages} onClick={() => onPage(current + 1)}>
+              {t("next")}
+            </OutlineButton>
+          </div>
+        </nav>
       )}
       {empty && (
         <div className="px-5 py-10 text-center text-[15px] leading-[1.5] text-text-muted">
@@ -466,12 +485,19 @@ export function LoadError({ onRetry }: { onRetry: () => void }) {
 }
 
 /** Client-side paging for long tables (design "Show more", 40 rows at a time). */
-export function usePaging(step = 40) {
-  const [limit, setLimit] = useState(step);
+/** Page-by-page tables (owner request): `slice` returns the rows for the current page. */
+export function usePaging(size = 20) {
+  const [page, setPage] = useState(1);
   return {
-    limit,
-    more: () => setLimit((l) => l + step),
-    reset: () => setLimit(step),
+    page,
+    size,
+    setPage,
+    reset: () => setPage(1),
+    slice<T>(rows: readonly T[]): T[] {
+      const last = Math.max(1, Math.ceil(rows.length / size));
+      const p = Math.min(page, last);
+      return rows.slice((p - 1) * size, p * size);
+    },
   };
 }
 

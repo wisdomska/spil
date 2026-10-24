@@ -11,14 +11,14 @@ export async function newPlayer(browser: Browser, name: string) {
   return { page, context, name } satisfies Player;
 }
 
-/** Host: Start a room, pick a pack and length, set a profile, land in the lobby. Returns the code. */
+/** Host: Start a game, pick a pack and length, set a profile, land in the lobby. Returns the code. */
 export async function hostRoom(
   host: Player,
   opts: { pack?: string; count?: number; age?: number } = {},
 ) {
   const { page } = host;
   await page.goto("/");
-  await page.getByRole("link", { name: "Start a room" }).first().click();
+  await page.getByRole("link", { name: "Start a game" }).first().click();
   await passAgeGate(page, opts.age ?? 25);
   await expect(page.getByRole("heading", { name: "Pick your poison." })).toBeVisible();
   if (opts.pack)

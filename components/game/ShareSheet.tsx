@@ -1,6 +1,5 @@
 "use client";
 
-import { DownloadSimpleIcon, ShareFatIcon } from "@phosphor-icons/react";
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import type { AwardKey } from "@/components/brand/Stickers";
@@ -104,11 +103,9 @@ export function ShareSheet(props: Props) {
           loading={busy === "save"}
           onClick={() => run("save")}
         >
-          <DownloadSimpleIcon size={20} aria-hidden />
           {t("save")}
         </Button>
         <Button className="flex-1" loading={busy === "share"} onClick={() => run("share")}>
-          <ShareFatIcon size={20} aria-hidden />
           {t("share")}
         </Button>
       </div>

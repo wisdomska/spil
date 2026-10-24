@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  CheckCircleIcon,
-  DownloadSimpleIcon,
-  EnvelopeSimpleIcon,
-  FlagIcon,
-} from "@phosphor-icons/react";
+import { CheckCircleIcon, EnvelopeSimpleIcon, FlagIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useMe } from "@/components/admin/ConsoleShell";
@@ -94,7 +89,6 @@ export function OverviewSection() {
     <>
       <PageHeader title={tn("overview")}>
         <OutlineButton onClick={exportCsv} disabled={!d}>
-          <DownloadSimpleIcon aria-hidden size={18} />
           {tc("exportCsv")}
         </OutlineButton>
       </PageHeader>

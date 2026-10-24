@@ -1,11 +1,10 @@
 "use client";
 
-import { UserPlusIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { initials, useMe } from "@/components/admin/ConsoleShell";
-import { ErrorLine, FieldRow, Input, Select } from "@/components/admin/fields";
+import { ErrorLine, FieldRow, Input, Select, NumberInput } from "@/components/admin/fields";
 import {
   adminApi,
   ConfirmDialog,
@@ -68,16 +67,16 @@ function GameSettings() {
   };
   const field = (key: string, label: string, hint: string, min: number, max: number) => (
     <FieldRow key={key} id={`set-${key}`} label={label} hint={hint}>
-      <Input
+      <NumberInput
         id={`set-${key}`}
-        type="number"
-        inputMode="numeric"
         min={min}
         max={max}
-        value={vals[key]}
+        value={vals[key] ?? ""}
         aria-describedby={`set-${key}-hint`}
-        onChange={(e) => {
-          setDraft({ ...vals, [key]: e.target.value });
+        decreaseLabel={tc("decrease", { field: label })}
+        increaseLabel={tc("increase", { field: label })}
+        onValueChange={(v) => {
+          setDraft({ ...vals, [key]: v });
           setError(null);
         }}
       />
@@ -310,7 +309,6 @@ function Accounts({ me }: { me: Me }) {
           <OutlineButton onClick={() => openModal("password")}>{t("changePassword")}</OutlineButton>
           {owner && (
             <Button size="md" className="px-[18px] max-sm:w-full" onClick={() => openModal("add")}>
-              <UserPlusIcon aria-hidden size={16} />
               {t("addAdmin")}
             </Button>
           )}

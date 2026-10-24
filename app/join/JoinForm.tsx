@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardTextIcon, PlusCircleIcon, WarningCircleIcon } from "@phosphor-icons/react";
+import { WarningCircleIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -92,7 +92,6 @@ export function JoinForm() {
           }}
           className="-ml-2 flex h-12 items-center gap-2 justify-self-start rounded-pill border-0 bg-transparent px-4 text-[15px] leading-none font-semibold whitespace-nowrap text-text hover:bg-surface-raised"
         >
-          <ClipboardTextIcon size={20} aria-hidden />
           {t("paste")}
         </button>
       </div>
@@ -109,13 +108,12 @@ export function JoinForm() {
           {t("submit")}
         </Button>
         {/* Tertiary way out for people who landed here without an invite. The expired error
-            already offers Start a room above, so it is not repeated then. */}
+            already offers Start a game above, so it is not repeated then. */}
         {error !== "expired" && (
           <Link
             href="/create"
             className="flex h-12 items-center justify-center gap-2 rounded-pill text-[15px] leading-none font-semibold text-text-muted no-underline hover:bg-surface-raised hover:text-text"
           >
-            <PlusCircleIcon size={20} aria-hidden />
             {t("noCode")}
           </Link>
         )}

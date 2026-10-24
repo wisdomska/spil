@@ -120,7 +120,6 @@ export function RoomShell({ state, online, offline, statusFor, order, onLeave, c
             onClick={onLeave}
             className="flex h-12 items-center justify-center gap-2 rounded-pill border-0 bg-transparent text-[15px] leading-none font-semibold text-text-muted hover:bg-surface-raised hover:text-text"
           >
-            <SignOutIcon aria-hidden />
             {c("leaveRoom")}
           </button>
         </div>

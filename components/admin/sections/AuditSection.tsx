@@ -22,14 +22,14 @@ export function AuditSection() {
   const tn = useTranslations("admin.nav");
   const tc = useTranslations("admin.common");
   const q = useAdminQuery<AuditRow[]>("/audit");
-  const paging = usePaging(100);
+  const paging = usePaging(25);
   const [search, setSearch] = useState("");
   const label = (action: string) => (t.has(`actions.${action}`) ? t(`actions.${action}`) : action);
   const sq = search.trim().toLowerCase();
   const rows = (q.data ?? []).filter(
     (a) => !sq || `${a.who} ${label(a.action)} ${a.target}`.toLowerCase().includes(sq),
   );
-  const shown = rows.slice(0, paging.limit);
+  const shown = paging.slice(rows);
 
   return (
     <>
@@ -60,8 +60,9 @@ export function AuditSection() {
           empty={rows.length === 0}
           emptyText={t("empty")}
           total={rows.length}
-          shown={shown.length}
-          onMore={paging.more}
+          page={paging.page}
+          size={paging.size}
+          onPage={paging.setPage}
         >
           {shown.map((a) => (
             <Tr key={a.id}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckIcon, PlayIcon } from "@phosphor-icons/react";
+import { CheckIcon } from "@phosphor-icons/react";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/brand/Avatar";
 import { stickerRot } from "@/components/brand/Stickers";
@@ -60,7 +60,6 @@ export function ReadyView({
       </p>
       {state.me.isHost && (
         <Button className="mt-4" block loading={revealing} onClick={onReveal}>
-          <PlayIcon size={20} aria-hidden />
           {t("start")}
         </Button>
       )}

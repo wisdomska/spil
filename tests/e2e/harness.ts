@@ -84,7 +84,7 @@ export async function joinRoom(
 }
 
 export async function startGame(host: Page) {
-  await host.getByRole("button", { name: "Start the game" }).click();
+  await host.getByRole("button", { name: /^(Start the game|Play solo)$/ }).click();
   await expect(host.getByRole("progressbar", { name: "Questions answered" })).toBeVisible();
 }
 
