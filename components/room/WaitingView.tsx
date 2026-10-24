@@ -187,6 +187,7 @@ export function WaitingView({
           variant="destructive"
           loading={forcing}
           disabled={holding}
+          softDisabled={holding}
           onClick={() => {
             onForce();
             setSheet(false);
