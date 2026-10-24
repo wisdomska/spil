@@ -52,7 +52,7 @@ for (const theme of ["dark"] as const) {
   });
 }
 
-test("keyboard only: landing to pack picker with visible focus", async ({ page }) => {
+test("keyboard only: landing to age screen to pack picker with visible focus", async ({ page }) => {
   await page.goto("/");
   for (let i = 0; i < 8; i++) {
     await page.keyboard.press("Tab");
@@ -64,6 +64,10 @@ test("keyboard only: landing to pack picker with visible focus", async ({ page }
     });
     if (focused?.text === "Start a room") {
       expect(focused.outline).not.toBe("none");
+      await page.keyboard.press("Enter");
+      // SPIL-02: the age screen comes first and works from the keyboard too.
+      await expect(page.getByRole("heading", { name: "How old are you?" })).toBeVisible();
+      await page.keyboard.type("25");
       await page.keyboard.press("Enter");
       await expect(page.getByRole("heading", { name: "Pick your poison." })).toBeVisible();
       return;

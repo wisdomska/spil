@@ -154,12 +154,19 @@ test("offline answers queue on the phone and send when back online", async ({
   await expect(host.page.getByText("Queued")).toBeVisible();
   await host.context.setOffline(false);
   await expect(host.page.getByText("Queued")).toBeHidden({ timeout: 40_000 });
-  // The two answers reached the server.
-  const state = await host.page.evaluate(
-    async (c) => (await fetch(`/api/v1/rooms/${c}/state`)).json(),
-    code,
-  );
-  expect(Object.keys(state.myAnswers)).toHaveLength(2);
+  // The two answers reach the server ("Queued" goes away as soon as sending starts).
+  await expect
+    .poll(
+      async () => {
+        const state = await host.page.evaluate(
+          async (c) => (await fetch(`/api/v1/rooms/${c}/state`)).json(),
+          code,
+        );
+        return Object.keys(state.myAnswers ?? {}).length;
+      },
+      { timeout: 20_000 },
+    )
+    .toBe(2);
   await host.context.close();
 });
 
