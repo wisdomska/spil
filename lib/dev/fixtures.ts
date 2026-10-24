@@ -5,13 +5,13 @@ import type { AwardId, LabelId, RoomStatus } from "@/lib/game";
 import { labelFor } from "@/lib/game";
 
 export const ROSTER = [
-  { id: "ama", name: "Ama", av: 0, score: 72, guess: 64, mr: 81 },
-  { id: "kofi", name: "Kofi", av: 5, score: 41, guess: 55, mr: 62 },
-  { id: "zainab", name: "Zainab", av: 9, score: 18, guess: 27, mr: 93 },
-  { id: "tunde", name: "Tunde", av: 14, score: 88, guess: 71, mr: 79 },
-  { id: "efua", name: "Efua", av: 3, score: 9, guess: 20, mr: 76 },
-  { id: "chidi", name: "Chidi", av: 18, score: 57, guess: 31, mr: 70 },
-  { id: "yaw", name: "Yaw", av: 21, score: 33, guess: 30, mr: 66 },
+  { id: "ama", name: "Ama", av: 0, score: 72, guess: 64, mr: 34 },
+  { id: "kofi", name: "Kofi", av: 5, score: 41, guess: 55, mr: 18 },
+  { id: "zainab", name: "Zainab", av: 9, score: 18, guess: 27, mr: 41 },
+  { id: "tunde", name: "Tunde", av: 14, score: 88, guess: 71, mr: 29 },
+  { id: "efua", name: "Efua", av: 3, score: 9, guess: 20, mr: 25 },
+  { id: "chidi", name: "Chidi", av: 18, score: 57, guess: 31, mr: 22 },
+  { id: "yaw", name: "Yaw", av: 21, score: 33, guess: 30, mr: 15 },
 ] as const;
 
 export const QS = [
@@ -32,7 +32,7 @@ export const QS = [
 const AWARDS: Array<[AwardId, string, string]> = [
   ["top_spiller", "tunde", "Highest score in the room. 88 out of 100."],
   ["saint_of_the_room", "efua", "Scored 9. Either a saint or a very good liar."],
-  ["mind_reader", "zainab", "Closest guesses in the room. 93 points."],
+  ["mind_reader", "zainab", "Most Mind Reader points in the room: 41."],
   ["dark_horse", "chidi", "The room guessed 31. Chidi scored 57."],
   ["open_book", "ama", "The room guessed 64. Ama scored 72. Close enough."],
   ["clueless", "kofi", "Furthest guesses in the room. Kofi, really?"],
@@ -87,6 +87,7 @@ export function fixtureState({
       label: labelFor(p.score).id as LabelId,
       avgGuessAbout: p.guess,
       mindReader: p.mr,
+      bullseyes: p.id === "zainab" ? 2 : 0,
       rank: i + 1,
     }));
   const awards: AwardRow[] = AWARDS.map(([award, playerId, reason], i) => ({

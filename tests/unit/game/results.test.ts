@@ -34,12 +34,13 @@ const row = (r: ReturnType<typeof computeResults>, id: string) => {
 describe("computeResults rows", () => {
   it("scores each player and ranks the best guesser first", () => {
     const r = computeResults(room());
-    // Everyone guessed 50 about everyone, so whoever's friends sit closest to 50 guessed best.
+    // Everyone guessed 50 about everyone, so every guess on a target ties for closest (+3).
+    // Off by 50: 0, 30: 0, 0: 10, 20: 2. Yaw and Ama tie on 21; the higher Spill Score lists first.
     expect(r.rows.map((x) => [x.playerId, x.score, x.mindReader, x.rank])).toEqual([
-      ["yaw", 100, 83, 1],
-      ["ama", 80, 77, 2],
-      ["kofi", 30, 73, 3],
-      ["zainab", 50, 67, 4],
+      ["yaw", 100, 21, 1],
+      ["ama", 80, 21, 1],
+      ["kofi", 30, 19, 3],
+      ["zainab", 50, 11, 4],
     ]);
   });
 
@@ -71,12 +72,15 @@ describe("computeResults rows", () => {
         : p,
     );
     const r = computeResults(input);
+    // Three exact guesses each, all closest: 3 x 13 = 39.
     expect(r.rows.map((x) => [x.playerId, x.mindReader, x.rank])).toEqual([
-      ["ama", 100, 1],
-      ["zainab", 100, 1],
-      ["yaw", 83, 3],
-      ["kofi", 73, 4],
+      ["ama", 39, 1],
+      ["zainab", 39, 1],
+      ["yaw", 15, 3],
+      ["kofi", 13, 4],
     ]);
+    expect(row(r, "ama").bullseyes).toBe(3);
+    expect(row(r, "yaw").bullseyes).toBe(1);
   });
 
   it("avgGuessAbout is the rounded mean of the others' guesses", () => {
@@ -99,13 +103,14 @@ describe("computeResults rows", () => {
     expect(row(computeResults(input), "kofi").avgGuessAbout).toBe(30);
   });
 
-  it("mindReader is average accuracy 0 to 100, not a sum", () => {
+  it("mindReader sums banded points per guess plus the closest bonus (SPIL-09)", () => {
     const input = room();
-    // Ama guesses exactly for Kofi (30) and Zainab (50), and 60 for Yaw (100): accuracy 100, 100, 60.
+    // Ama: exact on Kofi (10, closest +3), exact on Zainab (10, tied closest +3), 40 off on Yaw
+    // (0 points, but still the closest of three, +3).
     input.players = input.players.map((p) =>
       p.id === "ama" ? { ...p, guesses: { kofi: 30, zainab: 50, yaw: 60 } } : p,
     );
-    expect(row(computeResults(input), "ama").mindReader).toBe(Math.round((100 + 100 + 60) / 3));
+    expect(row(computeResults(input), "ama").mindReader).toBe(13 + 13 + 3);
   });
 
   it("mindReader is 0 when the player made no guesses", () => {
@@ -122,8 +127,8 @@ describe("computeResults rows", () => {
         : p,
     );
     const r = computeResults(input);
-    // zainab: clamp 150 -> 100, |100 - 50| = 50 -> 50. yaw: clamp -20 -> 0, |0 - 100| -> 0.
-    expect(row(r, "ama").mindReader).toBe(25);
+    // zainab: clamp 150 -> 100, 50 off: 0. yaw: clamp -20 -> 0, 100 off: 0. kofi: NaN skipped.
+    expect(row(r, "ama").mindReader).toBe(0);
     expect(row(r, "ama").avgGuessAbout).toBe(50);
     expect(row(r, "zainab").avgGuessAbout).toBe(Math.round((100 + 50 + 50) / 3));
   });
@@ -172,6 +177,7 @@ describe("computeResults rows", () => {
   it("returns empty results for an empty room", () => {
     expect(computeResults({ questions: qs, players: [] })).toEqual({
       rows: [],
+      guessPoints: [],
       awards: [],
       questionStats: [],
     });
@@ -207,7 +213,8 @@ describe("sat_out and departed players", () => {
     // Ama's guess about Yaw no longer counts toward her Mind Reader (Yaw has no score), but Yaw
     // can still guess: their 0 joins Kofi's and Zainab's 50s in the room's guess about Ama.
     expect(row(r, "ama").avgGuessAbout).toBe(Math.round((50 + 50 + 0) / 3));
-    expect(row(r, "ama").mindReader).toBe(Math.round((100 - 20 + 100) / 2));
+    // Only two people guessed Kofi and Zainab, so no closest bonus: 20 off is 2, exact is 10.
+    expect(row(r, "ama").mindReader).toBe(2 + 10);
     expect(countAnswers(input).every((c) => c.answered === 3)).toBe(true);
   });
 
@@ -220,7 +227,8 @@ describe("sat_out and departed players", () => {
     );
     const r = computeResults(input);
     expect(row(r, "kofi").score).toBe(30);
-    expect(row(r, "kofi").mindReader).toBe(100);
+    // Exact on Ama, and the closest of three guessers: 10 + 3.
+    expect(row(r, "kofi").mindReader).toBe(13);
   });
 
   it("isScored follows the sat_out rules", () => {

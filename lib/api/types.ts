@@ -68,6 +68,8 @@ export type ResultRow = {
   label: LabelId;
   avgGuessAbout: number;
   mindReader: number;
+  /** Exact guesses this player made (SPIL-09 "Bullseye" stamp). */
+  bullseyes?: number;
   rank: number;
   /** Place by Spill Score: 1 + players who spilled more (SPIL-04). */
   spillRank?: number;

@@ -3,6 +3,40 @@ import { labelFor, type LabelId } from "./labels";
 import { scoreForRound } from "./scoring";
 import { toMs, toMsOrNull, type AnswerValue, type PlayerStatus, type TimeInput } from "./types";
 
+/**
+ * Mind Reader points for one guess (SPIL-09): banded, so a lazy 50 earns nothing and the
+ * scale reads at a glance. Exact 10, within 5 is 7, within 10 is 5, within 20 is 2, else 0.
+ */
+export function mindReaderPoints(diff: number): number {
+  const d = Math.abs(diff);
+  if (d === 0) return 10;
+  if (d <= 5) return 7;
+  if (d <= 10) return 5;
+  if (d <= 20) return 2;
+  return 0;
+}
+
+/** Closest guess about a target gets +3, only when this many people guessed it (fair at 2). */
+export const CLOSEST_BONUS = 3;
+export const MIN_GUESSERS_FOR_BONUS = 3;
+
+/**
+ * How well the room read someone (SPIL-09 thresholds), for result and reveal verdicts and the
+ * landing demo: within 5 is "well", within 15 "a little", else "none".
+ */
+export function verdictBand(diff: number): "well" | "little" | "none" {
+  const d = Math.abs(diff);
+  return d <= 5 ? "well" : d <= 15 ? "little" : "none";
+}
+
+/** One scored guess, kept on the guess row so a finished round never changes. */
+export interface GuessPoints {
+  guesserId: string;
+  targetId: string;
+  points: number;
+  closest: boolean;
+}
+
 /** Yes counts for a question are only shown when this many players answered it. */
 export const MIN_ANSWERS_FOR_STATS = 3;
 
@@ -40,8 +74,10 @@ export interface ResultRow {
   label: LabelId;
   /** Rounded mean of the others' guesses about this player; equals score when nobody guessed. */
   avgGuessAbout: number;
-  /** Average accuracy of this player's guesses, 0 to 100; 0 when they made none. */
+  /** Mind Reader points: banded points for every guess plus closest bonuses (SPIL-09). */
   mindReader: number;
+  /** Exact guesses this player made. */
+  bullseyes: number;
   /**
    * 1-based, by guessing (Mind Reader points) descending; players who made no guesses come
    * last. Ties share a rank (1, 1, 3). Rank 1 wins the round.
@@ -121,6 +157,8 @@ export interface AnswerCount {
 
 export interface Results {
   rows: ResultRow[];
+  /** Points for every guess about a scored player, to store on the guess rows. */
+  guessPoints: GuessPoints[];
   awards: AwardResult[];
   questionStats: QuestionStat[];
 }
@@ -186,11 +224,45 @@ export function countAnswers(input: ResultsInput): AnswerCount[] {
 /** Pure and deterministic: the same input always gives the same rows, awards and stats. */
 export function computeResults(input: ResultsInput): Results {
   const ps = participants(input);
-  const byId = new Map(ps.map((p) => [p.player.id, p]));
 
   // Players who sat out answering have no score but can still guess ("They can still guess."),
   // so their guesses count toward the room's guess about everyone else.
   const guessers = input.players.filter((g) => g.status === "active" || g.status === "sat_out");
+
+  // Every guess about a scored player, banded; the closest on each target earns the bonus.
+  const guessPoints: GuessPoints[] = [];
+  for (const target of ps) {
+    const onTarget = guessers
+      .filter((g) => g.id !== target.player.id && validGuess(g.guesses[target.player.id]))
+      .map((g) => ({
+        guesserId: g.id,
+        diff: Math.abs(clampGuess(g.guesses[target.player.id]!) - target.score),
+      }));
+    const best = Math.min(...onTarget.map((g) => g.diff));
+    const bonus = onTarget.length >= MIN_GUESSERS_FOR_BONUS;
+    for (const g of onTarget) {
+      const closest = bonus && g.diff === best;
+      guessPoints.push({
+        guesserId: g.guesserId,
+        targetId: target.player.id,
+        points: mindReaderPoints(g.diff) + (closest ? CLOSEST_BONUS : 0),
+        closest,
+      });
+    }
+  }
+
+  // Stable order whatever order the players came in.
+  guessPoints.sort((a, b) =>
+    a.targetId !== b.targetId
+      ? a.targetId < b.targetId
+        ? -1
+        : 1
+      : a.guesserId < b.guesserId
+        ? -1
+        : a.guesserId > b.guesserId
+          ? 1
+          : 0,
+  );
 
   const stats = ps.map((p) => {
     const about = guessers
@@ -198,17 +270,13 @@ export function computeResults(input: ResultsInput): Results {
       .map((o) => o.guesses[p.player.id])
       .filter(validGuess)
       .map(clampGuess);
-    const accuracy: number[] = [];
-    for (const [targetId, value] of Object.entries(p.player.guesses)) {
-      const target = byId.get(targetId);
-      if (!target || target === p || !validGuess(value)) continue;
-      accuracy.push(100 - Math.abs(clampGuess(value) - target.score));
-    }
+    const mine = guessPoints.filter((g) => g.guesserId === p.player.id);
     return {
       p,
       avgGuessAbout: about.length ? Math.round(mean(about)) : p.score,
-      mindReader: accuracy.length ? Math.round(mean(accuracy)) : 0,
-      guessCount: accuracy.length,
+      mindReader: mine.reduce((sum, g) => sum + g.points, 0),
+      bullseyes: mine.filter((g) => g.points - (g.closest ? CLOSEST_BONUS : 0) === 10).length,
+      guessCount: mine.length,
     };
   });
 
@@ -224,6 +292,7 @@ export function computeResults(input: ResultsInput): Results {
     label: labelFor(s.p.score).id,
     avgGuessAbout: s.avgGuessAbout,
     mindReader: s.mindReader,
+    bullseyes: s.bullseyes,
     rank: 1 + ranked.filter((o) => beats(o, s) > 0).length,
     spillMode: s.p.player.spillMode,
   }));
@@ -266,5 +335,5 @@ export function computeResults(input: ResultsInput): Results {
     })
     .map(({ stat }) => stat);
 
-  return { rows, awards: pickAwards(candidates), questionStats };
+  return { rows, guessPoints, awards: pickAwards(candidates), questionStats };
 }

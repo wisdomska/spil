@@ -226,7 +226,26 @@ async function resultsInput(room: RoomRow, players: PlayerRow[]) {
 
 /** ready -> revealed: compute with lib/game and persist via the idempotent save_results. */
 export async function finalize(room: RoomRow, players: PlayerRow[]) {
-  const results = computeResults(await resultsInput(room, players));
+  const input = await resultsInput(room, players);
+  const results = computeResults(input);
+  // SPIL-09: keep each guess's points on its row, so this round never changes later.
+  const valueOf = new Map(input.players.map((p) => [p.id, p.guesses]));
+  if (results.guessPoints.length) {
+    const { error: pointsError } = await db()
+      .from("guesses")
+      .upsert(
+        results.guessPoints.map((g) => ({
+          guesser_id: g.guesserId,
+          target_id: g.targetId,
+          room_id: room.id,
+          round: room.round,
+          value: valueOf.get(g.guesserId)?.[g.targetId] ?? 0,
+          points: g.points,
+          closest: g.closest,
+        })),
+      );
+    if (pointsError) throw fromDbError(pointsError);
+  }
   const { error } = await db().rpc("save_results", {
     p_room: room.id,
     p_round: room.round,
@@ -493,7 +512,9 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     ]);
     const byId = new Map(players.map((p) => [p.id, p]));
     // Recomputed each time so Spill Mode toggles after the reveal show up live.
-    const { questionStats } = computeResults(input);
+    const computed = computeResults(input);
+    const { questionStats } = computed;
+    const bullseyes = new Map(computed.rows.map((r) => [r.playerId, r.bullseyes]));
     const ties = spillTies(
       (rows ?? []).map((r) => ({ playerId: r.player_id, score: r.spill_score })),
     );
@@ -508,6 +529,7 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
         mindReader: r.mind_reader,
         rank: r.rank,
         ...ties.get(r.player_id),
+        bullseyes: bullseyes.get(r.player_id) ?? 0,
       })),
       awards: (awards ?? []).map((a) => ({
         award: a.award as AwardId,

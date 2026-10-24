@@ -214,7 +214,9 @@ export type Database = {
       };
       guesses: {
         Row: {
+          closest: boolean;
           guesser_id: string;
+          points: number | null;
           room_id: string;
           round: number;
           target_id: string;
@@ -222,7 +224,9 @@ export type Database = {
           value: number;
         };
         Insert: {
+          closest?: boolean;
           guesser_id: string;
+          points?: number | null;
           room_id: string;
           round: number;
           target_id: string;
@@ -230,7 +234,9 @@ export type Database = {
           value: number;
         };
         Update: {
+          closest?: boolean;
           guesser_id?: string;
+          points?: number | null;
           room_id?: string;
           round?: number;
           target_id?: string;

@@ -3,6 +3,7 @@
 import {
   ArrowClockwiseIcon,
   HourglassMediumIcon,
+  InfoIcon,
   ShareFatIcon,
   TrophyIcon,
 } from "@phosphor-icons/react";
@@ -21,10 +22,11 @@ import { Vessel } from "@/components/brand/Vessel";
 import { labelKeyFor } from "@/components/game/RevealStage";
 import { ShareSheet } from "@/components/game/ShareSheet";
 import { SegmentedTabs, TabPanel } from "@/components/ui/SegmentedTabs";
+import { Sheet } from "@/components/ui/Sheet";
 import { SwitchRow } from "@/components/ui/Switch";
 import { useToast } from "@/components/ui/Toast";
 import type { RoomState } from "@/lib/api/types";
-import { isTiedRank, labelById, rankByGuessing } from "@/lib/game";
+import { isTiedRank, labelById, rankByGuessing, verdictBand } from "@/lib/game";
 import { saveLastGame } from "@/lib/share/capture";
 
 /** Wall-clock time for the saved card (called from an effect, never during render). */
@@ -56,6 +58,7 @@ export function ResultsView({
   const toast = useToast();
   const [tab, setTab] = useState<Tab>(initialTab);
   const [share, setShare] = useState(initialShare);
+  const [explain, setExplain] = useState(false);
   const results = state.results;
   const host = state.players.find((p) => p.isHost);
 
@@ -96,7 +99,9 @@ export function ResultsView({
   const score = meRow?.score ?? 0;
   const guess = meRow?.avgGuessAbout ?? 0;
   const gap = Math.abs(score - guess);
-  const verdict = gap <= 10 ? t("verdictWell") : gap <= 25 ? t("verdictLittle") : t("verdictNone");
+  const band = verdictBand(gap);
+  const verdict =
+    band === "well" ? t("verdictWell") : band === "little" ? t("verdictLittle") : t("verdictNone");
   const myLabel = meRow ? tl(labelKeyFor(meRow.label)) : "";
 
   return (
@@ -166,7 +171,17 @@ export function ResultsView({
                 <span className="min-w-[18px] font-mono text-[14px] leading-none font-medium whitespace-nowrap text-text-muted">
                   {rankText(r.rank)}
                 </span>
-                <Avatar n={r.avatar} size={44} label={r.nickname} />
+                <span className="relative shrink-0">
+                  <Avatar n={r.avatar} size={40} label={r.nickname} />
+                  {(r.bullseyes ?? 0) > 0 && (
+                    <span
+                      className="absolute -right-3 -bottom-2 rounded-pill border-2 border-sticker-edge bg-accent px-1.5 py-0.5 font-display text-[10px] leading-none font-extrabold whitespace-nowrap text-on-accent uppercase"
+                      style={{ boxShadow: "0 0 0 1px var(--sticker-ring)", rotate: "-6deg" }}
+                    >
+                      {t("bullseye")}
+                    </span>
+                  )}
+                </span>
                 <div className="grid min-w-0 flex-1 gap-2">
                   <div className="flex flex-wrap items-center gap-2.5">
                     <span className="font-display text-[19px] leading-none font-bold">
@@ -182,7 +197,7 @@ export function ResultsView({
                       {tl(labelKeyFor(r.label))}
                     </span>
                   </div>
-                  <span className="font-mono text-[12.5px] leading-[1.2] font-medium text-text-muted">
+                  <span className="font-mono text-[13px] leading-[1.2] font-medium text-text-muted">
                     {t("sub", { score: r.score, guess: r.avgGuessAbout })}
                   </span>
                 </div>
@@ -190,13 +205,21 @@ export function ResultsView({
                   <span className="font-mono text-[30px] leading-none font-semibold tabular-nums">
                     {r.mindReader}
                   </span>
-                  <span className="font-mono text-[11px] leading-none font-medium tracking-[.06em] text-text-muted uppercase">
+                  <span className="font-mono text-[11px] leading-none font-medium tracking-wide whitespace-nowrap text-text-muted uppercase">
                     {t("pts")}
                   </span>
                 </span>
               </li>
             ))}
           </ol>
+          <button
+            type="button"
+            onClick={() => setExplain(true)}
+            className="mt-3 -ml-2.5 flex h-11 items-center gap-1.5 rounded-pill border-0 bg-transparent pr-3.5 pl-2.5 text-[14px] leading-none font-semibold text-accent-ink hover:bg-surface-raised"
+          >
+            <InfoIcon size={18} aria-hidden />
+            {t("howPoints")}
+          </button>
         </TabPanel>
         <TabPanel value="awards" className="outline-none">
           <div className="grid gap-[18px]">
@@ -316,6 +339,28 @@ export function ResultsView({
         hideName={state.me.hideNameOnCard}
         onHideName={onHideName}
       />
+      <Sheet open={explain} onOpenChange={setExplain} title={t("howPoints")}>
+        <table className="w-full border-collapse text-[15px] leading-[1.4]">
+          <tbody>
+            {[
+              [t("pointsExact"), "10"],
+              [t("pointsWithin", { n: 5 }), "7"],
+              [t("pointsWithin", { n: 10 }), "5"],
+              [t("pointsWithin", { n: 20 }), "2"],
+              [t("pointsMore", { n: 20 }), "0"],
+              [t("pointsClosest"), "+3"],
+            ].map(([label, points]) => (
+              <tr key={label} className="border-b border-line">
+                <th scope="row" className="py-2.5 text-left font-semibold">
+                  {label}
+                </th>
+                <td className="py-2.5 text-right font-mono font-semibold tabular-nums">{points}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="m-0 text-[14px] leading-[1.45] text-text-muted">{t("pointsNote")}</p>
+      </Sheet>
     </div>
   );
 }

@@ -13,7 +13,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Avatar } from "@/components/brand/Avatar";
 import { labelStickerStyle, type LabelName } from "@/components/brand/Stickers";
-import { labelFor } from "@/lib/game";
+import { labelFor, verdictBand } from "@/lib/game";
 import { Vessel } from "@/components/brand/Vessel";
 import { track } from "@/lib/analytics/posthog";
 
@@ -122,14 +122,10 @@ export function HeroDemo() {
   };
 
   const off = Math.abs(guess - person.score);
+  // SPIL-09: the same bands as the game's verdicts.
+  const band = verdictBand(off);
   const verdict =
-    off <= 5
-      ? t("verdictMind")
-      : off <= 15
-        ? t("verdictClose")
-        : off <= 30
-          ? t("verdictNotBad")
-          : t("verdictOff");
+    band === "well" ? t("verdictMind") : band === "little" ? t("verdictNotBad") : t("verdictOff");
   const kicker = revealed
     ? i % PEOPLE.length === 0
       ? t("kickerTop")

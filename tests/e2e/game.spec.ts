@@ -41,11 +41,11 @@ test("full game with 3 players on separate phones, then results, share card and 
     await expect(p.page.getByRole("heading", { name: /You're a/ })).toBeVisible();
   }
   await expect(host.page.getByText(/^You scored 100./)).toBeVisible();
-  // The best guesser wins the round; the list leads with guessing points.
+  // The best guesser wins the round; the list leads with Mind Reader points (SPIL-09).
   await expect(
-    host.page.getByText(/(won|tied for) the win|won the round with \d+ guessing points\./),
+    host.page.getByText(/(won|tied for) the win|won the round with \d+ Mind Reader points\./),
   ).toBeVisible();
-  await expect(host.page.getByRole("listitem").first()).toContainText("pts");
+  await expect(host.page.getByRole("listitem").first()).toContainText("Mind Reader");
 
   // Privacy: other players' answers are not readable through the API (no Spill Mode).
   const outsider = await apiPlayer(baseURL!, "Spy");

@@ -143,7 +143,7 @@ export function pickAwards(candidates: readonly AwardCandidate[]): AwardResult[]
   const winners: Record<AwardId, [AwardCandidate, string] | null> = {
     top_spiller: [top, `Highest score in the room. ${top.score} out of 100.`],
     saint_of_the_room: [saint, `Scored ${saint.score}. Either a saint or a very good liar.`],
-    mind_reader: [mind, `Closest guesses in the room. ${mind.mindReader} points.`],
+    mind_reader: [mind, `Most Mind Reader points in the room: ${mind.mindReader}.`],
     dark_horse: dark && [
       dark,
       `The room guessed ${dark.avgGuessAbout}. ${dark.nickname} scored ${dark.score}.`,

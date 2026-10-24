@@ -61,7 +61,7 @@ describe("pickAwards", () => {
     expect(awards.map((a) => [a.award, a.playerId, a.reason])).toEqual([
       ["top_spiller", "ama", "Highest score in the room. 82 out of 100."],
       ["saint_of_the_room", "efua", "Scored 9. Either a saint or a very good liar."],
-      ["mind_reader", "zainab", "Closest guesses in the room. 91 points."],
+      ["mind_reader", "zainab", "Most Mind Reader points in the room: 91."],
       ["dark_horse", "kofi", "The room guessed 40. Kofi scored 71."],
       ["open_book", "ama", "The room guessed 80. Ama scored 82. Close enough."],
       ["clueless", "kofi", "Furthest guesses in the room. Kofi, really?"],
