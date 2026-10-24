@@ -50,6 +50,8 @@ export function AgeGate({ who, onAge }: Props) {
           pattern="[0-9]*"
           maxLength={2}
           autoComplete="off"
+          // One field, one job: focus it so the keyboard path is Type, Enter.
+          autoFocus
           value={value}
           aria-invalid={error || undefined}
           aria-describedby={error ? "spil-age-err" : undefined}
