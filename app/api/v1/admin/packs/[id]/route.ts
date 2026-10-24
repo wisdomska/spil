@@ -33,8 +33,10 @@ export const PATCH = route<Ctx>(async (request, { params }) => {
       min_age: body.minAge,
       section: body.section,
       spice: body.spice,
-      // is_adult stays in step with min_age for anything that still reads it.
+      // is_adult stays in step with min_age; adult packs keep their heat level (or start at
+      // "spicy") because the database requires one (packs_heat_matches_adult).
       is_adult: body.minAge === 18,
+      heat: body.minAge === 18 ? (before.heat ?? "spicy") : null,
       region: body.region,
       status: body.status,
       sort_order: body.sortOrder,
