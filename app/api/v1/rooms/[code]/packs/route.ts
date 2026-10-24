@@ -1,7 +1,8 @@
 import { codeOf, requireUser, type CodeParams } from "@/lib/api/auth";
 import { route } from "@/lib/api/handler";
 import { livePacks } from "@/lib/api/packs";
-import { requireHost, requireMember, roomFloor } from "@/lib/api/rooms";
+import { requireHost, requireMember, roomFloor, roomMode } from "@/lib/api/rooms";
+import { modeFormat } from "@/lib/game";
 
 /**
  * GET /rooms/:code/packs: the packs the host may switch to, for the youngest player in the room
@@ -12,6 +13,10 @@ export const GET = route<CodeParams>(async (request, ctx) => {
   const userId = await requireUser(request);
   const room = await requireMember(await codeOf(ctx), userId);
   requireHost(room);
-  const [packs, all] = await Promise.all([livePacks(roomFloor(room.players)), livePacks(18)]);
-  return { packs, someHidden: packs.length < all.length };
+  // Only packs this room's game can play: statements for Hot Takes, yes or no otherwise.
+  const format = modeFormat(roomMode(room.room));
+  const [packs, all] = (await Promise.all([livePacks(roomFloor(room.players)), livePacks(18)])).map(
+    (list) => list.filter((p) => p.format === format),
+  );
+  return { packs: packs!, someHidden: packs!.length < all!.length };
 });

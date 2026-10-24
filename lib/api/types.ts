@@ -8,6 +8,8 @@ import type {
   PercentQuestion,
   PlayerStatus,
   RoomStatus,
+  HotTake,
+  PackFormat,
 } from "@/lib/game";
 
 export type HeatLevel = "spicy" | "explicit" | "intense";
@@ -36,6 +38,8 @@ export type Pack = PackSummary & {
   region: string | null;
   questionCount: number;
   sortOrder: number;
+  /** Statements for Hot Takes, yes or no questions for every other mode. */
+  format: PackFormat;
 };
 
 export type PublicRoom = {
@@ -144,6 +148,8 @@ export type RoomState = {
   myGuesses?: Record<string, number>;
   /** Room Percentage, while guessing: the questions to guess the room's yes share for. */
   percentQuestions?: Array<{ id: string; text: string }>;
+  /** Hot Takes, while answering: my ratings so far, by question id. */
+  myRatings?: Record<string, number>;
   /** Room Percentage: my guesses so far, by question id. */
   myPercent?: Record<string, number>;
   /** Only when revealed. */
@@ -151,6 +157,8 @@ export type RoomState = {
     rows: ResultRow[];
     /** Room Percentage: each scored question with the room's real share and every guess. */
     percent?: PercentQuestion[];
+    /** Hot Takes: each player's take furthest from the room, by player id. */
+    hottest?: Record<string, HotTake>;
     /** Exact guesses, for the reveal's Bullseye stamps (SPIL-09, SPIL-11). */
     exact: Array<{ guesserId: string; targetId: string }>;
     awards: AwardRow[];

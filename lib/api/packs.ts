@@ -1,6 +1,6 @@
 import "server-only";
 import { getFlags } from "@/lib/flags";
-import { packsForFloor, type MinAge } from "@/lib/game";
+import { packsForFloor, type MinAge, type PackFormat } from "@/lib/game";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { ApiError, fromDbError } from "./errors";
 import type { Pack, PackSection } from "./types";
@@ -31,6 +31,7 @@ async function allLivePacks(): Promise<Pack[]> {
       spice: p.spice,
       region: p.region,
       sortOrder: p.sort_order,
+      format: p.format as PackFormat,
       questionCount: counts.get(p.id) ?? 0,
     }));
 }
@@ -63,10 +64,18 @@ export async function previewQuestions(packId: string): Promise<string[]> {
   return (first.data ?? []).map((q) => q.text);
 }
 
-/** A live pack the floor may play, or PACK_UNAVAILABLE / PACK_NOT_ALLOWED. */
-export async function requireLivePack(id: string, floor: MinAge): Promise<Pack> {
+/**
+ * A live pack the floor may play, or PACK_UNAVAILABLE / PACK_NOT_ALLOWED. With a format (the
+ * room's game), a statement pack in a yes or no mode is not allowed, nor the other way round.
+ */
+export async function requireLivePack(
+  id: string,
+  floor: MinAge,
+  format?: PackFormat,
+): Promise<Pack> {
   const pack = (await livePacks(18)).find((p) => p.id === id);
   if (!pack) throw new ApiError("PACK_UNAVAILABLE");
-  if (pack.minAge > floor) throw new ApiError("PACK_NOT_ALLOWED");
+  if (pack.minAge > floor || (format && pack.format !== format))
+    throw new ApiError("PACK_NOT_ALLOWED");
   return pack;
 }

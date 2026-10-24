@@ -123,8 +123,8 @@ select ok(
 select is((select count(*)::int from public.settings), 1, 'settings is a singleton');
 select is(
   (select array_agg(id order by id) from public.packs where status = 'live'),
-  array['afterdark', 'campus', 'classic', 'groupchat', 'kink', 'nolimits', 'roadtrip', 'sheets', 'work'],
-  'nine live seed packs'
+  array['afterdark', 'campus', 'classic', 'groupchat', 'hot_takes', 'kink', 'nolimits', 'roadtrip', 'sheets', 'work'],
+  'ten live packs (nine seed, Hot Takes from migration 1800)'
 );
 select is((select status::text from public.packs where id = 'purity'), 'draft', 'purity pack is draft');
 select is(

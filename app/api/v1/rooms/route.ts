@@ -2,7 +2,7 @@ import { requireUser } from "@/lib/api/auth";
 import { ApiError, fromDbError } from "@/lib/api/errors";
 import { clientIp, readBody, route } from "@/lib/api/handler";
 import { requireLivePack } from "@/lib/api/packs";
-import { bandFloor, generateCode, MODE_RULES } from "@/lib/game";
+import { bandFloor, generateCode, MODE_RULES, modeFormat } from "@/lib/game";
 import { rateLimit } from "@/lib/ratelimit";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { verifyTurnstile } from "@/lib/turnstile";
@@ -22,7 +22,7 @@ export const POST = route(async (request) => {
   if (!rule.available || (rule.adultOnly && floor < 18)) throw new ApiError("MODE_UNAVAILABLE");
   await rateLimit("roomCreate", userId);
   await verifyTurnstile(body.captchaToken, clientIp(request), "create_room", request);
-  const pack = await requireLivePack(body.packId, floor);
+  const pack = await requireLivePack(body.packId, floor, modeFormat(body.mode));
   const questionCount = body.questionCount
     ? Math.min(body.questionCount, pack.questionCount)
     : null;

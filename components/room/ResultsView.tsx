@@ -55,6 +55,7 @@ export function ResultsView({
   const [explain, setExplain] = useState(false);
   const results = state.results;
   const host = state.players.find((p) => p.isHost);
+  const hot = state.room.mode === "hot_takes";
 
   const rows = rankByGuessing(results?.rows ?? []);
   const ranks = rows.map((r) => r.rank);
@@ -76,7 +77,8 @@ export function ResultsView({
 
   // Keep this game's card on the device so the landing page can offer it again.
   useEffect(() => {
-    if (!meRow) return;
+    // The saved card is about a Spill Score, which Hot Takes does not have.
+    if (!meRow || hot) return;
     saveLastGame({
       room: state.room.code,
       at: timestamp(),
@@ -94,7 +96,7 @@ export function ResultsView({
   const guess = meRow?.avgGuessAbout ?? 0;
   const gap = Math.abs(score - guess);
   // Solo: nobody guessed, so there is no room guess, no points and no winner (cascade).
-  const pct = state.room.mode === "room_percentage";
+  const pct = state.room.mode !== "classic";
   const solo = (meRow?.guessedBy ?? 0) === 0;
   // Room Percentage: nobody guesses about players; the points are for reading the room.
   const anyGuesses = pct
@@ -107,38 +109,46 @@ export function ResultsView({
 
   return (
     <div className="flex flex-col gap-[22px]">
-      <div className="grid grid-cols-[minmax(0,1fr)_108px] items-end gap-[18px]">
-        <div className="grid gap-2.5">
-          <h1 className="m-0 font-display text-[36px] leading-[.98] font-extrabold tracking-display text-balance">
-            {t("headline")}{" "}
-            <span className="text-accent-ink" style={{ fontStretch: "75%" }}>
-              {myLabel}.
+      {hot ? (
+        <HotTakeHeader
+          take={results.hottest?.[state.me.id]}
+          points={meRow?.mindReader ?? 0}
+          anyGuesses={anyGuesses}
+        />
+      ) : (
+        <div className="grid grid-cols-[minmax(0,1fr)_108px] items-end gap-[18px]">
+          <div className="grid gap-2.5">
+            <h1 className="m-0 font-display text-[36px] leading-[.98] font-extrabold tracking-display text-balance">
+              {t("headline")}{" "}
+              <span className="text-accent-ink" style={{ fontStretch: "75%" }}>
+                {myLabel}.
+              </span>
+            </h1>
+            <p className="m-0 text-[16px] leading-[1.45] text-text-muted">
+              {pct
+                ? anyGuesses
+                  ? t("linePercent", { score, points: meRow?.mindReader ?? 0 })
+                  : t("lineSolo", { score })
+                : solo
+                  ? t("lineSolo", { score })
+                  : t("line", { score, guess, verdict })}
+            </p>
+          </div>
+          <div className="relative">
+            <Vessel level={score} num={score} height={136} fontSize={56} radius={18} />
+            <span
+              className="absolute bottom-[-12px] left-[-14px] inline-flex rounded-pill border-[3px] border-sticker-edge bg-accent px-2.5 py-[7px] font-display text-[13px] leading-none font-extrabold whitespace-nowrap text-on-accent"
+              style={{
+                boxShadow: "0 0 0 1.5px var(--sticker-ring)",
+                fontStretch: "80%",
+                rotate: "-4deg",
+              }}
+            >
+              {myLabel}
             </span>
-          </h1>
-          <p className="m-0 text-[16px] leading-[1.45] text-text-muted">
-            {pct
-              ? anyGuesses
-                ? t("linePercent", { score, points: meRow?.mindReader ?? 0 })
-                : t("lineSolo", { score })
-              : solo
-                ? t("lineSolo", { score })
-                : t("line", { score, guess, verdict })}
-          </p>
+          </div>
         </div>
-        <div className="relative">
-          <Vessel level={score} num={score} height={136} fontSize={56} radius={18} />
-          <span
-            className="absolute bottom-[-12px] left-[-14px] inline-flex rounded-pill border-[3px] border-sticker-edge bg-accent px-2.5 py-[7px] font-display text-[13px] leading-none font-extrabold whitespace-nowrap text-on-accent"
-            style={{
-              boxShadow: "0 0 0 1.5px var(--sticker-ring)",
-              fontStretch: "80%",
-              rotate: "-4deg",
-            }}
-          >
-            {myLabel}
-          </span>
-        </div>
-      </div>
+      )}
 
       {anyGuesses && winners.length > 0 && (
         <p className="m-0 flex items-center gap-2.5 rounded-card border border-line bg-surface px-4 py-3 text-[15px] leading-[1.4] font-semibold">
@@ -194,21 +204,25 @@ export function ResultsView({
                     <span className="font-display text-[19px] leading-none font-bold">
                       {r.nickname}
                     </span>
-                    <span
-                      style={labelStickerStyle(
-                        labelById(r.label).name as LabelName,
-                        stickerRot(i) * 0.6,
-                        12,
-                      )}
-                    >
-                      {tl(labelKeyFor(r.label))}
-                    </span>
+                    {!hot && (
+                      <span
+                        style={labelStickerStyle(
+                          labelById(r.label).name as LabelName,
+                          stickerRot(i) * 0.6,
+                          12,
+                        )}
+                      >
+                        {tl(labelKeyFor(r.label))}
+                      </span>
+                    )}
                   </div>
-                  <span className="font-mono text-[13px] leading-[1.2] font-medium text-text-muted">
-                    {!pct && (r.guessedBy ?? 0) > 0
-                      ? t("sub", { score: r.score, guess: r.avgGuessAbout })
-                      : t("subSolo", { score: r.score })}
-                  </span>
+                  {!hot && (
+                    <span className="font-mono text-[13px] leading-[1.2] font-medium text-text-muted">
+                      {!pct && (r.guessedBy ?? 0) > 0
+                        ? t("sub", { score: r.score, guess: r.avgGuessAbout })
+                        : t("subSolo", { score: r.score })}
+                    </span>
+                  )}
                 </div>
                 {anyGuesses && (
                   <span className="grid justify-items-end gap-1">
@@ -264,62 +278,75 @@ export function ResultsView({
           </div>
         </TabPanel>
         <TabPanel value="questions" className="outline-none">
-          <div className="grid gap-4">
-            <p className="m-0 text-[14px] leading-[1.45] text-text-muted">{t("statsNote")}</p>
-            {results.questionStats.length === 0 && (
-              <p className="m-0 text-[15px] text-text-muted">{t("statsEmpty")}</p>
-            )}
-            {results.questionStats.map((q) => (
-              <div key={q.questionId} className="grid gap-2 border-b border-line pb-4">
-                <span className="font-display text-[18px] leading-[1.2] font-bold">
-                  {tq("haveYouEver")} {q.text}
-                </span>
-                {q.yes === null ? (
-                  <span className="font-mono text-[13px] leading-none font-medium text-text-muted">
-                    {t("statsHidden")}
+          {hot ? (
+            <HotStats
+              percent={results.percent ?? []}
+              note={t("hotStatsNote")}
+              empty={t("statsEmpty")}
+              count={(n, count) => t("hotStatsCount", { n, count })}
+            />
+          ) : (
+            <div className="grid gap-4">
+              <p className="m-0 text-[14px] leading-[1.45] text-text-muted">{t("statsNote")}</p>
+              {results.questionStats.length === 0 && (
+                <p className="m-0 text-[15px] text-text-muted">{t("statsEmpty")}</p>
+              )}
+              {results.questionStats.map((q) => (
+                <div key={q.questionId} className="grid gap-2 border-b border-line pb-4">
+                  <span className="font-display text-[18px] leading-[1.2] font-bold">
+                    {tq("haveYouEver")} {q.text}
                   </span>
-                ) : (
-                  <div className="flex items-center gap-3">
-                    <div className="h-1.5 flex-1 rounded-pill bg-surface-raised">
-                      <div
-                        className="h-1.5 rounded-pill bg-text"
-                        style={{ width: `${q.answered ? (q.yes / q.answered) * 100 : 0}%` }}
-                      />
-                    </div>
-                    <span className="font-mono text-[14px] leading-none font-medium">
-                      {t("statsCount", { yes: q.yes, n: q.answered })}
+                  {q.yes === null ? (
+                    <span className="font-mono text-[13px] leading-none font-medium text-text-muted">
+                      {t("statsHidden")}
                     </span>
-                  </div>
-                )}
-                <span className="text-[14px] leading-[1.3] font-medium text-text-muted">
-                  {q.spillNames.length
-                    ? t("spillYes", { names: q.spillNames.join(", ") })
-                    : t("spillNobody")}
-                </span>
-              </div>
-            ))}
-          </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <div className="h-1.5 flex-1 rounded-pill bg-surface-raised">
+                        <div
+                          className="h-1.5 rounded-pill bg-text"
+                          style={{ width: `${q.answered ? (q.yes / q.answered) * 100 : 0}%` }}
+                        />
+                      </div>
+                      <span className="font-mono text-[14px] leading-none font-medium">
+                        {t("statsCount", { yes: q.yes, n: q.answered })}
+                      </span>
+                    </div>
+                  )}
+                  <span className="text-[14px] leading-[1.3] font-medium text-text-muted">
+                    {q.spillNames.length
+                      ? t("spillYes", { names: q.spillNames.join(", ") })
+                      : t("spillNobody")}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </TabPanel>
       </SegmentedTabs>
 
-      <SwitchRow
-        checked={state.me.spillMode}
-        onCheckedChange={(on) => {
-          onSpill(on);
-          toast(on ? tt("spillOn") : tt("spillOff"));
-        }}
-        title={t("spillMode")}
-        description={state.me.spillMode ? t("spillOnCopy") : t("spillOffCopy")}
-      />
+      {!hot && (
+        <SwitchRow
+          checked={state.me.spillMode}
+          onCheckedChange={(on) => {
+            onSpill(on);
+            toast(on ? tt("spillOn") : tt("spillOff"));
+          }}
+          title={t("spillMode")}
+          description={state.me.spillMode ? t("spillOnCopy") : t("spillOffCopy")}
+        />
+      )}
 
       <div className="flex gap-2.5 pb-2">
-        <button
-          type="button"
-          onClick={() => setShare(true)}
-          className="flex h-14 flex-1 items-center justify-center gap-2 rounded-pill border-[1.5px] border-text bg-transparent text-[17px] leading-none font-semibold text-text hover:bg-surface-raised"
-        >
-          {t("share")}
-        </button>
+        {!hot && (
+          <button
+            type="button"
+            onClick={() => setShare(true)}
+            className="flex h-14 flex-1 items-center justify-center gap-2 rounded-pill border-[1.5px] border-text bg-transparent text-[17px] leading-none font-semibold text-text hover:bg-surface-raised"
+          >
+            {t("share")}
+          </button>
+        )}
         {state.me.isHost ? (
           <Link
             href={`/create?room=${state.room.code}&mode=rematch&pack=${state.room.pack.id}`}
@@ -373,6 +400,71 @@ export function ResultsView({
           {pct ? t("pointsNotePercent") : t("pointsNote")}
         </p>
       </Sheet>
+    </div>
+  );
+}
+
+/** Hot Takes: the statement you sat furthest from the room on, and your points. */
+function HotTakeHeader({
+  take,
+  points,
+  anyGuesses,
+}: {
+  take: { text: string; rating: number; average: number } | undefined;
+  points: number;
+  anyGuesses: boolean;
+}) {
+  const t = useTranslations("results");
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_108px] items-end gap-[18px]">
+      <div className="grid gap-2.5">
+        <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] text-text-muted">
+          {t("hottestKicker")}
+        </span>
+        <h1 className="m-0 font-display text-[30px] leading-[1.02] font-extrabold tracking-display text-balance">
+          {take ? take.text : t("hottestNone")}
+        </h1>
+        <p className="m-0 text-[16px] leading-[1.45] text-text-muted">
+          {take && t("hottestLine", { rating: take.rating, average: take.average })}{" "}
+          {anyGuesses && t("hotPoints", { points })}
+        </p>
+      </div>
+      {take && (
+        <Vessel level={take.rating} num={take.rating} height={136} fontSize={56} radius={18} />
+      )}
+    </div>
+  );
+}
+
+/** Hot Takes questions tab: each statement's average, never anyone's own rating. */
+function HotStats({
+  percent,
+  note,
+  empty,
+  count,
+}: {
+  percent: Array<{ questionId: string; text: string; actual: number; answered: number }>;
+  note: string;
+  empty: string;
+  count: (n: number, count: number) => string;
+}) {
+  return (
+    <div className="grid gap-4">
+      <p className="m-0 text-[14px] leading-[1.45] text-text-muted">{note}</p>
+      {percent.length === 0 && <p className="m-0 text-[15px] text-text-muted">{empty}</p>}
+      {percent.map((q) => (
+        <div key={q.questionId} className="grid gap-2 border-b border-line pb-4">
+          <span className="font-display text-[18px] leading-[1.2] font-bold">{q.text}</span>
+          <div className="flex items-center gap-3">
+            <div className="h-1.5 flex-1 rounded-pill bg-surface-raised">
+              <div className="h-1.5 rounded-pill bg-text" style={{ width: `${q.actual}%` }} />
+            </div>
+            <span className="font-mono text-[14px] leading-none font-medium">
+              {count(q.actual, q.answered)}
+            </span>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

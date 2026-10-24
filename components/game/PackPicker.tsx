@@ -367,9 +367,12 @@ function PackPreview({
                   key={text}
                   className="grid gap-1.5 rounded-card border border-line bg-surface p-4"
                 >
-                  <span className="text-[13px] leading-none font-semibold text-text-muted">
-                    {tq("haveYouEver")}
-                  </span>
+                  {/* Statements (Hot Takes) read on their own; questions start with "Have you ever". */}
+                  {pack?.format !== "statements" && (
+                    <span className="text-[13px] leading-none font-semibold text-text-muted">
+                      {tq("haveYouEver")}
+                    </span>
+                  )}
                   <span className="text-[17px] leading-[1.35] font-semibold text-pretty">
                     {text}
                   </span>

@@ -61,6 +61,7 @@ export async function createRoom(
   if (mode) await page.getByRole("radio", { name: new RegExp(`^${mode}`) }).click();
   if (pack)
     await page
+      .getByRole("radiogroup", { name: "Question pack" })
       .getByRole("radio", { name: new RegExp(pack, "i") })
       .first()
       .click();

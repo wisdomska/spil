@@ -425,6 +425,7 @@ export type Database = {
       packs: {
         Row: {
           blurb: string;
+          format: string;
           heat: Database["public"]["Enums"]["heat_level"] | null;
           icon: string;
           id: string;
@@ -441,6 +442,7 @@ export type Database = {
         };
         Insert: {
           blurb: string;
+          format?: string;
           heat?: Database["public"]["Enums"]["heat_level"] | null;
           icon: string;
           id: string;
@@ -457,6 +459,7 @@ export type Database = {
         };
         Update: {
           blurb?: string;
+          format?: string;
           heat?: Database["public"]["Enums"]["heat_level"] | null;
           icon?: string;
           id?: string;

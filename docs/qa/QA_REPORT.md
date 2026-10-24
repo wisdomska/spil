@@ -251,3 +251,16 @@ Notes:
 - [x] Admin rooms table shows each room's game.
 - Tests: unit `tests/unit/game/percentage.test.ts`, API (mode refused, 3 needed, question targets, scoring, reveal length), e2e `tests/e2e/percentage.spec.ts` (three phones end to end). pgTAP `13_game_modes_test.sql`.
 - Migrations 20261024001600 and 20261024001700, applied to staging; production at the Batch 1 release.
+
+### Hot Takes (Batch 1, game mode 2)
+
+- [x] /create offers Hot Takes; choosing it lists only statement packs (Hot Takes, 36 statements, 13+), and the other games never list statement packs. The API refuses a mix both ways (PACK_NOT_ALLOWED), including pack changes and rematches.
+- [x] Needs 3 players. Answering is a rating from 0 nope to 100 so true on the vessel for each statement, in private; going back shows the rating given. Progress counts ratings live on every phone. Yes or no answers are refused in this mode.
+- [x] Guessing asks for the room's average on each statement 3 or more people rated (fewer would give a rating away); no % sign.
+- [x] Points: the Mind Reader bands on the distance to the real average, +3 for the closest with 3 or more guessers. Only the Mind Reader and Clueless awards are given (Spill Scores mean nothing here).
+- [x] Reveal: one slide per statement: "Room average {n}" fills the vessel, then each guess with points, Closest and Bullseye.
+- [x] Results lead with "Your hottest take" (the statement you sat furthest from the room on, your rating and the average) and your points. No Spill Score labels, Spill Mode or share card; the Questions tab shows averages only.
+- [x] Test players rate and guess in both read the room modes.
+- Also fixed for Room Percentage: guesses about players are refused in read the room modes.
+- Tests: unit `tests/unit/game/hotTakes.test.ts` (plus the shared core still passing `percentage.test.ts`), API (pack and mode mismatch, private ratings, progress, averages, hottest take, awards), e2e `tests/e2e/hot-takes.spec.ts` (three phones end to end). pgTAP `14_hot_takes_test.sql`. Screens checked at 375 wide: rating, reveal and results.
+- Migration 20261024001800, applied to staging; production at the Batch 1 release.

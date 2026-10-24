@@ -45,8 +45,10 @@ type Props = {
   nexting?: boolean;
   /** Host: jump every phone to the results. */
   onSkip: () => void;
-  /** Room Percentage: one slide per scored question instead of per tie group. */
+  /** Read the room modes: one slide per scored question instead of per tie group. */
   percent?: PercentQuestion[];
+  /** Hot Takes: the number is the room's average rating, not a yes share. */
+  average?: boolean;
   /** Dev fixtures only: hold the stage at this many ms into the slide. */
   freezeAt?: number;
 };
@@ -70,6 +72,7 @@ export function RevealStage({
   nexting,
   onSkip,
   percent,
+  average = false,
   freezeAt,
 }: Props) {
   const t = useTranslations("reveal");
@@ -92,7 +95,7 @@ export function RevealStage({
   // One clock per slide: the step only re-renders when it changes; the count is a motion value.
   const count = useMotionValue(0);
   const num = useTransform(count, (v) => String(Math.round(v)));
-  const pct = useTransform(count, (v) => `${Math.round(v)}%`);
+  const pct = useTransform(count, (v) => `${Math.round(v)}${average ? "" : "%"}`);
   const [step, setStep] = useState<GroupStep>("intro");
   const [elapsed, setElapsed] = useState(0);
   const [ready, setReady] = useState(false);
@@ -177,7 +180,10 @@ export function RevealStage({
     slide.kind === "award"
       ? t("awardsCounter", { n: slide.award + 1, total: awards.length })
       : slide.kind === "question"
-        ? t("questionCounter", { n: slide.question + 1, total: percent?.length ?? 0 })
+        ? t(average ? "takeCounter" : "questionCounter", {
+            n: slide.question + 1,
+            total: percent?.length ?? 0,
+          })
         : t("counter", { n: slide.group + 1, total: groups.length });
 
   return (
@@ -329,12 +335,20 @@ export function RevealStage({
           stamped={stamped}
           reduced={reduced}
           height={desktop ? 360 : 300}
-          kicker={stamped ? t("saidYes", { n: question.actual }) : t("nextUp")}
-          guessText={(value, points) => t("guessPoints", { value, points })}
+          kicker={
+            stamped ? t(average ? "average" : "saidYes", { n: question.actual }) : t("nextUp")
+          }
+          guessText={(value, points) =>
+            t(average ? "avgGuessPoints" : "guessPoints", { value, points })
+          }
           closest={t("closest")}
           bullseye={t("bullseye")}
           none={t("noGuesses")}
-          announce={stamped ? t("announceQuestion", { n: question.actual }) : ""}
+          announce={
+            stamped
+              ? t(average ? "announceAverage" : "announceQuestion", { n: question.actual })
+              : ""
+          }
         />
       )}
 

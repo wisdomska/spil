@@ -2,11 +2,15 @@ import "server-only";
 import {
   computeResults,
   guessesQuestions,
+  hotTakesResults,
+  ratesStatements,
   isMode,
   modeMinPlayers,
   roomPercentResults,
   type Mode,
+  type HotTakesResults,
   type PercentQuestion,
+  type PercentResults,
   guessTargets,
   revealSlides,
   spillGroups,
@@ -202,7 +206,7 @@ async function roundGuesses(room: RoomRow) {
   return data ?? [];
 }
 
-async function roundInputs(room: RoomRow, kind: "percent") {
+async function roundInputs(room: RoomRow, kind: "percent" | "rating") {
   const { data, error } = await db()
     .from("mode_inputs")
     .select("player_id, question_id, value")
@@ -216,12 +220,24 @@ async function roundInputs(room: RoomRow, kind: "percent") {
 export const roomMode = (room: RoomRow): Mode => (isMode(room.mode) ? room.mode : "classic");
 
 /**
- * Room Percentage: the questions a player can guess the room's share for, the ones 3 or more
- * scored players answered (so a share never gives an answer away).
+ * Read the room modes: the questions a player can guess the room's number for, the ones 3 or
+ * more scored players answered (Room Percentage: yes or no; Hot Takes: rated), so the number
+ * never gives anyone's answer away.
  */
 export async function percentTargets(room: RoomRow, players: PlayerRow[]) {
-  const [questions, answers] = await Promise.all([currentQuestions(room), roundAnswers(room)]);
   const scored = new Set(players.filter(isScoredPlayer).map((p) => p.id));
+  if (ratesStatements(roomMode(room))) {
+    const [questions, ratings] = await Promise.all([
+      currentQuestions(room),
+      roundInputs(room, "rating"),
+    ]);
+    return questions.filter(
+      (q) =>
+        ratings.filter((r) => r.question_id === q.id && scored.has(r.player_id)).length >=
+        MIN_ANSWERS_FOR_STATS,
+    );
+  }
+  const [questions, answers] = await Promise.all([currentQuestions(room), roundAnswers(room)]);
   return questions.filter(
     (q) =>
       answers.filter((a) => a.question_id === q.id && scored.has(a.player_id) && a.value !== "skip")
@@ -229,13 +245,34 @@ export async function percentTargets(room: RoomRow, players: PlayerRow[]) {
   );
 }
 
+/** Hot Takes: a player's ratings this round, by question id. */
+export async function myRatings(room: RoomRow, playerId: string) {
+  const ratings = await roundInputs(room, "rating");
+  return Object.fromEntries(
+    ratings
+      .filter((r) => r.player_id === playerId && r.question_id && r.value != null)
+      .map((r) => [r.question_id!, r.value!]),
+  );
+}
+
+/** Results of a read the room mode (Room Percentage or Hot Takes); null in classic. */
+function readResults(
+  room: RoomRow,
+  input: Awaited<ReturnType<typeof resultsInput>>,
+): (PercentResults & Partial<Pick<HotTakesResults, "hottest">>) | null {
+  const mode = roomMode(room);
+  if (ratesStatements(mode)) return hotTakesResults(input);
+  return guessesQuestions(mode) ? roomPercentResults(input) : null;
+}
+
 /** Builds the results input from this round's rows. */
 async function resultsInput(room: RoomRow, players: PlayerRow[]) {
-  const [questions, answers, guesses, percents] = await Promise.all([
+  const [questions, answers, guesses, percents, rated] = await Promise.all([
     currentQuestions(room),
     roundAnswers(room),
     roundGuesses(room),
     guessesQuestions(roomMode(room)) ? roundInputs(room, "percent") : Promise.resolve([]),
+    ratesStatements(roomMode(room)) ? roundInputs(room, "rating") : Promise.resolve([]),
   ]);
   const byPlayer = (id: string) =>
     Object.fromEntries(
@@ -249,13 +286,18 @@ async function resultsInput(room: RoomRow, players: PlayerRow[]) {
   for (const p of percents)
     if (p.question_id && p.value != null)
       (percentGuesses[p.player_id] ??= {})[p.question_id] = p.value;
+  const ratings: Record<string, Record<string, number>> = {};
+  for (const r of rated)
+    if (r.question_id && r.value != null) (ratings[r.player_id] ??= {})[r.question_id] = r.value;
   const input: {
     questions: typeof questions;
     players: ResultsPlayer[];
     percentGuesses: typeof percentGuesses;
+    ratings: typeof ratings;
   } = {
     questions,
     percentGuesses,
+    ratings,
     players: players.map((p) => ({
       id: p.id,
       nickname: p.nickname,
@@ -274,7 +316,7 @@ async function resultsInput(room: RoomRow, players: PlayerRow[]) {
 /** ready -> revealed: compute with lib/game and persist via the idempotent save_results. */
 export async function finalize(room: RoomRow, players: PlayerRow[]) {
   const input = await resultsInput(room, players);
-  const percent = guessesQuestions(roomMode(room)) ? roomPercentResults(input) : null;
+  const percent = readResults(room, input);
   const results = percent ?? computeResults(input);
   if (percent) {
     // Keep each guess's points on its input, so this round never changes later.
@@ -424,6 +466,22 @@ export async function autoplayBots(room: RoomRow) {
     await Promise.all(
       pending.map(async (bot) => {
         const lean = 0.15 + (bot.rotation_seed % 70) / 100;
+        if (ratesStatements(roomMode(room))) {
+          await db().rpc("save_mode_inputs", {
+            p_player: bot.id,
+            p_room: room.id,
+            p_round: room.round,
+            p_kind: "rating",
+            p_inputs: questions.map((q) => ({
+              question_id: q.id,
+              value: Math.round(
+                Math.min(100, Math.max(0, lean * 100 + (Math.random() - 0.5) * 60)),
+              ),
+            })),
+          });
+          await db().from("players").update({ answers_submitted_at: now }).eq("id", bot.id);
+          return;
+        }
         const rows = questions.map((q) => ({
           player_id: bot.id,
           room_id: room.id,
@@ -437,7 +495,27 @@ export async function autoplayBots(room: RoomRow) {
     );
   }
 
-  if (room.status === "guessing") {
+  if (room.status === "guessing" && guessesQuestions(roomMode(room))) {
+    const questions = await percentTargets(room, players);
+    await Promise.all(
+      bots
+        .filter((b) => !b.guesses_submitted_at)
+        .map(async (bot) => {
+          if (questions.length)
+            await db().rpc("save_mode_inputs", {
+              p_player: bot.id,
+              p_room: room.id,
+              p_round: room.round,
+              p_kind: "percent",
+              p_inputs: questions.map((q) => ({
+                question_id: q.id,
+                value: Math.round(Math.random() * 100),
+              })),
+            });
+          await db().from("players").update({ guesses_submitted_at: now }).eq("id", bot.id);
+        }),
+    );
+  } else if (room.status === "guessing") {
     const targets = players.filter((p) => p.status === "active" || p.status === "sat_out");
     await Promise.all(
       bots
@@ -496,7 +574,12 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       ? roundGuesses(room)
       : Promise.resolve([]),
   ]);
-  const countFor = (id: string) => answers.filter((a) => a.player_id === id).length;
+  // Hot Takes counts ratings, not yes or no answers (SPIL-03 progress).
+  const rated =
+    room.status === "answering" && ratesStatements(roomMode(room))
+      ? await roundInputs(room, "rating")
+      : null;
+  const countFor = (id: string) => (rated ?? answers).filter((a) => a.player_id === id).length;
 
   const visible = players.filter(inGame);
   const statePlayers: StatePlayer[] = visible.map((p) => ({
@@ -548,7 +631,7 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       guessesSubmitted: me.guesses_submitted_at != null,
       spillMode: me.spill_mode,
       hideNameOnCard: me.hide_name_on_card,
-      // Room Percentage: the question ids this player guesses about; classic: player ids.
+      // Read the room modes: the question ids this player guesses about; classic: player ids.
       targets:
         room.status === "guessing"
           ? guessesQuestions(roomMode(room))
@@ -561,6 +644,7 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
 
   if (room.status === "answering") {
     state.questions = questions;
+    if (ratesStatements(roomMode(room))) state.myRatings = await myRatings(room, me.id);
     state.myAnswers = Object.fromEntries(
       answers
         .filter((a) => a.player_id === me.id)
@@ -613,9 +697,8 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       (rows ?? []).map((r) => ({ playerId: r.player_id, score: r.spill_score })),
     );
     const awardRows = awards ?? [];
-    const percent: PercentQuestion[] = guessesQuestions(roomMode(room))
-      ? roomPercentResults(input).percentQuestions
-      : [];
+    const read = readResults(room, input);
+    const percent: PercentQuestion[] = read?.percentQuestions ?? [];
     state.room.reveal = {
       index: room.reveal_index,
       at: room.reveal_at ?? room.revealed_at ?? new Date().toISOString(),
@@ -628,7 +711,9 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     };
     state.results = {
       // Only Room Percentage reveals by question; classic rooms leave it out.
-      percent: guessesQuestions(roomMode(room)) ? percent : undefined,
+      percent: read ? percent : undefined,
+      // Hot Takes: each player's take furthest from the room.
+      hottest: read?.hottest,
       exact: computed.guessPoints
         .filter((g) => g.points - (g.closest ? CLOSEST_BONUS : 0) === 10)
         .map((g) => ({ guesserId: g.guesserId, targetId: g.targetId })),
@@ -681,7 +766,7 @@ export async function revealPlan(room: RoomRow, players: PlayerRow[]) {
   if (awardsError) throw fromDbError(awardsError);
   const awards = count ?? 0;
   if (guessesQuestions(roomMode(room))) {
-    const questions = roomPercentResults(await resultsInput(room, players)).percentQuestions.length;
+    const questions = readResults(room, await resultsInput(room, players))!.percentQuestions.length;
     return { groups: questions, slides: revealSlides(questions, awards, "question") };
   }
   const groups = spillGroups((rows ?? []).map((r) => ({ score: r.spill_score }))).length;

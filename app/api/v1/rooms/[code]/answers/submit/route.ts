@@ -6,10 +6,12 @@ import {
   freshState,
   loadPlayers,
   advancePhaseIfReady,
+  myRatings,
   requireMember,
   requirePhase,
+  roomMode,
 } from "@/lib/api/rooms";
-import { checkAnswerSubmission, type AnswerValue } from "@/lib/game";
+import { checkAnswerSubmission, ratesStatements, type AnswerValue } from "@/lib/game";
 import { getAdminClient } from "@/lib/supabase/admin";
 
 /** POST /rooms/:code/answers/submit: locks the caller's answers; the last one in opens guessing. */
@@ -37,11 +39,16 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   if (drawn.error) throw fromDbError(drawn.error);
   if (answers.error) throw fromDbError(answers.error);
 
-  const check = checkAnswerSubmission(
-    Object.fromEntries((answers.data ?? []).map((a) => [a.question_id, a.value as AnswerValue])),
-    (drawn.data ?? []).map((q) => q.question_id),
-  );
-  if (!check.ok) throw new ApiError(check.code);
+  if (ratesStatements(roomMode(room.room))) {
+    const rated = await myRatings(room.room, room.me.id);
+    if ((drawn.data ?? []).some((q) => !(q.question_id in rated))) throw new ApiError("INCOMPLETE");
+  } else {
+    const check = checkAnswerSubmission(
+      Object.fromEntries((answers.data ?? []).map((a) => [a.question_id, a.value as AnswerValue])),
+      (drawn.data ?? []).map((q) => q.question_id),
+    );
+    if (!check.ok) throw new ApiError(check.code);
+  }
 
   await db
     .from("players")

@@ -15,7 +15,7 @@ import { playableBand, useDeviceAge } from "@/lib/age/device";
 import { api, ClientApiError, ensureSession } from "@/lib/api/client";
 import type { Pack } from "@/lib/api/types";
 import { track } from "@/lib/analytics/posthog";
-import { bandFloor, type Mode } from "@/lib/game";
+import { bandFloor, modeFormat, type Mode } from "@/lib/game";
 import { useBusy } from "@/lib/useBusy";
 
 type Props = {
@@ -59,7 +59,9 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
     queryFn: () => api<{ packs: Pack[]; someHidden: boolean }>("GET", `/rooms/${room}/packs`),
     enabled: inRoom,
   });
-  const packs = inRoom ? forRoom.data?.packs : floor > 13 ? forBand.data : everyone;
+  const listed = inRoom ? forRoom.data?.packs : floor > 13 ? forBand.data : everyone;
+  // A new room only lists packs its game can play; in a room the server has already filtered.
+  const packs = inRoom ? listed : listed?.filter((p) => p.format === modeFormat(game));
 
   /** Every failure ends with a message: inline under Continue and as a toast (SPIL-05). */
   const failWith = (message: string) => {
@@ -139,6 +141,7 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
       )}
       {packs ? (
         <PackPicker
+          key={inRoom ? "room" : game}
           packs={packs}
           questionsPerGame={questionsPerGame}
           band={band}

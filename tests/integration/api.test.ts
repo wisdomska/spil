@@ -276,7 +276,7 @@ d("host tools", () => {
     const notBuilt = await host.call("POST", "/rooms", {
       ageBand: "18_plus",
       packId: "classic",
-      mode: "hot_takes",
+      mode: "most_likely",
     });
     expect(code(notBuilt)).toBe("MODE_UNAVAILABLE");
 
@@ -334,6 +334,83 @@ d("host tools", () => {
     const awardIds = revealed.body.results.awards.map((x: { award: string }) => x.award);
     expect(awardIds).not.toContain("open_book");
     expect(awardIds).not.toContain("dark_horse");
+  });
+
+  it("Hot Takes: statement packs only, private ratings, guesses of the room's average", async () => {
+    const host = await anonPlayer();
+    const wrongPack = await host.call("POST", "/rooms", {
+      ageBand: "18_plus",
+      packId: "classic",
+      mode: "hot_takes",
+    });
+    expect(code(wrongPack)).toBe("PACK_NOT_ALLOWED");
+    const wrongMode = await host.call("POST", "/rooms", {
+      ageBand: "18_plus",
+      packId: "hot_takes",
+    });
+    expect(code(wrongMode)).toBe("PACK_NOT_ALLOWED");
+
+    const room = await fullRoom(3, "hot_takes", 5, "hot_takes");
+    const [a, b, c] = room.players as [Player, Player, Player];
+    const switchable = await a.call("GET", `/rooms/${room.roomCode}/packs`);
+    expect(switchable.body.packs.map((p: { id: string }) => p.id)).toEqual(["hot_takes"]);
+    expect((await a.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);
+
+    const state = await a.call("GET", `/rooms/${room.roomCode}/state`);
+    const qs: Array<{ id: string }> = state.body.questions;
+    expect(qs).toHaveLength(5);
+    const yesNo = await a.call("PUT", `/rooms/${room.roomCode}/answers`, {
+      answers: [{ questionId: qs[0]!.id, value: "yes" }],
+    });
+    expect(code(yesNo)).toBe("WRONG_PHASE");
+    expect(code(await a.call("POST", `/rooms/${room.roomCode}/answers/submit`))).toBe("INCOMPLETE");
+
+    // Every statement averages 50: 80, 60 and 10.
+    const rate = (p: Player, value: number) =>
+      p.call("PUT", `/rooms/${room.roomCode}/ratings`, {
+        ratings: qs.map((q) => ({ questionId: q.id, value })),
+      });
+    const saved = await rate(a, 80);
+    expect(saved.body.answered).toBe(5);
+    await rate(b, 60);
+    await rate(c, 10);
+    const mine = await a.call("GET", `/rooms/${room.roomCode}/state`);
+    expect(Object.values(mine.body.myRatings)).toEqual([80, 80, 80, 80, 80]);
+    expect(mine.body.players.find((p: { id: string }) => p.id !== mine.body.me.id).answered).toBe(
+      5,
+    );
+    for (const p of [a, b, c])
+      expect((await p.call("POST", `/rooms/${room.roomCode}/answers/submit`)).status).toBe(200);
+
+    const guessing = await b.call("GET", `/rooms/${room.roomCode}/state`);
+    expect(guessing.body.room.status).toBe("guessing");
+    expect(guessing.body.percentQuestions).toHaveLength(5);
+    // Nobody's ratings are in anyone's state.
+    expect(JSON.stringify(guessing.body)).not.toContain("myRatings");
+
+    const guess = (p: Player, value: number) =>
+      p.call("PUT", `/rooms/${room.roomCode}/percent`, {
+        guesses: qs.map((q) => ({ questionId: q.id, value })),
+      });
+    await guess(a, 50);
+    await guess(b, 70);
+    await guess(c, 0);
+    for (const p of [a, b, c])
+      expect((await p.call("POST", `/rooms/${room.roomCode}/guesses/submit`)).status).toBe(200);
+
+    const revealed = await a.call("POST", `/rooms/${room.roomCode}/advance`, { from: "ready" });
+    expect(revealed.body.room.status).toBe("revealed");
+    expect(revealed.body.results.percent.map((q: { actual: number }) => q.actual)).toEqual([
+      50, 50, 50, 50, 50,
+    ]);
+    expect(revealed.body.results.rows[0].mindReader).toBe(65);
+    const cState = await c.call("GET", `/rooms/${room.roomCode}/state`);
+    expect(revealed.body.results.hottest[cState.body.me.id]).toMatchObject({
+      rating: 10,
+      average: 50,
+    });
+    for (const x of revealed.body.results.awards)
+      expect(["mind_reader", "clueless"]).toContain(x.award);
   });
 
   it("two players are enough to start", async () => {

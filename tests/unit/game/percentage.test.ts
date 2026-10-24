@@ -63,6 +63,6 @@ describe("Room Percentage", () => {
     expect(modeMinPlayers("room_percentage", 1)).toBe(3);
     expect(modeMinPlayers("classic", 1)).toBe(1);
     expect(modeMinPlayers("room_percentage", 5)).toBe(5);
-    expect(availableModes(13)).toEqual(["classic", "room_percentage"]);
+    expect(availableModes(13)).toEqual(["classic", "room_percentage", "hot_takes"]);
   });
 });

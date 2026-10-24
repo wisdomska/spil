@@ -15,6 +15,8 @@ type Props = {
   onDone: () => Promise<unknown>;
   onSkip: () => void;
   skipping: boolean;
+  /** Hot Takes: guess the room's average rating instead of the share who said yes. */
+  average?: boolean;
   /** Dev fixtures only: a starting guess (otherwise there is none until the first touch). */
   initialValue?: number | null;
 };
@@ -23,8 +25,16 @@ type Props = {
  * Room Percentage: guess what share of the room said yes, one question at a time. Saved
  * debounced; the last lock submits. Only questions 3 or more people answered are asked.
  */
-export function PercentGuessView({ state, onDone, onSkip, skipping, initialValue = null }: Props) {
+export function PercentGuessView({
+  state,
+  onDone,
+  onSkip,
+  skipping,
+  average = false,
+  initialValue = null,
+}: Props) {
   const t = useTranslations("guess");
+  const tq = useTranslations("question");
   const tt = useTranslations("toast");
   const c = useTranslations("common");
   const toast = useToast();
@@ -69,9 +79,11 @@ export function PercentGuessView({ state, onDone, onSkip, skipping, initialValue
           {t("nothingKicker")}
         </span>
         <h1 className="m-0 font-display text-display-m leading-[.98] font-extrabold tracking-display text-balance">
-          {t("percentNothingTitle")}
+          {average ? t("avgNothingTitle") : t("percentNothingTitle")}
         </h1>
-        <p className="m-0 text-[15px] leading-[1.5] text-text-muted">{t("percentNothingBody")}</p>
+        <p className="m-0 text-[15px] leading-[1.5] text-text-muted">
+          {average ? t("avgNothingBody") : t("percentNothingBody")}
+        </p>
         <span className="flex items-center gap-1.5 text-[14px] leading-none font-semibold text-text">
           <CheckIcon size={16} aria-hidden />
           {c("lockedIn")}
@@ -109,11 +121,14 @@ export function PercentGuessView({ state, onDone, onSkip, skipping, initialValue
   return (
     <div className="flex flex-1 flex-col gap-[18px]">
       <span className="font-mono text-[14px] leading-none font-medium text-text-muted">
-        {t("percentCount", { n: (qi % questions.length) + 1, total: questions.length })}
+        {t(average ? "avgCount" : "percentCount", {
+          n: (qi % questions.length) + 1,
+          total: questions.length,
+        })}
       </span>
       <div className="grid gap-2.5">
         <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] text-text-muted uppercase">
-          {t("percentAsk")}
+          {average ? t("avgAsk") : t("percentAsk")}
         </span>
         <h1 className="m-0 font-display text-[30px] leading-[1.05] font-extrabold tracking-[-.02em] text-balance">
           {question.text}
@@ -124,15 +139,15 @@ export function PercentGuessView({ state, onDone, onSkip, skipping, initialValue
         value={value}
         onChange={setValue}
         showLabel={false}
-        unit="%"
-        label={t("percentAria", { question: question.text })}
-        valueText={(v) => t("percentValueText", { value: v })}
+        unit={average ? "" : "%"}
+        label={t(average ? "avgAria" : "percentAria", { question: question.text })}
+        valueText={(v) => t(average ? "avgValueText" : "percentValueText", { value: v })}
         emptyText={t("noGuess")}
         hint={t("drag")}
         lowerLabel={t("lower")}
         raiseLabel={t("raise")}
-        lowCaption={t("nobody")}
-        highCaption={t("everyone")}
+        lowCaption={average ? tq("rateLow") : t("nobody")}
+        highCaption={average ? tq("rateHigh") : t("everyone")}
       />
       {/* The vessel is tall on phones, so Lock it in stays on screen (and dragging never scrolls). */}
       <div className="sticky bottom-0 z-[5] -mx-5 mt-auto border-t border-line bg-surface/90 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] backdrop-blur-[14px] lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">

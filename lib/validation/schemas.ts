@@ -70,6 +70,14 @@ export const advance = z.object({
 
 export const playerTarget = z.object({ playerId: z.uuid() });
 
+/** Hot Takes: ratings of the round's statements, 0 to 100. */
+export const putRatings = z.object({
+  ratings: z
+    .array(z.object({ questionId: z.uuid(), value: z.number().int().min(0).max(100) }))
+    .min(1)
+    .max(100),
+});
+
 /** Room Percentage: guesses of the room's yes share, by question. */
 export const putPercent = z.object({
   guesses: z

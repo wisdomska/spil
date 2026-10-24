@@ -2,7 +2,15 @@ import { codeOf, requireUser, type CodeParams } from "@/lib/api/auth";
 import { fromDbError } from "@/lib/api/errors";
 import { readBody, route } from "@/lib/api/handler";
 import { requireLivePack } from "@/lib/api/packs";
-import { freshState, requireHost, requireMember, requirePhase, roomFloor } from "@/lib/api/rooms";
+import {
+  freshState,
+  requireHost,
+  requireMember,
+  requirePhase,
+  roomFloor,
+  roomMode,
+} from "@/lib/api/rooms";
+import { modeFormat } from "@/lib/game";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { setPack } from "@/lib/validation/schemas";
 
@@ -17,7 +25,11 @@ export const PATCH = route<CodeParams>(async (request, ctx) => {
   const room = await requireMember(code, userId);
   requireHost(room);
   requirePhase(room.room, "lobby");
-  const pack = await requireLivePack(body.packId, roomFloor(room.players));
+  const pack = await requireLivePack(
+    body.packId,
+    roomFloor(room.players),
+    modeFormat(roomMode(room.room)),
+  );
 
   const { error } = await getAdminClient()
     .from("rooms")

@@ -1,4 +1,4 @@
-import { pickAwards, type AwardResult } from "./awards";
+import { pickAwards, type AwardId, type AwardResult } from "./awards";
 import {
   CLOSEST_BONUS,
   computeResults,
@@ -13,14 +13,20 @@ import {
 import { toMs } from "./types";
 
 /**
- * Room Percentage (Batch 1): everyone answers yes or no as usual, then guesses what share of
- * the room said yes to each question. Each guess earns the Mind Reader bands on how far it was
- * from the real share, plus +3 for the closest when 3 or more guessed that question. Only
- * questions that 3 or more people answered count, so a share never gives anyone's answer away.
+ * Read the room modes (Batch 1). Everyone gives their own answer privately, then guesses one
+ * number per question about the whole room: Room Percentage guesses the share who said yes, Hot
+ * Takes guesses the average rating. Each guess earns the Mind Reader bands on how far it was from
+ * the real number, plus +3 for the closest when 3 or more guessed that question. Only questions
+ * that 3 or more people answered count, so the number never gives anyone's answer away.
  */
 export interface PercentInput extends ResultsInput {
   /** Each player's guesses, by question id, 0 to 100. */
   percentGuesses: Readonly<Record<string, Readonly<Record<string, number | undefined>>>>;
+}
+
+/** Hot Takes: yes/no answers are not used; each player rates each statement 0 to 100. */
+export interface HotTakesInput extends PercentInput {
+  ratings: Readonly<Record<string, Readonly<Record<string, number | undefined>>>>;
 }
 
 export interface PercentGuess {
@@ -33,7 +39,7 @@ export interface PercentGuess {
 export interface PercentQuestion {
   questionId: string;
   text: string;
-  /** The room's real yes share, 0 to 100. */
+  /** The room's real number, 0 to 100: the yes share, or the average rating in Hot Takes. */
   actual: number;
   answered: number;
   guesses: PercentGuess[];
@@ -44,20 +50,91 @@ export interface PercentResults extends Results {
   percentQuestions: PercentQuestion[];
 }
 
+/** Hot Takes: each player's take furthest from the room, for the results headline. */
+export interface HotTake {
+  questionId: string;
+  text: string;
+  rating: number;
+  average: number;
+}
+
+export interface HotTakesResults extends PercentResults {
+  hottest: Readonly<Record<string, HotTake>>;
+}
+
 const valid = (v: number | undefined): v is number => typeof v === "number" && Number.isFinite(v);
 const clamp = (v: number) => Math.min(100, Math.max(0, Math.round(v)));
 
+/** Room Percentage: the real number is the share of yes among yes and no answers. */
 export function roomPercentResults(input: PercentInput): PercentResults {
+  const scored = input.players.filter(isScored);
+  return readTheRoom(
+    input,
+    (q) => {
+      const said = scored.map((p) => p.answers[q]).filter((v) => v === "yes" || v === "no");
+      return {
+        answered: said.length,
+        actual: said.length ? (said.filter((v) => v === "yes").length / said.length) * 100 : 0,
+      };
+    },
+    // The room-guess awards need a guess about a player.
+    (a) => a !== "dark_horse" && a !== "open_book",
+  );
+}
+
+/** Hot Takes: the real number is the room's average rating of the statement. */
+export function hotTakesResults(input: HotTakesInput): HotTakesResults {
+  const scored = input.players.filter(isScored);
+  const ratingsOf = (q: string) =>
+    scored
+      .map((p) => input.ratings[p.id]?.[q])
+      .filter(valid)
+      .map(clamp);
+  const result = readTheRoom(
+    input,
+    (q) => {
+      const rated = ratingsOf(q);
+      return {
+        answered: rated.length,
+        actual: rated.length ? rated.reduce((s, v) => s + v, 0) / rated.length : 0,
+      };
+    },
+    // Spill Scores mean nothing here, so only the awards about reading the room are given.
+    (a) => a === "mind_reader" || a === "clueless",
+  );
+
+  const hottest: Record<string, HotTake> = {};
+  for (const p of scored) {
+    let best: HotTake | null = null;
+    let widest = -1;
+    for (const q of result.percentQuestions) {
+      const rating = input.ratings[p.id]?.[q.questionId];
+      if (!valid(rating)) continue;
+      const gap = Math.abs(clamp(rating) - q.actual);
+      if (gap > widest) {
+        widest = gap;
+        best = { questionId: q.questionId, text: q.text, rating: clamp(rating), average: q.actual };
+      }
+    }
+    if (best) hottest[p.id] = best;
+  }
+  return { ...result, hottest };
+}
+
+function readTheRoom(
+  input: PercentInput,
+  truth: (questionId: string) => { answered: number; actual: number },
+  keepAward: (award: AwardId) => boolean,
+): PercentResults {
   const base = computeResults(input);
   const min = input.minAnswersForStats ?? MIN_ANSWERS_FOR_STATS;
-  const scored = input.players.filter(isScored);
   const guessers = input.players.filter((p) => p.status === "active" || p.status === "sat_out");
 
   const percentQuestions: PercentQuestion[] = [];
   for (const q of input.questions) {
-    const said = scored.map((p) => p.answers[q.id]).filter((v) => v === "yes" || v === "no");
-    if (said.length < min) continue;
-    const actual = Math.round((said.filter((v) => v === "yes").length / said.length) * 100);
+    const { answered, actual: raw } = truth(q.id);
+    if (answered < min) continue;
+    const actual = Math.round(raw);
     const on = guessers
       .map((p) => ({ playerId: p.id, value: input.percentGuesses[p.id]?.[q.id] }))
       .filter((g): g is { playerId: string; value: number } => valid(g.value))
@@ -68,7 +145,7 @@ export function roomPercentResults(input: PercentInput): PercentResults {
       questionId: q.id,
       text: q.text,
       actual,
-      answered: said.length,
+      answered,
       guesses: on
         .map((g) => {
           const closest = bonus && g.diff === best;
@@ -109,7 +186,7 @@ export function roomPercentResults(input: PercentInput): PercentResults {
     rank: 1 + sorted.filter((o) => beats(o, { ...r, guesses: _guesses }) > 0).length,
   }));
 
-  // Awards about scores and reading the room; the room-guess awards do not apply here.
+  // Each mode keeps only the awards that mean something in it.
   const byId = new Map(input.players.map((p) => [p.id, p]));
   const awards: AwardResult[] = pickAwards(
     rows.map((r) => ({
@@ -128,7 +205,7 @@ export function roomPercentResults(input: PercentInput): PercentResults {
         : null,
     })),
   )
-    .filter((a) => a.award !== "dark_horse" && a.award !== "open_book")
+    .filter((a) => keepAward(a.award))
     .map((a, i) => ({ ...a, position: i + 1 }));
 
   return { ...base, rows, guessPoints: [], awards, percentQuestions };

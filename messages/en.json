@@ -244,7 +244,16 @@
     "fixHint": "Changed your mind? Go back to fix an answer until you finish the last one.",
     "saving": "Saving",
     "queued": "Queued",
-    "skipLimit": "You've used all your skips for this round."
+    "skipLimit": "You've used all your skips for this round.",
+    "previousStatement": "Previous statement",
+    "rateAsk": "How much do you agree?",
+    "rateAria": "Statement {n} of {total}. {text}",
+    "rateValueText": "{value} out of 100",
+    "noRating": "No rating yet",
+    "rateLower": "Lower rating",
+    "rateRaise": "Raise rating",
+    "rateLow": "0 nope",
+    "rateHigh": "100 so true"
   },
   "report": {
     "title": "Report this question",
@@ -293,7 +302,13 @@
     "nobody": "0% nobody",
     "everyone": "100% everyone",
     "percentNothingTitle": "Too few answers to guess this round.",
-    "percentNothingBody": "A question needs 3 or more answers before the room can guess it. The reveal starts when the others lock in."
+    "percentNothingBody": "A question needs 3 or more answers before the room can guess it. The reveal starts when the others lock in.",
+    "avgCount": "Take {n} of {total}",
+    "avgAsk": "What's the room's average?",
+    "avgAria": "Your guess of the average for: {question}",
+    "avgValueText": "{value} out of 100",
+    "avgNothingTitle": "Too few ratings to guess this round.",
+    "avgNothingBody": "A statement needs 3 or more ratings before the room can guess its average. The reveal starts when the others lock in."
   },
   "ready": {
     "title": "Everyone's guessed.",
@@ -333,7 +348,11 @@
     "guessPoints": "{value}% · {points, plural, one {# point} other {# points}}",
     "closest": "Closest",
     "noGuesses": "Nobody guessed this one.",
-    "announceQuestion": "{n} percent of the room said yes."
+    "announceQuestion": "{n} percent of the room said yes.",
+    "takeCounter": "TAKE {n} OF {total}",
+    "average": "Room average {n}",
+    "avgGuessPoints": "{value} · {points, plural, one {# point} other {# points}}",
+    "announceAverage": "The room averaged {n}."
   },
   "results": {
     "headline": "You're a",
@@ -375,7 +394,13 @@
     "lineSolo": "You scored {score}. Play with friends to see how well they know you.",
     "subSolo": "Spill Score {score}",
     "linePercent": "You scored {score}. You read the room for {points} points.",
-    "pointsNotePercent": "Points add up over every question you guess. The closest bonus needs 3 or more guesses on a question."
+    "pointsNotePercent": "Points add up over every question you guess. The closest bonus needs 3 or more guesses on a question.",
+    "hottestKicker": "YOUR HOTTEST TAKE",
+    "hottestLine": "You said {rating}. The room averaged {average}.",
+    "hottestNone": "Not enough ratings to compare this round.",
+    "hotPoints": "You read the room for {points} points.",
+    "hotStatsNote": "Averages show once 3 or more people rated a statement. Ratings stay private.",
+    "hotStatsCount": "Average {n} from {count} ratings"
   },
   "share": {
     "title": "Your card",
@@ -1047,6 +1072,10 @@
     "room_percentage": {
       "name": "Room Percentage",
       "body": "Answer yes or no, then guess what share of the room said yes."
+    },
+    "hot_takes": {
+      "name": "Hot Takes",
+      "body": "Rate spicy opinions from 0 to 100, then guess the room's average."
     }
   }
 }
