@@ -27,9 +27,7 @@ import { track } from "@/lib/analytics/posthog";
 
 type Screen = "lobby" | "question" | "waiting" | "guess" | "ready" | "reveal" | "results";
 
-const SEEN_KEY = (code: string, round: number) => `spil-revealed:${code}:${round}`;
-
-function screenFor(state: RoomState, revealSeen: boolean): Screen {
+function screenFor(state: RoomState): Screen {
   switch (state.room.status) {
     case "lobby":
       return "lobby";
@@ -40,8 +38,11 @@ function screenFor(state: RoomState, revealSeen: boolean): Screen {
       return state.me.targets.length === 0 || !state.me.guessesSubmitted ? "guess" : "waiting";
     case "ready":
       return "ready";
-    default:
-      return revealSeen ? "results" : "reveal";
+    default: {
+      // SPIL-11: the host paces the reveal; it is over when the server's slide passes the last.
+      const r = state.room.reveal;
+      return !r || r.index >= r.total ? "results" : "reveal";
+    }
   }
 }
 
@@ -68,7 +69,6 @@ export function RoomApp({ code }: { code: string }) {
   const actions = useRoomActions(code);
   const [leaving, setLeaving] = useState(false);
   const [shake, setShake] = useState(0);
-  const [seen, setSeen] = useState<Record<string, boolean>>({});
 
   const onNudge = useCallback(
     (target: string) => {
@@ -114,29 +114,6 @@ export function RoomApp({ code }: { code: string }) {
     }
   }, [error, code, router]);
 
-  const revealSeen = useMemo(() => {
-    if (!state) return false;
-    const key = SEEN_KEY(code, state.room.round);
-    if (seen[key]) return true;
-    try {
-      return sessionStorage.getItem(key) === "1";
-    } catch {
-      return false;
-    }
-  }, [state, code, seen]);
-
-  const markRevealSeen = useCallback(() => {
-    if (!state) return;
-    const key = SEEN_KEY(code, state.room.round);
-    try {
-      sessionStorage.setItem(key, "1");
-    } catch {
-      // private mode: the in-memory flag still works for this visit
-    }
-    setSeen((s) => ({ ...s, [key]: true }));
-    window.scrollTo(0, 0);
-  }, [state, code]);
-
   const fail = (e: unknown) => {
     const reason = e instanceof ClientApiError ? e.code : "";
     if (reason === "PACK_NOT_ALLOWED") return toast(tt("packNotAllowed"), "err");
@@ -166,7 +143,7 @@ export function RoomApp({ code }: { code: string }) {
     );
   }
 
-  const screen = screenFor(state, revealSeen);
+  const screen = screenFor(state);
   if (process.env.NODE_ENV !== "production" && screen === "reveal" && !state.results)
     console.error("RoomApp: the reveal screen has no results to show");
 
@@ -175,8 +152,13 @@ export function RoomApp({ code }: { code: string }) {
       <RevealStage
         rows={state.results.rows}
         awards={state.results.awards}
-        revealedAt={state.room.revealedAt}
-        onDone={markRevealSeen}
+        exact={state.results.exact}
+        reveal={state.room.reveal!}
+        isHost={state.me.isHost}
+        hostName={state.players.find((p) => p.isHost)?.nickname ?? ""}
+        nexting={actions.revealNext.isPending}
+        onNext={(expected) => actions.revealNext.mutate(expected, { onError: fail })}
+        onSkip={() => actions.revealSkip.mutate(undefined, { onError: fail })}
       />
     );
   }

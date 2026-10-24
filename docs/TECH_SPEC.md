@@ -576,6 +576,8 @@ Base path `/api/v1`. JSON, camelCase. Auth via Supabase session cookie (`@supaba
 | POST | `/rooms/:code/guesses/submit` | member | `{}` → state. When all submitted → `advance_room(guessing→ready)` | INCOMPLETE |
 | POST | `/rooms/:code/advance` | host | `{from}` → state. answering/guessing force-advance marks unfinished players `sat_out`; `ready→revealed` computes results with `lib/game/results.ts` then `save_results` | NOT_HOST, WRONG_PHASE |
 | POST | `/rooms/:code/skip-to-reveal` | host, guessing, 60 s after guessing opened | `{}` → state. Locks everyone still guessing with the guesses they have; the room moves to ready (SPIL-01) | NOT_HOST, WRONG_PHASE, TOO_EARLY |
+| POST | `/rooms/:code/reveal/next` | host, revealed | `{expected}` → state. Moves every phone to the next reveal slide; ignored when `expected` is stale, refused before the slide has had its time (SPIL-11) | NOT_HOST, WRONG_PHASE, TOO_EARLY |
+| POST | `/rooms/:code/reveal/skip` | host, revealed | `{}` → state. Ends the reveal on every phone (SPIL-11) | NOT_HOST, WRONG_PHASE |
 | POST | `/rooms/:code/kick` | host, lobby | `{playerId}` → state | NOT_HOST, WRONG_PHASE |
 | POST | `/rooms/:code/nudge` | host | `{playerId}` → `{}` (1 per target per minute) | RATE_LIMITED |
 | PATCH | `/rooms/:code/me` | member | `{spillMode?, hideNameOnCard?, nickname?, avatar?}` → state | |

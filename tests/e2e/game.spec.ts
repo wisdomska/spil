@@ -30,16 +30,16 @@ test("full game with 3 players on separate phones, then results, share card and 
   await expect(kofi.page.getByText("Eyes on Ama. The reveal starts any second.")).toBeVisible();
   await host.page.getByRole("button", { name: "Start the reveal" }).click();
 
-  // Every phone runs the ceremony; Skip jumps to results.
-  // Checked on all phones at once: one after another, a slow browser finishes the reveal first.
+  // Every phone shows the same slide; the host paces it and may skip to the results (SPIL-11).
   await Promise.all(
-    [host, kofi, efua].map((p) => expect(p.page.getByText(/REVEAL 1 OF 3/)).toBeVisible()),
+    [host, kofi, efua].map((p) => expect(p.page.getByText(/REVEAL 1 OF \d/)).toBeVisible()),
   );
-  for (const p of [host, kofi, efua]) {
-    const skip = p.page.getByRole("button", { name: "Skip" });
-    if (await skip.isVisible()) await skip.click();
-    await expect(p.page.getByRole("heading", { name: /You're a/ })).toBeVisible();
-  }
+  await expect(kofi.page.getByText("Waiting for Ama…")).toBeVisible();
+  await host.page.getByRole("button", { name: "Skip" }).click();
+  for (const p of [host, kofi, efua])
+    await expect(p.page.getByRole("heading", { name: /You're a/ })).toBeVisible({
+      timeout: 30_000,
+    });
   await expect(host.page.getByText(/^You scored 100./)).toBeVisible();
   // The best guesser wins the round; the list leads with Mind Reader points (SPIL-09).
   await expect(

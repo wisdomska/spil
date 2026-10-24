@@ -48,6 +48,10 @@ export function useRoomActions(code: string) {
     mutationFn: (from: "answering" | "guessing" | "ready") => call("POST", "/advance", { from }),
   });
   const skipToReveal = useMutation({ mutationFn: () => call("POST", "/skip-to-reveal") });
+  const revealNext = useMutation({
+    mutationFn: (expected: number) => call("POST", "/reveal/next", { expected }),
+  });
+  const revealSkip = useMutation({ mutationFn: () => call("POST", "/reveal/skip") });
   const submitAnswers = useMutation({ mutationFn: () => call("POST", "/answers/submit") });
   const submitGuesses = useMutation({ mutationFn: () => call("POST", "/guesses/submit") });
   const patchMe = useMutation({
@@ -64,6 +68,8 @@ export function useRoomActions(code: string) {
     nudge,
     advance,
     skipToReveal,
+    revealNext,
+    revealSkip,
     submitAnswers,
     submitGuesses,
     patchMe,

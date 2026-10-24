@@ -694,6 +694,8 @@ export type Database = {
           pack_id: string;
           question_count: number | null;
           ready_at: string | null;
+          reveal_at: string | null;
+          reveal_index: number;
           revealed_at: string | null;
           round: number;
           started_at: string | null;
@@ -713,6 +715,8 @@ export type Database = {
           pack_id: string;
           question_count?: number | null;
           ready_at?: string | null;
+          reveal_at?: string | null;
+          reveal_index?: number;
           revealed_at?: string | null;
           round?: number;
           started_at?: string | null;
@@ -732,6 +736,8 @@ export type Database = {
           pack_id?: string;
           question_count?: number | null;
           ready_at?: string | null;
+          reveal_at?: string | null;
+          reveal_index?: number;
           revealed_at?: string | null;
           round?: number;
           started_at?: string | null;
@@ -857,6 +863,8 @@ export type Database = {
           pack_id: string;
           question_count: number | null;
           ready_at: string | null;
+          reveal_at: string | null;
+          reveal_index: number;
           revealed_at: string | null;
           round: number;
           started_at: string | null;

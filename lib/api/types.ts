@@ -101,6 +101,8 @@ export type RoomState = {
     pack: PackSummary;
     questionCount: number;
     revealedAt?: string;
+    /** SPIL-11: the slide every phone shows, when it began, and how many there are. */
+    reveal?: { index: number; at: string; total: number };
     /** When guessing opened; the host may skip to the reveal 60 s later. */
     guessingAt?: string;
     settings: { minPlayers: number; maxPlayers: number };
@@ -128,7 +130,12 @@ export type RoomState = {
   myAnswers?: Record<string, AnswerValue>;
   myGuesses?: Record<string, number>;
   /** Only when revealed. */
-  results?: { rows: ResultRow[]; awards: AwardRow[]; questionStats: QuestionStatRow[] };
+  results?: {
+    rows: ResultRow[]; /** Exact guesses, for the reveal's Bullseye stamps (SPIL-09, SPIL-11). */
+    exact: Array<{ guesserId: string; targetId: string }>;
+    awards: AwardRow[];
+    questionStats: QuestionStatRow[];
+  };
 };
 
 export type ApiErrorBody = { error: { code: string; message: string } };

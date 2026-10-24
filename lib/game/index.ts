@@ -8,3 +8,4 @@ export * from "./awards";
 export * from "./results";
 export * from "./phases";
 export * from "./age";
+export * from "./reveal";

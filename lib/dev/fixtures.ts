@@ -156,6 +156,11 @@ export function fixtureState({
       status === "revealed"
         ? {
             rows,
+            // Zainab read Tunde and Kofi exactly.
+            exact: [
+              { guesserId: "zainab", targetId: "tunde" },
+              { guesserId: "zainab", targetId: "kofi" },
+            ],
             awards,
             questionStats: [
               { questionId: qids[5]!, text: QS[5]!, yes: 5, answered: 7, spillNames: ["Tunde"] },

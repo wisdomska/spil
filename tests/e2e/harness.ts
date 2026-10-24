@@ -139,24 +139,23 @@ export async function guessAll(page: Page, value = 50) {
 }
 
 /**
- * Host moves the reveal on one step: "Next" once SPIL-11 lands; until then the reveal runs on
- * its own and this returns false.
+ * Host moves every phone to the next reveal slide (SPIL-11): waits for Next to unlock, then taps
+ * it. Returns false when there is no Next (the reveal is over).
  */
 export async function nextReveal(host: Page) {
   const next = host.getByRole("button", { name: "Next", exact: true });
-  if (!(await next.isVisible({ timeout: 1000 }).catch(() => false))) return false;
+  if (!(await next.isVisible({ timeout: 3000 }).catch(() => false))) return false;
+  await expect(next).not.toHaveAttribute("aria-disabled", "true", { timeout: 15_000 });
   await next.click();
   return true;
 }
 
-/** Host starts the reveal from "Lights down", then skips straight to results on every phone. */
+/** Host starts the reveal from "Lights down" and skips it; every phone lands on the results. */
 export async function revealAndSkip(host: Page, guests: Page[] = []) {
   await host.getByRole("button", { name: "Start the reveal" }).click();
-  for (const p of [host, ...guests]) {
-    const skip = p.getByRole("button", { name: "Skip" });
-    if (await skip.isVisible({ timeout: 15_000 }).catch(() => false)) await skip.click();
+  await host.getByRole("button", { name: "Skip" }).click();
+  for (const p of [host, ...guests])
     await expect(p.getByRole("tab", { name: "Scores" })).toBeVisible({ timeout: 30_000 });
-  }
 }
 
 /**

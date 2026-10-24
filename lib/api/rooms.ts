@@ -2,7 +2,10 @@ import "server-only";
 import {
   computeResults,
   guessTargets,
+  revealSlides,
+  spillGroups,
   spillTies,
+  CLOSEST_BONUS,
   isScoredPlayer as isScoredPhase,
   planAdvance,
   isRoomExpired,
@@ -310,6 +313,11 @@ const FORCE_NEXT = { answering: "guessing", guessing: "ready" } as const;
  */
 export async function forceAdvance(room: RoomRow): Promise<boolean> {
   if (room.status === "ready") {
+    // SPIL-11: the reveal starts on its first slide, now.
+    await db()
+      .from("rooms")
+      .update({ reveal_index: 0, reveal_at: new Date().toISOString() })
+      .eq("id", room.id);
     await finalize(room, await loadPlayers(room.id));
     return true;
   }
@@ -518,7 +526,19 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     const ties = spillTies(
       (rows ?? []).map((r) => ({ playerId: r.player_id, score: r.spill_score })),
     );
+    const awardRows = awards ?? [];
+    state.room.reveal = {
+      index: room.reveal_index,
+      at: room.reveal_at ?? room.revealed_at ?? new Date().toISOString(),
+      total: revealSlides(
+        spillGroups((rows ?? []).map((r) => ({ score: r.spill_score }))).length,
+        awardRows.length,
+      ).length,
+    };
     state.results = {
+      exact: computed.guessPoints
+        .filter((g) => g.points - (g.closest ? CLOSEST_BONUS : 0) === 10)
+        .map((g) => ({ guesserId: g.guesserId, targetId: g.targetId })),
       rows: (rows ?? []).map((r) => ({
         playerId: r.player_id,
         nickname: byId.get(r.player_id)?.nickname ?? "",

@@ -55,6 +55,9 @@ export const advance = z.object({
 
 export const playerTarget = z.object({ playerId: z.uuid() });
 
+/** SPIL-11: the slide the host is moving on from. */
+export const revealNext = z.object({ expected: z.number().int().min(0).max(1000) });
+
 export const patchMe = z
   .object({
     spillMode: z.boolean().optional(),

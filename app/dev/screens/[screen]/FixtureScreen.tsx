@@ -18,8 +18,16 @@ const noop = () => {};
 const done = () => Promise.resolve();
 
 // Reveal freeze points (ms) matching the design frames: Ama counting at 47, Ama's label, award 1.
-// "tie": Ama and Kofi both on 72, revealed together at the label beat (SPIL-04).
-const FREEZE = { count: 17_116, label: 18_350, award: 23_400, tie: 15_600 } as const;
+// SPIL-11 slides held at a moment: [slide index, ms into the slide]. "tie": Ama and Kofi both on
+// 72 (SPIL-04), slide 4 of the tie variant.
+const FREEZE = {
+  guess: [0, 1500],
+  count: [0, 2800],
+  label: [0, 4300],
+  beat: [6, 600],
+  award: [7, 1200],
+  tie: [4, 4300],
+} as const;
 
 export function FixtureScreen({ screen }: { screen: string }) {
   const variant = useSearchParams().get("variant") ?? "";
@@ -69,8 +77,16 @@ export function FixtureScreen({ screen }: { screen: string }) {
       <RevealStage
         rows={state.results.rows}
         awards={state.results.awards}
-        onDone={noop}
-        freezeAt={FREEZE[(variant || "count") as keyof typeof FREEZE] ?? FREEZE.count}
+        exact={state.results.exact}
+        reveal={{
+          index: (FREEZE[(variant || "count") as keyof typeof FREEZE] ?? FREEZE.count)[0],
+          at: new Date(0).toISOString(),
+        }}
+        isHost={!guest}
+        hostName="Ama"
+        onNext={noop}
+        onSkip={noop}
+        freezeAt={(FREEZE[(variant || "count") as keyof typeof FREEZE] ?? FREEZE.count)[1]}
       />
     );
   }

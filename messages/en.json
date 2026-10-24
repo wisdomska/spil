@@ -299,9 +299,21 @@
     "place": "{n, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} most spilled",
     "tieTop": "Tied for most spilled",
     "tiePlace": "Tied for {n, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} most spilled",
-    "guessed": "The room guessed {guess}.",
     "announce": "{name} scored {score}, {label}",
-    "announceAward": "{award}: {name}. {reason}"
+    "announceAward": "{award}: {name}. {reason}",
+    "nextUp": "NEXT UP",
+    "roomGuessed": "The room guessed {guess}",
+    "offBy": "Off by {diff}. {verdict}",
+    "verdictWell": "Mind readers.",
+    "verdictLittle": "Not bad.",
+    "verdictNone": "Way off.",
+    "topBeat": "And the biggest spill of the night…",
+    "next": "Next",
+    "waitingHost": "Waiting for {host}…",
+    "auto": "Auto",
+    "soundOn": "Sound on",
+    "soundOff": "Sound off",
+    "bullseye": "Bullseye"
   },
   "results": {
     "headline": "You're a",
