@@ -18,7 +18,9 @@
     "e2e": "playwright test --project=mobile --project=desktop",
     "e2e:smoke": "playwright test --project=mobile --grep @cross",
     "e2e:cross": "playwright test --grep @cross --project=moto-g4 --project=iphone-webkit --project=firefox --project=edge",
-    "test:visual": "playwright test --config playwright.visual.config.ts"
+    "test:visual": "playwright test --config playwright.visual.config.ts",
+    "test:baseline": "playwright test --config playwright.baseline.config.ts",
+    "test:baseline:compare": "node tests/visual/compare-baseline.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

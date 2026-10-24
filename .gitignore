@@ -60,3 +60,5 @@ supabase/.branches/
 /tests/visual/reference/
 /tests/visual/report.json
 /.next-*/
+/tests/visual/baseline/
+/tests/visual/baseline-*/
