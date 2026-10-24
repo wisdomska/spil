@@ -139,3 +139,9 @@ Notes:
 
 - Baseline defect B1 is fixed here: with five tabs the bar scrolls sideways inside itself below 640 px and brings the current tab into view, so the page never scrolls sideways (e2e checks 320 px on every help page).
 - The Safety page has no lede because the spec gives none; its meta description is not shown on the page.
+
+## Step 2 QA pass (SPIL-02, 08, 06)
+
+- Full e2e on mobile and desktop against a local production build: all pass after two test updates (the keyboard path now goes through the age screen; the offline test waits for the save instead of racing it). The age screen now takes focus on open, so the keyboard path is type and Enter.
+- Accessibility: axe finds no serious or critical issues on the static routes (including /create's age screen and /safety) and room screens.
+- Baseline comparison (624 screens, 12 viewports): only the expected screens changed: pack picker, /create (age screen), Privacy and Terms (copy), and the profile screens (age row, no 18+ switch). No screen scrolls sideways except the landing page at 320 px (B2, SPIL-22).
