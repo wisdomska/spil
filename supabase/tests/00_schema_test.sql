@@ -8,7 +8,8 @@ select tables_are(
   array[
     'packs', 'questions', 'settings', 'feature_flags',
     'rooms', 'room_questions', 'players', 'answers', 'guesses', 'results', 'awards',
-    'reports', 'messages', 'admins', 'audit_log', 'rate_limits', 'stats_daily', 'pack_plays'
+    'reports', 'messages', 'admins', 'audit_log', 'rate_limits', 'stats_daily', 'pack_plays',
+    'captcha_events'
   ],
   'public schema has exactly the spec tables'
 );
