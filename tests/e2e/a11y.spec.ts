@@ -31,7 +31,9 @@ for (const theme of ["dark"] as const) {
     const p = await newPlayer(browser, "A11y");
     for (const route of STATIC_ROUTES) {
       await p.page.goto(route);
-      await p.page.waitForLoadState("networkidle");
+      // Not "networkidle": the Turnstile test widget on /create keeps one request open forever.
+      await p.page.waitForLoadState("load");
+      await p.page.evaluate(() => document.fonts.ready);
       await audit(p.page, `${route} ${theme}`);
     }
     await p.context.close();
