@@ -13,24 +13,38 @@ import { Vessel } from "@/components/brand/Vessel";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import type { RoomState, StatePlayer } from "@/lib/api/types";
+import { SkipToReveal } from "./SkipToReveal";
 
 type Props = {
   state: RoomState;
   onNudge: (players: StatePlayer[]) => void;
   onForce: () => void;
   forcing: boolean;
+  onSkip: () => void;
+  skipping: boolean;
   /** Dev fixtures only: open the force-next sheet. */
   initialSheet?: boolean;
 };
 
 /** After you lock in: who is still going, the room's progress as a vessel, host tools. */
-export function WaitingView({ state, onNudge, onForce, forcing, initialSheet = false }: Props) {
+export function WaitingView({
+  state,
+  onNudge,
+  onForce,
+  forcing,
+  onSkip,
+  skipping,
+  initialSheet = false,
+}: Props) {
   const t = useTranslations("waiting");
   const c = useTranslations("common");
   const [sheet, setSheet] = useState(initialSheet);
   const guessing = state.room.status === "guessing";
   const total = state.room.questionCount;
-  const active = state.players.filter((p) => p.status === "active");
+  // Guessing waits for players who sat out answering too; they can still guess.
+  const active = state.players.filter(
+    (p) => p.status === "active" || (guessing && p.status === "sat_out"),
+  );
   const done = (p: StatePlayer) => (guessing ? p.guessesSubmitted : p.answersSubmitted);
   const progress = (p: StatePlayer) => (guessing ? c("guessing") : `${p.answered}/${total}`);
   const unfinished = active.filter((p) => !done(p));
@@ -93,6 +107,11 @@ export function WaitingView({ state, onNudge, onForce, forcing, initialSheet = f
       </ul>
       {state.me.isHost && unfinished.length > 0 && (
         <div className="mt-auto flex flex-wrap gap-2.5">
+          {guessing && (
+            <div className="w-full">
+              <SkipToReveal state={state} onSkip={onSkip} skipping={skipping} />
+            </div>
+          )}
           <Button
             variant="secondary"
             className="min-w-[160px] flex-[1_1_auto]"

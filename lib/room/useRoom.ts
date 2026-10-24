@@ -47,6 +47,7 @@ export function useRoomActions(code: string) {
   const advance = useMutation({
     mutationFn: (from: "answering" | "guessing" | "ready") => call("POST", "/advance", { from }),
   });
+  const skipToReveal = useMutation({ mutationFn: () => call("POST", "/skip-to-reveal") });
   const confirmAge = useMutation({ mutationFn: () => call("POST", "/confirm-age") });
   const submitAnswers = useMutation({ mutationFn: () => call("POST", "/answers/submit") });
   const submitGuesses = useMutation({ mutationFn: () => call("POST", "/guesses/submit") });
@@ -63,6 +64,7 @@ export function useRoomActions(code: string) {
     kick,
     nudge,
     advance,
+    skipToReveal,
     confirmAge,
     submitAnswers,
     submitGuesses,

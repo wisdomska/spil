@@ -50,6 +50,10 @@ export function FixtureScreen({ screen }: { screen: string }) {
     state.me.avatar = 9;
   }
   if (screen === "waiting") state.me.answersSubmitted = true;
+  if (screen === "guess" && variant === "nothing") {
+    state.me.targets = [];
+    state.me.guessesSubmitted = true;
+  }
 
   if (screen === "reveal" && state.results) {
     return (
@@ -103,10 +107,14 @@ export function FixtureScreen({ screen }: { screen: string }) {
           onNudge={noop}
           onForce={noop}
           forcing={false}
+          onSkip={noop}
+          skipping={false}
           initialSheet={variant === "sheet"}
         />
       )}
-      {screen === "guess" && <GuessView state={state} onDone={done} initialValue={64} />}
+      {screen === "guess" && (
+        <GuessView state={state} onDone={done} onSkip={noop} skipping={false} initialValue={64} />
+      )}
       {screen === "ready" && <ReadyView state={state} onReveal={noop} revealing={false} />}
       {screen === "results" && (
         <ResultsView

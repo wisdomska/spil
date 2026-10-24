@@ -2,6 +2,7 @@ import { codeOf, requireUser, type CodeParams } from "@/lib/api/auth";
 import { fromDbError } from "@/lib/api/errors";
 import { readBody, route } from "@/lib/api/handler";
 import {
+  advancePhaseIfReady,
   autoplayBots,
   finalize,
   freshState,
@@ -48,6 +49,9 @@ export const POST = route<CodeParams>(async (request, ctx) => {
     p_to: NEXT[from],
   });
   if (error && error.message !== "WRONG_PHASE") throw fromDbError(error);
-  if (data && (data as RoomRow).status === "guessing") await autoplayBots(data as RoomRow);
+  if (data && (data as RoomRow).status === "guessing") {
+    const next = await advancePhaseIfReady(data as RoomRow, await loadPlayers(room.room.id));
+    if (next.status === "guessing") await autoplayBots(next);
+  }
   return freshState(code, userId);
 });

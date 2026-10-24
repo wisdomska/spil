@@ -91,32 +91,85 @@ export function allAnswered(players: readonly PhasePlayer[]): boolean {
   return active.length > 0 && active.every((p) => p.answersSubmittedAt != null);
 }
 
-/** Every active player has locked their guesses (and there is at least one). */
-export function allGuessed(players: readonly PhasePlayer[]): boolean {
-  const active = activePlayers(players);
-  return active.length > 0 && active.every((p) => p.guessesSubmittedAt != null);
+/**
+ * Has a score this round, so others guess about them: active, or sat out only the guessing
+ * phase (sat out after submitting answers).
+ */
+export function isScoredPlayer(p: PhasePlayer): boolean {
+  return p.status === "active" || (p.status === "sat_out" && p.answersSubmittedAt != null);
 }
 
-/** Active players still holding up a phase; the host's force-advance confirm lists these. */
+/** Who `meId` guesses about: every other scored player. */
+export function guessTargets<P extends PhasePlayer>(players: readonly P[], meId: string): P[] {
+  return players.filter((p) => p.id !== meId && isScoredPlayer(p));
+}
+
+/**
+ * Who the guessing phase waits for: everyone still in the game, including players who sat out
+ * answering ("They can still guess."). Left and removed players are out.
+ */
+export function guessingPlayers<P extends PhasePlayer>(players: readonly P[]): P[] {
+  return players.filter((p) => p.status === "active" || p.status === "sat_out");
+}
+
+/** Everyone the guessing phase waits for has locked their guesses (and there is at least one). */
+export function allGuessed(players: readonly PhasePlayer[]): boolean {
+  const waiting = guessingPlayers(players);
+  return waiting.length > 0 && waiting.every((p) => p.guessesSubmittedAt != null);
+}
+
+/** Players still holding up a phase; the host's force-advance confirm lists these. */
 export function unfinishedPlayers<P extends PhasePlayer>(
   players: readonly P[],
   phase: "answering" | "guessing",
 ): P[] {
-  const key = phase === "answering" ? "answersSubmittedAt" : "guessesSubmittedAt";
-  return activePlayers(players).filter((p) => p[key] == null);
+  if (phase === "answering") return activePlayers(players).filter((p) => !p.answersSubmittedAt);
+  return guessingPlayers(players).filter((p) => p.guessesSubmittedAt == null);
+}
+
+export interface AdvancePlan {
+  /** Players to lock now because they have nobody to guess about. */
+  lock: string[];
+  /** Phase to move to, or null to stay. */
+  to: RoomStatus | null;
 }
 
 /**
- * Phase the room should move to after a submit, or null to stay. Only answering and guessing
- * advance automatically; ready waits for the host to tap Reveal.
+ * What the server does next (SPIL-01). In guessing, a player with no targets (everyone else sat
+ * out or left) is locked straight away, so they can never hold the room up. Then answering moves
+ * on when every active player has answered, and guessing when everyone still in the game has
+ * locked. Ready waits for the host to tap Reveal. Locks only ever go one way, so applying a plan
+ * computed from a slightly old read is safe.
  */
+export function planAdvance(status: RoomStatus, players: readonly PhasePlayer[]): AdvancePlan {
+  if (status === "answering") return { lock: [], to: allAnswered(players) ? "guessing" : null };
+  if (status !== "guessing") return { lock: [], to: null };
+  const lock = guessingPlayers(players)
+    .filter((p) => p.guessesSubmittedAt == null && guessTargets(players, p.id).length === 0)
+    .map((p) => p.id);
+  const after = players.map((p) =>
+    lock.includes(p.id) ? { ...p, guessesSubmittedAt: p.guessesSubmittedAt ?? 0 } : p,
+  );
+  return { lock, to: allGuessed(after) ? "ready" : null };
+}
+
+/** Phase the room should move to after a submit, or null to stay. */
 export function autoAdvance(
   status: RoomStatus,
   players: readonly PhasePlayer[],
 ): RoomStatus | null {
-  if (status === "answering" && allAnswered(players)) return "guessing";
-  if (status === "guessing" && allGuessed(players)) return "ready";
-  return null;
+  return planAdvance(status, players).to;
+}
+
+/** The host may skip to the reveal once guessing has run this long (SPIL-01). */
+export const SKIP_TO_REVEAL_MS = 60 * 1000;
+
+export function canSkipToReveal(
+  room: { status: RoomStatus; guessingAt: TimeInput | null },
+  now: TimeInput,
+) {
+  const since = toMsOrNull(room.guessingAt);
+  return room.status === "guessing" && since != null && toMs(now) - since >= SKIP_TO_REVEAL_MS;
 }
 
 /** save_results must run once per round, even if Reveal is called twice. */

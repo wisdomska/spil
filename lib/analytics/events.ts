@@ -8,6 +8,7 @@ export type AnalyticsEvents = {
   answers_submitted: { skipped: number };
   guesses_submitted: Record<string, never>;
   phase_forced: { from: "answering" | "guessing" };
+  reveal_skipped: Record<string, never>;
   room_revealed: { players: number };
   share_clicked: { format: "story" | "group"; action: "save" | "share" };
   invite_shared: { via: string };

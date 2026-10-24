@@ -5,7 +5,7 @@ import {
   freshState,
   isScoredPlayer,
   loadPlayers,
-  maybeAdvance,
+  advancePhaseIfReady,
   requireMember,
   requirePhase,
 } from "@/lib/api/rooms";
@@ -37,6 +37,6 @@ export const POST = route<CodeParams>(async (request, ctx) => {
     .eq("id", room.me.id)
     .is("guesses_submitted_at", null);
 
-  await maybeAdvance(room.room, await loadPlayers(room.room.id));
+  await advancePhaseIfReady(room.room, await loadPlayers(room.room.id));
   return freshState(code, userId);
 });

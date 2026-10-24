@@ -1,8 +1,9 @@
 import "server-only";
 import {
-  allAnswered,
-  allGuessed,
   computeResults,
+  guessTargets,
+  isScoredPlayer as isScoredPhase,
+  planAdvance,
   isRoomExpired,
   nextHost,
   type AnswerValue,
@@ -232,21 +233,37 @@ export async function finalize(room: RoomRow, players: PlayerRow[]) {
   if (error) throw fromDbError(error);
 }
 
-/** Moves the room on when everyone active has submitted (answering -> guessing -> ready). */
-export async function maybeAdvance(room: RoomRow, players: PlayerRow[]) {
-  const phase = players.map(toPhase);
-  let to: RoomStatus | null = null;
-  if (room.status === "answering" && allAnswered(phase)) to = "guessing";
-  if (room.status === "guessing" && allGuessed(phase)) to = "ready";
-  if (!to) return room;
+/**
+ * The one place a room moves on by itself (SPIL-01). Locks players who have nobody to guess
+ * about, then advances answering -> guessing -> ready when everyone it waits for is done.
+ * Idempotent and safe to call concurrently: locks only set empty timestamps, and advance_room
+ * takes a row lock and refuses a phase the room has already left. Called after every write that
+ * can change readiness and whenever a client loads the room. Returns the room as it now stands:
+ * the same object when nothing changed, a new one when it locked anyone or moved on.
+ */
+export async function advancePhaseIfReady(room: RoomRow, players: PlayerRow[]): Promise<RoomRow> {
+  const plan = planAdvance(room.status, players.map(toPhase));
+  if (plan.lock.length) {
+    const { error } = await db()
+      .from("players")
+      .update({ guesses_submitted_at: new Date().toISOString() })
+      .in("id", plan.lock)
+      .is("guesses_submitted_at", null);
+    if (error) throw fromDbError(error);
+  }
+  if (!plan.to) return plan.lock.length ? { ...room } : room;
   const { data, error } = await db().rpc("advance_room", {
     p_room: room.id,
     p_from: room.status,
-    p_to: to,
+    p_to: plan.to,
   });
   // Another request may have advanced it first; that is fine.
   if (error && error.message !== "WRONG_PHASE") throw fromDbError(error);
-  return (data as RoomRow | null) ?? room;
+  const next = (data as RoomRow | null) ?? room;
+  // A fresh guessing phase may already be decided (nobody has anyone to guess about).
+  if (next.status === "guessing" && next.status !== room.status)
+    return advancePhaseIfReady(next, await loadPlayers(room.id));
+  return next;
 }
 
 /**
@@ -299,7 +316,7 @@ export async function autoplayBots(room: RoomRow) {
     );
   }
 
-  const advanced = await maybeAdvance(room, await loadPlayers(room.id));
+  const advanced = await advancePhaseIfReady(room, await loadPlayers(room.id));
   if (advanced.status !== room.status && advanced.status === "guessing")
     await autoplayBots(advanced);
 }
@@ -362,6 +379,7 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       pack: packSummary(pack),
       questionCount: room.question_count ?? settings.questionsPerGame,
       revealedAt: room.revealed_at ?? undefined,
+      guessingAt: room.guessing_at ?? undefined,
       settings: { minPlayers: settings.minPlayers, maxPlayers: settings.maxPlayers },
       testPlayers: flags.test_players,
       pollingOnly: flags.polling_only,
@@ -378,6 +396,10 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       guessesSubmitted: me.guesses_submitted_at != null,
       spillMode: me.spill_mode,
       hideNameOnCard: me.hide_name_on_card,
+      targets:
+        room.status === "guessing"
+          ? guessTargets(players.map(toPhase), me.id).map((p) => p.id)
+          : [],
     },
     players: statePlayers,
   };
@@ -454,5 +476,5 @@ export async function freshState(code: string, userId: string) {
 
 /** Players who have a score this round: active, or sat out only the guessing phase. */
 export function isScoredPlayer(p: PlayerRow) {
-  return p.status === "active" || (p.status === "sat_out" && p.answers_submitted_at != null);
+  return isScoredPhase(toPhase(p));
 }

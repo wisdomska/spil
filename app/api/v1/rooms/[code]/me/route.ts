@@ -1,7 +1,7 @@
 import { codeOf, requireUser, type CodeParams } from "@/lib/api/auth";
 import { ApiError, fromDbError } from "@/lib/api/errors";
 import { readBody, route } from "@/lib/api/handler";
-import { freshState, maybeAdvance, loadPlayers, requireMember } from "@/lib/api/rooms";
+import { freshState, advancePhaseIfReady, loadPlayers, requireMember } from "@/lib/api/rooms";
 import { nextHost, type PlayerStatus } from "@/lib/game";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { isProfane } from "@/lib/validation/profanity";
@@ -81,7 +81,7 @@ export const DELETE = route<CodeParams>(async (request, ctx) => {
 
   // Leaving can be the last thing a phase was waiting on.
   if (room.room.status === "answering" || room.room.status === "guessing") {
-    await maybeAdvance(room.room, players);
+    await advancePhaseIfReady(room.room, players);
   }
   return {};
 });

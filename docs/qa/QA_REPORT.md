@@ -31,6 +31,21 @@ No other screen scrolls sideways at any viewport.
 
 ## Tickets
 
-| Ticket             | Status      | 375 px | 1280 px | Chrome | Safari | Firefox | QA sign-off |
-| ------------------ | ----------- | ------ | ------- | ------ | ------ | ------- | ----------- |
-| SPIL-01 to SPIL-33 | Not started |        |         |        |        |         |             |
+| Ticket             | Status      | 375 px                        | 1280 px                        | Chrome | Safari | Firefox    | QA sign-off                                                       |
+| ------------------ | ----------- | ----------------------------- | ------------------------------ | ------ | ------ | ---------- | ----------------------------------------------------------------- |
+| SPIL-01            | Done        | screens/SPIL-01-after-375.png | screens/SPIL-01-after-1280.png | pass   | CI     | CI nightly | Unit matrix (2, 3, 12 players), e2e LMGF repro, harness self-test |
+| SPIL-02 to SPIL-33 | Not started |                               |                                |        |        |            |                                                                   |
+
+## SPIL-01: Softlock after "Move on without them"
+
+- [x] LMGF repro (2 players, host moves on without the guest) reaches "Lights down" and the reveal with no extra tap: `tests/e2e/softlock.spec.ts`, both phones within 10 s of the guest locking.
+- [x] A player with no targets sees "Everyone else sat out this round.", never a blank screen, also after a reload.
+- [x] Reloading any client lands on a working screen: every state load runs `advancePhaseIfReady`, which heals a room waiting on nobody.
+- [x] The host sees "Skip to the reveal" 60 s into guessing. The server enforces the same 60 s (`TOO_EARLY` before).
+- [x] `advancePhaseIfReady` is safe concurrently: locks only fill empty timestamps, and `advance_room` takes a row lock and rejects a phase the room already left. It runs after answer submit, guess submit, force, leave, admin removal and every state load (which covers reconnect). Answer and guess saves do not change readiness, so they do not call it.
+
+Notes:
+
+- Before: the host's guess screen rendered nothing (`GuessView` returned null with zero targets). The `guess` screen is unchanged for players who have targets.
+- The spec also shows the skip button "whenever every connected player is locked or has no targets". Auto-lock covers the second half. A disconnected guesser is covered by "Move on without them" and the 60 s skip, so presence is not a server rule.
+- In guessing, the room now waits for players who sat out answering (they can still guess), as the spec's ready rule asks.

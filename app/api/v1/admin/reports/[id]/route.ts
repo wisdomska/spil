@@ -1,6 +1,6 @@
 import { ApiError } from "@/lib/api/errors";
 import { readBody, route } from "@/lib/api/handler";
-import { loadPlayers, maybeAdvance } from "@/lib/api/rooms";
+import { loadPlayers, advancePhaseIfReady } from "@/lib/api/rooms";
 import { nextHost, type PlayerStatus } from "@/lib/game";
 import { reportAction } from "@/lib/admin/schemas";
 import { audit, requireAdmin } from "@/lib/admin/server";
@@ -33,7 +33,8 @@ async function afterRemoval(roomId: string, playerId: string) {
       .eq("id", roomId);
     if (!host) return;
   }
-  if (room.status === "answering" || room.status === "guessing") await maybeAdvance(room, players);
+  if (room.status === "answering" || room.status === "guessing")
+    await advancePhaseIfReady(room, players);
 }
 
 /**

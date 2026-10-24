@@ -242,7 +242,8 @@
     "forceTitle": "Move on without them?",
     "forceBody": "Their answers so far won't count toward their score. They can still guess.",
     "forceBodyGuessing": "Their missing guesses won't count. Everyone keeps their score.",
-    "keepWaiting": "Keep waiting"
+    "keepWaiting": "Keep waiting",
+    "skipToReveal": "Skip to the reveal"
   },
   "guess": {
     "count": "Guess {n} of {total}",
@@ -253,7 +254,10 @@
     "valueText": "{value}, {label}",
     "saint": "0 saint",
     "menace": "100 menace",
-    "lock": "Lock it in"
+    "lock": "Lock it in",
+    "nothingKicker": "NOTHING TO GUESS",
+    "nothingTitle": "Everyone else sat out this round.",
+    "nothingBody": "Your score still counts. The reveal starts when the others lock in."
   },
   "ready": {
     "title": "Everyone's guessed.",

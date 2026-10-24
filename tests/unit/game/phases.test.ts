@@ -7,6 +7,10 @@ import {
   allAnswered,
   allGuessed,
   autoAdvance,
+  canSkipToReveal,
+  guessTargets,
+  planAdvance,
+  SKIP_TO_REVEAL_MS,
   canJoin,
   canStart,
   isHostInactive,
@@ -306,5 +310,90 @@ describe("rematch", () => {
     rematch({ status: "revealed", round: 1 }, players, { packIsAdult: true });
     expect(players[0]!.ageConfirmed).toBe(true);
     expect(players[0]!.spillMode).toBe(true);
+  });
+});
+
+describe("advancePhaseIfReady plan (SPIL-01)", () => {
+  const answered = { answersSubmittedAt: NOW };
+  const guessed = { answersSubmittedAt: NOW, guessesSubmittedAt: NOW };
+  const satOut = { status: "sat_out" as const };
+
+  it("LMGF: host moved on without the only guest, host is locked and the room waits for the guest", () => {
+    const ps = [p("h", 1, answered), p("g", 2, satOut)];
+    expect(guessTargets(ps, "h")).toEqual([]);
+    expect(guessTargets(ps, "g").map((x) => x.id)).toEqual(["h"]);
+    expect(planAdvance("guessing", ps)).toEqual({ lock: ["h"], to: null });
+    const guestLocked = [p("h", 1, guessed), p("g", 2, { ...satOut, guessesSubmittedAt: NOW })];
+    expect(planAdvance("guessing", guestLocked)).toEqual({ lock: [], to: "ready" });
+  });
+
+  it("a player with no targets never holds the room up", () => {
+    const ps = [p("h", 1, answered), p("g", 2, { ...satOut, guessesSubmittedAt: NOW })];
+    expect(planAdvance("guessing", ps)).toEqual({ lock: ["h"], to: "ready" });
+  });
+
+  it("nobody with a score: everyone is locked and guessing ends at once", () => {
+    const ps = [p("h", 1, satOut), p("g", 2, satOut)];
+    expect(planAdvance("guessing", ps)).toEqual({ lock: ["h", "g"], to: "ready" });
+  });
+
+  it("left players are out of targets and out of the wait", () => {
+    const ps = [p("h", 1, answered), p("g", 2, { ...answered, status: "left" })];
+    expect(planAdvance("guessing", ps)).toEqual({ lock: ["h"], to: "ready" });
+  });
+
+  it("3 players: one sat out, the other two guess about each other", () => {
+    const ps = [p("h", 1, answered), p("a", 2, answered), p("b", 3, satOut)];
+    expect(planAdvance("guessing", ps)).toEqual({ lock: [], to: null });
+    const done = [p("h", 1, guessed), p("a", 2, guessed), p("b", 3, satOut)];
+    expect(planAdvance("guessing", done)).toEqual({ lock: [], to: null });
+    done[2] = p("b", 3, { ...satOut, guessesSubmittedAt: NOW });
+    expect(planAdvance("guessing", done)).toEqual({ lock: [], to: "ready" });
+  });
+
+  it("3 players: two sat out, the host is locked and waits on them", () => {
+    const ps = [p("h", 1, answered), p("a", 2, satOut), p("b", 3, satOut)];
+    expect(planAdvance("guessing", ps)).toEqual({ lock: ["h"], to: null });
+  });
+
+  it("12 players: everyone answered, waits for the last guesser", () => {
+    const ps = Array.from({ length: 12 }, (_, i) => p(`p${i}`, i, i < 11 ? guessed : answered));
+    expect(planAdvance("guessing", ps)).toEqual({ lock: [], to: null });
+    ps[11] = p("p11", 11, guessed);
+    expect(planAdvance("guessing", ps)).toEqual({ lock: [], to: "ready" });
+  });
+
+  it("12 players: 11 sat out, the only scored player is locked, the rest still guess", () => {
+    const ps = Array.from({ length: 12 }, (_, i) => p(`p${i}`, i, i === 0 ? answered : satOut));
+    expect(planAdvance("guessing", ps)).toEqual({ lock: ["p0"], to: null });
+  });
+
+  it("answering moves on when every active player answered; sat out players are not waited for", () => {
+    expect(planAdvance("answering", [p("h", 1, answered), p("g", 2, satOut)])).toEqual({
+      lock: [],
+      to: "guessing",
+    });
+    expect(planAdvance("answering", [p("h", 1, answered), p("g", 2)]).to).toBeNull();
+  });
+
+  it("lobby, ready and revealed never move on by themselves", () => {
+    const ps = [p("h", 1, guessed), p("g", 2, guessed)];
+    for (const status of ["lobby", "ready", "revealed", "closed"] as const)
+      expect(planAdvance(status, ps)).toEqual({ lock: [], to: null });
+  });
+
+  it("an already locked player is never locked again", () => {
+    const ps = [p("h", 1, guessed), p("g", 2, satOut)];
+    expect(planAdvance("guessing", ps).lock).toEqual([]);
+  });
+});
+
+describe("skip to the reveal (SPIL-01)", () => {
+  it("opens 60 s into guessing, only while guessing", () => {
+    const at = NOW - SKIP_TO_REVEAL_MS;
+    expect(canSkipToReveal({ status: "guessing", guessingAt: at }, NOW)).toBe(true);
+    expect(canSkipToReveal({ status: "guessing", guessingAt: at + 1 }, NOW)).toBe(false);
+    expect(canSkipToReveal({ status: "ready", guessingAt: at }, NOW)).toBe(false);
+    expect(canSkipToReveal({ status: "guessing", guessingAt: null }, NOW)).toBe(false);
   });
 });

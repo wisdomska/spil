@@ -82,6 +82,8 @@ export type RoomState = {
     pack: PackSummary;
     questionCount: number;
     revealedAt?: string;
+    /** When guessing opened; the host may skip to the reveal 60 s later. */
+    guessingAt?: string;
     settings: { minPlayers: number; maxPlayers: number };
     testPlayers: boolean;
     pollingOnly: boolean;
@@ -99,6 +101,8 @@ export type RoomState = {
     guessesSubmitted: boolean;
     spillMode: boolean;
     hideNameOnCard: boolean;
+    /** Player ids I guess about this round (guessing only). Empty means nothing to guess. */
+    targets: string[];
   };
   players: StatePlayer[];
   /** Only while answering, for this round. */

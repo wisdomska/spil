@@ -1,5 +1,6 @@
 "use client";
 
+import { CheckIcon } from "@phosphor-icons/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Avatar } from "@/components/brand/Avatar";
@@ -10,22 +11,27 @@ import { useToast } from "@/components/ui/Toast";
 import { api } from "@/lib/api/client";
 import type { RoomState } from "@/lib/api/types";
 import { labelFor } from "@/lib/game";
+import { SkipToReveal } from "./SkipToReveal";
 
 type Props = {
   state: RoomState;
   onDone: () => Promise<unknown>;
+  onSkip: () => void;
+  skipping: boolean;
   /** Dev fixtures only: starting slider value. */
   initialValue?: number;
 };
 
 /** Guess each other player's score, one at a time. Saved debounced; the last lock submits. */
-export function GuessView({ state, onDone, initialValue = 50 }: Props) {
+export function GuessView({ state, onDone, onSkip, skipping, initialValue = 50 }: Props) {
   const t = useTranslations("guess");
   const tt = useTranslations("toast");
+  const c = useTranslations("common");
   const toast = useToast();
+  // The server decides who each player guesses about.
   const targets = useMemo(
-    () => state.players.filter((p) => p.id !== state.me.id && p.status === "active"),
-    [state.players, state.me.id],
+    () => state.players.filter((p) => state.me.targets.includes(p.id)),
+    [state.players, state.me.targets],
   );
   const [locked, setLocked] = useState<Record<string, number>>(() => ({
     ...(state.myGuesses ?? {}),
@@ -55,7 +61,25 @@ export function GuessView({ state, onDone, initialValue = 50 }: Props) {
     return () => clearTimeout(saveTimer.current);
   }, [value, target, state.room.code]);
 
-  if (!target) return null;
+  if (!target)
+    return (
+      <div className="flex flex-1 flex-col gap-[18px]">
+        <span className="font-mono text-[13px] leading-none font-medium text-text-muted">
+          {t("nothingKicker")}
+        </span>
+        <h1 className="m-0 font-display text-display-m leading-[.98] font-extrabold tracking-display text-balance">
+          {t("nothingTitle")}
+        </h1>
+        <p className="m-0 text-[15px] leading-[1.5] text-text-muted">{t("nothingBody")}</p>
+        <span className="flex items-center gap-1.5 text-[14px] leading-none font-semibold text-text">
+          <CheckIcon size={16} aria-hidden />
+          {c("lockedIn")}
+        </span>
+        <div className="mt-auto">
+          <SkipToReveal state={state} onSkip={onSkip} skipping={skipping} />
+        </div>
+      </div>
+    );
   const label = labelFor(value).name as LabelName;
 
   const lock = async () => {

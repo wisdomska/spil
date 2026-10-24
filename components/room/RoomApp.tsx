@@ -34,7 +34,8 @@ function screenFor(state: RoomState, revealSeen: boolean): Screen {
     case "answering":
       return state.me.answersSubmitted || state.me.status !== "active" ? "waiting" : "question";
     case "guessing":
-      return state.me.guessesSubmitted ? "waiting" : "guess";
+      // Nothing to guess: the guess screen shows its own locked-in card (SPIL-01).
+      return state.me.targets.length === 0 || !state.me.guessesSubmitted ? "guess" : "waiting";
     case "ready":
       return "ready";
     default:
@@ -154,6 +155,8 @@ export function RoomApp({ code }: { code: string }) {
   }
 
   const screen = screenFor(state, revealSeen);
+  if (process.env.NODE_ENV !== "production" && screen === "reveal" && !state.results)
+    console.error("RoomApp: the reveal screen has no results to show");
   const needAge =
     state.room.status === "lobby" && state.room.pack.isAdult && !state.me.ageConfirmed;
 
@@ -176,7 +179,7 @@ export function RoomApp({ code }: { code: string }) {
     if (screen === "ready") return c("locked");
     if (screen === "results") return String(results.find((r) => r.playerId === id)?.score ?? "");
     const done = state.room.status === "guessing" ? p.guessesSubmitted : p.answersSubmitted;
-    if (done) return c("done");
+    if (done) return state.room.status === "guessing" ? c("locked") : c("done");
     return state.room.status === "guessing"
       ? c("guessing")
       : `${p.answered}/${state.room.questionCount}`;
@@ -189,6 +192,11 @@ export function RoomApp({ code }: { code: string }) {
     : state.room.status !== "lobby"
       ? ts("leaveInGame")
       : ts("leaveLobby");
+
+  const skip = () => {
+    track("reveal_skipped", {});
+    actions.skipToReveal.mutate(undefined, { onError: fail });
+  };
 
   const leave = async () => {
     try {
@@ -244,6 +252,8 @@ export function RoomApp({ code }: { code: string }) {
         {screen === "waiting" && (
           <WaitingView
             state={state}
+            skipping={actions.skipToReveal.isPending}
+            onSkip={skip}
             forcing={actions.advance.isPending}
             onForce={() => {
               const from = state.room.status === "guessing" ? "guessing" : "answering";
@@ -260,6 +270,8 @@ export function RoomApp({ code }: { code: string }) {
           <GuessView
             key={state.room.round}
             state={state}
+            skipping={actions.skipToReveal.isPending}
+            onSkip={skip}
             onDone={() => actions.submitGuesses.mutateAsync(undefined).catch(fail)}
           />
         )}

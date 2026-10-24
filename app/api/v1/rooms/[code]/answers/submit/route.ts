@@ -5,7 +5,7 @@ import {
   autoplayBots,
   freshState,
   loadPlayers,
-  maybeAdvance,
+  advancePhaseIfReady,
   requireMember,
   requirePhase,
 } from "@/lib/api/rooms";
@@ -49,7 +49,7 @@ export const POST = route<CodeParams>(async (request, ctx) => {
     .eq("id", room.me.id)
     .is("answers_submitted_at", null);
 
-  const advanced = await maybeAdvance(room.room, await loadPlayers(room.room.id));
+  const advanced = await advancePhaseIfReady(room.room, await loadPlayers(room.room.id));
   if (advanced.status === "guessing") await autoplayBots(advanced);
   return freshState(code, userId);
 });

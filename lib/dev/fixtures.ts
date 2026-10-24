@@ -128,6 +128,8 @@ export function fixtureState({
       guessesSubmitted: me.guessesSubmitted,
       spillMode: false,
       hideNameOnCard: false,
+      targets:
+        status === "guessing" ? statePlayers.filter((p) => p.id !== "ama").map((p) => p.id) : [],
     },
     players: statePlayers,
     questions: status === "answering" ? qids.map((id, i) => ({ id, text: qtext(i) })) : undefined,
