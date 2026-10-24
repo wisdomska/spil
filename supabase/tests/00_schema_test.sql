@@ -50,7 +50,7 @@ select is(
 );
 
 -- Helpers and game functions are security definer (trigger helpers that must
--- see the caller run as invoker).
+-- see the caller run as invoker; band_floor is a pure mapping that reads no table).
 select is(
   (
     select array_agg(p.proname::text order by p.proname)
@@ -58,7 +58,7 @@ select is(
     join pg_catalog.pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
       and not p.prosecdef
-      and p.proname not in ('set_updated_at', 'guard_question_update')
+      and p.proname not in ('set_updated_at', 'guard_question_update', 'band_floor')
   ),
   null::text[],
   'helper and game functions are security definer'

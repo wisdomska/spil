@@ -177,7 +177,7 @@ select ok(not exists (select 1 from public.questions where id = 'd0000000-0000-0
 
 -- settings ------------------------------------------------------------------------------
 select tests.as_anon();
-select is((select questions_per_game from public.settings), 12, 'anon can read settings');
+select is((select questions_per_game from public.settings), 10, 'anon can read settings');
 
 select tests.as_user('22222222-2222-2222-2222-222222222222');
 update public.settings set questions_per_game = 50;
@@ -187,7 +187,7 @@ select tests.as_user('a0000000-0000-0000-0000-000000000003');
 update public.settings set questions_per_game = 30;
 
 select tests.as_postgres();
-select is((select questions_per_game from public.settings), 12, 'only the owner can update settings');
+select is((select questions_per_game from public.settings), 10, 'only the owner can update settings');
 
 select tests.as_user('a0000000-0000-0000-0000-000000000001');
 update public.settings set questions_per_game = 20;

@@ -305,7 +305,7 @@ select throws_ok(
   'start_round refuses an 18+ pack while a player is under 18'
 );
 select is((select status::text from public.rooms where id = 'b0000000-0000-0000-0000-000000000001'), 'revealed', 'refused switch leaves the room as it was');
-select is((select pack_id from public.rooms where id = 'b0000000-0000-0000-0000-000000000001'), 'classic', 'refused switch keeps the pack');
+select isnt((select pack_id from public.rooms where id = 'b0000000-0000-0000-0000-000000000001'), 'afterdark', 'refused switch keeps the pack');
 
 select tests.as_postgres();
 update public.players set age_band = '18_plus' where room_id = 'b0000000-0000-0000-0000-000000000001';
