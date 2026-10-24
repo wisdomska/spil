@@ -69,6 +69,10 @@ export function fixtureState({
     ageConfirmed: true,
     status: "active",
     answered: done.has(p.id) ? 12 : p.id === "kofi" ? 7 : 9,
+    lastAnswerAt:
+      status === "answering" && !done.has(p.id)
+        ? new Date(Date.now() - (p.id === "kofi" ? 42_000 : 12_000)).toISOString()
+        : undefined,
     answersSubmitted: status !== "answering" || done.has(p.id),
     guessesSubmitted:
       status === "ready" || status === "revealed" || (status === "guessing" && done.has(p.id)),

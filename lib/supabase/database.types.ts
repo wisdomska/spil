@@ -346,6 +346,7 @@ export type Database = {
       players: {
         Row: {
           age_confirmed: boolean;
+          answered_count: number;
           answers_submitted_at: string | null;
           avatar: number;
           guesses_submitted_at: string | null;
@@ -353,6 +354,7 @@ export type Database = {
           id: string;
           is_bot: boolean;
           joined_at: string;
+          last_answer_at: string | null;
           last_seen_at: string;
           nickname: string;
           room_id: string;
@@ -363,6 +365,7 @@ export type Database = {
         };
         Insert: {
           age_confirmed?: boolean;
+          answered_count?: number;
           answers_submitted_at?: string | null;
           avatar: number;
           guesses_submitted_at?: string | null;
@@ -370,6 +373,7 @@ export type Database = {
           id?: string;
           is_bot?: boolean;
           joined_at?: string;
+          last_answer_at?: string | null;
           last_seen_at?: string;
           nickname: string;
           room_id: string;
@@ -380,6 +384,7 @@ export type Database = {
         };
         Update: {
           age_confirmed?: boolean;
+          answered_count?: number;
           answers_submitted_at?: string | null;
           avatar?: number;
           guesses_submitted_at?: string | null;
@@ -387,6 +392,7 @@ export type Database = {
           id?: string;
           is_bot?: boolean;
           joined_at?: string;
+          last_answer_at?: string | null;
           last_seen_at?: string;
           nickname?: string;
           room_id?: string;
@@ -824,6 +830,15 @@ export type Database = {
       is_room_revealed: { Args: { p_room: string }; Returns: boolean };
       nudge: { Args: { p_room: string; p_target: string }; Returns: undefined };
       record_join: { Args: never; Returns: undefined };
+      save_answers: {
+        Args: {
+          p_answers: Json;
+          p_player: string;
+          p_room: string;
+          p_round: number;
+        };
+        Returns: number;
+      };
       save_results: {
         Args: {
           p_awards: Json;

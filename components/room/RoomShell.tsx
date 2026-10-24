@@ -8,6 +8,7 @@ import { Wordmark } from "@/components/brand/Wordmark";
 import { useToast } from "@/components/ui/Toast";
 import type { RoomState } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
+import { OfflineChip } from "./OfflineChip";
 
 export function inviteLink(code: string) {
   const origin =
@@ -36,6 +37,8 @@ export function useCopyLink(code: string) {
 type Props = {
   state: RoomState;
   online: Set<string>;
+  /** Out of presence for more than 10 s. */
+  offline?: Set<string>;
   /** Status text per player for the side panel ("Host", "Done", "7/12", score...). */
   statusFor: (playerId: string) => string;
   /** Results order the side list by score. */
@@ -48,7 +51,7 @@ type Props = {
  * In-room frame. Below lg: floating pill header with leave and the code. At lg: a 340 px left
  * panel with the room code, players and status and leave (HANDOFF breakpoints).
  */
-export function RoomShell({ state, online, statusFor, order, onLeave, children }: Props) {
+export function RoomShell({ state, online, offline, statusFor, order, onLeave, children }: Props) {
   const t = useTranslations("room");
   const c = useTranslations("common");
   const { copied, copy } = useCopyLink(state.room.code);
@@ -104,6 +107,7 @@ export function RoomShell({ state, online, statusFor, order, onLeave, children }
               <span className="flex-1 text-[15px] leading-none font-semibold">
                 {p.id === state.me.id ? c("youSuffix", { name: p.nickname }) : p.nickname}
               </span>
+              {offline?.has(p.id) && <OfflineChip />}
               <span className="font-mono text-[13px] leading-none font-medium text-text-muted">
                 {statusFor(p.id)}
               </span>

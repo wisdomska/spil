@@ -7,16 +7,23 @@ import {
   SkipForwardIcon,
 } from "@phosphor-icons/react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Avatar } from "@/components/brand/Avatar";
 import { Vessel } from "@/components/brand/Vessel";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import type { RoomState, StatePlayer } from "@/lib/api/types";
+import { OfflineChip } from "./OfflineChip";
 import { SkipToReveal } from "./SkipToReveal";
+
+/** An answer this recent holds the force button for HOLD_MS, so the host does not cut them off. */
+const RECENT_MS = 5000;
+const HOLD_MS = 3000;
 
 type Props = {
   state: RoomState;
+  /** Players out of presence for more than 10 s. */
+  offline?: Set<string>;
   onNudge: (players: StatePlayer[]) => void;
   onForce: () => void;
   forcing: boolean;
@@ -29,6 +36,7 @@ type Props = {
 /** After you lock in: who is still going, the room's progress as a vessel, host tools. */
 export function WaitingView({
   state,
+  offline,
   onNudge,
   onForce,
   forcing,
@@ -57,6 +65,26 @@ export function WaitingView({
         ? t("one", { name: names[0]! })
         : t("many", { names: names.slice(0, -1).join(", "), last: names[names.length - 1]! });
   const others = unfinished.filter((p) => p.id !== state.me.id);
+
+  // Force sheet: live counts, and a short hold when someone just answered (SPIL-03).
+  const [now, setNow] = useState(() => Date.now());
+  const [openedAt, setOpenedAt] = useState(0);
+  const latest = guessing
+    ? 0
+    : Math.max(0, ...unfinished.map((p) => (p.lastAnswerAt ? Date.parse(p.lastAnswerAt) : 0)));
+  useEffect(() => {
+    if (!sheet) return;
+    const tick = setInterval(() => setNow(Date.now()), 500);
+    return () => clearInterval(tick);
+  }, [sheet]);
+  // Answered in the last 5 s: hold for 3 s from opening the sheet, or from that answer.
+  const holding = sheet && now - latest < RECENT_MS && now < Math.max(openedAt, latest) + HOLD_MS;
+  const forceRow = (p: StatePlayer) => {
+    if (guessing) return c("guessing");
+    if (!p.lastAnswerAt) return t("forceRowNone", { answered: p.answered, total });
+    const seconds = Math.max(0, Math.round((now - Date.parse(p.lastAnswerAt)) / 1000));
+    return t("forceRow", { answered: p.answered, total, seconds });
+  };
 
   return (
     <div className="flex flex-1 flex-col gap-[22px]">
@@ -87,6 +115,7 @@ export function WaitingView({
               <span className="flex-1 text-[16px] leading-none font-semibold">
                 {p.id === state.me.id ? c("youSuffix", { name: p.nickname }) : p.nickname}
               </span>
+              {offline?.has(p.id) && <OfflineChip />}
               <span
                 className={
                   d
@@ -124,7 +153,12 @@ export function WaitingView({
           <Button
             variant="ghost"
             className="flex-[1_1_auto] px-5 text-[16px]"
-            onClick={() => setSheet(true)}
+            onClick={() => {
+              const at = Date.now();
+              setOpenedAt(at);
+              setNow(at);
+              setSheet(true);
+            }}
           >
             <SkipForwardIcon size={20} aria-hidden />
             {t("force")}
@@ -142,8 +176,9 @@ export function WaitingView({
             <div key={p.id} className="flex items-center gap-3 border-b border-line py-2.5">
               <Avatar n={p.avatar} size={36} label={p.nickname} />
               <span className="flex-1 text-[16px] leading-none font-semibold">{p.nickname}</span>
+              {offline?.has(p.id) && <OfflineChip />}
               <span className="font-mono text-[13px] leading-none font-medium text-text-muted">
-                {progress(p)}
+                {forceRow(p)}
               </span>
             </div>
           ))}
@@ -151,12 +186,13 @@ export function WaitingView({
         <Button
           variant="destructive"
           loading={forcing}
+          disabled={holding}
           onClick={() => {
             onForce();
             setSheet(false);
           }}
         >
-          {t("force")}
+          {holding ? t("stillGoing") : t("force")}
         </Button>
         <Button variant="secondary" onClick={() => setSheet(false)}>
           {t("keepWaiting")}

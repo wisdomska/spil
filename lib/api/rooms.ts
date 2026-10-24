@@ -367,6 +367,14 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     ageConfirmed: p.age_confirmed || p.is_bot,
     status: p.status as PlayerStatus,
     answered: countFor(p.id),
+    // Only this round's: a time from before the round started belongs to the last one.
+    lastAnswerAt:
+      room.status === "answering" &&
+      p.last_answer_at &&
+      room.started_at &&
+      Date.parse(p.last_answer_at) >= Date.parse(room.started_at)
+        ? p.last_answer_at
+        : undefined,
     answersSubmitted: p.answers_submitted_at != null,
     guessesSubmitted: p.guesses_submitted_at != null,
   }));

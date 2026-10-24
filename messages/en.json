@@ -27,6 +27,7 @@
     "test": "Test",
     "guessing": "Guessing",
     "lockedIn": "Locked in",
+    "offline": "Offline",
     "avatar": "Avatar {n}",
     "privacyLine": "Only your score is shared. Your answers stay yours.",
     "designedBy": "Designed & Developed by Senya",
@@ -243,6 +244,9 @@
     "forceBody": "Their answers so far won't count toward their score. They can still guess.",
     "forceBodyGuessing": "Their missing guesses won't count. Everyone keeps their score.",
     "keepWaiting": "Keep waiting",
+    "forceRow": "{answered}/{total} · last answer {seconds}s ago",
+    "forceRowNone": "{answered}/{total}",
+    "stillGoing": "They're still going…",
     "skipToReveal": "Skip to the reveal"
   },
   "guess": {

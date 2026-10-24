@@ -31,10 +31,11 @@ No other screen scrolls sideways at any viewport.
 
 ## Tickets
 
-| Ticket             | Status      | 375 px                        | 1280 px                        | Chrome | Safari | Firefox    | QA sign-off                                                       |
-| ------------------ | ----------- | ----------------------------- | ------------------------------ | ------ | ------ | ---------- | ----------------------------------------------------------------- |
-| SPIL-01            | Done        | screens/SPIL-01-after-375.png | screens/SPIL-01-after-1280.png | pass   | CI     | CI nightly | Unit matrix (2, 3, 12 players), e2e LMGF repro, harness self-test |
-| SPIL-02 to SPIL-33 | Not started |                               |                                |        |        |            |                                                                   |
+| Ticket                      | Status      | 375 px                              | 1280 px                              | Chrome | Safari | Firefox    | QA sign-off                                                                      |
+| --------------------------- | ----------- | ----------------------------------- | ------------------------------------ | ------ | ------ | ---------- | -------------------------------------------------------------------------------- |
+| SPIL-01                     | Done        | screens/SPIL-01-after-375.png       | screens/SPIL-01-after-1280.png       | pass   | CI     | CI nightly | Unit matrix (2, 3, 12 players), e2e LMGF repro, harness self-test                |
+| SPIL-03                     | Done        | screens/SPIL-03-after-sheet-375.png | screens/SPIL-03-after-sheet-1280.png | pass   | CI     | CI nightly | e2e live counts (realtime), own count, force dialog hold; pgTAP for save_answers |
+| SPIL-02, SPIL-04 to SPIL-33 | Not started |                                     |                                      |        |        |            |                                                                                  |
 
 ## SPIL-01: Softlock after "Move on without them"
 
@@ -49,3 +50,16 @@ Notes:
 - Before: the host's guess screen rendered nothing (`GuessView` returned null with zero targets). The `guess` screen is unchanged for players who have targets.
 - The spec also shows the skip button "whenever every connected player is locked or has no targets". Auto-lock covers the second half. A disconnected guesser is covered by "Move on without them" and the 60 s skip, so presence is not a server rule.
 - In guessing, the room now waits for players who sat out answering (they can still guess), as the spec's ready rule asks.
+
+## SPIL-03: Live answer progress is stale
+
+- [x] The host sees the guest's count change within 1 s per answer in realtime mode (`tests/e2e/progress.spec.ts` checks each of 3 answers within 2 s, end to end through the database). Polling mode: the 5 s poll carries `answered` and `lastAnswerAt` per player.
+- [x] Own count is always right: it comes from this phone's saved and queued answers, so it moves on the tap, before any server echo.
+- [x] The force dialog shows "{answered}/{total} · last answer {n}s ago" live, and holds the confirm button for 3 s ("They're still going…") when someone answered in the last 5 s.
+- [x] Grey "Offline" chip after 10 s out of presence, in the side panel and the waiting list (realtime only; polling has no presence).
+
+Notes:
+
+- Counts are written in the same transaction as the answers (`save_answers`), then broadcast as a small `progress` event that phones patch in place; no full refetch per answer.
+- The offline queue sends batches, and each batch produces one progress event with the final count.
+- Migration 20261024000900, applied to staging on 2026-10-24. See docs/MIGRATIONS.md.

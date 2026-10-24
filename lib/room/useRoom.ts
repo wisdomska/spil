@@ -80,6 +80,7 @@ export function useRoomActions(code: string) {
  */
 export function useAnswerSync(code: string, round: number | undefined) {
   const key = `${code}:${round ?? 0}`;
+  const qc = useQueryClient();
   const pending = useAnswerQueue((s) => s.pending[key]);
   const add = useAnswerQueue((s) => s.add);
   const confirm = useAnswerQueue((s) => s.confirm);
@@ -95,10 +96,22 @@ export function useAnswerSync(code: string, round: number | undefined) {
   const sendOnce = useCallback(
     async (batch: Record<string, AnswerValue>): Promise<boolean> => {
       try {
-        await api("PUT", `/rooms/${code}/answers`, {
+        const saved = await api<{ answered: number }>("PUT", `/rooms/${code}/answers`, {
           answers: Object.entries(batch).map(([questionId, value]) => ({ questionId, value })),
         });
         confirm(key, batch);
+        // Keep my own row right without waiting for a refetch (SPIL-03).
+        qc.setQueryData<RoomState>(roomKey(code), (s) =>
+          s && s.room.round === round
+            ? {
+                ...s,
+                myAnswers: { ...s.myAnswers, ...batch },
+                players: s.players.map((p) =>
+                  p.id === s.me.id ? { ...p, answered: saved.answered } : p,
+                ),
+              }
+            : s,
+        );
         attempt.current = 0;
         setOffline(false);
         return true;
@@ -120,7 +133,7 @@ export function useAnswerSync(code: string, round: number | undefined) {
         return false;
       }
     },
-    [code, confirm, key],
+    [code, confirm, key, qc, round],
   );
 
   /**

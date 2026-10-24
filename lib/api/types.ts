@@ -43,6 +43,8 @@ export type StatePlayer = {
   status: PlayerStatus;
   /** Answers saved this round (count only; never the values). */
   answered: number;
+  /** When they last saved an answer this round (answering only). */
+  lastAnswerAt?: string;
   answersSubmitted: boolean;
   guessesSubmitted: boolean;
 };

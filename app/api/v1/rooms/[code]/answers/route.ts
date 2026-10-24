@@ -27,18 +27,15 @@ export const PUT = route<CodeParams>(async (request, ctx) => {
   const allowed = new Set((drawn ?? []).map((q) => q.question_id));
   if (body.answers.some((a) => !allowed.has(a.questionId))) throw new ApiError("UNKNOWN_QUESTION");
 
-  // Last write wins per question, so a batch may carry a corrected answer.
+  // Last write wins per question, so a batch may carry a corrected answer. save_answers updates
+  // the player's count in the same transaction and broadcasts it to the room (SPIL-03).
   const rows = new Map(body.answers.map((a) => [a.questionId, a.value]));
-  const { error } = await db.from("answers").upsert(
-    [...rows].map(([questionId, value]) => ({
-      player_id: room.me.id,
-      room_id: room.room.id,
-      round: room.room.round,
-      question_id: questionId,
-      value,
-      updated_at: new Date().toISOString(),
-    })),
-  );
+  const { data, error } = await db.rpc("save_answers", {
+    p_player: room.me.id,
+    p_room: room.room.id,
+    p_round: room.room.round,
+    p_answers: [...rows].map(([questionId, value]) => ({ question_id: questionId, value })),
+  });
   if (error) throw fromDbError(error);
-  return { saved: rows.size };
+  return { saved: rows.size, answered: data as number };
 });

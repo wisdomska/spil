@@ -3,6 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
+import type { RoomState } from "@/lib/api/types";
 
 type Options = {
   code: string;
@@ -14,8 +15,9 @@ type Options = {
 };
 
 /**
- * One private channel per room (spec section 11). Every event is a signal to refetch /state; the
- * only payload read is nudge.targetPlayerId. If the channel is not SUBSCRIBED within 5 s, drops,
+ * One private channel per room (spec section 11). Every event is a signal to refetch /state,
+ * except "progress" (SPIL-03), which patches one player's answered count in place; the other
+ * payload read is nudge.targetPlayerId. If the channel is not SUBSCRIBED within 5 s, drops,
  * or polling_only is on, /state is polled every 5 s instead. Presence gives the online dots.
  */
 export function useRoomChannel({ code, channel, playerId, pollingOnly, onNudge }: Options) {
@@ -46,6 +48,21 @@ export function useRoomChannel({ code, channel, playerId, pollingOnly, onNudge }
       ch = room;
       room
         .on("broadcast", { event: "*" }, ({ event, payload }) => {
+          if (event === "progress" && payload?.playerId) {
+            qc.setQueryData<RoomState>(["room", code], (s) =>
+              s && s.room.round === payload.round
+                ? {
+                    ...s,
+                    players: s.players.map((p) =>
+                      p.id === payload.playerId
+                        ? { ...p, answered: payload.answered, lastAnswerAt: payload.at }
+                        : p,
+                    ),
+                  }
+                : s,
+            );
+            return;
+          }
           if (event === "nudge" && payload?.targetPlayerId)
             nudgeRef.current?.(payload.targetPlayerId);
           refetch();

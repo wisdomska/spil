@@ -11,7 +11,9 @@ import { Sheet } from "@/components/ui/Sheet";
 import { useToast } from "@/components/ui/Toast";
 import { ClientApiError } from "@/lib/api/client";
 import type { RoomState, StatePlayer } from "@/lib/api/types";
+import { useOffline } from "@/lib/realtime/useOffline";
 import { useRoomChannel } from "@/lib/realtime/useRoomChannel";
+import { useAnswerQueue } from "@/lib/room/answerQueue";
 import { roomKey, useRoomActions, useRoomState } from "@/lib/room/useRoom";
 import { GuessView } from "./GuessView";
 import { LobbyView } from "./LobbyView";
@@ -89,6 +91,16 @@ export function RoomApp({ code }: { code: string }) {
   useEffect(() => {
     live.current = channel.live;
   }, [channel.live]);
+  const roster = state?.players;
+  const meId = state?.me.id;
+  const humans = useMemo(
+    () => (roster ?? []).filter((p) => !p.isBot && p.id !== meId).map((p) => p.id),
+    [roster, meId],
+  );
+  const offline = useOffline(humans, channel.online, channel.live);
+  const pending = useAnswerQueue((s) =>
+    state ? s.pending[`${code}:${state.room.round}`] : undefined,
+  );
 
   // Not a player here yet: the profile screen joins (lobby), otherwise show why.
   const error = query.error;
@@ -180,9 +192,13 @@ export function RoomApp({ code }: { code: string }) {
     if (screen === "results") return String(results.find((r) => r.playerId === id)?.score ?? "");
     const done = state.room.status === "guessing" ? p.guessesSubmitted : p.answersSubmitted;
     if (done) return state.room.status === "guessing" ? c("locked") : c("done");
-    return state.room.status === "guessing"
-      ? c("guessing")
-      : `${p.answered}/${state.room.questionCount}`;
+    if (state.room.status === "guessing") return c("guessing");
+    // My own count comes from this phone, so it never waits for the server (SPIL-03).
+    const answered =
+      p.id === state.me.id
+        ? new Set([...Object.keys(state.myAnswers ?? {}), ...Object.keys(pending ?? {})]).size
+        : p.answered;
+    return `${answered}/${state.room.questionCount}`;
   };
 
   const leaveCopy = state.me.isHost
@@ -214,6 +230,7 @@ export function RoomApp({ code }: { code: string }) {
       <RoomShell
         state={state}
         online={channel.online}
+        offline={offline}
         statusFor={statusFor}
         order={screen === "results" ? results.map((r) => r.playerId) : undefined}
         onLeave={() => setLeaving(true)}
@@ -252,6 +269,7 @@ export function RoomApp({ code }: { code: string }) {
         {screen === "waiting" && (
           <WaitingView
             state={state}
+            offline={offline}
             skipping={actions.skipToReveal.isPending}
             onSkip={skip}
             forcing={actions.advance.isPending}
