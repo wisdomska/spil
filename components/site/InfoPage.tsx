@@ -1,17 +1,22 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { SiteHeader } from "./SiteHeader";
+import { TabScroller } from "./TabScroller";
 import { cn } from "@/lib/cn";
 
-export type InfoTab = "howto" | "privacy" | "terms" | "contact";
+export type InfoTab = "howto" | "privacy" | "terms" | "safety" | "contact";
 const TABS: Array<[InfoTab, string]> = [
   ["howto", "/how-to-play"],
   ["privacy", "/privacy"],
   ["terms", "/terms"],
+  ["safety", "/safety"],
   ["contact", "/contact"],
 ];
 
-/** Long-form page shell: header, pill tab bar between the four pages, 720 max column. */
+/**
+ * Long-form page shell: header, pill tab bar between the five help pages, 720 max column. On
+ * narrow phones the tabs scroll sideways inside the bar, never the page (SPIL-06).
+ */
 export async function InfoPage({ tab, children }: { tab: InfoTab; children: React.ReactNode }) {
   const t = await getTranslations();
   const label = (k: InfoTab) => (k === "howto" ? t("common.howToPlay") : t(`pages.${k}`));
@@ -20,9 +25,9 @@ export async function InfoPage({ tab, children }: { tab: InfoTab; children: Reac
       <SiteHeader back="/" narrow hideHowTo />
       {/* Same column as the header pill, so header, tabs and text share one left edge. */}
       <div className="mx-auto box-border w-[calc(100%-24px)] max-w-[720px] pt-1 pb-14">
-        <nav
-          aria-label={t("pages.tabs")}
-          className="mt-3 mb-8 flex w-full gap-0.5 rounded-pill border border-line bg-surface p-1"
+        <TabScroller
+          label={t("pages.tabs")}
+          className="mt-3 mb-8 flex w-full [scrollbar-width:none] gap-0.5 overflow-x-auto rounded-pill border border-line bg-surface p-1 [&::-webkit-scrollbar]:hidden"
         >
           {TABS.map(([k, href]) => (
             <Link
@@ -30,7 +35,7 @@ export async function InfoPage({ tab, children }: { tab: InfoTab; children: Reac
               href={href}
               aria-current={k === tab ? "page" : undefined}
               className={cn(
-                "flex h-11 flex-auto items-center justify-center rounded-pill px-2.5 text-[14px] leading-none font-semibold whitespace-nowrap no-underline sm:px-4 lg:h-12 lg:text-[15px]",
+                "flex h-11 flex-none items-center justify-center rounded-pill px-3 text-[14px] leading-none font-semibold whitespace-nowrap no-underline sm:flex-auto sm:px-4 lg:h-12 lg:text-[15px]",
                 k === tab
                   ? "bg-surface-raised text-text shadow-[0_1px_0_var(--line)] hover:text-text"
                   : "text-text-muted hover:bg-surface-raised hover:text-text",
@@ -39,7 +44,7 @@ export async function InfoPage({ tab, children }: { tab: InfoTab; children: Reac
               {label(k)}
             </Link>
           ))}
-        </nav>
+        </TabScroller>
         <article className="grid gap-[18px] px-2 text-[18px] leading-[1.65] sm:px-3">
           {children}
         </article>

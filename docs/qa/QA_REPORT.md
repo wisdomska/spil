@@ -22,23 +22,24 @@ v1.0 report is docs/QA_REPORT.md.
 
 ### Defects found in the baseline
 
-| #   | Screen                               | Viewport | Defect                                       | Fixed in                                     |
-| --- | ------------------------------------ | -------- | -------------------------------------------- | -------------------------------------------- |
-| B1  | How to play, Privacy, Terms, Contact | 320 px   | Page scrolls sideways by 6 px (help tab bar) | SPIL-06 (adds the fifth tab to the same bar) |
-| B2  | Landing                              | 320 px   | Page scrolls sideways by 2 px                | SPIL-22 (landing)                            |
+| #   | Screen                               | Viewport | Defect                                       | Fixed in                                        |
+| --- | ------------------------------------ | -------- | -------------------------------------------- | ----------------------------------------------- |
+| B1  | How to play, Privacy, Terms, Contact | 320 px   | Page scrolls sideways by 6 px (help tab bar) | Fixed in SPIL-06: the bar scrolls inside itself |
+| B2  | Landing                              | 320 px   | Page scrolls sideways by 2 px                | SPIL-22 (landing)                               |
 
 No other screen scrolls sideways at any viewport.
 
 ## Tickets
 
-| Ticket                                 | Status      | 375 px                                                                                                 | 1280 px                                                                                                    | Chrome | Safari | Firefox    | QA sign-off                                                                                                      |
-| -------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------ | ------ | ---------- | ---------------------------------------------------------------------------------------------------------------- |
-| SPIL-01                                | Done        | screens/SPIL-01-after-375.png                                                                          | screens/SPIL-01-after-1280.png                                                                             | pass   | CI     | CI nightly | Unit matrix (2, 3, 12 players), e2e LMGF repro, harness self-test                                                |
-| SPIL-03                                | Done        | screens/SPIL-03-after-sheet-375.png                                                                    | screens/SPIL-03-after-sheet-1280.png                                                                       | pass   | CI     | CI nightly | e2e live counts (realtime), own count, force dialog hold; pgTAP for save_answers                                 |
-| SPIL-04                                | Done        | screens/SPIL-04-after-reveal-tie-375.png, screens/SPIL-04-after-results-tie-375.png                    | screens/SPIL-04-after-reveal-tie-1280.png, screens/SPIL-04-after-results-tie-1280.png                      | pass   | CI     | CI nightly | Unit tests for groups, places and T ranks; tie fixture checked at 375 and 1280                                   |
-| SPIL-02                                | Done        | screens/SPIL-02-age-gate-375.png, screens/SPIL-02-picker-teen-375.png, screens/SPIL-02-blocked-375.png | screens/SPIL-02-age-gate-1280.png, screens/SPIL-02-picker-adult-1280.png, screens/SPIL-02-blocked-1280.png | pass   | CI     | CI nightly | Unit (bands, filter, start rule), API (create, join, pack change), e2e two contexts, privacy request scan, pgTAP |
-| SPIL-08                                | Done        | screens/SPIL-08-picker-375.png, screens/SPIL-08-preview-375.png                                        | screens/SPIL-08-selected-1280.png, screens/SPIL-08-preview-1280.png                                        | pass   | CI     | CI nightly | e2e sticky CTA at 375 x 812, single selection, preview pick, preview age check; unit CSV and roles; pgTAP        |
-| SPIL-05 to SPIL-07, SPIL-09 to SPIL-33 | Not started |                                                                                                        |                                                                                                            |        |        |            |                                                                                                                  |
+| Ticket                               | Status      | 375 px                                                                                                 | 1280 px                                                                                                    | Chrome | Safari | Firefox    | QA sign-off                                                                                                      |
+| ------------------------------------ | ----------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------ | ------ | ---------- | ---------------------------------------------------------------------------------------------------------------- |
+| SPIL-01                              | Done        | screens/SPIL-01-after-375.png                                                                          | screens/SPIL-01-after-1280.png                                                                             | pass   | CI     | CI nightly | Unit matrix (2, 3, 12 players), e2e LMGF repro, harness self-test                                                |
+| SPIL-03                              | Done        | screens/SPIL-03-after-sheet-375.png                                                                    | screens/SPIL-03-after-sheet-1280.png                                                                       | pass   | CI     | CI nightly | e2e live counts (realtime), own count, force dialog hold; pgTAP for save_answers                                 |
+| SPIL-04                              | Done        | screens/SPIL-04-after-reveal-tie-375.png, screens/SPIL-04-after-results-tie-375.png                    | screens/SPIL-04-after-reveal-tie-1280.png, screens/SPIL-04-after-results-tie-1280.png                      | pass   | CI     | CI nightly | Unit tests for groups, places and T ranks; tie fixture checked at 375 and 1280                                   |
+| SPIL-02                              | Done        | screens/SPIL-02-age-gate-375.png, screens/SPIL-02-picker-teen-375.png, screens/SPIL-02-blocked-375.png | screens/SPIL-02-age-gate-1280.png, screens/SPIL-02-picker-adult-1280.png, screens/SPIL-02-blocked-1280.png | pass   | CI     | CI nightly | Unit (bands, filter, start rule), API (create, join, pack change), e2e two contexts, privacy request scan, pgTAP |
+| SPIL-08                              | Done        | screens/SPIL-08-picker-375.png, screens/SPIL-08-preview-375.png                                        | screens/SPIL-08-selected-1280.png, screens/SPIL-08-preview-1280.png                                        | pass   | CI     | CI nightly | e2e sticky CTA at 375 x 812, single selection, preview pick, preview age check; unit CSV and roles; pgTAP        |
+| SPIL-06                              | Done        | screens/SPIL-06-safety-375.png, screens/SPIL-06-footer-375.png, screens/SPIL-06-tabs-320.png           | screens/SPIL-06-safety-1280.png, screens/SPIL-06-terms-1280.png, screens/SPIL-06-footer-1280.png           | pass   | CI     | CI nightly | e2e every link from footer and tab bar, no sideways scroll at 320, spec copy; a11y route list includes /safety   |
+| SPIL-05, SPIL-07, SPIL-09 to SPIL-33 | Not started |                                                                                                        |                                                                                                            |        |        |            |                                                                                                                  |
 
 ## SPIL-01: Softlock after "Move on without them"
 
@@ -128,3 +129,13 @@ Notes:
 - The preview endpoint checks the age band like the pack list, so a minor cannot read an adult pack's questions through the API (e2e).
 - Spice values for the existing packs are a starting point (Classic 2, 9 to 5 1, After Dark 3, Between the Sheets 4, Kink Curious 4, No Limits 5, others 2); the admin can change them.
 - Migration 20261024001100, applied to staging on 2026-10-24.
+
+## SPIL-06: Minimum age, Safety page, footer links, privacy copy
+
+- [x] All five links work from the landing footer (How to play · Safety · Privacy · Terms · Contact, one row under the credit, 14 px, 16 px gaps, wraps on phones) and from the help tab bar (How to play · Privacy · Terms · Safety · Contact). e2e clicks every one from both.
+- [x] Copy matches the spec: Terms opens with "Age"; /safety has Skip anything, Report a question, Spill Mode is always optional, Hosts and Age; Privacy "What we collect" was updated in SPIL-02.
+
+Notes:
+
+- Baseline defect B1 is fixed here: with five tabs the bar scrolls sideways inside itself below 640 px and brings the current tab into view, so the page never scrolls sideways (e2e checks 320 px on every help page).
+- The Safety page has no lede because the spec gives none; its meta description is not shown on the page.

@@ -436,6 +436,7 @@
     "tabs": "Pages",
     "privacy": "Privacy",
     "terms": "Terms",
+    "safety": "Safety",
     "contact": "Contact",
     "howto": {
       "title": "How to play",
@@ -467,6 +468,8 @@
     "termsPage": {
       "title": "Terms",
       "lede": "The rules for using SPIL. Plain English, no traps.",
+      "hAge": "Age",
+      "pAge": "You must be 13 or older to play SPIL. Packs marked 18+ are only shown to players who tell us they are 18 or older. Do not invite anyone under 18 into an 18+ room.",
       "h1": "Play fair",
       "p1": "Don't use SPIL to bully, out or pressure anyone. Hosts can remove players, and we can close rooms that break these rules.",
       "h2": "Nicknames",
@@ -475,6 +478,20 @@
       "p3": "Your card is yours to post. Ask before you post someone else's.",
       "h4": "It's a game",
       "p4": "Scores are for fun. They say nothing official about anyone."
+    },
+    "safetyPage": {
+      "title": "Safety",
+      "description": "Skip anything, report questions, keep Spill Mode optional. What hosts can and cannot see, and who can play.",
+      "h1": "Skip anything",
+      "p1": "Every player has skips. Use them. Nobody sees which questions you skipped.",
+      "h2": "Report a question",
+      "p2": "Tap the flag on any card. We review every report.",
+      "h3": "Spill Mode is always optional",
+      "p3": "Your answers stay private unless you turn it on. You can turn it off any time, but people may have seen them already.",
+      "h4": "Hosts",
+      "p4": "Hosts can remove players and move on without slow players. Hosts can't see anyone's answers or age.",
+      "h5": "Age",
+      "p5": "You must be 13 or older to play SPIL. Packs marked 18+ are only shown to players who tell us they are 18 or older. Do not invite anyone under 18 into an 18+ room."
     },
     "contactPage": {
       "title": "Contact",

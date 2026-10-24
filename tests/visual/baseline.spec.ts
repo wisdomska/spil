@@ -34,6 +34,7 @@ const route = (path: string) => async (page: Page) => {
 const SCREENS: Array<{ slug: string; go: (page: Page) => Promise<void> }> = [
   ...FRAMES.filter((f) => f.set === "mobile").map((f) => ({ slug: f.slug, go: f.go })),
   { slug: "page-create", go: route("/create") },
+  { slug: "page-safety", go: route("/safety") },
   { slug: "page-not-found", go: route("/not-a-page") },
 ];
 const ADMIN = ["", "rooms", "packs", "questions", "reports", "inbox", "audit", "settings"];

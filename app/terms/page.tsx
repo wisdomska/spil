@@ -13,6 +13,7 @@ export default async function Terms() {
     <InfoPage tab="terms">
       <PageTitle>{t("title")}</PageTitle>
       <Lede>{t("lede")}</Lede>
+      <Section title={t("hAge")}>{t("pAge")}</Section>
       <Section title={t("h1")}>{t("p1")}</Section>
       <Section title={t("h2")}>{t("p2")}</Section>
       <Section title={t("h3")}>{t("p3")}</Section>

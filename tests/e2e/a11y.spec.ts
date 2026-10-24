@@ -22,6 +22,7 @@ const STATIC_ROUTES = [
   "/how-to-play",
   "/privacy",
   "/terms",
+  "/safety",
   "/contact",
   "/not-a-page",
 ];
