@@ -20,6 +20,8 @@ export function ReadyView({
   const c = useTranslations("common");
   const host = state.players.find((p) => p.isHost);
   const players = state.players.filter((p) => p.status === "active" || p.status === "sat_out");
+  // Solo: nobody guessed, so the copy talks about the score instead.
+  const solo = players.length === 1;
   return (
     <div className="flex flex-1 flex-col justify-center gap-5">
       <div className="flex flex-wrap gap-x-2.5 gap-y-3.5 p-1.5">
@@ -44,13 +46,17 @@ export function ReadyView({
         })}
       </div>
       <h1 className="m-0 font-display text-display-l font-extrabold tracking-display">
-        {t("title")}{" "}
+        {solo ? t("soloTitle") : t("title")}{" "}
         <span className="text-accent-ink" style={{ fontStretch: "75%" }}>
-          {t("titleEmphasis")}
+          {solo ? t("soloEmphasis") : t("titleEmphasis")}
         </span>
       </h1>
       <p className="m-0 text-[17px] leading-[1.5] text-text-muted">
-        {state.me.isHost ? t("host") : t("guest", { host: host?.nickname ?? "" })}
+        {solo
+          ? t("soloHost")
+          : state.me.isHost
+            ? t("host")
+            : t("guest", { host: host?.nickname ?? "" })}
       </p>
       {state.me.isHost && (
         <Button className="mt-4" block loading={revealing} onClick={onReveal}>

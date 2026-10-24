@@ -90,7 +90,7 @@ function GameSettings() {
     const mx = Number(vals.maxPlayers);
     const lock = Number(vals.ageLockHours);
     if (!Number.isInteger(qn) || qn < 5 || qn > 100) return setError(t("rangeQuestions"));
-    if (!Number.isInteger(mn) || mn < 2 || mn > 20) return setError(t("rangeMin"));
+    if (!Number.isInteger(mn) || mn < 1 || mn > 20) return setError(t("rangeMin"));
     if (!Number.isInteger(mx) || mx < mn || mx > 20) return setError(t("rangeMax"));
     if (!Number.isInteger(lock) || lock < 1 || lock > 168) return setError(t("rangeAgeLock"));
     setBusy(true);
@@ -122,7 +122,7 @@ function GameSettings() {
         >
           <div className="grid gap-[18px] sm:grid-cols-3 sm:gap-4">
             {field("questionsPerGame", t("questionsPerGame"), t("questionsPerGameHint"), 5, 100)}
-            {field("minPlayers", t("minPlayers"), t("minPlayersHint"), 2, 20)}
+            {field("minPlayers", t("minPlayers"), t("minPlayersHint"), 1, 20)}
             {field("maxPlayers", t("maxPlayers"), t("maxPlayersHint"), 3, 20)}
           </div>
           <div className="grid gap-[18px] sm:grid-cols-3 sm:gap-4">

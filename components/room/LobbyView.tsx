@@ -154,7 +154,11 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
               ) : (
                 <UsersThreeIcon size={18} aria-hidden />
               )}
-              {canStart ? t("ready", { n }) : t("need", { min: room.settings.minPlayers, n })}
+              {canStart
+                ? n === 1
+                  ? t("readySolo")
+                  : t("ready", { n })
+                : t("need", { min: room.settings.minPlayers, n })}
             </span>
             <Button
               block

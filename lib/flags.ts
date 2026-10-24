@@ -33,7 +33,7 @@ export async function getSettings(): Promise<Settings> {
   const value = {
     questionsPerGame: data?.questions_per_game ?? 10,
     maxPlayers: data?.max_players ?? 12,
-    minPlayers: data?.min_players ?? 2,
+    minPlayers: data?.min_players ?? 1,
     ageLockHours: data?.age_lock_hours ?? 24,
   };
   settingsCache = { at: Date.now(), value };

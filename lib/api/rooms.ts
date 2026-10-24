@@ -523,6 +523,7 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     const computed = computeResults(input);
     const { questionStats } = computed;
     const bullseyes = new Map(computed.rows.map((r) => [r.playerId, r.bullseyes]));
+    const guessedBy = new Map(computed.rows.map((r) => [r.playerId, r.guessedBy]));
     const ties = spillTies(
       (rows ?? []).map((r) => ({ playerId: r.player_id, score: r.spill_score })),
     );
@@ -550,6 +551,7 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
         rank: r.rank,
         ...ties.get(r.player_id),
         bullseyes: bullseyes.get(r.player_id) ?? 0,
+        guessedBy: guessedBy.get(r.player_id) ?? 0,
       })),
       awards: (awards ?? []).map((a) => ({
         award: a.award as AwardId,

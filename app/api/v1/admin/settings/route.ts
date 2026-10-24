@@ -15,7 +15,7 @@ async function read(): Promise<SettingsPayload["settings"]> {
   if (error) throw new ApiError("INTERNAL");
   return {
     questionsPerGame: data?.questions_per_game ?? 10,
-    minPlayers: data?.min_players ?? 2,
+    minPlayers: data?.min_players ?? 1,
     maxPlayers: data?.max_players ?? 12,
     ageLockHours: data?.age_lock_hours ?? 24,
   };

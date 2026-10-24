@@ -250,7 +250,7 @@ export function RevealStage({
                 count={count}
                 num={num}
                 step={step}
-                showGuess={showGuess}
+                showGuess={showGuess && (r.guessedBy ?? 0) > 0}
                 stamped={stamped}
                 reduced={reduced}
                 compact={group.rows.length > 1}
@@ -263,21 +263,25 @@ export function RevealStage({
           </div>
           {step === "verdict" && (
             <div className={cn("grid gap-3", fade || "animate-[rise_300ms_var(--ease-out)_both]")}>
-              {group.rows.map((r) => {
-                const band = verdictBand(r.score - r.avgGuessAbout);
-                const verdict =
-                  band === "well"
-                    ? t("verdictWell")
-                    : band === "little"
-                      ? t("verdictLittle")
-                      : t("verdictNone");
-                return (
-                  <p key={r.playerId} className="m-0 text-[16px] leading-[1.4] font-medium">
-                    {group.rows.length > 1 && <span className="font-semibold">{r.nickname}: </span>}
-                    {t("offBy", { diff: Math.abs(r.score - r.avgGuessAbout), verdict })}
-                  </p>
-                );
-              })}
+              {group.rows
+                .filter((r) => (r.guessedBy ?? 0) > 0)
+                .map((r) => {
+                  const band = verdictBand(r.score - r.avgGuessAbout);
+                  const verdict =
+                    band === "well"
+                      ? t("verdictWell")
+                      : band === "little"
+                        ? t("verdictLittle")
+                        : t("verdictNone");
+                  return (
+                    <p key={r.playerId} className="m-0 text-[16px] leading-[1.4] font-medium">
+                      {group.rows.length > 1 && (
+                        <span className="font-semibold">{r.nickname}: </span>
+                      )}
+                      {t("offBy", { diff: Math.abs(r.score - r.avgGuessAbout), verdict })}
+                    </p>
+                  );
+                })}
               <Bullseyes
                 rows={rows}
                 exact={exact.filter((e) => group.rows.some((r) => r.playerId === e.targetId))}

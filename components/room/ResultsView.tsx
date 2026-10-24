@@ -99,6 +99,9 @@ export function ResultsView({
   const score = meRow?.score ?? 0;
   const guess = meRow?.avgGuessAbout ?? 0;
   const gap = Math.abs(score - guess);
+  // Solo: nobody guessed, so there is no room guess, no points and no winner (cascade).
+  const solo = (meRow?.guessedBy ?? 0) === 0;
+  const anyGuesses = rows.some((r) => (r.guessedBy ?? 0) > 0);
   const band = verdictBand(gap);
   const verdict =
     band === "well" ? t("verdictWell") : band === "little" ? t("verdictLittle") : t("verdictNone");
@@ -115,7 +118,7 @@ export function ResultsView({
             </span>
           </h1>
           <p className="m-0 text-[16px] leading-[1.45] text-text-muted">
-            {t("line", { score, guess, verdict })}
+            {solo ? t("lineSolo", { score }) : t("line", { score, guess, verdict })}
           </p>
         </div>
         <div className="relative">
@@ -133,7 +136,7 @@ export function ResultsView({
         </div>
       </div>
 
-      {winners.length > 0 && (
+      {anyGuesses && winners.length > 0 && (
         <p className="m-0 flex items-center gap-2.5 rounded-card border border-line bg-surface px-4 py-3 text-[15px] leading-[1.4] font-semibold">
           <TrophyIcon aria-hidden size={20} className="shrink-0 text-accent-ink" />
           {winners.length > 1
@@ -198,28 +201,34 @@ export function ResultsView({
                     </span>
                   </div>
                   <span className="font-mono text-[13px] leading-[1.2] font-medium text-text-muted">
-                    {t("sub", { score: r.score, guess: r.avgGuessAbout })}
+                    {(r.guessedBy ?? 0) > 0
+                      ? t("sub", { score: r.score, guess: r.avgGuessAbout })
+                      : t("subSolo", { score: r.score })}
                   </span>
                 </div>
-                <span className="grid justify-items-end gap-1">
-                  <span className="font-mono text-[30px] leading-none font-semibold tabular-nums">
-                    {r.mindReader}
+                {anyGuesses && (
+                  <span className="grid justify-items-end gap-1">
+                    <span className="font-mono text-[30px] leading-none font-semibold tabular-nums">
+                      {r.mindReader}
+                    </span>
+                    <span className="font-mono text-[11px] leading-none font-medium tracking-wide whitespace-nowrap text-text-muted uppercase">
+                      {t("pts")}
+                    </span>
                   </span>
-                  <span className="font-mono text-[11px] leading-none font-medium tracking-wide whitespace-nowrap text-text-muted uppercase">
-                    {t("pts")}
-                  </span>
-                </span>
+                )}
               </li>
             ))}
           </ol>
-          <button
-            type="button"
-            onClick={() => setExplain(true)}
-            className="mt-3 -ml-2.5 flex h-11 items-center gap-1.5 rounded-pill border-0 bg-transparent pr-3.5 pl-2.5 text-[14px] leading-none font-semibold text-accent-ink hover:bg-surface-raised"
-          >
-            <InfoIcon size={18} aria-hidden />
-            {t("howPoints")}
-          </button>
+          {anyGuesses && (
+            <button
+              type="button"
+              onClick={() => setExplain(true)}
+              className="mt-3 -ml-2.5 flex h-11 items-center gap-1.5 rounded-pill border-0 bg-transparent pr-3.5 pl-2.5 text-[14px] leading-none font-semibold text-accent-ink hover:bg-surface-raised"
+            >
+              <InfoIcon size={18} aria-hidden />
+              {t("howPoints")}
+            </button>
+          )}
         </TabPanel>
         <TabPanel value="awards" className="outline-none">
           <div className="grid gap-[18px]">

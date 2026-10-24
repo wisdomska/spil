@@ -214,14 +214,15 @@
     "loading": "Loading room",
     "inRoom": "In the room",
     "count": "{n} / {max}",
-    "alone": "It's just you so far. Share the invite link so your friends can join.",
+    "alone": "It's just you so far. Start solo, or share the invite link so friends can join.",
     "ready": "{n} in. Everyone ready?",
     "need": "Need {min} players to start. {n} here.",
     "start": "Start the game",
     "addTest": "Add a test player",
     "changePack": "Change pack: {pack}",
     "remove": "Remove {name}",
-    "guestWait": "Waiting for {host} to start. Grab a drink."
+    "guestWait": "Waiting for {host} to start. Grab a drink.",
+    "readySolo": "Just you. Start solo, or share the invite link first."
   },
   "question": {
     "offline": "You're offline. Keep going, your answers send when you're back.",
@@ -289,7 +290,10 @@
     "titleEmphasis": "Lights down.",
     "host": "Put your phone where the room can see it, or cast it. Start the reveal when everyone is watching.",
     "guest": "Eyes on {host}. The reveal starts any second.",
-    "start": "Start the reveal"
+    "start": "Start the reveal",
+    "soloTitle": "Your score is in.",
+    "soloEmphasis": "Lights down.",
+    "soloHost": "Nobody else to guess about this round. Start the reveal when you're ready."
   },
   "reveal": {
     "counter": "REVEAL {n} OF {total}",
@@ -351,7 +355,9 @@
     "pointsWithin": "Within {n}",
     "pointsMore": "More than {n}",
     "pointsClosest": "Closest in the room",
-    "pointsNote": "Points add up over every guess you lock in. The closest bonus needs 3 or more guesses on a player."
+    "pointsNote": "Points add up over every guess you lock in. The closest bonus needs 3 or more guesses on a player.",
+    "lineSolo": "You scored {score}. Play with friends to see how well they know you.",
+    "subSolo": "Spill Score {score}"
   },
   "share": {
     "title": "Your card",
@@ -462,7 +468,7 @@
     "contact": "Contact",
     "howto": {
       "title": "How to play",
-      "lede": "A round takes about 15 minutes. You need {min} or more people and a phone each.",
+      "lede": "A round takes about 15 minutes. {min, plural, one {Play solo, or bring friends with a phone each.} other {You need # or more people and a phone each.}}",
       "h1": "Start or join a room",
       "p1": "The host taps Start a room, picks a pack and shares the link or the four character code. Everyone else taps Join with code. No account, just a nickname and a face.",
       "h2": "Answer in private",
@@ -918,7 +924,7 @@
       "questionsPerGame": "Default questions per game",
       "questionsPerGameHint": "Pre-selected for hosts. They can pick more or fewer when they choose a pack. 5 to 100.",
       "minPlayers": "Minimum players to start",
-      "minPlayersHint": "The host cannot start below this. 2 to 20.",
+      "minPlayersHint": "The host cannot start below this. 1 plays solo. 1 to 20.",
       "maxPlayers": "Maximum players per room",
       "maxPlayersHint": "Joining is blocked once a room is full. Up to 20.",
       "ageLockHours": "Age lock (hours)",
@@ -926,7 +932,7 @@
       "save": "Save settings",
       "saved": "Settings saved. New rooms use them.",
       "rangeQuestions": "Questions per game must be between 5 and 100.",
-      "rangeMin": "Minimum players must be between 2 and 20.",
+      "rangeMin": "Minimum players must be between 1 and 20.",
       "rangeMax": "Maximum players must be between the minimum and 20.",
       "rangeAgeLock": "Age lock must be between 1 and 168 hours.",
       "flags": "Feature flags",

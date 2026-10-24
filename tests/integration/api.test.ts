@@ -248,17 +248,22 @@ d("host tools", () => {
     expect(after.body.me.isHost).toBe(true);
   });
 
-  it("start needs the minimum players", async () => {
+  it("a solo room starts with one player and skips guessing", async () => {
     const host = await anonPlayer();
-    const created = await host.call("POST", "/rooms", { ageBand: "18_plus", packId: "classic" });
-    await host.call("POST", `/rooms/${created.body.code}/join`, {
+    const created = await host.call("POST", "/rooms", {
+      ageBand: "18_plus",
+      packId: "classic",
+      questionCount: 5,
+    });
+    const roomCode = created.body.code;
+    await host.call("POST", `/rooms/${roomCode}/join`, {
       ageBand: "18_plus",
       nickname: "Solo",
       avatar: 0,
     });
-    expect(code(await host.call("POST", `/rooms/${created.body.code}/start`))).toBe(
-      "NOT_ENOUGH_PLAYERS",
-    );
+    expect((await host.call("POST", `/rooms/${roomCode}/start`)).status).toBe(200);
+    const done = await answerAll(host, roomCode, () => "yes");
+    expect(done.body.room.status).toBe("ready");
   });
 
   it("two players are enough to start", async () => {

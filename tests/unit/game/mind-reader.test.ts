@@ -50,3 +50,17 @@ describe("Mind Reader points (SPIL-09)", () => {
     expect(r.guessPoints.every((g) => !g.closest)).toBe(true);
   });
 });
+
+describe("solo rooms (cascade)", () => {
+  const solo = questions(4);
+  it("one player: a score, nobody guessed, no points, no awards", () => {
+    const r = computeResults({
+      questions: solo,
+      players: [player("me", "Me", { answers: answers(solo, (i) => (i < 3 ? "yes" : "no")) })],
+    });
+    expect(r.rows).toHaveLength(1);
+    expect(r.rows[0]).toMatchObject({ score: 75, guessedBy: 0, mindReader: 0, bullseyes: 0 });
+    expect(r.guessPoints).toEqual([]);
+    expect(r.awards).toEqual([]);
+  });
+});

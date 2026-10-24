@@ -70,6 +70,8 @@ export type ResultRow = {
   mindReader: number;
   /** Exact guesses this player made (SPIL-09 "Bullseye" stamp). */
   bullseyes?: number;
+  /** How many people guessed about this player; 0 in a solo room. */
+  guessedBy?: number;
   rank: number;
   /** Place by Spill Score: 1 + players who spilled more (SPIL-04). */
   spillRank?: number;

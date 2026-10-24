@@ -78,6 +78,8 @@ export interface ResultRow {
   mindReader: number;
   /** Exact guesses this player made. */
   bullseyes: number;
+  /** How many people guessed about this player; 0 in a solo room, so there is no room guess. */
+  guessedBy: number;
   /**
    * 1-based, by guessing (Mind Reader points) descending; players who made no guesses come
    * last. Ties share a rank (1, 1, 3). Rank 1 wins the round.
@@ -274,6 +276,7 @@ export function computeResults(input: ResultsInput): Results {
     return {
       p,
       avgGuessAbout: about.length ? Math.round(mean(about)) : p.score,
+      guessedBy: about.length,
       mindReader: mine.reduce((sum, g) => sum + g.points, 0),
       bullseyes: mine.filter((g) => g.points - (g.closest ? CLOSEST_BONUS : 0) === 10).length,
       guessCount: mine.length,
@@ -293,6 +296,7 @@ export function computeResults(input: ResultsInput): Results {
     avgGuessAbout: s.avgGuessAbout,
     mindReader: s.mindReader,
     bullseyes: s.bullseyes,
+    guessedBy: s.guessedBy,
     rank: 1 + ranked.filter((o) => beats(o, s) > 0).length,
     spillMode: s.p.player.spillMode,
   }));
