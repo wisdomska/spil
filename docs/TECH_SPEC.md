@@ -580,6 +580,7 @@ Base path `/api/v1`. JSON, camelCase. Auth via Supabase session cookie (`@supaba
 | POST | `/rooms/:code/reveal/skip` | host, revealed | `{}` → state. Ends the reveal on every phone (SPIL-11) | NOT_HOST, WRONG_PHASE |
 | PUT | `/rooms/:code/ratings` | member, answering, Hot Takes | `{ ratings: [{ questionId, value 0 to 100 }] }` → `{ saved, answered }`. Broadcasts progress like answers | WRONG_PHASE, ALREADY_SUBMITTED, UNKNOWN_QUESTION |
 | PUT | `/rooms/:code/votes` | member, answering, Most Likely To | `{ votes: [{ questionId, targetId }] }` → `{ saved, answered }`. One vote per prompt, never yourself; broadcasts progress | WRONG_PHASE, ALREADY_SUBMITTED, UNKNOWN_QUESTION, INVALID_TARGET |
+| PUT | `/rooms/:code/ranks` | member, answering, Rank the Room | `{ ranks: [{ questionId, order: [playerId] }] }` → `{ saved, answered }`. Each order is everyone in the game once, top first; a new order replaces the old | WRONG_PHASE, ALREADY_SUBMITTED, UNKNOWN_QUESTION, INVALID_TARGET |
 | PUT | `/rooms/:code/percent` | member, guessing, Room Percentage or Hot Takes | `{ guesses: [{ questionId, value 0 to 100 }] }` → `{ saved, total }`. Only questions 3 or more answered or rated | WRONG_PHASE, ALREADY_SUBMITTED, UNKNOWN_QUESTION |
 | POST | `/rooms/:code/kick` | host, lobby | `{playerId}` → state | NOT_HOST, WRONG_PHASE |
 | POST | `/rooms/:code/nudge` | host | `{playerId}` → `{}` (1 per target per minute) | RATE_LIMITED |

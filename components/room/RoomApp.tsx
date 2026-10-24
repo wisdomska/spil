@@ -19,6 +19,7 @@ import { GuessView } from "./GuessView";
 import { LobbyView } from "./LobbyView";
 import { PercentGuessView } from "./PercentGuessView";
 import { QuestionView } from "./QuestionView";
+import { RankView } from "./RankView";
 import { RateView } from "./RateView";
 import { VoteView } from "./VoteView";
 import { ReadyView } from "./ReadyView";
@@ -163,6 +164,7 @@ export function RoomApp({ code }: { code: string }) {
         }
         likely={state.room.mode === "most_likely" ? state.results.likely : undefined}
         flags={state.room.mode === "red_green" ? state.results.flags : undefined}
+        ranked={state.room.mode === "rank_room" ? state.results.ranked : undefined}
         average={state.room.mode === "hot_takes"}
         reveal={state.room.reveal!}
         isHost={state.me.isHost}
@@ -178,8 +180,9 @@ export function RoomApp({ code }: { code: string }) {
   const hot = state.room.mode === "hot_takes";
   const likely = state.room.mode === "most_likely";
   const flags = state.room.mode === "red_green";
+  const rank = state.room.mode === "rank_room";
   // Modes without a Spill Score show points for reading the room in the roster.
-  const pointsOnly = hot || likely || flags;
+  const pointsOnly = hot || likely || flags || rank;
   const statusFor = (id: string) => {
     const p = state.players.find((x) => x.id === id);
     if (!p) return "";
@@ -199,9 +202,11 @@ export function RoomApp({ code }: { code: string }) {
         ? Object.keys(state.myRatings ?? {}).length
         : p.id === state.me.id && likely
           ? Object.keys(state.myVotes ?? {}).length
-          : p.id === state.me.id
-            ? new Set([...Object.keys(state.myAnswers ?? {}), ...Object.keys(pending ?? {})]).size
-            : p.answered;
+          : p.id === state.me.id && rank
+            ? Object.keys(state.myRanks ?? {}).length
+            : p.id === state.me.id
+              ? new Set([...Object.keys(state.myAnswers ?? {}), ...Object.keys(pending ?? {})]).size
+              : p.answered;
     return `${answered}/${state.room.questionCount}`;
   };
 
@@ -277,7 +282,14 @@ export function RoomApp({ code }: { code: string }) {
             onDone={() => actions.submitAnswers.mutateAsync(undefined).catch(fail)}
           />
         )}
-        {screen === "question" && !hot && !likely && (
+        {screen === "question" && rank && (
+          <RankView
+            key={state.room.round}
+            state={state}
+            onDone={() => actions.submitAnswers.mutateAsync(undefined).catch(fail)}
+          />
+        )}
+        {screen === "question" && !hot && !likely && !rank && (
           <QuestionView
             key={state.room.round}
             state={state}

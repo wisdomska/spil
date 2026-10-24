@@ -13,3 +13,4 @@ export * from "./modes";
 export * from "./percentage";
 export * from "./mostLikely";
 export * from "./flags";
+export * from "./rankRoom";

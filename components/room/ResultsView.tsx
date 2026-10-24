@@ -58,8 +58,9 @@ export function ResultsView({
   const hot = state.room.mode === "hot_takes";
   const likely = state.room.mode === "most_likely";
   const flags = state.room.mode === "red_green";
+  const rank = state.room.mode === "rank_room";
   // Modes without a Spill Score: no labels, Spill Mode or share card.
-  const noSpill = hot || likely || flags;
+  const noSpill = hot || likely || flags || rank;
 
   const rows = rankByGuessing(results?.rows ?? []);
   const ranks = rows.map((r) => r.rank);
@@ -104,13 +105,15 @@ export function ResultsView({
   const solo = (meRow?.guessedBy ?? 0) === 0;
   // Room Percentage: nobody guesses about players; the points are for reading the room.
   const anyGuesses =
-    state.room.mode === "red_green"
-      ? (results.flags ?? []).length > 0
-      : state.room.mode === "most_likely"
-        ? (results.likely ?? []).length > 0
-        : pct
-          ? (results.percent ?? []).some((q) => q.guesses.length > 0)
-          : rows.some((r) => (r.guessedBy ?? 0) > 0);
+    state.room.mode === "rank_room"
+      ? (results.ranked ?? []).length > 0
+      : state.room.mode === "red_green"
+        ? (results.flags ?? []).length > 0
+        : state.room.mode === "most_likely"
+          ? (results.likely ?? []).length > 0
+          : pct
+            ? (results.percent ?? []).some((q) => q.guesses.length > 0)
+            : rows.some((r) => (r.guessedBy ?? 0) > 0);
   const band = verdictBand(gap);
   const verdict =
     band === "well" ? t("verdictWell") : band === "little" ? t("verdictLittle") : t("verdictNone");
@@ -118,7 +121,13 @@ export function ResultsView({
 
   return (
     <div className="flex flex-col gap-[22px]">
-      {flags ? (
+      {rank ? (
+        <BestHeader
+          best={results.best?.[state.me.id]}
+          points={meRow?.mindReader ?? 0}
+          anyGuesses={anyGuesses}
+        />
+      ) : flags ? (
         <LoneHeader
           lone={results.lone?.[state.me.id]}
           points={meRow?.mindReader ?? 0}
@@ -258,7 +267,7 @@ export function ResultsView({
               </li>
             ))}
           </ol>
-          {anyGuesses && !likely && !flags && (
+          {anyGuesses && !likely && !flags && !rank && (
             <button
               type="button"
               onClick={() => setExplain(true)}
@@ -299,7 +308,9 @@ export function ResultsView({
           </div>
         </TabPanel>
         <TabPanel value="questions" className="outline-none">
-          {flags ? (
+          {rank ? (
+            <RankStats ranked={results.ranked ?? []} rows={rows} />
+          ) : flags ? (
             <FlagStats flags={results.flags ?? []} />
           ) : likely ? (
             <LikelyStats likely={results.likely ?? []} rows={rows} />
@@ -629,6 +640,74 @@ function FlagStats({
           <span className="font-mono text-[14px] leading-none font-medium text-text-muted">
             {tr("flagSplitLine", { green: f.greenShare, red: 100 - f.greenShare })}
           </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Rank the Room: the prompt the room placed you highest on, and your points. */
+function BestHeader({
+  best,
+  points,
+  anyGuesses,
+}: {
+  best: { text: string; place: number } | undefined;
+  points: number;
+  anyGuesses: boolean;
+}) {
+  const t = useTranslations("results");
+  return (
+    <div className="grid gap-2.5">
+      {best && (
+        <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] text-text-muted">
+          {t("bestKicker", { place: best.place })}
+        </span>
+      )}
+      <h1 className="m-0 font-display text-[30px] leading-[1.02] font-extrabold tracking-display text-balance">
+        {best ? best.text : t("bestNone")}
+      </h1>
+      {anyGuesses && (
+        <p className="m-0 text-[16px] leading-[1.45] text-text-muted">
+          {t("rankPoints", { points })}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** Rank the Room questions tab: the room's order per prompt, never anyone's ranking. */
+function RankStats({
+  ranked,
+  rows,
+}: {
+  ranked: Array<{
+    questionId: string;
+    text: string;
+    order: Array<{ playerId: string; place: number }>;
+  }>;
+  rows: Array<{ playerId: string; nickname: string }>;
+}) {
+  const t = useTranslations("results");
+  const tq = useTranslations("question");
+  const name = (id: string) => rows.find((r) => r.playerId === id)?.nickname ?? "";
+  return (
+    <div className="grid gap-4">
+      <p className="m-0 text-[14px] leading-[1.45] text-text-muted">{t("rankStatsNote")}</p>
+      {ranked.length === 0 && <p className="m-0 text-[15px] text-text-muted">{t("statsEmpty")}</p>}
+      {ranked.map((q) => (
+        <div key={q.questionId} className="grid gap-2 border-b border-line pb-4">
+          <span className="font-display text-[18px] leading-[1.2] font-bold">
+            {tq("likelyPrefix")} {q.text}
+          </span>
+          <ol className="m-0 grid list-none gap-1 p-0">
+            {q.order.map((p) => (
+              <li key={p.playerId} className="flex gap-2.5 text-[15px] leading-[1.3] font-medium">
+                <span className="w-6 font-mono text-text-muted tabular-nums">{p.place}</span>
+                {name(p.playerId)}
+              </li>
+            ))}
+          </ol>
         </div>
       ))}
     </div>

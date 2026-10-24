@@ -35,7 +35,7 @@ export const MODE_RULES: Readonly<Record<Mode, ModeRule>> = {
   most_likely: { minPlayers: 3, available: true, adultOnly: false },
   // A split of 2 answers would give the other player's answer away, so 3 like the others.
   red_green: { minPlayers: 3, available: true, adultOnly: false },
-  rank_room: { minPlayers: 3, available: false, adultOnly: false },
+  rank_room: { minPlayers: 3, available: true, adultOnly: false },
   imposter: { minPlayers: 3, available: false, adultOnly: false },
   two_truths: { minPlayers: 3, available: false, adultOnly: false },
   who_said: { minPlayers: 3, available: false, adultOnly: true },
@@ -78,9 +78,14 @@ export function swipesFlags(mode: Mode): boolean {
   return mode === "red_green";
 }
 
+/** Rank the Room: players put the whole room in order on each prompt. */
+export function ranksPlayers(mode: Mode): boolean {
+  return mode === "rank_room";
+}
+
 /** Modes with no guessing phase: the room goes from answering straight to Lights down. */
 export function skipsGuessing(mode: Mode): boolean {
-  return votesForPlayers(mode) || swipesFlags(mode);
+  return votesForPlayers(mode) || swipesFlags(mode) || ranksPlayers(mode);
 }
 
 /** Modes that answer with the yes or no swipe (Red Flag, Green Flag reads it as green or red). */
@@ -92,5 +97,6 @@ export function answersYesNo(mode: Mode): boolean {
 export function modeFormat(mode: Mode): PackFormat {
   if (ratesStatements(mode)) return "statements";
   if (swipesFlags(mode)) return "flags";
-  return votesForPlayers(mode) ? "prompts" : "yes_no";
+  // Rank the Room plays the same prompt packs as Most Likely To.
+  return votesForPlayers(mode) || ranksPlayers(mode) ? "prompts" : "yes_no";
 }

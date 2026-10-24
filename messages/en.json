@@ -268,7 +268,13 @@
     "red": "Red flag",
     "stampGreen": "GREEN",
     "stampRed": "RED",
-    "flagSwipe": "Swipe right for green"
+    "flagSwipe": "Swipe right for green",
+    "rankAsk": "Rank the room: most likely to",
+    "rankHint": "Top is most likely. Drag the handle or use the arrows. You're in the list too.",
+    "rankAria": "Prompt {n} of {total}. Rank the room: most likely to {text}",
+    "rankYou": "{name} (you)",
+    "moveUp": "Move {name} up",
+    "moveDown": "Move {name} down"
   },
   "report": {
     "title": "Report this question",
@@ -380,7 +386,10 @@
     "flagRed": "Red flag",
     "flagSplit": "Split down the middle",
     "flagSplitLine": "{green}% green, {red}% red",
-    "announceFlag": "{verdict}. {green} percent said green."
+    "announceFlag": "{verdict}. {green} percent said green.",
+    "rankKicker": "THE ROOM'S ORDER: MOST LIKELY TO",
+    "rankTop": "Most likely",
+    "announceRank": "Top of the room: {names}."
   },
   "results": {
     "headline": "You're a",
@@ -441,7 +450,11 @@
     "flagPoints": "You were in step with the room for {points} points.",
     "flagStatsNote": "Splits only. Nobody sees who swiped what.",
     "sideGreen": "green",
-    "sideRed": "red"
+    "sideRed": "red",
+    "bestKicker": "THE ROOM RANKED YOU #{place} FOR",
+    "bestNone": "Not enough rankings to place you this round.",
+    "rankPoints": "Your orders matched the room for {points} points.",
+    "rankStatsNote": "The room's order only. Nobody sees anyone's ranking."
   },
   "share": {
     "title": "Your card",
@@ -1125,6 +1138,10 @@
     "red_green": {
       "name": "Red Flag, Green Flag",
       "body": "Swipe friendship and crush scenarios green or red, then see the split."
+    },
+    "rank_room": {
+      "name": "Rank the Room",
+      "body": "Put everyone in order on silly prompts, then see the room's order."
     }
   }
 }

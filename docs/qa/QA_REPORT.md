@@ -288,3 +288,16 @@ Notes:
 - [x] Results lead with "Your lone flag", the scenario you were most outnumbered on, shown only to you, or "You were in step with the room on every scenario." No Spill Score labels, Spill Mode, share card or points explainer; the Questions tab shows each split.
 - Tests: unit `tests/unit/game/flags.test.ts`, API (pack mismatch, ratings refused, no guessing, splits, lone flag, points), e2e `tests/e2e/red-green.spec.ts` (three phones end to end). pgTAP `16_red_green_test.sql`. Screens checked at 375 wide: swipe, reveal and results.
 - Migration 20261024002000, applied to staging; production at the Batch 1 release.
+
+### Rank the Room (Batch 1, game mode 5)
+
+- [x] /create offers Rank the Room; it plays the prompt packs (Most Likely To), so no new content.
+- [x] Needs 3 players. Each prompt: put the whole room in order, yourself included ("Senya (you)"), top is most likely. Drag a row by its handle or use the up and down arrows (each labelled "Move {name} up"). Every phone starts a prompt from the same shuffle, so nobody anchors on the roster order. A new order replaces the old one; progress counts prompts ranked.
+- [x] The API refuses an order that misses or repeats a player (INVALID_TARGET).
+- [x] No guessing phase: the room goes straight to Lights down.
+- [x] The room's order is each player's average position (equal averages share a place). Each ranking earns up to 10 points for how close it is to the room's order. A prompt needs 3 or more rankings. Only the Mind Reader and Clueless awards.
+- [x] Reveal: one slide per prompt: the room's order lands from the bottom up and the top is stamped "Most likely". Never anyone's own ranking.
+- [x] Results lead with "The room ranked you #{n} for" and the prompt the room placed you highest on, then your points. No Spill Score labels, Spill Mode, share card or points explainer; the Questions tab shows each prompt's order.
+- [x] Test players rank too.
+- Tests: unit `tests/unit/game/rankRoom.test.ts` (order, ties, points, best place, shared shuffle), API (incomplete and repeated orders refused, re-rank replaces, no guessing, order, points, best), e2e `tests/e2e/rank-room.spec.ts` (three phones, built with the arrow buttons). pgTAP `17_rank_room_test.sql`. Screens checked at 375 wide: ranking, reveal and results.
+- Migration 20261024002100, applied to staging; production at the Batch 1 release.

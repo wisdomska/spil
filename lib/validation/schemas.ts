@@ -70,6 +70,14 @@ export const advance = z.object({
 
 export const playerTarget = z.object({ playerId: z.uuid() });
 
+/** Rank the Room: the whole room in order on each prompt, top first. */
+export const putRanks = z.object({
+  ranks: z
+    .array(z.object({ questionId: z.uuid(), order: z.array(z.uuid()).min(2).max(20) }))
+    .min(1)
+    .max(100),
+});
+
 /** Most Likely To: one vote per prompt, for another player in the room. */
 export const putVotes = z.object({
   votes: z

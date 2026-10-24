@@ -8,12 +8,14 @@ import type {
   PercentQuestion,
   PlayerStatus,
   RoomStatus,
+  BestPlace,
   Crowned,
   FlagQuestion,
   LoneFlag,
   HotTake,
   LikelyQuestion,
   PackFormat,
+  RankQuestion,
 } from "@/lib/game";
 
 export type HeatLevel = "spicy" | "explicit" | "intense";
@@ -152,6 +154,8 @@ export type RoomState = {
   myGuesses?: Record<string, number>;
   /** Room Percentage, while guessing: the questions to guess the room's yes share for. */
   percentQuestions?: Array<{ id: string; text: string }>;
+  /** Rank the Room, while answering: my order on each prompt, player ids top first. */
+  myRanks?: Record<string, string[]>;
   /** Most Likely To, while answering: my vote on each prompt, by question id. */
   myVotes?: Record<string, string>;
   /** Hot Takes, while answering: my ratings so far, by question id. */
@@ -173,6 +177,10 @@ export type RoomState = {
     flags?: FlagQuestion[];
     /** Red Flag, Green Flag: the scenario each player was most outnumbered on, by player id. */
     lone?: Record<string, LoneFlag>;
+    /** Rank the Room: the room's order per prompt once 3 or more ranked it. */
+    ranked?: RankQuestion[];
+    /** Rank the Room: each player's highest place, by player id. */
+    best?: Record<string, BestPlace>;
     /** Exact guesses, for the reveal's Bullseye stamps (SPIL-09, SPIL-11). */
     exact: Array<{ guesserId: string; targetId: string }>;
     awards: AwardRow[];

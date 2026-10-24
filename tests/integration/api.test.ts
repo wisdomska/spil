@@ -276,7 +276,7 @@ d("host tools", () => {
     const notBuilt = await host.call("POST", "/rooms", {
       ageBand: "18_plus",
       packId: "classic",
-      mode: "rank_room",
+      mode: "imposter",
     });
     expect(code(notBuilt)).toBe("MODE_UNAVAILABLE");
 
@@ -509,6 +509,58 @@ d("host tools", () => {
     ).toMatchObject({ mindReader: 0 });
     expect(revealed.body.results.rows[0].mindReader).toBe(50);
     expect(revealed.body.room.reveal.total).toBe(5 + revealed.body.results.awards.length);
+  });
+
+  it("Rank the Room: whole-room orders, averaged, no guessing, scored on closeness", async () => {
+    const room = await fullRoom(3, "most_likely", 5, "rank_room");
+    const [a, b, c] = room.players as [Player, Player, Player];
+    expect((await a.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);
+    const state = await a.call("GET", `/rooms/${room.roomCode}/state`);
+    const qs: Array<{ id: string }> = state.body.questions;
+    const id = (p: Player) =>
+      p.call("GET", `/rooms/${room.roomCode}/state`).then((s) => s.body.me.id);
+    const [aId, bId, cId] = await Promise.all([id(a), id(b), id(c)]);
+
+    const rank = (p: Player, order: string[]) =>
+      p.call("PUT", `/rooms/${room.roomCode}/ranks`, {
+        ranks: qs.map((q) => ({ questionId: q.id, order })),
+      });
+    expect(code(await rank(a, [aId, bId]))).toBe("INVALID_TARGET");
+    expect(code(await rank(a, [aId, aId, bId]))).toBe("INVALID_TARGET");
+    const vote = await a.call("PUT", `/rooms/${room.roomCode}/votes`, {
+      votes: [{ questionId: qs[0]!.id, targetId: bId }],
+    });
+    expect(code(vote)).toBe("WRONG_PHASE");
+    // a ranks twice: the second order replaces the first and still counts 5 prompts.
+    await rank(a, [cId, bId, aId]);
+    expect((await rank(a, [aId, bId, cId])).body.answered).toBe(5);
+    await rank(b, [aId, bId, cId]);
+    await rank(c, [cId, bId, aId]);
+    for (const p of [a, b, c])
+      expect((await p.call("POST", `/rooms/${room.roomCode}/answers/submit`)).status).toBe(200);
+
+    const ready = await a.call("GET", `/rooms/${room.roomCode}/state`);
+    expect(ready.body.room.status).toBe("ready");
+    const revealed = await a.call("POST", `/rooms/${room.roomCode}/advance`, { from: "ready" });
+    const ranked = revealed.body.results.ranked;
+    expect(ranked).toHaveLength(5);
+    expect(
+      ranked[0].order.map((p: { playerId: string; place: number }) => [p.playerId, p.place]),
+    ).toEqual([
+      [aId, 1],
+      [bId, 2],
+      [cId, 3],
+    ]);
+    const pts = Object.fromEntries(
+      revealed.body.results.rows.map((r: { playerId: string; mindReader: number }) => [
+        r.playerId,
+        r.mindReader,
+      ]),
+    );
+    expect(pts).toEqual({ [aId]: 35, [bId]: 35, [cId]: 15 });
+    expect(revealed.body.results.best[aId]).toMatchObject({ place: 1 });
+    expect(revealed.body.room.reveal.total).toBe(5 + revealed.body.results.awards.length);
+    expect(JSON.stringify(revealed.body)).not.toContain("myRanks");
   });
 
   it("two players are enough to start", async () => {

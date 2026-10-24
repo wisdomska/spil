@@ -29,6 +29,7 @@ import {
   type FlagQuestion,
   type LikelyQuestion,
   type PercentQuestion,
+  type RankQuestion,
 } from "@/lib/game";
 import { playSound, primeSound, useSoundSetting } from "@/lib/sound";
 import { useIsDesktop } from "@/lib/useMedia";
@@ -55,6 +56,8 @@ type Props = {
   likely?: LikelyQuestion[];
   /** Red Flag, Green Flag: one slide per scenario with the room's split. */
   flags?: FlagQuestion[];
+  /** Rank the Room: one slide per prompt with the room's order. */
+  ranked?: RankQuestion[];
   /** Dev fixtures only: hold the stage at this many ms into the slide. */
   freezeAt?: number;
 };
@@ -81,6 +84,7 @@ export function RevealStage({
   average = false,
   likely,
   flags,
+  ranked,
   freezeAt,
 }: Props) {
   const t = useTranslations("reveal");
@@ -94,10 +98,10 @@ export function RevealStage({
     () =>
       percent
         ? revealSlides(percent.length, awards.length, "question")
-        : likely || flags
-          ? revealSlides((likely ?? flags)!.length, awards.length, "question")
+        : likely || flags || ranked
+          ? revealSlides((likely ?? flags ?? ranked)!.length, awards.length, "question")
           : revealSlides(groups.length, awards.length),
-    [percent, likely, flags, groups, awards],
+    [percent, likely, flags, ranked, groups, awards],
   );
   const slide = slides[Math.min(reveal.index, slides.length - 1)];
   const startedAt = Date.parse(reveal.at);
@@ -116,6 +120,7 @@ export function RevealStage({
   const question = slide?.kind === "question" ? percent?.[slide.question] : undefined;
   const prompt = slide?.kind === "question" ? likely?.[slide.question] : undefined;
   const scenario = slide?.kind === "question" ? flags?.[slide.question] : undefined;
+  const ordered = slide?.kind === "question" ? ranked?.[slide.question] : undefined;
   // The vessel fills to the share of votes the room's pick got.
   const promptShare = prompt
     ? Math.round(((prompt.tally[0]?.count ?? 0) / Math.max(1, prompt.voters)) * 100)
@@ -129,7 +134,7 @@ export function RevealStage({
     const score =
       group?.score ?? question?.actual ?? (prompt ? promptShare : (scenario?.greenShare ?? 0));
     const at = (ms: number) => {
-      if (group || question || prompt || scenario) {
+      if (group || question || prompt || scenario || ordered) {
         const g = group ? groupStep(ms, topBeat) : questionStep(ms);
         count.set(
           g.step === "fill"
@@ -172,6 +177,7 @@ export function RevealStage({
     prompt,
     promptShare,
     scenario,
+    ordered,
     topBeat,
     minMs,
     startedAt,
@@ -210,14 +216,16 @@ export function RevealStage({
     slide.kind === "award"
       ? t("awardsCounter", { n: slide.award + 1, total: awards.length })
       : slide.kind === "question"
-        ? flags
-          ? t("scenarioCounter", { n: slide.question + 1, total: flags.length })
-          : likely
-            ? t("promptCounter", { n: slide.question + 1, total: likely.length })
-            : t(average ? "takeCounter" : "questionCounter", {
-                n: slide.question + 1,
-                total: percent?.length ?? 0,
-              })
+        ? ranked
+          ? t("promptCounter", { n: slide.question + 1, total: ranked.length })
+          : flags
+            ? t("scenarioCounter", { n: slide.question + 1, total: flags.length })
+            : likely
+              ? t("promptCounter", { n: slide.question + 1, total: likely.length })
+              : t(average ? "takeCounter" : "questionCounter", {
+                  n: slide.question + 1,
+                  total: percent?.length ?? 0,
+                })
         : t("counter", { n: slide.group + 1, total: groups.length });
 
   return (
@@ -397,6 +405,10 @@ export function RevealStage({
           reduced={reduced}
           height={desktop ? 300 : 220}
         />
+      )}
+
+      {ordered && (
+        <RankSlide ordered={ordered} rows={rows} step={step} stamped={stamped} reduced={reduced} />
       )}
 
       {scenario && (
@@ -819,6 +831,87 @@ function FlagSlide({
       )}
       <span className="sr-only" aria-live="polite">
         {stamped ? t("announceFlag", { verdict, green: scenario.greenShare }) : ""}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * Rank the Room: the prompt, then the room's order filling in from the bottom, the top place
+ * stamped. Only the room's order: never anyone's own ranking.
+ */
+function RankSlide({
+  ordered,
+  rows,
+  step,
+  stamped,
+  reduced,
+}: {
+  ordered: RankQuestion;
+  rows: ResultRow[];
+  step: GroupStep;
+  stamped: boolean;
+  reduced: boolean;
+}) {
+  const t = useTranslations("reveal");
+  const showing = step === "fill" || stamped;
+  const n = ordered.order.length;
+  const top = ordered.order.filter((p) => p.place === 1);
+  const names = top
+    .map((p) => rows.find((r) => r.playerId === p.playerId)?.nickname ?? "")
+    .join(", ");
+  return (
+    <div className="flex flex-1 flex-col gap-[18px]">
+      <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] text-text-muted">
+        {t("rankKicker")}
+      </span>
+      <h2 className="m-0 font-display text-[28px] leading-[1.05] font-extrabold tracking-[-.02em] text-balance">
+        {ordered.text}
+      </h2>
+      {showing && (
+        <ol className="m-0 grid list-none gap-2 p-0">
+          {ordered.order.map((p, i) => {
+            const r = rows.find((x) => x.playerId === p.playerId);
+            if (!r) return null;
+            const first = p.place === 1;
+            return (
+              <li
+                key={p.playerId}
+                className={cn(
+                  "relative flex min-h-14 items-center gap-3 rounded-card border px-3.5 py-2",
+                  first && stamped ? "border-accent bg-accent-soft" : "border-line bg-surface",
+                  reduced
+                    ? "animate-[fade_300ms_both]"
+                    : "animate-[rise_300ms_var(--ease-out)_both]",
+                )}
+                // The bottom of the order lands first, the top last.
+                style={{ animationDelay: `${(n - 1 - i) * (reduced ? 0 : 220)}ms` }}
+              >
+                <span className="w-8 font-mono text-[15px] leading-none font-semibold tabular-nums">
+                  {p.place}
+                </span>
+                <Avatar n={r.avatar} size={36} label={r.nickname} />
+                <span className="min-w-0 flex-1 truncate font-display text-[19px] leading-none font-bold">
+                  {r.nickname}
+                </span>
+                {first && stamped && (
+                  <span
+                    className={cn(
+                      "rounded-pill border-[3px] border-sticker-edge bg-accent px-2.5 py-1.5 font-display text-[13px] leading-none font-extrabold whitespace-nowrap text-on-accent",
+                      reduced ? "animate-[fade_300ms_both]" : "animate-slap",
+                    )}
+                    style={{ boxShadow: "0 0 0 1.5px var(--sticker-ring)", rotate: "-4deg" }}
+                  >
+                    {t("rankTop")}
+                  </span>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      )}
+      <span className="sr-only" aria-live="polite">
+        {stamped ? t("announceRank", { names }) : ""}
       </span>
     </div>
   );

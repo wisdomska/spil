@@ -69,6 +69,7 @@ describe("Room Percentage", () => {
       "hot_takes",
       "most_likely",
       "red_green",
+      "rank_room",
     ]);
   });
 });

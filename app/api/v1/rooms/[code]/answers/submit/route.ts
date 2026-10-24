@@ -6,6 +6,7 @@ import {
   freshState,
   loadPlayers,
   advancePhaseIfReady,
+  myRanks,
   myRatings,
   myVotes,
   requireMember,
@@ -14,6 +15,7 @@ import {
 } from "@/lib/api/rooms";
 import {
   checkAnswerSubmission,
+  ranksPlayers,
   ratesStatements,
   votesForPlayers,
   type AnswerValue,
@@ -45,11 +47,14 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   if (drawn.error) throw fromDbError(drawn.error);
   if (answers.error) throw fromDbError(answers.error);
 
-  if (ratesStatements(roomMode(room.room)) || votesForPlayers(roomMode(room.room))) {
-    // Hot Takes rates every statement; Most Likely To votes on every prompt.
-    const given = ratesStatements(roomMode(room.room))
+  const mode = roomMode(room.room);
+  if (ratesStatements(mode) || votesForPlayers(mode) || ranksPlayers(mode)) {
+    // Hot Takes rates every statement; Most Likely To and Rank the Room cover every prompt.
+    const given = ratesStatements(mode)
       ? await myRatings(room.room, room.me.id)
-      : await myVotes(room.room, room.me.id);
+      : votesForPlayers(mode)
+        ? await myVotes(room.room, room.me.id)
+        : await myRanks(room.room, room.me.id);
     if ((drawn.data ?? []).some((q) => !(q.question_id in given))) throw new ApiError("INCOMPLETE");
   } else {
     const check = checkAnswerSubmission(

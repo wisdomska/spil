@@ -9,6 +9,8 @@ import {
   flagResults,
   skipsGuessing,
   swipesFlags,
+  rankRoomResults,
+  ranksPlayers,
   isMode,
   modeMinPlayers,
   roomPercentResults,
@@ -211,7 +213,7 @@ async function roundGuesses(room: RoomRow) {
   return data ?? [];
 }
 
-async function roundInputs(room: RoomRow, kind: "percent" | "rating" | "vote") {
+async function roundInputs(room: RoomRow, kind: "percent" | "rating" | "vote" | "rank") {
   const { data, error } = await db()
     .from("mode_inputs")
     .select("player_id, question_id, target_id, value")
@@ -270,6 +272,29 @@ export async function myVotes(room: RoomRow, playerId: string) {
   );
 }
 
+/** Rank the Room: rank rows as orders, ranker id to question id to player ids, top first. */
+function ordersFrom(
+  rows: Array<{
+    player_id: string;
+    question_id: string | null;
+    target_id: string | null;
+    value: number | null;
+  }>,
+) {
+  const out: Record<string, Record<string, string[]>> = {};
+  const sorted = [...rows].sort((a, b) => (a.value ?? 0) - (b.value ?? 0));
+  for (const r of sorted)
+    if (r.question_id && r.target_id)
+      ((out[r.player_id] ??= {})[r.question_id] ??= []).push(r.target_id);
+  return out;
+}
+
+/** Rank the Room: a player's orders this round, by question id. */
+export async function myRanks(room: RoomRow, playerId: string) {
+  const rows = await roundInputs(room, "rank");
+  return ordersFrom(rows.filter((r) => r.player_id === playerId))[playerId] ?? {};
+}
+
 /** Results of a read the room mode (Room Percentage or Hot Takes); null in classic. */
 function readResults(
   room: RoomRow,
@@ -282,13 +307,14 @@ function readResults(
 
 /** Builds the results input from this round's rows. */
 async function resultsInput(room: RoomRow, players: PlayerRow[]) {
-  const [questions, answers, guesses, percents, rated, cast] = await Promise.all([
+  const [questions, answers, guesses, percents, rated, cast, rankRows] = await Promise.all([
     currentQuestions(room),
     roundAnswers(room),
     roundGuesses(room),
     guessesQuestions(roomMode(room)) ? roundInputs(room, "percent") : Promise.resolve([]),
     ratesStatements(roomMode(room)) ? roundInputs(room, "rating") : Promise.resolve([]),
     votesForPlayers(roomMode(room)) ? roundInputs(room, "vote") : Promise.resolve([]),
+    ranksPlayers(roomMode(room)) ? roundInputs(room, "rank") : Promise.resolve([]),
   ]);
   const byPlayer = (id: string) =>
     Object.fromEntries(
@@ -314,11 +340,13 @@ async function resultsInput(room: RoomRow, players: PlayerRow[]) {
     percentGuesses: typeof percentGuesses;
     ratings: typeof ratings;
     votes: typeof votes;
+    ranks: Record<string, Record<string, string[]>>;
   } = {
     questions,
     percentGuesses,
     ratings,
     votes,
+    ranks: ordersFrom(rankRows),
     players: players.map((p) => ({
       id: p.id,
       nickname: p.nickname,
@@ -344,7 +372,9 @@ export async function finalize(room: RoomRow, players: PlayerRow[]) {
       ? mostLikelyResults(input)
       : swipesFlags(roomMode(room))
         ? flagResults(input)
-        : computeResults(input));
+        : ranksPlayers(roomMode(room))
+          ? rankRoomResults(input)
+          : computeResults(input));
   if (percent) {
     // Keep each guess's points on its input, so this round never changes later.
     const updates = percent.percentQuestions.flatMap((q) =>
@@ -497,6 +527,22 @@ export async function autoplayBots(room: RoomRow) {
     await Promise.all(
       pending.map(async (bot) => {
         const lean = 0.15 + (bot.rotation_seed % 70) / 100;
+        if (ranksPlayers(roomMode(room))) {
+          const everyone = players.filter(isScoredPlayer);
+          await db().rpc("save_mode_inputs", {
+            p_player: bot.id,
+            p_room: room.id,
+            p_round: room.round,
+            p_kind: "rank",
+            p_inputs: questions.flatMap((q) =>
+              [...everyone]
+                .sort(() => Math.random() - 0.5)
+                .map((p, i) => ({ question_id: q.id, target_id: p.id, value: i + 1 })),
+            ),
+          });
+          await db().from("players").update({ answers_submitted_at: now }).eq("id", bot.id);
+          return;
+        }
         if (votesForPlayers(roomMode(room))) {
           const others = players.filter((p) => p.id !== bot.id && isScoredPlayer(p));
           if (others.length)
@@ -628,7 +674,15 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       : room.status === "answering" && votesForPlayers(roomMode(room))
         ? await roundInputs(room, "vote")
         : null;
-  const countFor = (id: string) => (rated ?? answers).filter((a) => a.player_id === id).length;
+  // A ranking has one row per ranked player; it counts once per prompt.
+  const rankRows =
+    room.status === "answering" && ranksPlayers(roomMode(room))
+      ? await roundInputs(room, "rank")
+      : null;
+  const countFor = (id: string) =>
+    rankRows
+      ? new Set(rankRows.filter((r) => r.player_id === id).map((r) => r.question_id)).size
+      : (rated ?? answers).filter((a) => a.player_id === id).length;
 
   const visible = players.filter(inGame);
   const statePlayers: StatePlayer[] = visible.map((p) => ({
@@ -695,6 +749,7 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     state.questions = questions;
     if (ratesStatements(roomMode(room))) state.myRatings = await myRatings(room, me.id);
     if (votesForPlayers(roomMode(room))) state.myVotes = await myVotes(room, me.id);
+    if (ranksPlayers(roomMode(room))) state.myRanks = await myRanks(room, me.id);
     state.myAnswers = Object.fromEntries(
       answers
         .filter((a) => a.player_id === me.id)
@@ -751,14 +806,15 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     const percent: PercentQuestion[] = read?.percentQuestions ?? [];
     const likely = votesForPlayers(roomMode(room)) ? mostLikelyResults(input) : null;
     const flags = swipesFlags(roomMode(room)) ? flagResults(input) : null;
+    const ranked = ranksPlayers(roomMode(room)) ? rankRoomResults(input) : null;
     state.room.reveal = {
       index: room.reveal_index,
       at: room.reveal_at ?? room.revealed_at ?? new Date().toISOString(),
       total: guessesQuestions(roomMode(room))
         ? revealSlides(percent.length, awardRows.length, "question").length
-        : likely || flags
+        : likely || flags || ranked
           ? revealSlides(
-              likely?.likely.length ?? flags?.flags.length ?? 0,
+              likely?.likely.length ?? flags?.flags.length ?? ranked?.ranked.length ?? 0,
               awardRows.length,
               "question",
             ).length
@@ -778,6 +834,9 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       // Red Flag, Green Flag: each scenario's split, and each player's most outnumbered swipe.
       flags: flags?.flags,
       lone: flags?.lone,
+      // Rank the Room: the room's order per prompt and each player's highest place.
+      ranked: ranked?.ranked,
+      best: ranked?.best,
       exact: computed.guessPoints
         .filter((g) => g.points - (g.closest ? CLOSEST_BONUS : 0) === 10)
         .map((g) => ({ guesserId: g.guesserId, targetId: g.targetId })),
@@ -840,6 +899,10 @@ export async function revealPlan(room: RoomRow, players: PlayerRow[]) {
   if (swipesFlags(roomMode(room))) {
     const scenarios = flagResults(await resultsInput(room, players)).flags.length;
     return { groups: scenarios, slides: revealSlides(scenarios, awards, "question") };
+  }
+  if (ranksPlayers(roomMode(room))) {
+    const prompts = rankRoomResults(await resultsInput(room, players)).ranked.length;
+    return { groups: prompts, slides: revealSlides(prompts, awards, "question") };
   }
   const groups = spillGroups((rows ?? []).map((r) => ({ score: r.spill_score }))).length;
   return { groups, slides: revealSlides(groups, awards) };
