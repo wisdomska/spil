@@ -530,3 +530,9 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] Cause: leaving made the next state fetch answer "not in this room", and the room screen then sent the player to the nickname form, racing the move home.
 - [x] Fix: Leave marks the room as left and cancels in-flight fetches first, so that redirect stands down; the player lands on / with "You left the room." and focus on "Start a game". Leaving the lobby lands on / as well (rejoining with the code still works).
 - Tests: e2e `tests/e2e/leave-home.spec.ts` (leave mid-game, home, toast, focus, still home after 2.5 s).
+
+### SPIL-26: Avatar names for screen readers, safe random default
+
+- [x] Every face has a name; screen readers hear "Avatar: Ghost" and so on (24 names in messages).
+- [x] The random first face never lands on Clown, Skull or Hot face. Hot face is offered only when the room is 18+ and this phone is 18+, so a room with younger players never shows it; a saved Hot face falls back to the safe default there.
+- Tests: unit `tests/unit/game/avatars.test.ts` (names, 1000 random draws, offers), e2e `tests/e2e/avatar-names.spec.ts` (named radios, no Hot face in Classic, offered in After Dark, default not unsafe).

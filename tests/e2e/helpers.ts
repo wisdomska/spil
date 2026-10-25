@@ -40,7 +40,7 @@ export async function hostRoom(
 
 export async function fillProfile(page: Page, name: string) {
   await page.getByLabel("Nickname").fill(name);
-  await page.getByRole("radio", { name: "Avatar 5" }).click();
+  await page.getByRole("radio", { name: "Avatar: Cowboy" }).click();
 }
 
 /** Guest: Join with code, set a profile, land in the lobby. */

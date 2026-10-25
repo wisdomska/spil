@@ -18,7 +18,7 @@ import type { PublicRoom } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import { track } from "@/lib/analytics/posthog";
 import { clearProfile, readProfile, saveProfile } from "@/lib/profile/device";
-import { bandFloor } from "@/lib/game";
+import { avatarKey, bandFloor, offeredAvatars, randomAvatar } from "@/lib/game";
 
 const ROOM_ERRORS: Record<string, ErrorVariant> = {
   ROOM_NOT_FOUND: "notfound",
@@ -38,9 +38,9 @@ export function ProfileForm({ code, initialRoom }: { code: string; initialRoom?:
   // SPIL-17: the last name and face used on this phone, so the next room needs no typing.
   const [saved, setSaved] = useState(() => readProfile(AVATAR_COUNT));
   const [nick, setNick] = useState(saved?.nickname ?? "");
-  const [avatar, setAvatar] = useState(
-    () => saved?.avatar ?? Math.floor(Math.random() * AVATAR_COUNT),
-  );
+  // SPIL-26: the random first face comes from the safe list (never Hot face, Clown or Skull).
+  const [fallbackAvatar] = useState(() => randomAvatar());
+  const [avatar, setAvatar] = useState(() => saved?.avatar ?? fallbackAvatar);
   const [nickErr, setNickErr] = useState<string | null>(null);
   const [roomErr, setRoomErr] = useState<ErrorVariant | null>(null);
   const [busy, setBusy] = useBusy();
@@ -90,6 +90,9 @@ export function ProfileForm({ code, initialRoom }: { code: string; initialRoom?:
   // The room's pack is above this band: say so before the form, and never tell the host.
   if (bandFloor(band) < room.data.minAge) return <ErrorScreen variant="ageRestricted" />;
   const valid = nick.trim().length >= 2;
+  // SPIL-26: Hot face only where everyone is 18 or older (an 18+ room and an 18+ phone).
+  const faces = offeredAvatars(band === "18_plus" && room.data.minAge >= 18);
+  const face = faces.includes(avatar) ? avatar : fallbackAvatar;
 
   const submit = async () => {
     if (busy) return;
@@ -99,10 +102,10 @@ export function ProfileForm({ code, initialRoom }: { code: string; initialRoom?:
       await ensureSession();
       await api("POST", `/rooms/${code}/join`, {
         nickname: nick,
-        avatar,
+        avatar: face,
         ageBand: band,
       });
-      saveProfile({ nickname: nick, avatar });
+      saveProfile({ nickname: nick, avatar: face });
       track("player_joined", { pack: room.data.pack.id, isHost });
       router.replace(`/r/${code}`);
     } catch (e) {
@@ -140,7 +143,7 @@ export function ProfileForm({ code, initialRoom }: { code: string; initialRoom?:
                 setSaved(null);
                 setNick("");
                 setNickErr(null);
-                setAvatar(Math.floor(Math.random() * AVATAR_COUNT));
+                setAvatar(fallbackAvatar);
               }}
               className="border-0 bg-transparent p-0 text-[14px] leading-none font-semibold text-text-muted underline underline-offset-4 hover:text-text"
             >
@@ -181,18 +184,18 @@ export function ProfileForm({ code, initialRoom }: { code: string; initialRoom?:
         <legend className="mb-3 p-0 text-[14px] leading-none font-semibold">{t("face")}</legend>
         <RadioGroup.Root
           aria-label={t("avatarGroup")}
-          value={String(avatar)}
+          value={String(face)}
           onValueChange={(v) => setAvatar(Number(v))}
           className="grid grid-cols-6 gap-x-1 gap-y-1.5"
         >
-          {Array.from({ length: AVATAR_COUNT }, (_, i) => (
+          {faces.map((i) => (
             <RadioGroup.Item
               key={i}
               value={String(i)}
-              aria-label={`Avatar ${i + 1}`}
+              aria-label={t("avatar", { name: t(`avatarNames.${avatarKey(i)}`) })}
               className="grid h-[54px] place-items-center rounded-pill border-0 bg-transparent p-0 hover:bg-surface-raised"
             >
-              <Avatar n={i} size={42} selected={avatar === i} decorative />
+              <Avatar n={i} size={42} selected={face === i} decorative />
             </RadioGroup.Item>
           ))}
         </RadioGroup.Root>
