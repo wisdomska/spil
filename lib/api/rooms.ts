@@ -15,6 +15,8 @@ import {
   hasImposter,
   imposterBoard,
   imposterResults,
+  SERIES_MIN_ROUNDS,
+  seriesScore,
   roundStats,
   picksTruths,
   truthsCards,
@@ -1197,6 +1199,8 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     }
   }
 
+  if (room.status === "revealed") state.series = await seriesFor(room, players);
+
   if (room.status === "revealed") {
     const [{ data: rows }, { data: awards }, input] = await Promise.all([
       db()
@@ -1314,6 +1318,30 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
   }
 
   return state;
+}
+
+/**
+ * SPIL-18: the room's series since `series_start`, once it has two rounds. Players still in the
+ * room are listed (most wins first), plus anyone gone who won a round.
+ */
+async function seriesFor(room: RoomRow, players: PlayerRow[]): Promise<RoomState["series"]> {
+  const { data, error } = await db()
+    .from("results")
+    .select("round, player_id, mind_reader")
+    .eq("room_id", room.id)
+    .gte("round", room.series_start);
+  if (error) throw fromDbError(error);
+  const score = seriesScore(
+    (data ?? []).map((r) => ({ round: r.round, playerId: r.player_id, mindReader: r.mind_reader })),
+  );
+  if (score.rounds < SERIES_MIN_ROUNDS) return undefined;
+  const listed = players.filter((p) => !p.is_bot && (inGame(p) || score.wins.has(p.id)));
+  return {
+    rounds: score.rounds,
+    wins: listed
+      .map((p) => ({ playerId: p.id, nickname: p.nickname, wins: score.wins.get(p.id) ?? 0 }))
+      .sort((a, b) => b.wins - a.wins || a.nickname.localeCompare(b.nickname)),
+  };
 }
 
 /**

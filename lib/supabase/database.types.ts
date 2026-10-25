@@ -1018,6 +1018,7 @@ export type Database = {
           reveal_index: number;
           revealed_at: string | null;
           round: number;
+          series_start: number;
           started_at: string | null;
           status: Database["public"]["Enums"]["room_status"];
           tv_token: string | null;
@@ -1042,6 +1043,7 @@ export type Database = {
           reveal_index?: number;
           revealed_at?: string | null;
           round?: number;
+          series_start?: number;
           started_at?: string | null;
           status?: Database["public"]["Enums"]["room_status"];
           tv_token?: string | null;
@@ -1066,6 +1068,7 @@ export type Database = {
           reveal_index?: number;
           revealed_at?: string | null;
           round?: number;
+          series_start?: number;
           started_at?: string | null;
           status?: Database["public"]["Enums"]["room_status"];
           tv_token?: string | null;
@@ -1273,6 +1276,7 @@ export type Database = {
           reveal_index: number;
           revealed_at: string | null;
           round: number;
+          series_start: number;
           started_at: string | null;
           status: Database["public"]["Enums"]["room_status"];
           tv_token: string | null;

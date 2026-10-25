@@ -185,7 +185,7 @@ test("rematch keeps the code, switches pack and starts a fresh round", async ({
   await guessAll(host.page, () => 50);
   await host.page.getByRole("button", { name: "Start the reveal" }).click();
   await host.page.getByRole("button", { name: "Skip" }).click();
-  await host.page.getByRole("link", { name: "Rematch" }).click();
+  await host.page.getByRole("link", { name: "Change pack" }).click();
   await host.page.getByRole("radio", { name: /Campus Life/ }).click();
   await host.page.getByRole("button", { name: /Continue with Campus Life/ }).click();
   await host.page.waitForURL(new RegExp(`/r/${code}$`));

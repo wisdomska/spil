@@ -1011,6 +1011,46 @@ d("host tools", () => {
     expect(seen.body.players.find((p: { id: string }) => p.id === hostId).frame).toBe("ring");
   });
 
+  it("Series (SPIL-18): one-tap rematch keeps the pack, wins add up, ties share, reset clears", async () => {
+    const room = await fullRoom(2);
+    const [host, guest] = room.players as [Player, Player];
+    const c = room.roomCode;
+    const hostId = (await host.call("GET", `/rooms/${c}/state`)).body.me.id;
+    const guestId = (await guest.call("GET", `/rooms/${c}/state`)).body.me.id;
+    const pack = (await host.call("GET", `/rooms/${c}/state`)).body.room.pack.id;
+    // The host says yes to everything (100), the guest no (0); each guess decides who reads best.
+    const play = async (hostGuess: number, guestGuess: number) => {
+      await host.call("POST", `/rooms/${c}/start`);
+      await answerAll(host, c, () => "yes");
+      await answerAll(guest, c, () => "no");
+      await guessAll(host, c, hostGuess);
+      await guessAll(guest, c, guestGuess);
+      await host.call("POST", `/rooms/${c}/advance`, { from: "ready" });
+      return (await host.call("GET", `/rooms/${c}/state`)).body;
+    };
+    const wins = (s: { series?: { wins: { playerId: string; wins: number }[] } }) =>
+      Object.fromEntries((s.series?.wins ?? []).map((w) => [w.playerId, w.wins]));
+
+    expect((await play(0, 50)).series).toBeUndefined();
+    expect(code(await guest.call("POST", `/rooms/${c}/rematch`, {}))).toBe("NOT_HOST");
+    const back = await host.call("POST", `/rooms/${c}/rematch`, {});
+    expect(back.body.room.status).toBe("lobby");
+    expect(back.body.room.pack.id).toBe(pack);
+
+    const second = await play(50, 100);
+    expect(second.series.rounds).toBe(2);
+    expect(wins(second)).toEqual({ [hostId]: 1, [guestId]: 1 });
+    await host.call("POST", `/rooms/${c}/rematch`, {});
+    const third = await play(0, 100);
+    expect(third.series.rounds).toBe(3);
+    expect(wins(third)).toEqual({ [hostId]: 2, [guestId]: 2 });
+    expect(wins((await guest.call("GET", `/rooms/${c}/state`)).body)).toEqual(wins(third));
+
+    expect(code(await guest.call("POST", `/rooms/${c}/series/reset`))).toBe("NOT_HOST");
+    const reset = await host.call("POST", `/rooms/${c}/series/reset`);
+    expect(reset.body.series).toBeUndefined();
+  }, 360_000);
+
   it("two players are enough to start", async () => {
     const room = await fullRoom(2);
     expect((await room.host.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);

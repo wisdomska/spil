@@ -29,11 +29,15 @@ export function useRoomState(code: string, live: { current: boolean }) {
 export function useRoomActions(code: string) {
   const qc = useQueryClient();
   const setState = async (state: RoomState | Record<string, never>) => {
-    // SPIL-14: a state fetch still in flight read the room before this action, so it must not
-    // land after the action's fresh state and put the old screen back (the "ignored first tap").
+    // SPIL-14: a state fetch still in flight may have read the room before this action, so it
+    // must not land after the action's fresh state and put the old screen back (the "ignored
+    // first tap"). Cancelling it could also drop a refresh a realtime event asked for, so one
+    // more fetch follows; it starts after the action, so it is never older than it.
+    const { fetchStatus } = qc.getQueryState(roomKey(code)) ?? {};
     await qc.cancelQueries({ queryKey: roomKey(code) });
     if (state && "room" in state) qc.setQueryData(roomKey(code), state);
-    else qc.invalidateQueries({ queryKey: roomKey(code) });
+    if (fetchStatus === "fetching" || !(state && "room" in state))
+      qc.invalidateQueries({ queryKey: roomKey(code) });
   };
   const call = (method: string, path: string, body?: unknown) =>
     api<RoomState>(method, `/rooms/${code}${path}`, body).then(async (s) => {
@@ -62,11 +66,16 @@ export function useRoomActions(code: string) {
       call("PATCH", "/me", body),
   });
   const leave = useMutation({ mutationFn: () => api("DELETE", `/rooms/${code}/me`) });
+  // SPIL-18: one-tap rematch with the same pack, and the host's series reset.
+  const rematch = useMutation({ mutationFn: () => call("POST", "/rematch", {}) });
+  const resetSeries = useMutation({ mutationFn: () => call("POST", "/series/reset") });
   const addTestPlayers = useMutation({
     mutationFn: (count: number) => call("POST", "/test-players", { count }),
   });
   return {
     start,
+    rematch,
+    resetSeries,
     kick,
     nudge,
     advance,

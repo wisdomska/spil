@@ -455,6 +455,19 @@ export function RoomApp({ code }: { code: string }) {
             onHideName={(hide) =>
               actions.patchMe.mutate({ hideNameOnCard: hide }, { onError: fail })
             }
+            rematching={actions.rematch.isPending}
+            onRematch={() =>
+              actions.rematch.mutate(undefined, {
+                onError: fail,
+                onSuccess: () => track("rematch_started", { packChanged: false }),
+              })
+            }
+            onResetSeries={() =>
+              actions.resetSeries.mutate(undefined, {
+                onError: fail,
+                onSuccess: () => toast(tt("seriesReset")),
+              })
+            }
           />
         )}
       </RoomShell>

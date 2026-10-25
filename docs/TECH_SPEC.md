@@ -611,7 +611,8 @@ Base path `/api/v1`. JSON, camelCase. Auth via Supabase session cookie (`@supaba
 | POST | `/rooms/:code/nudge` | host | `{playerId}` → `{}` (1 per target per minute) | RATE_LIMITED |
 | PATCH | `/rooms/:code/me` | member | `{spillMode?, hideNameOnCard?, nickname?, avatar?}` → state | |
 | DELETE | `/rooms/:code/me` | member | → `{}` (deletes own answers, guesses; marks left; host passes to earliest active player) | |
-| POST | `/rooms/:code/rematch` | host, revealed | `{packId?}` → state (lobby, round+1) | NOT_HOST |
+| POST | `/rooms/:code/rematch` | host, revealed | `{packId?}` → state (lobby, round+1). No pack: same pack and count, the one-tap Rematch (SPIL-18) | NOT_HOST |
+| POST | `/rooms/:code/series/reset` | host, revealed | → state. The series starts again from the next round (SPIL-18) | NOT_HOST, WRONG_PHASE |
 | POST | `/rooms/:code/test-players` | host, non-prod flag | `{count}` → state | FORBIDDEN |
 | POST | `/reports` | session | `{type, questionId?, playerId?, roomCode?, reason}` → `{}` (10/h) | |
 | POST | `/messages` | anyone + Turnstile | `{name?, email?, body}` → `{}` (5/h/IP) | |

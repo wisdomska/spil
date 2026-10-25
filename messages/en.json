@@ -109,7 +109,8 @@
     "customPlaying": "Your questions are in. The room is now 18+.",
     "customAdultsOnly": "Your own questions are for rooms where everyone is 18 or older.",
     "packPremium": "Premium packs are coming soon.",
-    "cosmeticSaved": "Saved."
+    "cosmeticSaved": "Saved.",
+    "seriesReset": "Series reset. The next round starts a new one."
   },
   "landing": {
     "headline": "Your friends think they know you.",
@@ -593,7 +594,12 @@
     "spillConfirmTitle": "Turn on Spill Mode?",
     "spillConfirmBody": "Everyone in this room will see your yes and no answers next to your name. People can screenshot, so only turn it on if you're comfortable.",
     "spillConfirmYes": "Spill it",
-    "spillConfirmNo": "Keep private"
+    "spillConfirmNo": "Keep private",
+    "changePack": "Change pack",
+    "series": "Series",
+    "seriesLine": "{name} {wins}",
+    "seriesAria": "Series after {rounds} rounds: {standings}",
+    "seriesReset": "Reset series"
   },
   "share": {
     "title": "Your card",

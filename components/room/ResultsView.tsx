@@ -35,6 +35,10 @@ type Props = {
   state: RoomState;
   onSpill: (on: boolean) => void;
   onHideName: (hide: boolean) => void;
+  /** SPIL-18: same pack, same count, one tap. */
+  onRematch?: () => void;
+  rematching?: boolean;
+  onResetSeries?: () => void;
   /** Dev fixtures only. */
   initialTab?: "scores" | "awards" | "questions";
   initialShare?: boolean;
@@ -46,6 +50,9 @@ export function ResultsView({
   state,
   onSpill,
   onHideName,
+  onRematch,
+  rematching,
+  onResetSeries,
   initialTab = "scores",
   initialShare = false,
 }: Props) {
@@ -240,6 +247,10 @@ export function ResultsView({
           code={state.room.code}
           name={(id) => rows.find((r) => r.playerId === id)?.nickname ?? ""}
         />
+      )}
+
+      {state.series && (
+        <SeriesStrip series={state.series} onReset={state.me.isHost ? onResetSeries : undefined} />
       )}
 
       <SegmentedTabs
@@ -462,12 +473,9 @@ export function ResultsView({
           </button>
         )}
         {state.me.isHost ? (
-          <Link
-            href={`/create?room=${state.room.code}&mode=rematch&pack=${state.room.pack.id}`}
-            className="flex h-14 flex-1 items-center justify-center gap-2 rounded-pill bg-accent text-[17px] leading-none font-semibold text-on-accent no-underline hover:text-on-accent hover:shadow-[inset_0_0_0_99px_var(--press-glow)] active:scale-[.97]"
-          >
+          <Button className="flex-1" loading={rematching} onClick={onRematch}>
             {t("rematch")}
-          </Link>
+          </Button>
         ) : (
           <span className="flex min-h-14 flex-1 items-center justify-center gap-2 rounded-pill border border-dashed border-line-strong px-3 text-center text-[14px] leading-[1.3] font-medium text-text-muted">
             <HourglassMediumIcon size={18} aria-hidden />
@@ -475,6 +483,14 @@ export function ResultsView({
           </span>
         )}
       </div>
+      {state.me.isHost && (
+        <Link
+          href={`/create?room=${state.room.code}&mode=rematch&pack=${state.room.pack.id}`}
+          className="-mt-3 w-fit self-center text-[15px] leading-[1.4] font-semibold text-text-muted underline underline-offset-4 hover:text-text"
+        >
+          {t("changePack")}
+        </Link>
+      )}
 
       <ShareSheet
         open={share}
@@ -1182,5 +1198,42 @@ function SpillPanel({
         </div>
       )}
     </section>
+  );
+}
+
+/** SPIL-18: "Series · Ama 2 · Esi 1" from the second round in a room; the host can reset it. */
+function SeriesStrip({
+  series,
+  onReset,
+}: {
+  series: NonNullable<RoomState["series"]>;
+  onReset?: () => void;
+}) {
+  const t = useTranslations("results");
+  const standings = series.wins.map((w) => t("seriesLine", { name: w.nickname, wins: w.wins }));
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 rounded-card border border-line bg-surface px-4 py-3">
+      <p
+        className="m-0 flex flex-wrap items-center gap-x-2 gap-y-1 text-[15px] leading-[1.4]"
+        aria-label={t("seriesAria", { rounds: series.rounds, standings: standings.join(", ") })}
+      >
+        <span className="font-semibold">{t("series")}</span>
+        {series.wins.map((w) => (
+          <span key={w.playerId} className="text-text-muted">
+            <span aria-hidden>· </span>
+            {w.nickname} <span className="font-mono text-text">{w.wins}</span>
+          </span>
+        ))}
+      </p>
+      {onReset && (
+        <button
+          type="button"
+          onClick={onReset}
+          className="border-0 bg-transparent p-0 text-[14px] leading-none font-semibold text-text-muted underline underline-offset-4 hover:text-text"
+        >
+          {t("seriesReset")}
+        </button>
+      )}
+    </div>
   );
 }

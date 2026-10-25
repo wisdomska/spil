@@ -446,7 +446,7 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 ### SPIL-14: "Start the game" ignores the first tap
 
 - [x] Cause: every room action wrote its fresh state into the cache, but a state fetch already in flight (started by the lobby change just before) could land afterwards and put the lobby back. The game had started; the host's screen did not show it until the next refetch, so a second tap "worked".
-- [x] Fix: actions cancel any in-flight state fetch before writing their result (`lib/room/useRoom.ts`). This covers every action (start, advance, reveal, rematch, Spill Mode), not only Start. `canStart` already came only from server state and refusals already map to toasts.
+- [x] Fix: actions cancel any in-flight state fetch before writing their result (`lib/room/useRoom.ts`); if one was cancelled, one more fetch follows, so a refresh asked for by realtime is never dropped (found while testing SPIL-18: without it the host could miss the guest locking in, 1 run in 2). This covers every action (start, advance, reveal, rematch, Spill Mode), not only Start. `canStart` already came only from server state and refusals already map to toasts.
 - Tests: e2e `tests/e2e/start-tap.spec.ts` (pack change, guest leaves and rejoins, one tap starts within 10 s). It failed 1 run in 3 before the fix and passed 4 of 4 after.
 
 ### SPIL-15: Tell the moved-on player what happened
@@ -468,3 +468,12 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] "Not you?" next to the Nickname label clears both (screen readers hear "Not you? Clear the saved name and face", so it is not confused with the age "Not you?"). Blocked storage just means typing again. Duplicate names still get errTaken.
 - [x] The no-signup line now says the name is remembered on this phone only.
 - Tests: unit `tests/unit/profile/device.test.ts` (only valid saved values are used), e2e `tests/e2e/remember-profile.spec.ts`; `age.spec.ts` still passes.
+
+### SPIL-18: One-tap "Same pack" rematch and series score
+
+- [x] Host results actions: "Rematch" is now one tap (same pack, same question count, no picker; `POST /rematch` with no pack still checks the pack against the youngest player). "Change pack" is a link under it to the picker. Guests keep "{host} can start a rematch".
+- [x] Series strip above the tabs from the second round in a room: "Series · Ama 2 · Esi 1". A round goes to the most Mind Reader points; tied players each get the win; a round nobody scored in has no winner. Screen readers hear "Series after 2 rounds: Ama 2, Esi 1".
+- [x] "Reset series" (host only) starts a new series from the next round; every phone refreshes.
+- [x] Wins are computed from the results already kept per round; the only storage is `rooms.series_start`.
+- Tests: unit `tests/unit/game/series.test.ts` (three games, ties, no scorer), API "Series (SPIL-18)" (one tap keeps the pack, guest refused, wins over 3 rounds with a tie, guest sees the same, reset host only), e2e `tests/e2e/rematch.spec.ts` (3 of 3 runs) and the existing change-pack rematch e2e. pgTAP `30_series_test.sql`.
+- Migration 20261024003500, applied to staging.

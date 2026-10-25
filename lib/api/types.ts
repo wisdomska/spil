@@ -200,6 +200,8 @@ export type RoomState = {
   myRatings?: Record<string, number>;
   /** Room Percentage: my guesses so far, by question id. */
   myPercent?: Record<string, number>;
+  /** SPIL-18: round wins in this room since the last reset, from the second round on. */
+  series?: { rounds: number; wins: Array<{ playerId: string; nickname: string; wins: number }> };
   /** Only when revealed. */
   results?: {
     rows: ResultRow[];
