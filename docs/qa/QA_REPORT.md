@@ -435,3 +435,10 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] Each label reads as a sentence: "You're Fresh Out The Box.", "You're Mostly Innocent.", "You've Been Around.", "You're a Main Character.", "You're a Legendary Menace." The label words keep the accent colour (one ICU select with rich text).
 - [x] The headline is used only on the results screen; the label sticker and reveal keep the bare label.
 - Tests: unit `tests/unit/copy/headline.test.ts` (all five labels); smoke e2e matches the new headline.
+
+### SPIL-13: Award source of truth
+
+- [x] Cause: the share card fell back to "Open Book" whenever the player had no award (every 2-player or solo round), so the card showed a badge the Awards tab did not. Spill Mode never changed awards; the badge looked tied to it only because it was always there.
+- [x] Awards come only from the server (`pickAwards` at finalize, stored in `awards`, read by the results). The story and group cards, the Awards tab and the landing page "last game" card all read that list; with no award the card renders without the badge.
+- [x] The landing demo keeps its sample badge only when there is no last game.
+- Tests: e2e `tests/e2e/awards-source.spec.ts` (solo round: Awards tab says awards start at 3, no award name on either card size).

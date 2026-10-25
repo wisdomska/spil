@@ -23,7 +23,8 @@ type Props = {
   /** Batch 3: the card look I unlocked and chose. */
   look?: "night" | "raised" | "accent";
   score: number;
-  award: AwardKey;
+  /** Absent when I won no award (SPIL-13). */
+  award?: AwardKey;
   board: BoardRow[];
   boardAward?: { award: AwardKey; name: string };
   hideName: boolean;

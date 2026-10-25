@@ -461,7 +461,7 @@ export function ResultsView({
         avatar={state.me.avatar}
         look={state.me.look}
         score={score}
-        award={myAward?.award ?? "open_book"}
+        award={myAward?.award}
         board={board}
         boardAward={mind && mindName ? { award: "mind_reader", name: mindName } : undefined}
         hideName={state.me.hideNameOnCard}

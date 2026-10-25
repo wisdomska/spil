@@ -66,7 +66,8 @@ export function ShareDemo() {
     hideName: hide,
     avatar: last?.avatar ?? 0,
     score: last?.score ?? 72,
-    award: ((last?.award as AwardKey) || "open_book") as AwardKey,
+    // A real last game shows only an award that was won; the sample shows one.
+    award: last ? (last.award as AwardKey) || undefined : ("open_book" as AwardKey),
     room: last?.room ?? "K7QX",
     board: last?.board ?? SAMPLE,
     copy,

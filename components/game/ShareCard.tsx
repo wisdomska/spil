@@ -123,7 +123,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
     hideName,
     avatar = 0,
     score = 0,
-    award = "open_book",
+    award,
     room = "",
     pack,
     board = [],
@@ -134,7 +134,8 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
 ) {
   const [W, H] = SIZE[format];
   const label = labelFor(score);
-  const look = AWARD_LOOK[award];
+  // SPIL-13: no award (2-player rooms, or none won) means no badge, never a stand-in.
+  const look = award ? AWARD_LOOK[award] : null;
   const top = board[0];
   const winners = board.filter((p) => p.rank === top?.rank).map((p) => p.name);
 
@@ -260,31 +261,33 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
               >
                 {label.name}
               </span>
-              <span
-                style={{
-                  position: "absolute",
-                  right: 24,
-                  top: -930,
-                  width: 250,
-                  height: 250,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  background: "var(--accent)",
-                  color: "var(--on-accent)",
-                  border: "10px solid var(--sticker-edge)",
-                  borderRadius: "50%",
-                  boxShadow: "0 0 0 3px var(--sticker-ring), 0 18px 30px -14px var(--shadow)",
-                  font: "800 40px/1 var(--font-display)",
-                  textAlign: "center",
-                  transform: "rotate(6deg)",
-                }}
-              >
-                <look.Icon size={72} />
-                <span style={{ maxWidth: 190 }}>{copy.awardName?.(award) ?? look.name}</span>
-              </span>
+              {look && award && (
+                <span
+                  style={{
+                    position: "absolute",
+                    right: 24,
+                    top: -930,
+                    width: 250,
+                    height: 250,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    background: "var(--accent)",
+                    color: "var(--on-accent)",
+                    border: "10px solid var(--sticker-edge)",
+                    borderRadius: "50%",
+                    boxShadow: "0 0 0 3px var(--sticker-ring), 0 18px 30px -14px var(--shadow)",
+                    font: "800 40px/1 var(--font-display)",
+                    textAlign: "center",
+                    transform: "rotate(6deg)",
+                  }}
+                >
+                  <look.Icon size={72} />
+                  <span style={{ maxWidth: 190 }}>{copy.awardName?.(award) ?? look.name}</span>
+                </span>
+              )}
             </div>
             <div
               style={{
@@ -550,27 +553,29 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
               >
                 {label.name}
               </span>
-              <span
-                style={{
-                  position: "absolute",
-                  right: 16,
-                  top: 18,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "10px 18px",
-                  background: "var(--accent)",
-                  color: "var(--on-accent)",
-                  border: "6px solid var(--sticker-edge)",
-                  borderRadius: 12,
-                  boxShadow: "0 0 0 2px var(--sticker-ring)",
-                  font: "800 24px/1 var(--font-display)",
-                  transform: "rotate(4deg)",
-                }}
-              >
-                <look.Icon size={28} />
-                {copy.awardName?.(award) ?? look.name}
-              </span>
+              {look && award && (
+                <span
+                  style={{
+                    position: "absolute",
+                    right: 16,
+                    top: 18,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "10px 18px",
+                    background: "var(--accent)",
+                    color: "var(--on-accent)",
+                    border: "6px solid var(--sticker-edge)",
+                    borderRadius: 12,
+                    boxShadow: "0 0 0 2px var(--sticker-ring)",
+                    font: "800 24px/1 var(--font-display)",
+                    transform: "rotate(4deg)",
+                  }}
+                >
+                  <look.Icon size={28} />
+                  {copy.awardName?.(award) ?? look.name}
+                </span>
+              )}
             </div>
           </div>
         )}
