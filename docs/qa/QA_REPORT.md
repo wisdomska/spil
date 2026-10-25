@@ -561,3 +561,8 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] `app/manifest.ts`: name and short name "SPIL", start at /, standalone, portrait, background and theme colour from the bg token the viewport already uses (dark only), icons 192 and 512 px plus a 512 px maskable one with the mark inside the safe zone.
 - [x] Icons are rendered from app/icon.svg by `scripts/build-icons.mjs` into public/icons (the favicon and Apple icon come out byte for byte the same).
 - Tests: e2e `tests/e2e/manifest.spec.ts` (linked manifest, fields, every icon served as PNG). Lighthouse is in FOLLOW_UPS.
+
+### SPIL-31: Haptics on answer and guess
+
+- [x] `haptic(ms)` buzzes 10 ms when an answer is committed and when a guess (players or Room Percentage) locks in. Only where the Vibration API exists (Android); iOS and desktop do nothing; reduced motion skips it; it never throws.
+- Tests: unit `tests/unit/haptics.test.ts` (buzz, reduced motion, no API, a throwing browser).

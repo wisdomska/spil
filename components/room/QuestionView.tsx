@@ -24,6 +24,7 @@ import { useToast } from "@/components/ui/Toast";
 import { api } from "@/lib/api/client";
 import type { RoomState } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
+import { haptic } from "@/lib/haptics";
 import { skipLimit, skipsLeft, type AnswerValue } from "@/lib/game";
 import { useAnswerQueue } from "@/lib/room/answerQueue";
 import { useAnswerSync } from "@/lib/room/useRoom";
@@ -110,6 +111,7 @@ export function QuestionView({ state, onDone, flags = false, preview }: Props) {
   };
 
   const commit = (id: string, value: AnswerValue) => {
+    haptic(10);
     record(id, value);
     localRef.current = { ...localRef.current, [id]: value };
     setLocal(localRef.current);
@@ -136,7 +138,6 @@ export function QuestionView({ state, onDone, flags = false, preview }: Props) {
       toast(t("skipLimit"), "err");
       return;
     }
-    navigator.vibrate?.(10);
     if (instant || reduced || value === "skip") {
       x.set(0);
       commit(current.id, value);

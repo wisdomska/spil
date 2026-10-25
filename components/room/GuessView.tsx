@@ -8,6 +8,7 @@ import { GuessVessel } from "@/components/game/GuessVessel";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { api } from "@/lib/api/client";
+import { haptic } from "@/lib/haptics";
 import type { RoomState } from "@/lib/api/types";
 import { SkipToReveal } from "./SkipToReveal";
 
@@ -89,6 +90,7 @@ export function GuessView({ state, onDone, onSkip, skipping, initialValue = null
         guesses: Object.entries(next).map(([targetId, v]) => ({ targetId, value: v })),
       });
       setLocked(next);
+      haptic(10);
       const open = targets.findIndex((p) => !(p.id in next));
       if (open >= 0) {
         setGi(open);

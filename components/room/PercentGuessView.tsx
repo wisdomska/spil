@@ -7,6 +7,7 @@ import { GuessVessel } from "@/components/game/GuessVessel";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { api } from "@/lib/api/client";
+import { haptic } from "@/lib/haptics";
 import type { RoomState } from "@/lib/api/types";
 import { SkipToReveal } from "./SkipToReveal";
 
@@ -104,6 +105,7 @@ export function PercentGuessView({
         guesses: Object.entries(next).map(([questionId, v]) => ({ questionId, value: v })),
       });
       setLocked(next);
+      haptic(10);
       const open = questions.findIndex((q) => !(q.id in next));
       if (open >= 0) {
         setQi(open);
