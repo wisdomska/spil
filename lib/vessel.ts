@@ -31,3 +31,16 @@ export function crossesTen(from: number, to: number): boolean {
   if (from === to) return false;
   return Math.floor(from / 10) !== Math.floor(to / 10) || to % 10 === 0;
 }
+
+/**
+ * SPIL-24: the liquid's shape as a CSS mask, crest bubbles included. One element extends `crest`
+ * px above the waterline, is painted with the accent and masked by this, so the crest and the
+ * dark copy of the number share one outline: the number is never covered by a bubble, and its
+ * colour flips exactly along the wave. Without a crest (empty or full) only the body is kept.
+ * Mask colours only carry alpha.
+ */
+export function liquidMask(waveW: number, crest: number, withCrest: boolean): string {
+  const body = `linear-gradient(black, black) 0 ${crest}px / 100% calc(100% - ${crest}px) no-repeat`;
+  if (!withCrest) return body;
+  return `radial-gradient(circle at 50% 100%, black 62%, transparent 64%) 0 0 / ${waveW}px ${crest}px repeat-x, ${body}`;
+}

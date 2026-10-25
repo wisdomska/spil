@@ -4,6 +4,7 @@ import { AWARD_LOOK, type AwardKey } from "@/components/brand/Stickers";
 import { labelFor } from "@/lib/game";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { cn } from "@/lib/cn";
+import { liquidMask } from "@/lib/vessel";
 
 export type CardFormat = "story" | "square" | "og";
 /** `points` are guessing points (the ranking); older saved games only have `score`. */
@@ -65,9 +66,6 @@ const SIZE: Record<CardFormat, [number, number]> = {
   og: [1200, 630],
 };
 
-const WAVE = (w: number, h: number) =>
-  `radial-gradient(circle at 50% 100%, var(--accent) 62%, transparent 64%) 0 0/${w}px ${h}px repeat-x`;
-
 /** Number drawn twice so its colour flips at the fill line (HANDOFF rule 6). */
 function Fill({
   score,
@@ -94,29 +92,21 @@ function Fill({
   return (
     <>
       <div style={{ ...num, inset: 0, height: "auto", color: "var(--text)" }}>{score}</div>
+      {/* SPIL-24: the crest and the dark number's clip are one masked shape. */}
       <div
         style={{
           position: "absolute",
           left: 0,
           right: 0,
           bottom: 0,
-          height: `${score}%`,
+          height: `calc(${score}% + ${waveH}px)`,
           background: "var(--accent)",
           overflow: "hidden",
+          mask: liquidMask(waveW, waveH, score > 0 && score < 100),
         }}
       >
         <div style={{ ...num, color: "var(--on-accent)" }}>{score}</div>
       </div>
-      <div
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: `${score}%`,
-          height: waveH,
-          background: WAVE(waveW, waveH),
-        }}
-      />
     </>
   );
 }

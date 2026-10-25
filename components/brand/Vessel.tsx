@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion, useTransform, type MotionValue } from "motion/react";
 import { cn } from "@/lib/cn";
+import { liquidMask } from "@/lib/vessel";
 
 type VesselProps = {
   /** 0 to 100 fill. A number animates with `transition`; a MotionValue is driven frame by frame. */
@@ -17,8 +18,9 @@ type VesselProps = {
   className?: string;
 };
 
-const WAVE_BG =
-  "radial-gradient(circle at 50% 100%, var(--accent) 62%, transparent 64%) 0 0/26px 10px repeat-x";
+const WAVE_W = 26;
+const CREST = 10;
+const WAVE_ANIMATION = "spil-wave-mask 1.6s linear infinite";
 
 /** The liquid vessel: fill layer moves with translateY(100 - level%). One liquid moment per screen. */
 export function Vessel({
@@ -72,8 +74,15 @@ export function Vessel({
             willChange: "transform",
           }}
         >
-          <Wave visible={staticOff > 0 && staticOff < 100} animate={showWave} />
-          <div className="absolute inset-0 overflow-hidden bg-accent">
+          {/* SPIL-24: one masked element draws the crest and clips the dark number. */}
+          <div
+            className="absolute overflow-hidden bg-accent"
+            style={{
+              inset: `-${CREST}px 0 0 0`,
+              mask: liquidMask(WAVE_W, CREST, staticOff > 0 && staticOff < 100),
+              animation: showWave ? WAVE_ANIMATION : undefined,
+            }}
+          >
             {num != null && (
               <Num
                 value={num}
@@ -105,57 +114,25 @@ function MotionFill({
 }) {
   const y = useTransform(level, (v) => `${100 - Math.max(0, Math.min(100, v))}%`);
   const counterY = useTransform(level, (v) => `-${100 - Math.max(0, Math.min(100, v))}%`);
-  const waveOpacity = useTransform(level, (v) => (v > 0 && v < 100 ? 1 : 0));
+  const mask = useTransform(level, (v) => liquidMask(WAVE_W, CREST, v > 0 && v < 100));
   return (
     <motion.div style={{ position: "absolute", inset: 0, y, willChange: "transform" }}>
+      {/* SPIL-24: one masked element draws the crest and clips the dark number. */}
       <motion.div
+        className="absolute overflow-hidden bg-accent"
         style={{
-          position: "absolute",
-          left: -26,
-          top: -10,
-          width: "calc(100% + 26px)",
-          height: 10,
-          opacity: waveOpacity,
+          inset: `-${CREST}px 0 0 0`,
+          mask,
+          animation: showWave ? WAVE_ANIMATION : undefined,
         }}
       >
-        <WaveStrip animate={showWave} />
-      </motion.div>
-      <div className="absolute inset-0 overflow-hidden bg-accent">
         {num != null && (
           <motion.div style={{ ...numStyle, color: "var(--on-accent)", y: counterY }}>
             {isMotionValue(num) ? <motion.span>{num}</motion.span> : num}
           </motion.div>
         )}
-      </div>
+      </motion.div>
     </motion.div>
-  );
-}
-
-function Wave({ visible, animate }: { visible: boolean; animate: boolean }) {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: -26,
-        top: -10,
-        width: "calc(100% + 26px)",
-        height: 10,
-        opacity: visible ? 1 : 0,
-        transition: "opacity 200ms ease",
-      }}
-    >
-      <WaveStrip animate={animate} />
-    </div>
-  );
-}
-
-/** 26 px wave strip on a translateX loop, 1.6 s linear. Off in reduced motion. */
-function WaveStrip({ animate }: { animate: boolean }) {
-  return (
-    <div
-      className={animate ? "animate-[spil-wave_1.6s_linear_infinite]" : undefined}
-      style={{ position: "absolute", inset: 0, background: WAVE_BG }}
-    />
   );
 }
 

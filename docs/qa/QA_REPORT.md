@@ -513,3 +513,12 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] Group card: both vessels side by side with names, "How well we know each other: {pct}%" as the headline and the duo award sticker. Checked by screenshot.
 - [x] Computed on the server (`duoResult` in lib/game, sent as `results.duo`); room awards stay empty below 3 players (SPIL-13).
 - Tests: unit `tests/unit/game/duo.test.ts` (bands, floor at 0, exactly two and both guessed), API "Duo (SPIL-23)", e2e `tests/e2e/duo.spec.ts` (tabs, percentage, award, group card).
+
+## Step 5: polish and platform (SPIL-24 to SPIL-33)
+
+### SPIL-24: Digits clipped by the wave in Vessel
+
+- [x] Cause: the wave crest was its own layer painted over the light copy of the number, while the dark copy was clipped to the flat fill below it, so the tops of the digits disappeared inside the crest.
+- [x] Fix: one element draws the crest and the liquid, masked by the liquid's outline (`liquidMask` in lib/vessel.ts), and holds the dark copy. The crest and the dark copy share one shape and move together, so a bubble never covers a digit and the colour flips exactly along the wave. Same change on the share card's vessels. The vessel stays aria-hidden, so screen readers read the value once from its label.
+- [x] Checked by screenshot at 0, 20, 50, 60, 93 and 100 on the 250 px demo vessel and on the 136 px results vessel; the reveal and share card use the same code.
+- Tests: unit `vessel.test.ts` (mask with and without crest); every e2e that shows a vessel still passes.

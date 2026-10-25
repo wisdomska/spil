@@ -228,3 +228,12 @@
     }
   }
 }
+
+/* SPIL-24: the same 26 px loop for the liquid mask (crest and number clip move together). */
+@keyframes spil-wave-mask {
+  to {
+    mask-position:
+      26px 0,
+      0 10px;
+  }
+}

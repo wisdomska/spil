@@ -32,3 +32,16 @@ describe("vessel input (SPIL-10)", () => {
     expect(crossesTen(30, 30)).toBe(false);
   });
 });
+
+describe("liquid mask (SPIL-24)", () => {
+  it("keeps the crest and the body as one shape", async () => {
+    const { liquidMask } = await import("@/lib/vessel");
+    const m = liquidMask(26, 10, true);
+    expect(m).toContain("26px 10px repeat-x");
+    expect(m).toContain("0 10px / 100% calc(100% - 10px)");
+  });
+  it("drops the crest when the vessel is empty or full", async () => {
+    const { liquidMask } = await import("@/lib/vessel");
+    expect(liquidMask(26, 10, false)).not.toContain("radial-gradient");
+  });
+});
