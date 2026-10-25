@@ -536,3 +536,8 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] Every face has a name; screen readers hear "Avatar: Ghost" and so on (24 names in messages).
 - [x] The random first face never lands on Clown, Skull or Hot face. Hot face is offered only when the room is 18+ and this phone is 18+, so a room with younger players never shows it; a saved Hot face falls back to the safe default there.
 - Tests: unit `tests/unit/game/avatars.test.ts` (names, 1000 random draws, offers), e2e `tests/e2e/avatar-names.spec.ts` (named radios, no Hot face in Classic, offered in After Dark, default not unsafe).
+
+### SPIL-27: Dropped taps during card transition
+
+- [x] A Yes or No tapped while the card is flying out (200 ms, under the 250 ms limit) is kept in a single slot and applied to the next card as soon as it is ready. It is dropped only if no card is left (it would answer the same card twice). Skip is not queued.
+- Tests: e2e `tests/e2e/rapid-taps.spec.ts` (nine taps 120 ms apart, faster than the exit, all recorded in order, checked card by card with the SPIL-20 chips). A real-phone check is in FOLLOW_UPS.

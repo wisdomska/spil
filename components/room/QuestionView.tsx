@@ -85,6 +85,8 @@ export function QuestionView({ state, onDone, flags = false, preview }: Props) {
   const [report, setReport] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const flying = useRef(false);
+  // SPIL-27: a tap while the card flies out is kept (one slot) and answers the next card.
+  const queued = useRef<AnswerValue | null>(null);
 
   const x = useMotionValue(preview?.dragX ?? 0);
   const opacity = useMotionValue(1);
@@ -123,7 +125,11 @@ export function QuestionView({ state, onDone, flags = false, preview }: Props) {
 
   const answer = (value: AnswerValue, instant = false) => {
     const current = questions[Math.min(qiRef.current, total - 1)];
-    if (!current || flying.current || finishing) return;
+    if (flying.current) {
+      if (value !== "skip") queued.current = value;
+      return;
+    }
+    if (!current || finishing) return;
     const now = latestAnswers();
     const skips = Object.values(now).filter((v) => v === "skip").length;
     if (value === "skip" && now[current.id] !== "skip" && skips >= skipLimit(total)) {
@@ -147,6 +153,10 @@ export function QuestionView({ state, onDone, flags = false, preview }: Props) {
         x.set(0);
         opacity.set(1);
         commit(current.id, value);
+        const next = queued.current;
+        queued.current = null;
+        // Only if a card is still open: never answer the same card twice.
+        if (next && questions.some((qq) => !(qq.id in latestAnswers()))) answerRef.current(next);
       },
     });
   };
