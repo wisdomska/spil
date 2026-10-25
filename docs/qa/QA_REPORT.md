@@ -239,3 +239,10 @@ Notes:
 - [x] Cascade: with nobody else to guess about, the round goes straight from answering to Lights down (no guess screen), the reveal leaves out the room-guess line and the "Off by" verdict, and the results leave out Mind Reader points, the points explainer, the winner line and awards. The result line reads "You scored {n}. Play with friends to see how well they know you."
 - Tests: unit (solo results), API (a solo room starts and lands on Lights down), e2e `tests/e2e/solo.spec.ts` (whole solo round).
 - Migration 20261024001500, applied to staging.
+
+### Quiet loading instead of "Waking the server up" (owner request 2026-10-25)
+
+- [x] A server error while loading a room no longer takes over the screen with server talk. The loading skeleton stays and the room retries every 3 seconds; after 6 seconds a single quiet line says "This is taking longer than usual." with Try again. When loading works again the room appears without a tap.
+- [x] A failed refresh during a game keeps the game on screen and retries in the background; only if it keeps failing does a small pill show the same line at the bottom.
+- [x] Real answers keep their screens: offline, room gone, expired, removed.
+- Tests: e2e `tests/e2e/quiet-loading.spec.ts` (503s on the room state: skeleton, no mention of servers, the quiet line, recovery by itself). Checked at desktop width.
