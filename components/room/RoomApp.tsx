@@ -10,7 +10,8 @@ import { ErrorScreen, type ErrorVariant } from "@/components/site/ErrorScreen";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { useToast } from "@/components/ui/Toast";
-import { ClientApiError } from "@/lib/api/client";
+import { api, ClientApiError } from "@/lib/api/client";
+import { MAX_FLOATING } from "@/lib/game";
 import type { RoomState, StatePlayer } from "@/lib/api/types";
 import { useOffline } from "@/lib/realtime/useOffline";
 import { useRoomChannel } from "@/lib/realtime/useRoomChannel";
@@ -91,12 +92,34 @@ export function RoomApp({ code }: { code: string }) {
     [state, toast, tt],
   );
 
+  // Live reactions on the reveal: the last few float up and fade (Batch 2).
+  const [floating, setFloating] = useState<Array<{ id: number; emoji: string }>>([]);
+  const nextReaction = useRef(0);
+  const onReaction = useCallback((emoji: string) => {
+    const id = ++nextReaction.current;
+    setFloating((f) => [...f.slice(-(MAX_FLOATING - 1)), { id, emoji }]);
+    setTimeout(() => setFloating((f) => f.filter((x) => x.id !== id)), 2400);
+  }, []);
+  const meIdRef = useRef<string | undefined>(undefined);
+  const meId0 = state?.me.id;
+  useEffect(() => {
+    meIdRef.current = meId0;
+  }, [meId0]);
+  // My own reactions show the moment I tap, so my echo from the channel is skipped.
+  const onRoomReaction = useCallback(
+    (emoji: string, from: string) => {
+      if (from !== meIdRef.current) onReaction(emoji);
+    },
+    [onReaction],
+  );
+
   const channel = useRoomChannel({
     code,
     channel: state?.room.channel,
     playerId: state?.me.id,
     pollingOnly: state?.room.pollingOnly ?? false,
     onNudge,
+    onReaction: onRoomReaction,
   });
   useEffect(() => {
     live.current = channel.live;
@@ -167,6 +190,12 @@ export function RoomApp({ code }: { code: string }) {
         nexting={actions.revealNext.isPending}
         onNext={(expected) => actions.revealNext.mutate(expected, { onError: fail })}
         onSkip={() => actions.revealSkip.mutate(undefined, { onError: fail })}
+        reactions={floating}
+        onReact={(emoji) => {
+          // Show mine straight away; the channel skips my echo.
+          onReaction(emoji);
+          api("POST", `/rooms/${code}/react`, { emoji }).catch(() => {});
+        }}
       />
     );
   }

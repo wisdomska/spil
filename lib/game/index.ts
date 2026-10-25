@@ -18,3 +18,4 @@ export * from "./imposter";
 export * from "./twoTruths";
 export * from "./whoSaid";
 export * from "./spillOrSkip";
+export * from "./reactions";

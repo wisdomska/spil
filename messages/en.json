@@ -451,7 +451,9 @@
     "saidKicker": "WHO SAID THAT?",
     "saidRight": "{right} of {total} guessed right",
     "hiddenAnswer": "Hidden after a report",
-    "announceSaid": "Answers revealed for: {text}"
+    "announceSaid": "Answers revealed for: {text}",
+    "reactLabel": "React",
+    "reactWith": "React with {emoji}"
   },
   "results": {
     "headline": "You're a",

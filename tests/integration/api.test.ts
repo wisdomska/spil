@@ -816,6 +816,25 @@ d("host tools", () => {
     expect(told.body.results.spill).toMatchObject({ answer: "skip", skips: 1, voters: 3 });
   });
 
+  it("Reactions: only during the reveal, only the fixed emoji, rate limited", async () => {
+    const room = await fullRoom(2);
+    const [a, b] = room.players as [Player, Player];
+    const react = (p: Player, emoji: string) =>
+      p.call("POST", `/rooms/${room.roomCode}/react`, { emoji });
+    expect(code(await react(a, "🔥"))).toBe("WRONG_PHASE");
+    await a.call("POST", `/rooms/${room.roomCode}/start`);
+    await answerAll(a, room.roomCode, () => "yes");
+    await answerAll(b, room.roomCode, () => "no");
+    for (const p of [a, b]) await guessAll(p, room.roomCode, 50);
+    await a.call("POST", `/rooms/${room.roomCode}/advance`, { from: "ready" });
+    expect(code(await react(a, "hello"))).toBe("BAD_REQUEST");
+    expect((await react(b, "🔥")).status).toBe(200);
+    let limited = false;
+    for (let i = 0; i < 31 && !limited; i++)
+      limited = code(await react(a, "😂")) === "RATE_LIMITED";
+    expect(limited).toBe(true);
+  });
+
   it("two players are enough to start", async () => {
     const room = await fullRoom(2);
     expect((await room.host.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);

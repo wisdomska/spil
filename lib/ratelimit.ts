@@ -15,6 +15,8 @@ export const LIMITS = {
   write: { limit: 120, window: "1 minute" },
   // Party Mode screens poll every 2 seconds.
   tv: { limit: 120, window: "1 minute" },
+  // Reactions: a burst of taps is fine, a flood is not.
+  react: { limit: 30, window: "1 minute" },
 } as const;
 
 export type LimitName = keyof typeof LIMITS;

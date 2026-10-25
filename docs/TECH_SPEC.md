@@ -591,6 +591,7 @@ Base path `/api/v1`. JSON, camelCase. Auth via Supabase session cookie (`@supaba
 | PUT | `/rooms/:code/spill-answer` | the picked player, revealed, Spill or Skip | `{ spill }` → state. Tell the story or pass | WRONG_PHASE, FORBIDDEN |
 | POST | `/rooms/:code/tv` | host, party_mode flag | `{}` → `{ token }`. Pairs a big screen; the same token after the first time | NOT_HOST, FEATURE_OFF |
 | GET | `/rooms/:code/tv?t=` | no account, token | → TvState: room, players, results; never per-player fields | TV_NOT_PAIRED, FEATURE_OFF, RATE_LIMITED |
+| POST | `/rooms/:code/react` | member, revealed | `{ emoji }` → `{}`. One of six fixed emoji, broadcast as `reaction`, never stored | BAD_REQUEST, WRONG_PHASE, RATE_LIMITED (30/min/player) |
 | PUT | `/rooms/:code/percent` | member, guessing, Room Percentage or Hot Takes | `{ guesses: [{ questionId, value 0 to 100 }] }` → `{ saved, total }`. Only questions 3 or more answered or rated | WRONG_PHASE, ALREADY_SUBMITTED, UNKNOWN_QUESTION |
 | POST | `/rooms/:code/kick` | host, lobby | `{playerId}` → state | NOT_HOST, WRONG_PHASE |
 | POST | `/rooms/:code/nudge` | host | `{playerId}` → `{}` (1 per target per minute) | RATE_LIMITED |

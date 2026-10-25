@@ -20,6 +20,7 @@ import {
   hasTopBeat,
   labelById,
   questionStep,
+  REACTIONS,
   REVEAL_MS,
   revealSlides,
   slideMinMs,
@@ -71,6 +72,9 @@ type Props = {
   freezeAt?: number;
   /** Party Mode screen: nothing to tap, no sound or host controls. */
   display?: boolean;
+  /** Live reactions floating up the screen (Batch 2). */
+  reactions?: Array<{ id: number; emoji: string }>;
+  onReact?: (emoji: string) => void;
 };
 
 const easeOutCubic = (k: number) => 1 - Math.pow(1 - k, 3);
@@ -101,6 +105,8 @@ export function RevealStage({
   said,
   freezeAt,
   display = false,
+  reactions = [],
+  onReact,
 }: Props) {
   const t = useTranslations("reveal");
   const tl = useTranslations("labels");
@@ -493,13 +499,45 @@ export function RevealStage({
         />
       )}
 
+      {reactions.length > 0 && (
+        <div aria-hidden className="pointer-events-none fixed inset-x-0 bottom-28 z-[6] h-0">
+          {reactions.map((r) => (
+            <span
+              key={r.id}
+              className={cn(
+                "absolute bottom-0 text-[34px] leading-none",
+                reduced ? "animate-[fade_2400ms_both]" : "animate-float-up",
+              )}
+              style={{ left: `${12 + ((r.id * 37) % 76)}%` }}
+            >
+              {r.emoji}
+            </span>
+          ))}
+        </div>
+      )}
+
       <div
         className={cn(
           "fixed inset-x-0 bottom-0 z-[5] border-t border-line bg-surface/90 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] backdrop-blur-[14px]",
           display && "hidden",
         )}
       >
-        <div className="mx-auto max-w-[520px]">
+        <div className="mx-auto grid max-w-[520px] gap-2.5">
+          {onReact && (
+            <div role="group" aria-label={t("reactLabel")} className="flex justify-between gap-1">
+              {REACTIONS.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  aria-label={t("reactWith", { emoji })}
+                  onClick={() => onReact(emoji)}
+                  className="grid size-12 place-items-center rounded-pill border-0 bg-transparent text-[26px] leading-none hover:bg-surface-raised active:scale-[.88]"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          )}
           {isHost ? (
             <Button
               block

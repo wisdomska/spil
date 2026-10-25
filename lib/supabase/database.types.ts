@@ -1157,6 +1157,10 @@ export type Database = {
         };
         Returns: undefined;
       };
+      send_reaction: {
+        Args: { p_emoji: string; p_player: string; p_room: string };
+        Returns: undefined;
+      };
       start_round: {
         Args: { p_n: number; p_pack: string; p_room: string };
         Returns: undefined;

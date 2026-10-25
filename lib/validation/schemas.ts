@@ -70,6 +70,9 @@ export const advance = z.object({
 
 export const playerTarget = z.object({ playerId: z.uuid() });
 
+/** A live reaction during the reveal: one of the fixed emoji. */
+export const postReaction = z.object({ emoji: z.string().max(8) });
+
 /** Spill or Skip: the story I want to hear, or skip. */
 export const putSpillVote = z.union([
   z.object({ questionId: z.uuid(), targetId: z.uuid() }),

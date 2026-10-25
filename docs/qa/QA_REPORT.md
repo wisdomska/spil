@@ -361,3 +361,11 @@ All nine game modes are built, each in its own pull request stacked in order (#4
 - [x] Privacy: the screen view is built from the room state with every per-player field removed (own answers, guesses, questions, the imposter's questions, own votes). The API test checks a yes answer never reaches the screen.
 - Tests: admin integration (flag off refused, guest cannot pair, token reused, wrong token 403, no own data while answering), e2e `tests/e2e/party-mode.spec.ts` (host pairs, screen shows code and players live, unpaired screen refused). pgTAP `22_party_mode_test.sql`. TV lobby checked at 1600 by 900.
 - Migration 20261024002600, applied to staging.
+
+### Live reactions on the reveal
+
+- [x] Every phone on the reveal has a row of six fixed emoji (😂 😱 🔥 👀 🫣 💀, the device's own emoji) above Next or the waiting line. Each has a label ("React with 🔥").
+- [x] A tap floats the emoji up on every phone in the room; mine shows straight away and my echo from the channel is skipped. Reduced motion fades instead of drifting. At most 24 float at once; each lasts 2.4 seconds.
+- [x] Only during the reveal and results, only the fixed emoji (the database checks too), 30 a minute per player, never stored. Reactions do not make phones reload the room.
+- Tests: API (refused before the reveal, unknown emoji refused, rate limit), e2e `tests/e2e/reactions.spec.ts` (a tap on one phone shows on the other). pgTAP `23_reactions_test.sql`. Reveal with reactions checked.
+- Migration 20261024002700, applied to staging.

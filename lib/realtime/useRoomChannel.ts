@@ -12,6 +12,8 @@ type Options = {
   playerId: string | undefined;
   pollingOnly: boolean;
   onNudge?: (targetPlayerId: string) => void;
+  /** Live reactions during the reveal; they never change the room, so no refetch. */
+  onReaction?: (emoji: string, playerId: string) => void;
 };
 
 /**
@@ -20,14 +22,23 @@ type Options = {
  * payload read is nudge.targetPlayerId. If the channel is not SUBSCRIBED within 5 s, drops,
  * or polling_only is on, /state is polled every 5 s instead. Presence gives the online dots.
  */
-export function useRoomChannel({ code, channel, playerId, pollingOnly, onNudge }: Options) {
+export function useRoomChannel({
+  code,
+  channel,
+  playerId,
+  pollingOnly,
+  onNudge,
+  onReaction,
+}: Options) {
   const qc = useQueryClient();
   const [online, setOnline] = useState<Set<string>>(new Set());
   const [live, setLive] = useState(false);
   const nudgeRef = useRef(onNudge);
+  const reactionRef = useRef(onReaction);
   useEffect(() => {
     nudgeRef.current = onNudge;
-  }, [onNudge]);
+    reactionRef.current = onReaction;
+  }, [onNudge, onReaction]);
 
   useEffect(() => {
     if (!channel || !playerId || pollingOnly) return;
@@ -61,6 +72,10 @@ export function useRoomChannel({ code, channel, playerId, pollingOnly, onNudge }
                   }
                 : s,
             );
+            return;
+          }
+          if (event === "reaction") {
+            if (payload?.emoji) reactionRef.current?.(payload.emoji, payload.playerId ?? "");
             return;
           }
           if (event === "nudge" && payload?.targetPlayerId)
