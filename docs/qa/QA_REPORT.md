@@ -541,3 +541,10 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 
 - [x] A Yes or No tapped while the card is flying out (200 ms, under the 250 ms limit) is kept in a single slot and applied to the next card as soon as it is ready. It is dropped only if no card is left (it would answer the same card twice). Skip is not queued.
 - Tests: e2e `tests/e2e/rapid-taps.spec.ts` (nine taps 120 ms apart, faster than the exit, all recorded in order, checked card by card with the SPIL-20 chips). A real-phone check is in FOLLOW_UPS.
+
+### SPIL-28: QR code join in the lobby
+
+- [x] Desktop lobby: the main column shows a 168 px QR on a light card with "Scan to join" instead of a second copy of the code; the code stays in the sidebar.
+- [x] Phone lobby: "Show QR" (QR icon) opens a sheet with a full-width QR and the code under it.
+- [x] The QR encodes the invite link (`/r/{code}`) and is drawn as SVG from the `qrcode` package (named in the ticket); no outside QR service.
+- Tests: e2e `tests/e2e/lobby-qr.spec.ts` (sheet on a phone, inline on desktop, the encoded link opens this room's invite page).

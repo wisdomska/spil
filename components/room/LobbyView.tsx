@@ -1,17 +1,25 @@
 "use client";
 
-import { CheckCircleIcon, CrownSimpleIcon, UsersThreeIcon, XIcon } from "@phosphor-icons/react";
+import {
+  CheckCircleIcon,
+  CrownSimpleIcon,
+  UsersThreeIcon,
+  XIcon,
+  QrCodeIcon,
+} from "@phosphor-icons/react";
 import { useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Avatar } from "@/components/brand/Avatar";
 import { Button } from "@/components/ui/Button";
+import { Sheet } from "@/components/ui/Sheet";
 import { useToast } from "@/components/ui/Toast";
 import type { RoomState } from "@/lib/api/types";
 import { rotationFor } from "@/lib/game";
 import { CustomQuestions } from "./CustomQuestions";
 import { InviteSheet } from "./InviteSheet";
+import { QrCode } from "./QrCode";
 import { PartyModeButton } from "./PartyModeButton";
 import { inviteLink, useCopyLink } from "./RoomShell";
 
@@ -42,14 +50,22 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
   const shareText = tr("shareText", { code: room.code });
 
   const [inviting, setInviting] = useState(false);
+  const [showQr, setShowQr] = useState(false);
 
   return (
     <div className="flex flex-1 flex-col gap-[26px]">
       <div className="grid gap-2.5">
         <span className="text-[14px] leading-none font-semibold text-text-muted">{tr("code")}</span>
-        <span className="font-mono text-[76px] leading-none font-semibold tracking-[.06em]">
+        <span className="font-mono text-[76px] leading-none font-semibold tracking-[.06em] lg:hidden">
           {room.code}
         </span>
+        {/* SPIL-28: on desktop the sidebar has the code, so the main column shows a QR. */}
+        <figure className="m-0 hidden w-fit justify-items-center gap-2.5 rounded-card bg-inverse p-4 text-on-inverse lg:grid">
+          <QrCode value={link} size={168} label={t("qrAria", { code: room.code })} />
+          <figcaption className="text-[14px] leading-none font-semibold">
+            {t("scanToJoin")}
+          </figcaption>
+        </figure>
         <div className="mt-1.5 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
           <button
             type="button"
@@ -66,6 +82,22 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
             {copied ? tr("copied") : tr("copyLink")}
           </button>
         </div>
+        <button
+          type="button"
+          onClick={() => setShowQr(true)}
+          className="-ml-2 flex h-12 items-center gap-2 justify-self-start rounded-pill border-0 bg-transparent px-4 text-[15px] leading-none font-semibold whitespace-nowrap text-text hover:bg-surface-raised lg:hidden"
+        >
+          <QrCodeIcon size={20} aria-hidden />
+          {t("showQr")}
+        </button>
+        <Sheet open={showQr} onOpenChange={setShowQr} title={t("scanToJoin")} closeButton>
+          <div className="grid justify-items-center gap-3 rounded-card bg-inverse p-5 text-on-inverse">
+            <QrCode value={link} size={280} label={t("qrAria", { code: room.code })} />
+            <span className="font-mono text-[40px] leading-none font-semibold tracking-[.06em]">
+              {room.code}
+            </span>
+          </div>
+        </Sheet>
         <InviteSheet
           open={inviting}
           onOpenChange={setInviting}

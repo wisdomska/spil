@@ -298,7 +298,10 @@
     "customCount": "{n} of {max}",
     "customRemove": "Remove: {text}",
     "customNeedMore": "Write {n, plural, one {# more} other {# more}} to play them",
-    "customPlay": "Play these {n} questions"
+    "customPlay": "Play these {n} questions",
+    "scanToJoin": "Scan to join",
+    "showQr": "Show QR",
+    "qrAria": "QR code to join room {code}"
   },
   "question": {
     "offline": "You're offline. Keep going, your answers send when you're back.",
