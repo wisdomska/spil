@@ -43,6 +43,8 @@ export const packBody = z.object({
   /** SPIL-08: picker section and spice (1 to 5). */
   section: z.enum(["everyday", "life", "after_dark"]),
   spice: z.number().int().min(1).max(5),
+  /** Batch 3: marked premium; only locked while the payments_enabled flag is on. */
+  premium: z.boolean().default(false),
   region: z
     .string()
     .trim()

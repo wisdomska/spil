@@ -54,6 +54,8 @@ export type Pack = PackSummary & {
   sortOrder: number;
   /** Statements for Hot Takes, yes or no questions for every other mode. */
   format: PackFormat;
+  /** Batch 3: premium and payments are switched on, so it cannot be played yet. */
+  locked: boolean;
 };
 
 export type PublicRoom = {

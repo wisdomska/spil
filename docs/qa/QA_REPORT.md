@@ -412,3 +412,10 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] Age bands hold: a 13 to 15 player sees the three 13+ packs and not Detty December; 16 to 17 sees it. Checked on preview as a 15 year old (Church Kid under Everyday, SHS Days and Exam Season under Life stages).
 - Tests: API (bands, preview samples). pgTAP `27_local_packs_test.sql`.
 - Migration 20261024003200, applied to staging.
+
+### Premium packs behind payments_enabled
+
+- [x] Owner decision: free for now, no checkout. An admin can mark a pack Premium in the pack form ("Free while payments are off").
+- [x] With `payments_enabled` off (today) every pack plays and nothing is shown. With it on, a premium pack shows a Premium badge and "Premium packs are coming soon", cannot be picked, and the API refuses it (PACK_PREMIUM).
+- Tests: admin integration (mark premium, unlocked with payments off, locked and refused with payments on, everything restored). pgTAP `28_premium_packs_test.sql`.
+- Migration 20261024003300, applied to staging.

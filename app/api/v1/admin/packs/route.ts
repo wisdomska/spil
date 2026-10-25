@@ -32,6 +32,7 @@ export const POST = route(async (request) => {
       min_age: body.minAge,
       section: body.section,
       spice: body.spice,
+      premium: body.premium,
       // is_adult stays in step with min_age; the database still wants a heat level on adult
       // packs (packs_heat_matches_adult), so new 18+ packs start at "spicy".
       is_adult: body.minAge === 18,

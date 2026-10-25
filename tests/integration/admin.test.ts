@@ -560,3 +560,52 @@ d("Party Mode (Batch 2)", () => {
     }
   });
 });
+
+d("Premium packs (Batch 3)", () => {
+  it("are free while payments are off, and marked and locked while they are on", async () => {
+    const settings = (await owner.call("GET", "/admin/settings")).body.flags;
+    const paymentsBefore = settings.payments_enabled ?? false;
+    const packs = (await owner.call("GET", "/admin/packs")).body as Array<
+      Record<string, unknown> & { id: string }
+    >;
+    const campus = packs.find((p) => p.id === "campus")!;
+    const body = {
+      name: campus.name,
+      blurb: campus.blurb,
+      icon: campus.icon,
+      tone: campus.tone,
+      minAge: campus.minAge,
+      section: campus.section,
+      spice: campus.spice,
+      region: campus.region,
+      status: campus.status,
+      sortOrder: campus.sortOrder,
+    };
+    const player = await anonPlayer();
+    const listed = async () =>
+      (
+        (await player.call("GET", "/packs?band=18_plus")).body as Array<{
+          id: string;
+          locked: boolean;
+        }>
+      ).find((p) => p.id === "campus")!;
+    try {
+      expect(
+        (await owner.call("PATCH", "/admin/packs/campus", { ...body, premium: true })).status,
+      ).toBe(200);
+      await owner.call("PATCH", "/admin/flags", { key: "payments_enabled", enabled: false });
+      expect((await listed()).locked).toBe(false);
+
+      await owner.call("PATCH", "/admin/flags", { key: "payments_enabled", enabled: true });
+      expect((await listed()).locked).toBe(true);
+      const room = await player.call("POST", "/rooms", { ageBand: "18_plus", packId: "campus" });
+      expect(code(room)).toBe("PACK_PREMIUM");
+    } finally {
+      await owner.call("PATCH", "/admin/flags", {
+        key: "payments_enabled",
+        enabled: paymentsBefore,
+      });
+      await owner.call("PATCH", "/admin/packs/campus", { ...body, premium: false });
+    }
+  });
+});

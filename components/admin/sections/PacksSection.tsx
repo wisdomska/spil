@@ -37,6 +37,7 @@ type Form = {
   minAge: AdminPack["minAge"];
   section: AdminPack["section"];
   spice: string;
+  premium: "free" | "premium";
   region: string;
   status: AdminPack["status"];
   sortOrder: string;
@@ -56,6 +57,7 @@ const blank: Form = {
   minAge: 13,
   section: "everyday",
   spice: "2",
+  premium: "free",
   region: "",
   status: "draft",
   sortOrder: "100",
@@ -90,6 +92,7 @@ export function PacksSection() {
             minAge: p.minAge,
             section: p.section,
             spice: String(p.spice),
+            premium: p.premium ? "premium" : "free",
             region: p.region ?? "",
             status: p.status,
             sortOrder: String(p.sortOrder),
@@ -117,6 +120,7 @@ export function PacksSection() {
       minAge: form.minAge,
       section: form.section,
       spice: Math.max(1, Math.min(5, parseInt(form.spice, 10) || 1)),
+      premium: form.premium === "premium",
       region: form.region || null,
       status: form.status,
       sortOrder: Math.max(0, Math.min(10000, parseInt(form.sortOrder, 10) || 0)),
@@ -300,6 +304,12 @@ export function PacksSection() {
             </Select>
           </FieldRow>
         </div>
+        <FieldRow id="pk-premium" label={t("premium")} hint={t("premiumHint")}>
+          <Select id="pk-premium" value={form.premium} onChange={set("premium")}>
+            <option value="free">{t("premiumFree")}</option>
+            <option value="premium">{t("premiumOn")}</option>
+          </Select>
+        </FieldRow>
         <FieldRow id="pk-min-age" label={t("minAgeLabel")} hint={t("minAgeHint")}>
           <Select
             id="pk-min-age"

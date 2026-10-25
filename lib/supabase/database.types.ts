@@ -601,6 +601,7 @@ export type Database = {
           is_adult: boolean;
           min_age: number;
           name: string;
+          premium: boolean;
           region: string | null;
           room_id: string | null;
           section: string;
@@ -619,6 +620,7 @@ export type Database = {
           is_adult?: boolean;
           min_age?: number;
           name: string;
+          premium?: boolean;
           region?: string | null;
           room_id?: string | null;
           section?: string;
@@ -637,6 +639,7 @@ export type Database = {
           is_adult?: boolean;
           min_age?: number;
           name?: string;
+          premium?: boolean;
           region?: string | null;
           room_id?: string | null;
           section?: string;
@@ -646,15 +649,7 @@ export type Database = {
           tone?: Database["public"]["Enums"]["pack_tone"];
           updated_at?: string;
         };
-        Relationships: [
-          {
-            foreignKeyName: "packs_room_id_fkey";
-            columns: ["room_id"];
-            isOneToOne: false;
-            referencedRelation: "rooms";
-            referencedColumns: ["id"];
-          },
-        ];
+        Relationships: [];
       };
       players: {
         Row: {

@@ -118,7 +118,9 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
                   ? tt("packNotAllowed")
                   : code === "MODE_UNAVAILABLE"
                     ? tt("modeUnavailable")
-                    : tt("somethingWrong"),
+                    : code === "PACK_PREMIUM"
+                      ? tt("packPremium")
+                      : tt("somethingWrong"),
       );
     }
   };

@@ -153,7 +153,9 @@ export function PackPicker({
                   >
                     <RadioGroup.Item
                       value={p.id}
+                      disabled={p.locked}
                       className={cn(
+                        p.locked && "opacity-60 hover:brightness-100 active:scale-100",
                         "relative box-border flex min-w-0 flex-col items-start justify-start gap-4 self-start rounded-card border p-4 pb-[72px] text-left hover:brightness-[1.08] active:scale-[.98]",
                         adult
                           ? "border-line bg-tile-night text-tile-on-night"
@@ -178,7 +180,11 @@ export function PackPicker({
                         >
                           <PackGlyph icon={p.icon} />
                         </span>
-                        {adult ? (
+                        {p.locked ? (
+                          <span className="inline-flex h-7 items-center rounded-pill border-[1.5px] border-line-strong px-2.5 font-mono text-[12px] leading-none font-bold whitespace-nowrap">
+                            {t("premium")}
+                          </span>
+                        ) : adult ? (
                           <span className="inline-flex h-7 items-center rounded-pill border-[1.5px] border-adult-badge-edge bg-adult-badge px-2.5 font-mono text-[12px] leading-none font-bold whitespace-nowrap text-adult-badge-ink">
                             {t("badge18")}
                           </span>
@@ -222,6 +228,11 @@ export function PackPicker({
                             { count: p.questionCount },
                           )}
                         </span>
+                        {p.locked && (
+                          <span className="text-[13px] leading-[1.35] font-semibold">
+                            {t("premiumSoon")}
+                          </span>
+                        )}
                       </div>
                     </RadioGroup.Item>
                     <div className="absolute bottom-4 left-4 z-[3] flex gap-1.5">

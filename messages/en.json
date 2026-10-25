@@ -105,7 +105,8 @@
     "crewLeft": "You left {name}.",
     "crewFull": "This crew is full.",
     "customPlaying": "Your questions are in. The room is now 18+.",
-    "customAdultsOnly": "Your own questions are for rooms where everyone is 18 or older."
+    "customAdultsOnly": "Your own questions are for rooms where everyone is 18 or older.",
+    "packPremium": "Premium packs are coming soon."
   },
   "landing": {
     "headline": "Your friends think they know you.",
@@ -186,7 +187,9 @@
     "sectionEveryday": "Everyday",
     "sectionLife": "Life stages",
     "sectionAdult": "After dark · 18+",
-    "someHidden": "Some packs are hidden for this room."
+    "someHidden": "Some packs are hidden for this room.",
+    "premium": "Premium",
+    "premiumSoon": "Premium packs are coming soon."
   },
   "packInfo": {
     "purity": {
@@ -982,7 +985,11 @@
       "deleteCta": "Delete pack",
       "saved": "Pack saved.",
       "created": "Pack created.",
-      "deleted": "Pack deleted."
+      "deleted": "Pack deleted.",
+      "premium": "Premium",
+      "premiumHint": "Free while payments are off. With payments on, premium packs are marked and locked.",
+      "premiumFree": "Free",
+      "premiumOn": "Premium"
     },
     "questions": {
       "add": "Add question",

@@ -51,6 +51,7 @@ export type AdminPack = {
   /** SPIL-08: picker section and 1 to 5 spice drops. */
   section: "everyday" | "life" | "after_dark";
   spice: number;
+  premium: boolean;
   region: string | null;
   status: "live" | "draft" | "hidden";
   sortOrder: number;

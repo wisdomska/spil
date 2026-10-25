@@ -6,7 +6,7 @@ import { ApiError, fromDbError } from "./errors";
 import type { Pack, PackSection } from "./types";
 
 /** Live packs with at least one live question, in admin sort order (spec section 12). */
-async function allLivePacks(): Promise<Pack[]> {
+async function allLivePacks(paymentsOn: boolean): Promise<Pack[]> {
   const db = getAdminClient();
   const [packs, questions] = await Promise.all([
     db.from("packs").select("*").eq("status", "live").order("sort_order").order("name"),
@@ -32,6 +32,7 @@ async function allLivePacks(): Promise<Pack[]> {
       region: p.region,
       sortOrder: p.sort_order,
       format: p.format as PackFormat,
+      locked: p.premium && paymentsOn,
       questionCount: counts.get(p.id) ?? 0,
     }));
 }
@@ -41,7 +42,8 @@ async function allLivePacks(): Promise<Pack[]> {
  * adult packs at all; with the "18+ packs" flag off nobody does.
  */
 export async function livePacks(floor: MinAge): Promise<Pack[]> {
-  const [packs, flags] = await Promise.all([allLivePacks(), getFlags()]);
+  const flags = await getFlags();
+  const packs = await allLivePacks(flags.payments_enabled);
   return packsForFloor(packs, floor, flags.adult_packs_enabled);
 }
 
@@ -77,5 +79,6 @@ export async function requireLivePack(
   if (!pack) throw new ApiError("PACK_UNAVAILABLE");
   if (pack.minAge > floor || (format && pack.format !== format))
     throw new ApiError("PACK_NOT_ALLOWED");
+  if (pack.locked) throw new ApiError("PACK_PREMIUM");
   return pack;
 }
