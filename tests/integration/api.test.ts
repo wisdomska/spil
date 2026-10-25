@@ -1068,6 +1068,21 @@ d("host tools", () => {
     expect(results.duo).toEqual({ pct: 100, award: "soulmates", errors: [0, 0] });
   });
 
+  it("Nudge (SPIL-29): one per player per 20 seconds", async () => {
+    const room = await fullRoom(2);
+    const [host, guest] = room.players as [Player, Player];
+    const c = room.roomCode;
+    await host.call("POST", `/rooms/${c}/start`);
+    const guestId = (await guest.call("GET", `/rooms/${c}/state`)).body.me.id;
+    expect((await host.call("POST", `/rooms/${c}/nudge`, { playerId: guestId })).status).toBe(200);
+    expect(code(await host.call("POST", `/rooms/${c}/nudge`, { playerId: guestId }))).toBe(
+      "RATE_LIMITED",
+    );
+    expect(code(await guest.call("POST", `/rooms/${c}/nudge`, { playerId: guestId }))).toBe(
+      "NOT_HOST",
+    );
+  });
+
   it("two players are enough to start", async () => {
     const room = await fullRoom(2);
     expect((await room.host.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);

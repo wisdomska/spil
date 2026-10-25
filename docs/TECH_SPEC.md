@@ -609,7 +609,7 @@ Base path `/api/v1`. JSON, camelCase. Auth via Supabase session cookie (`@supaba
 | POST | `/rooms/:code/custom/use` | host, lobby, 5 or more questions | → state. The room plays them and becomes 18+ | NOT_HOST, CUSTOM_ADULTS_ONLY, BAD_REQUEST |
 | PUT | `/rooms/:code/percent` | member, guessing, Room Percentage or Hot Takes | `{ guesses: [{ questionId, value 0 to 100 }] }` → `{ saved, total }`. Only questions 3 or more answered or rated | WRONG_PHASE, ALREADY_SUBMITTED, UNKNOWN_QUESTION |
 | POST | `/rooms/:code/kick` | host, lobby | `{playerId}` → state | NOT_HOST, WRONG_PHASE |
-| POST | `/rooms/:code/nudge` | host | `{playerId}` → `{}` (1 per target per minute) | RATE_LIMITED |
+| POST | `/rooms/:code/nudge` | host | `{playerId}` → `{}` (1 per player per 20 s, enforced in the `nudge` function; SPIL-29) | RATE_LIMITED |
 | PATCH | `/rooms/:code/me` | member | `{spillMode?, hideNameOnCard?, nickname?, avatar?}` → state | |
 | DELETE | `/rooms/:code/me` | member | → `{}` (deletes own answers, guesses; marks left; host passes to earliest active player) | |
 | POST | `/rooms/:code/rematch` | host, revealed | `{packId?}` → state (lobby, round+1). No pack: same pack and count, the one-tap Rematch (SPIL-18) | NOT_HOST |

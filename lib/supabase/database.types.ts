@@ -705,6 +705,7 @@ export type Database = {
           last_answer_at: string | null;
           last_seen_at: string;
           nickname: string;
+          nudged_at: string | null;
           room_id: string;
           rotation_seed: number;
           spill_mode: boolean;
@@ -725,6 +726,7 @@ export type Database = {
           last_answer_at?: string | null;
           last_seen_at?: string;
           nickname: string;
+          nudged_at?: string | null;
           room_id: string;
           rotation_seed: number;
           spill_mode?: boolean;
@@ -745,6 +747,7 @@ export type Database = {
           last_answer_at?: string | null;
           last_seen_at?: string;
           nickname?: string;
+          nudged_at?: string | null;
           room_id?: string;
           rotation_seed?: number;
           spill_mode?: boolean;

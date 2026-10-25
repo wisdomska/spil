@@ -398,7 +398,8 @@
     "forceRow": "{answered}/{total} · last answer {seconds}s ago",
     "forceRowNone": "{answered}/{total}",
     "stillGoing": "They're still going…",
-    "skipToReveal": "Skip to the reveal"
+    "skipToReveal": "Skip to the reveal",
+    "nudgeAgain": "Nudge again in {s}s"
   },
   "guess": {
     "count": "Guess {n} of {total}",

@@ -14,6 +14,8 @@ import { SkipToReveal } from "./SkipToReveal";
 /** An answer this recent holds the force button for HOLD_MS, so the host does not cut them off. */
 const RECENT_MS = 5000;
 const HOLD_MS = 3000;
+/** SPIL-29: the server allows one nudge per player per 20 s; the button counts it down. */
+const NUDGE_COOLDOWN_S = 20;
 
 type Props = {
   state: RoomState;
@@ -60,6 +62,13 @@ export function WaitingView({
         ? t("one", { name: names[0]! })
         : t("many", { names: names.slice(0, -1).join(", "), last: names[names.length - 1]! });
   const others = unfinished.filter((p) => p.id !== state.me.id);
+
+  const [cooldown, setCooldown] = useState(0);
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setTimeout(() => setCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(id);
+  }, [cooldown]);
 
   // Force sheet: live counts, and a short hold when someone just answered (SPIL-03).
   const [now, setNow] = useState(() => Date.now());
@@ -139,10 +148,18 @@ export function WaitingView({
           <Button
             variant="secondary"
             className="min-w-[160px] flex-[1_1_auto]"
-            onClick={() => onNudge(others)}
-            softDisabled={!others.length}
+            onClick={() => {
+              if (cooldown > 0 || !others.length) return;
+              onNudge(others);
+              setCooldown(NUDGE_COOLDOWN_S);
+            }}
+            softDisabled={!others.length || cooldown > 0}
           >
-            {others.length === 1 ? t("nudgeOne", { name: others[0]!.nickname }) : t("nudgeMany")}
+            {cooldown > 0
+              ? t("nudgeAgain", { s: cooldown })
+              : others.length === 1
+                ? t("nudgeOne", { name: others[0]!.nickname })
+                : t("nudgeMany")}
           </Button>
           <Button
             variant="ghost"

@@ -8,7 +8,8 @@ export const LIMITS = {
   join: { limit: 30, window: "1 hour" },
   answers: { limit: 300, window: "1 minute" },
   guesses: { limit: 300, window: "1 minute" },
-  nudge: { limit: 1, window: "1 minute" },
+  // Per room, against floods; the 20 s per-player cooldown lives in the nudge function (SPIL-29).
+  nudge: { limit: 20, window: "1 minute" },
   report: { limit: 10, window: "1 hour" },
   message: { limit: 5, window: "1 hour" },
   adminLogin: { limit: 5, window: "15 minutes" },

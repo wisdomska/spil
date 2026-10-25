@@ -548,3 +548,10 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] Phone lobby: "Show QR" (QR icon) opens a sheet with a full-width QR and the code under it.
 - [x] The QR encodes the invite link (`/r/{code}`) and is drawn as SVG from the `qrcode` package (named in the ticket); no outside QR service.
 - Tests: e2e `tests/e2e/lobby-qr.spec.ts` (sheet on a phone, inline on desktop, the encoded link opens this room's invite page).
+
+### SPIL-29: Nudge cooldown
+
+- [x] After a nudge the button reads "Nudge again in {s}s", counting down from 20, and is disabled.
+- [x] The server allows one nudge per player per 20 s, enforced inside the `nudge` function with `players.nudged_at` and a conditional update, so two quick taps can never both pass (the old clock-window limit could let two through across a window edge). The route keeps a per-room flood limit.
+- Tests: API "Nudge (SPIL-29)" (second within 20 s refused, guest refused), e2e `tests/e2e/nudge-cooldown.spec.ts` (countdown, extra taps send nothing), pgTAP `31_nudge_cooldown_test.sql`.
+- Migration 20261024003600, applied to staging.

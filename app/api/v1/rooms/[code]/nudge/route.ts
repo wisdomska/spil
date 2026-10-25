@@ -6,7 +6,7 @@ import { rateLimit } from "@/lib/ratelimit";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { playerTarget } from "@/lib/validation/schemas";
 
-/** POST /rooms/:code/nudge: host shakes a slow player's phone. Once per target per minute. */
+/** POST /rooms/:code/nudge: host shakes a slow player's phone. Once per player per 20 s (SPIL-29). */
 export const POST = route<CodeParams>(async (request, ctx) => {
   const userId = await requireUser(request);
   const code = await codeOf(ctx);
@@ -16,7 +16,7 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   requirePhase(room.room, "answering", "guessing");
   const target = room.players.find((p) => p.id === playerId && p.status === "active");
   if (!target || target.id === room.me.id) throw new ApiError("PLAYER_NOT_FOUND");
-  await rateLimit("nudge", `${room.room.id}:${playerId}`);
+  await rateLimit("nudge", room.room.id);
   const { error } = await getAdminClient().rpc("nudge", {
     p_room: room.room.id,
     p_target: playerId,
