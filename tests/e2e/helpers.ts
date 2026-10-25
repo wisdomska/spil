@@ -47,8 +47,8 @@ export async function fillProfile(page: Page, name: string) {
 export async function joinRoom(guest: Player, code: string, age = 25) {
   const { page } = guest;
   await page.goto("/join");
+  // SPIL-21: a full code joins by itself, no button press.
   await page.getByLabel("Room code").fill(code);
-  await page.getByRole("button", { name: "Join with code" }).click();
   await page.waitForURL(new RegExp(`/r/${code}/me$`));
   await passAgeGate(page, age);
   await fillProfile(page, guest.name);

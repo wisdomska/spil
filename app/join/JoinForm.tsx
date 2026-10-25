@@ -4,9 +4,9 @@ import { WarningCircleIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { CodeInput, cleanCode } from "@/components/ui/CodeInput";
+import { CODE_ALPHABET, CodeInput, cleanCode } from "@/components/ui/CodeInput";
 import { api, ClientApiError } from "@/lib/api/client";
 import type { PublicRoom } from "@/lib/api/types";
 import { track } from "@/lib/analytics/posthog";
@@ -23,7 +23,8 @@ export function JoinForm() {
   const [error, setError] = useState<JoinError | null>(null);
   const [max, setMax] = useState(12);
   const [busy, setBusy] = useState(false);
-  const ready = code.length === 4;
+  // SPIL-21: four characters a code can have, typed or pasted, look ready and join by themselves.
+  const ready = code.length === 4 && [...code].every((ch) => CODE_ALPHABET.includes(ch));
 
   const submit = async () => {
     if (!ready || busy) return;
@@ -42,6 +43,16 @@ export function JoinForm() {
       setBusy(false);
     }
   };
+
+  const submitRef = useRef(submit);
+  useEffect(() => {
+    submitRef.current = submit;
+  });
+  useEffect(() => {
+    if (!ready) return;
+    const id = setTimeout(() => void submitRef.current(), 150);
+    return () => clearTimeout(id);
+  }, [ready, code]);
 
   const message =
     error === "full"

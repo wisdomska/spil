@@ -492,3 +492,8 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] Going back to a card shows a chip: "You said Yes", "You said No" or "Skipped" (Red Flag, Green Flag: "You said Green flag" or "You said Red flag"). The matching button is pressed (aria-pressed, filled No or ringed Yes).
 - [x] The count comes from the room's question count with the shared `skipsLeft` rule, the same limit the server enforces.
 - Tests: unit `scoring.test.ts` (`skipsLeft`), e2e `tests/e2e/skip-state.spec.ts`.
+
+### SPIL-21: Join button state and auto-submit
+
+- [x] As soon as four characters a code can have are in (typed or pasted; I, O, 0 and 1 never appear in codes), the button turns to the filled accent style and the code submits after 150 ms. Errors keep the current copy.
+- Tests: e2e `tests/e2e/join-code.spec.ts` (three characters and an impossible letter stay disabled, the fourth joins without a tap, a missing room shows the error); the shared join helper now relies on auto-submit, so every helper-based e2e covers it.
