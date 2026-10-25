@@ -37,7 +37,7 @@ test("full game with 3 players on separate phones, then results, share card and 
   await expect(kofi.page.getByText("Waiting for Ama…")).toBeVisible();
   await host.page.getByRole("button", { name: "Skip" }).click();
   for (const p of [host, kofi, efua])
-    await expect(p.page.getByRole("heading", { name: /You're a/ })).toBeVisible({
+    await expect(p.page.getByRole("heading", { name: /You('re|'ve) / })).toBeVisible({
       timeout: 30_000,
     });
   await expect(host.page.getByText(/^You scored 100./)).toBeVisible();

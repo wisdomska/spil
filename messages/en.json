@@ -481,7 +481,7 @@
     "reactWith": "React with {emoji}"
   },
   "results": {
-    "headline": "You're a",
+    "headline": "{label, select, fresh {You're <em>Fresh Out The Box</em>.} innocent {You're <em>Mostly Innocent</em>.} around {You've <em>Been Around</em>.} main {You're a <em>Main Character</em>.} other {You're a <em>Legendary Menace</em>.}}",
     "line": "You scored {score}. The room guessed {guess}. {verdict}",
     "verdictWell": "They know you well.",
     "verdictLittle": "They know you a little.",

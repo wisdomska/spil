@@ -427,3 +427,11 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] Badges unlock four avatar frames (Ring, Accent, Dashed, Double), drawn from tokens and shown in the lobby, the room roster and the results, and two share card looks (Slate, Glow), all in the dark theme. Locked ones say which badge earns them; the API refuses a locked choice.
 - Tests: unit `tests/unit/game/achievements.test.ts` (progress capped, unlocks, wins need someone to beat), API (round recorded, locked refused, frame unlocked and worn, others see it in the roster), e2e `tests/e2e/badges.spec.ts` (play solo, First Spill earned, wear Ring). pgTAP `29_achievements_test.sql`. Page checked at 375 wide.
 - Migration 20261024003400, applied to staging.
+
+## Step 4: results and UX polish (SPIL-12 to SPIL-23)
+
+### SPIL-12: Results headline grammar per label
+
+- [x] Each label reads as a sentence: "You're Fresh Out The Box.", "You're Mostly Innocent.", "You've Been Around.", "You're a Main Character.", "You're a Legendary Menace." The label words keep the accent colour (one ICU select with rich text).
+- [x] The headline is used only on the results screen; the label sticker and reveal keep the bare label.
+- Tests: unit `tests/unit/copy/headline.test.ts` (all five labels); smoke e2e matches the new headline.

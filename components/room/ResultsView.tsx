@@ -177,10 +177,14 @@ export function ResultsView({
         <div className="grid grid-cols-[minmax(0,1fr)_108px] items-end gap-[18px]">
           <div className="grid gap-2.5">
             <h1 className="m-0 font-display text-[36px] leading-[.98] font-extrabold tracking-display text-balance">
-              {t("headline")}{" "}
-              <span className="text-accent-ink" style={{ fontStretch: "75%" }}>
-                {myLabel}.
-              </span>
+              {t.rich("headline", {
+                label: meRow ? labelKeyFor(meRow.label) : "menace",
+                em: (chunks) => (
+                  <span className="text-accent-ink" style={{ fontStretch: "75%" }}>
+                    {chunks}
+                  </span>
+                ),
+              })}
             </h1>
             <p className="m-0 text-[16px] leading-[1.45] text-text-muted">
               {pct
