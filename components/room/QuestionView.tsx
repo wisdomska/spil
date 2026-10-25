@@ -23,7 +23,8 @@ import { Sheet } from "@/components/ui/Sheet";
 import { useToast } from "@/components/ui/Toast";
 import { api } from "@/lib/api/client";
 import type { RoomState } from "@/lib/api/types";
-import { skipLimit, type AnswerValue } from "@/lib/game";
+import { cn } from "@/lib/cn";
+import { skipLimit, skipsLeft, type AnswerValue } from "@/lib/game";
 import { useAnswerQueue } from "@/lib/room/answerQueue";
 import { useAnswerSync } from "@/lib/room/useRoom";
 
@@ -191,6 +192,18 @@ export function QuestionView({ state, onDone, flags = false, preview }: Props) {
 
   if (!q) return null;
   const answered = Object.keys(answers).filter((id) => questions.some((qq) => qq.id === id)).length;
+  // SPIL-20: skips left are always shown, and a card I go back to shows what I said.
+  const prior = answers[q.id];
+  const skipsAvailable = skipsLeft(Object.values(answers), total);
+  const noSkips = skipsAvailable === 0 && prior !== "skip";
+  const priorLabel =
+    prior === "skip"
+      ? t("saidSkipped")
+      : prior === "yes"
+        ? t(flags ? "saidGreen" : "saidYes")
+        : prior === "no"
+          ? t(flags ? "saidRed" : "saidNo")
+          : null;
 
   const ANS =
     "flex h-16 flex-1 items-center justify-center gap-2 rounded-pill border-[1.5px] text-[18px] leading-none font-bold not-aria-disabled:active:scale-[.97] hover:brightness-[1.08]";
@@ -221,11 +234,13 @@ export function QuestionView({ state, onDone, flags = false, preview }: Props) {
         </span>
         <button
           type="button"
-          aria-label={t("skipAria")}
+          aria-label={noSkips ? t("skipNone") : t("skipLeftAria", { n: skipsAvailable })}
+          aria-disabled={noSkips || undefined}
+          title={noSkips ? t("skipLimit") : undefined}
           onClick={() => answer("skip", true)}
-          className="h-12 rounded-pill border-0 bg-transparent px-3 text-[15px] leading-none font-semibold text-text hover:bg-surface-raised"
+          className="h-12 rounded-pill border-0 bg-transparent px-3 text-[15px] leading-none font-semibold whitespace-nowrap text-text not-aria-disabled:hover:bg-surface-raised aria-disabled:text-text-muted"
         >
-          {t("skip")}
+          {noSkips ? t("skipNone") : t("skipLeft", { n: skipsAvailable })}
         </button>
         <button
           type="button"
@@ -273,8 +288,15 @@ export function QuestionView({ state, onDone, flags = false, preview }: Props) {
             {t(flags ? "stampRed" : "stampNo")}
           </motion.span>
           <div className="grid gap-3">
-            <span className="text-[15px] leading-none font-semibold text-text-muted">
-              {t(flags ? "flagPrefix" : "haveYouEver")}
+            <span className="flex items-center justify-between gap-3">
+              <span className="text-[15px] leading-none font-semibold text-text-muted">
+                {t(flags ? "flagPrefix" : "haveYouEver")}
+              </span>
+              {priorLabel && (
+                <span className="rounded-pill border border-line bg-surface px-2.5 py-1.5 text-[13px] leading-none font-semibold whitespace-nowrap">
+                  {priorLabel}
+                </span>
+              )}
             </span>
             <span className="font-display text-question leading-[1.05] font-extrabold tracking-[-.02em] text-pretty">
               {q.text}
@@ -295,7 +317,13 @@ export function QuestionView({ state, onDone, flags = false, preview }: Props) {
           type="button"
           onClick={() => answer("no")}
           aria-disabled={finishing || undefined}
-          className={`${ANS} border-text bg-transparent text-text`}
+          aria-pressed={prior === undefined ? undefined : prior === "no"}
+          className={cn(
+            ANS,
+            prior === "no"
+              ? "border-inverse bg-inverse text-on-inverse"
+              : "border-text bg-transparent text-text",
+          )}
         >
           {t(flags ? "red" : "no")}
         </button>
@@ -303,7 +331,12 @@ export function QuestionView({ state, onDone, flags = false, preview }: Props) {
           type="button"
           onClick={() => answer("yes")}
           aria-disabled={finishing || undefined}
-          className={`${ANS} border-accent bg-accent text-on-accent`}
+          aria-pressed={prior === undefined ? undefined : prior === "yes"}
+          className={cn(
+            ANS,
+            "border-accent bg-accent text-on-accent",
+            prior === "yes" && "shadow-[0_0_0_3px_var(--bg),0_0_0_6px_var(--accent)]",
+          )}
         >
           {t(flags ? "green" : "yes")}
         </button>

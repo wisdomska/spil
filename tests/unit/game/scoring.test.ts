@@ -4,6 +4,7 @@ import {
   checkAnswerSubmission,
   scoreForRound,
   skipLimit,
+  skipsLeft,
   spillScore,
   tallyAnswers,
   type AnswerValue,
@@ -66,6 +67,13 @@ describe("skip limit", () => {
     expect(skipLimit(20)).toBe(2);
     expect(skipLimit(29)).toBe(2);
     expect(skipLimit(100)).toBe(10);
+  });
+
+  it("counts down the skips left (SPIL-20)", () => {
+    expect(skipsLeft([], 20)).toBe(2);
+    expect(skipsLeft(["yes", "skip"], 20)).toBe(1);
+    expect(skipsLeft(["skip", "skip", "skip"], 20)).toBe(0);
+    expect(skipsLeft([], 0)).toBe(0);
   });
 });
 

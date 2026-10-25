@@ -38,6 +38,13 @@ export function skipLimit(questionCount: number): number {
   return Math.max(1, Math.floor(questionCount * SKIP_LIMIT_RATIO));
 }
 
+/** SPIL-20: skips still available this round, given the answers so far. */
+export function skipsLeft(values: Iterable<AnswerValue>, questionCount: number): number {
+  let used = 0;
+  for (const v of values) if (v === "skip") used++;
+  return Math.max(0, skipLimit(questionCount) - used);
+}
+
 export type SubmitAnswersError = "INCOMPLETE" | "SKIP_LIMIT" | "UNKNOWN_QUESTION";
 
 /** Rules for locking answers: every round question answered, nothing foreign, skips within the limit. */

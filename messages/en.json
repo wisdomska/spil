@@ -334,7 +334,15 @@
     "writeAsk": "Write a short answer",
     "writeHint": "Up to 140 characters. Names are revealed at the end. No links, numbers or handles.",
     "writeLabel": "Your answer",
-    "writeCount": "{n} of {max}"
+    "writeCount": "{n} of {max}",
+    "skipLeft": "Skip · {n} left",
+    "skipNone": "No skips left",
+    "skipLeftAria": "Skip this question, {n} {n, plural, one {skip} other {skips}} left",
+    "saidYes": "You said Yes",
+    "saidNo": "You said No",
+    "saidGreen": "You said Green flag",
+    "saidRed": "You said Red flag",
+    "saidSkipped": "Skipped"
   },
   "report": {
     "title": "Report this question",

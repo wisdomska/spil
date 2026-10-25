@@ -485,3 +485,10 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] `GET /rooms/:code` and the page share one server function (`lib/api/publicRoom.ts`), which now also returns `hostAvatar`.
 - Not measured: LCP on throttled 4G (needs a deployed build; listed in FOLLOW_UPS).
 - Tests: e2e `tests/e2e/invite-header.spec.ts` (card in the server HTML and on screen, none for a missing room), API preview test checks `hostAvatar`.
+
+### SPIL-20: Skips remaining, answered or skipped state when going back
+
+- [x] The Skip button always says how many are left: "Skip · 1 left". At 0 it reads "No skips left", is aria-disabled, shows the skip limit as a tooltip and still explains it with the toast when tapped.
+- [x] Going back to a card shows a chip: "You said Yes", "You said No" or "Skipped" (Red Flag, Green Flag: "You said Green flag" or "You said Red flag"). The matching button is pressed (aria-pressed, filled No or ringed Yes).
+- [x] The count comes from the room's question count with the shared `skipsLeft` rule, the same limit the server enforces.
+- Tests: unit `scoring.test.ts` (`skipsLeft`), e2e `tests/e2e/skip-state.spec.ts`.
