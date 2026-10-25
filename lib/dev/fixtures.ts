@@ -122,6 +122,7 @@ export function fixtureState({
       settings: { minPlayers: 1, maxPlayers: 12 },
       testPlayers: true,
       pollingOnly: false,
+      partyMode: false,
       channel: "room:fixture",
     },
     me: {

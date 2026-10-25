@@ -141,6 +141,8 @@ export type RoomState = {
     pollingOnly: boolean;
     /** Realtime channel id (room:{id}). */
     channel: string;
+    /** Party Mode (Batch 2) is switched on: the host may pair a big screen. */
+    partyMode: boolean;
   };
   me: {
     id: string;
@@ -223,3 +225,12 @@ export type RoomState = {
 };
 
 export type ApiErrorBody = { error: { code: string; message: string } };
+
+/**
+ * Party Mode: what a paired big screen sees. The room, the roster with progress, and the results
+ * once revealed; never anyone's own answers, guesses or the imposter's questions.
+ */
+export type TvState = Pick<RoomState, "room" | "players" | "results"> & {
+  /** The link phones open to join, for the lobby screen. */
+  joinPath: string;
+};

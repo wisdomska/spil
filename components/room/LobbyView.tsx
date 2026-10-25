@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/Toast";
 import type { RoomState } from "@/lib/api/types";
 import { rotationFor } from "@/lib/game";
 import { InviteSheet } from "./InviteSheet";
+import { PartyModeButton } from "./PartyModeButton";
 import { inviteLink, useCopyLink } from "./RoomShell";
 
 type Props = {
@@ -168,6 +169,7 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
                 {t("addTest")}
               </Button>
             )}
+            {room.partyMode && <PartyModeButton code={room.code} />}
             <Link
               href={`/create?room=${room.code}&mode=pack&pack=${room.pack.id}`}
               className="flex h-12 items-center justify-center gap-2 rounded-pill text-[15px] leading-none font-semibold text-text-muted no-underline hover:bg-surface-raised hover:text-text"

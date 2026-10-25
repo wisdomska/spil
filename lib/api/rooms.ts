@@ -56,7 +56,7 @@ import { getFlags, getSettings } from "@/lib/flags";
 import { getAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/lib/supabase/database.types";
 import { ApiError, fromDbError } from "./errors";
-import type { PackSummary, RoomState, StatePlayer } from "./types";
+import type { PackSummary, RoomState, StatePlayer, TvState } from "./types";
 
 type Tables = Database["public"]["Tables"];
 export type RoomRow = Tables["rooms"]["Row"];
@@ -1044,6 +1044,7 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       },
       testPlayers: flags.test_players,
       pollingOnly: flags.polling_only,
+      partyMode: flags.party_mode,
       channel: `room:${room.id}`,
     },
     me: {
@@ -1307,6 +1308,36 @@ export async function revealPlan(room: RoomRow, players: PlayerRow[]) {
   }
   const groups = spillGroups((rows ?? []).map((r) => ({ score: r.spill_score }))).length;
   return { groups, slides: revealSlides(groups, awards) };
+}
+
+/**
+ * Party Mode: the view for a paired big screen. Built from the host's state (or the first player
+ * still in the room), then every field about one player's own play is removed, so the screen
+ * shows only what the whole room may see.
+ */
+export async function tvState(code: string, token: string): Promise<TvState> {
+  const flags = await getFlags();
+  if (!flags.party_mode) throw new ApiError("FEATURE_OFF");
+  const { room, players, pack } = await loadRoomFull(code);
+  if (!room.tv_token || room.tv_token !== token) throw new ApiError("TV_NOT_PAIRED");
+  if (room.status === "closed") throw new ApiError("ROOM_EXPIRED");
+  const viewer =
+    players.find((p) => p.id === room.host_player_id) ??
+    players.find((p) => p.status === "active" || p.status === "sat_out") ??
+    players[0];
+  if (!viewer) throw new ApiError("ROOM_NOT_FOUND");
+  const state = await buildState({ room, players, me: viewer, pack });
+  return {
+    room: state.room,
+    players: state.players,
+    results: state.results
+      ? {
+          ...state.results,
+          spill: state.results.spill ? { ...state.results.spill, myVote: null } : undefined,
+        }
+      : undefined,
+    joinPath: `/r/${room.code}/me`,
+  };
 }
 
 /** Reloads everything after a write and returns the caller's fresh state. */

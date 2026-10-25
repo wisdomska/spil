@@ -851,6 +851,7 @@ export type Database = {
           round: number;
           started_at: string | null;
           status: Database["public"]["Enums"]["room_status"];
+          tv_token: string | null;
           updated_at: string;
         };
         Insert: {
@@ -873,6 +874,7 @@ export type Database = {
           round?: number;
           started_at?: string | null;
           status?: Database["public"]["Enums"]["room_status"];
+          tv_token?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -895,6 +897,7 @@ export type Database = {
           round?: number;
           started_at?: string | null;
           status?: Database["public"]["Enums"]["room_status"];
+          tv_token?: string | null;
           updated_at?: string;
         };
         Relationships: [
@@ -1093,6 +1096,7 @@ export type Database = {
           round: number;
           started_at: string | null;
           status: Database["public"]["Enums"]["room_status"];
+          tv_token: string | null;
           updated_at: string;
         };
         SetofOptions: {

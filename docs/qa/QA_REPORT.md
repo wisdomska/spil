@@ -350,3 +350,14 @@ Notes:
 ### Batch 1 complete
 
 All nine game modes are built, each in its own pull request stacked in order (#45 to #53): Room Percentage, Hot Takes, Most Likely To, Red Flag Green Flag, Rank the Room, Imposter, Two Truths and a Spill, Who Said That?, Spill or Skip. Migrations 1600 to 2500 are on staging. CI has not run on any of them because GitHub Actions is not starting jobs for this account (billing); they land on preview in order once it does, and production follows with the owner's go ahead.
+
+## Batch 2: playing together
+
+### Party Mode (big screen)
+
+- [x] Behind the `party_mode` flag (admin console). With it on, the host sees "Party Mode: show it on a TV" in the lobby; guests do not.
+- [x] Pairing makes a secret screen link once per room (24 random bytes); only the host can make it. A screen without the right token is turned away ("This screen is not paired"), and with the flag off it says Party Mode is switched off.
+- [x] The screen needs no account and polls every 2 seconds (rate limited). It shows the lobby with a big room code and the join address, everyone's progress while answering and guessing, Lights down, the full reveal for every game mode (the same slides as the phones, without sound or controls), and the scores.
+- [x] Privacy: the screen view is built from the room state with every per-player field removed (own answers, guesses, questions, the imposter's questions, own votes). The API test checks a yes answer never reaches the screen.
+- Tests: admin integration (flag off refused, guest cannot pair, token reused, wrong token 403, no own data while answering), e2e `tests/e2e/party-mode.spec.ts` (host pairs, screen shows code and players live, unpaired screen refused). pgTAP `22_party_mode_test.sql`. TV lobby checked at 1600 by 900.
+- Migration 20261024002600, applied to staging.

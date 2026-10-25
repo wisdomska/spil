@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RevealStage } from "@/components/game/RevealStage";
+import { revealProps } from "@/components/game/revealProps";
 import { ErrorScreen, type ErrorVariant } from "@/components/site/ErrorScreen";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
@@ -159,21 +160,7 @@ export function RoomApp({ code }: { code: string }) {
   if (screen === "reveal" && state.results) {
     return (
       <RevealStage
-        rows={state.results.rows}
-        awards={state.results.awards}
-        exact={state.results.exact}
-        percent={
-          state.room.mode === "room_percentage" || state.room.mode === "hot_takes"
-            ? state.results.percent
-            : undefined
-        }
-        likely={state.room.mode === "most_likely" ? state.results.likely : undefined}
-        flags={state.room.mode === "red_green" ? state.results.flags : undefined}
-        ranked={state.room.mode === "rank_room" ? state.results.ranked : undefined}
-        imposter={state.room.mode === "imposter" ? state.results.imposter : undefined}
-        cards={state.room.mode === "two_truths" ? state.results.cards : undefined}
-        said={state.room.mode === "who_said" ? state.results.said : undefined}
-        average={state.room.mode === "hot_takes"}
+        {...revealProps(state.room.mode, state.results)}
         reveal={state.room.reveal!}
         isHost={state.me.isHost}
         hostName={state.players.find((p) => p.isHost)?.nickname ?? ""}

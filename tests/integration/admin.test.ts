@@ -501,3 +501,62 @@ d("admin sign-in", () => {
     expect((await denied.json()).error.code).toBe("INVALID_CREDENTIALS");
   });
 });
+
+d("Party Mode (Batch 2)", () => {
+  it("pairs a big screen with a secret link; the screen never sees anyone's own play", async () => {
+    const before = (await owner.call("GET", "/admin/settings")).body.flags.party_mode ?? false;
+    const host = await anonPlayer();
+    const guest = await anonPlayer();
+    const created = await host.call("POST", "/rooms", {
+      ageBand: "18_plus",
+      packId: "classic",
+      questionCount: 5,
+    });
+    const roomCode: string = created.body.code;
+    for (const [i, p] of [host, guest].entries())
+      await p.call("POST", `/rooms/${roomCode}/join`, {
+        ageBand: "18_plus",
+        nickname: `TV ${i}`,
+        avatar: i,
+      });
+    const screen = (token: string) => fetch(`${BASE}/api/v1/rooms/${roomCode}/tv?t=${token}`);
+    try {
+      await owner.call("PATCH", "/admin/flags", { key: "party_mode", enabled: false });
+      expect(code(await host.call("POST", `/rooms/${roomCode}/tv`))).toBe("FEATURE_OFF");
+
+      await owner.call("PATCH", "/admin/flags", { key: "party_mode", enabled: true });
+      const lobby = await host.call("GET", `/rooms/${roomCode}/state`);
+      expect(lobby.body.room.partyMode).toBe(true);
+      expect(code(await guest.call("POST", `/rooms/${roomCode}/tv`))).toBe("NOT_HOST");
+      const paired = await host.call("POST", `/rooms/${roomCode}/tv`);
+      const token: string = paired.body.token;
+      expect(token.length).toBeGreaterThanOrEqual(24);
+      // Pairing again returns the same link.
+      expect((await host.call("POST", `/rooms/${roomCode}/tv`)).body.token).toBe(token);
+
+      expect((await screen("x".repeat(32))).status).toBe(403);
+      const view = await (await screen(token)).json();
+      expect(view.room.code).toBe(roomCode);
+      expect(view.players).toHaveLength(2);
+      expect(view.joinPath).toBe(`/r/${roomCode}/me`);
+      expect(view).not.toHaveProperty("me");
+
+      // While answering, the screen shows progress but never answers.
+      await host.call("POST", `/rooms/${roomCode}/start`);
+      const state = await host.call("GET", `/rooms/${roomCode}/state`);
+      await host.call("PUT", `/rooms/${roomCode}/answers`, {
+        answers: state.body.questions.map((q: { id: string }) => ({
+          questionId: q.id,
+          value: "yes",
+        })),
+      });
+      const answering = await (await screen(token)).json();
+      expect(answering.room.status).toBe("answering");
+      expect(JSON.stringify(answering)).not.toContain('"yes"');
+      expect(answering).not.toHaveProperty("questions");
+      expect(answering).not.toHaveProperty("myAnswers");
+    } finally {
+      await owner.call("PATCH", "/admin/flags", { key: "party_mode", enabled: before });
+    }
+  });
+});

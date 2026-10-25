@@ -69,6 +69,8 @@ type Props = {
   said?: WhoSaidQuestion[];
   /** Dev fixtures only: hold the stage at this many ms into the slide. */
   freezeAt?: number;
+  /** Party Mode screen: nothing to tap, no sound or host controls. */
+  display?: boolean;
 };
 
 const easeOutCubic = (k: number) => 1 - Math.pow(1 - k, 3);
@@ -98,6 +100,7 @@ export function RevealStage({
   cards,
   said,
   freezeAt,
+  display = false,
 }: Props) {
   const t = useTranslations("reveal");
   const tl = useTranslations("labels");
@@ -273,7 +276,7 @@ export function RevealStage({
         <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] whitespace-pre text-text-muted">
           {counter}
         </span>
-        <div className="flex items-center gap-1.5">
+        <div className={cn("flex items-center gap-1.5", display && "hidden")}>
           <button
             type="button"
             aria-pressed={sound.on}
@@ -490,7 +493,12 @@ export function RevealStage({
         />
       )}
 
-      <div className="fixed inset-x-0 bottom-0 z-[5] border-t border-line bg-surface/90 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] backdrop-blur-[14px]">
+      <div
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-[5] border-t border-line bg-surface/90 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] backdrop-blur-[14px]",
+          display && "hidden",
+        )}
+      >
         <div className="mx-auto max-w-[520px]">
           {isHost ? (
             <Button

@@ -4,7 +4,8 @@
     "titleTemplate": "{page} · SPIL",
     "description": "Your friends think they know you. Prove it. Answer “Have you ever…” questions in private, guess each other's score, then watch the scores spill.",
     "roomTitle": "Join room {code} on SPIL",
-    "roomDescription": "{host} is playing {pack}. Tap to join with a nickname. No signup."
+    "roomDescription": "{host} is playing {pack}. Tap to join with a nickname. No signup.",
+    "tvTitle": "SPIL on the big screen: {code}"
   },
   "common": {
     "brand": "SPIL",
@@ -94,7 +95,8 @@
     "textBlocked": "That answer has words we do not allow. Try different words.",
     "textContact": "No links, emails, numbers or handles in answers.",
     "textEmpty": "Write something first, up to 140 characters.",
-    "answerReported": "Reported. The answer is hidden for everyone."
+    "answerReported": "Reported. The answer is hidden for everyone.",
+    "linkCopiedTv": "Screen link copied."
   },
   "landing": {
     "headline": "Your friends think they know you.",
@@ -232,7 +234,12 @@
     "remove": "Remove {name}",
     "guestWait": "Waiting for {host} to start. Grab a drink.",
     "readySolo": "Ready to play solo.",
-    "playSolo": "Play solo"
+    "playSolo": "Play solo",
+    "partyMode": "Party Mode: show it on a TV",
+    "partyTitle": "Show the game on a big screen",
+    "partyBody": "Open this link on a TV or laptop everyone can see. Phones stay the controllers. Only share it with this room.",
+    "partyCopy": "Copy the screen link",
+    "partyOpen": "Open it on this device"
   },
   "question": {
     "offline": "You're offline. Keep going, your answers send when you're back.",
@@ -1258,5 +1265,19 @@
       "name": "Spill or Skip",
       "body": "Play the classic game, then vote for one story you want to hear. Anyone can pass."
     }
+  },
+  "tv": {
+    "lobbyTitle": "Grab your phones.",
+    "answeringTitle": "Answering in private.",
+    "guessingTitle": "Time to guess.",
+    "readyTitle": "Lights down. {host} starts the reveal.",
+    "resultsTitle": "The scores.",
+    "code": "ROOM CODE",
+    "join": "Join on your phone at {url}",
+    "done": "Done",
+    "unpairedTitle": "This screen is not paired.",
+    "unpairedBody": "Ask the host to tap Party Mode in the lobby and open the link on this screen.",
+    "offTitle": "Party Mode is switched off.",
+    "offBody": "It can be switched on in the admin console."
   }
 }
