@@ -969,6 +969,18 @@ d("host tools", () => {
     ).toBe("CUSTOM_ADULTS_ONLY");
   });
 
+  it("Local packs: SHS Days, Exam Season and Church Kid for 13+, Detty December for 16+", async () => {
+    const p = await anonPlayer();
+    const ids = async (band: string) =>
+      ((await p.call("GET", `/packs?band=${band}`)).body as Array<{ id: string }>).map((x) => x.id);
+    const young = await ids("13_15");
+    for (const id of ["shs_days", "exam_season", "church_kid"]) expect(young).toContain(id);
+    expect(young).not.toContain("detty_december");
+    expect(await ids("16_17")).toContain("detty_december");
+    const preview = await p.call("GET", "/packs/shs_days/preview?band=13_15");
+    expect(preview.body.questions).toHaveLength(3);
+  });
+
   it("two players are enough to start", async () => {
     const room = await fullRoom(2);
     expect((await room.host.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);

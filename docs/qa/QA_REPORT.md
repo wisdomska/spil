@@ -404,3 +404,11 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] Reportable: the usual report button on the question card works; a report reaches the admin queue, where the question can be hidden.
 - Tests: API (host only, filter, prefix removed, 5 needed, room becomes 18+, never listed, played, mixed ages refused), e2e `tests/e2e/custom-pack.spec.ts` (write five, refused handle, play solo, a custom question shows). pgTAP `26_custom_packs_test.sql`.
 - Migrations 20261024003000 and 20261024003100, applied to staging (see the staging incident note in MIGRATIONS.md).
+
+### Teen, seasonal and local packs
+
+- [x] SHS Days (13+, Ghana: boarding house, prep, exeat), Exam Season (13+), Church Kid (13+) and Detty December (16+). 30 questions each, three preview samples each.
+- [x] Detty December stays 16+ and keeps to parties, outfits, travel and family; no drinking (Ghana's drinking age is 18).
+- [x] Age bands hold: a 13 to 15 player sees the three 13+ packs and not Detty December; 16 to 17 sees it. Checked on preview as a 15 year old (Church Kid under Everyday, SHS Days and Exam Season under Life stages).
+- Tests: API (bands, preview samples). pgTAP `27_local_packs_test.sql`.
+- Migration 20261024003200, applied to staging.
