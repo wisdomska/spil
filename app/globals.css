@@ -11,6 +11,8 @@
 }
 
 html {
+  /* SPIL-32: the scrollbar space is always kept, so the header never shifts between pages. */
+  scrollbar-gutter: stable;
   font-synthesis: none;
   background: var(--bg);
   color: var(--text);

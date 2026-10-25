@@ -566,3 +566,8 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 
 - [x] `haptic(ms)` buzzes 10 ms when an answer is committed and when a guess (players or Room Percentage) locks in. Only where the Vibration API exists (Android); iOS and desktop do nothing; reduced motion skips it; it never throws.
 - Tests: unit `tests/unit/haptics.test.ts` (buzz, reduced motion, no API, a throwing browser).
+
+### SPIL-32: Header width jump between pages
+
+- [x] `scrollbar-gutter: stable` on html, so short pages (no scrollbar) and long pages keep the same width.
+- Tests: e2e `tests/e2e/header-stable.spec.ts` (header position and width equal on /, /join and /create).
