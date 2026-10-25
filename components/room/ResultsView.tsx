@@ -3,7 +3,7 @@
 import { HourglassMediumIcon, TrophyIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Avatar } from "@/components/brand/Avatar";
 import {
   AWARD_KEY,
@@ -58,6 +58,13 @@ export function ResultsView({
   const [tab, setTab] = useState<Tab>(initialTab);
   const [share, setShare] = useState(initialShare);
   const [explain, setExplain] = useState(false);
+  // SPIL-16: turning Spill Mode on asks first; turning it off never does.
+  const [confirmSpill, setConfirmSpill] = useState(false);
+  const keepPrivate = useRef<HTMLButtonElement>(null);
+  const setSpill = (on: boolean) => {
+    onSpill(on);
+    toast(on ? tt("spillOn") : tt("spillOff"));
+  };
   const results = state.results;
   const host = state.players.find((p) => p.isHost);
   const hot = state.room.mode === "hot_takes";
@@ -415,13 +422,30 @@ export function ResultsView({
 
       <CrewPanel state={state} />
 
+      <Sheet
+        open={confirmSpill}
+        onOpenChange={setConfirmSpill}
+        title={t("spillConfirmTitle")}
+        description={t("spillConfirmBody")}
+        initialFocus={keepPrivate}
+      >
+        <Button
+          onClick={() => {
+            setConfirmSpill(false);
+            setSpill(true);
+          }}
+        >
+          {t("spillConfirmYes")}
+        </Button>
+        <Button ref={keepPrivate} variant="secondary" onClick={() => setConfirmSpill(false)}>
+          {t("spillConfirmNo")}
+        </Button>
+      </Sheet>
+
       {!noSpill && (
         <SwitchRow
           checked={state.me.spillMode}
-          onCheckedChange={(on) => {
-            onSpill(on);
-            toast(on ? tt("spillOn") : tt("spillOff"));
-          }}
+          onCheckedChange={(on) => (on ? setConfirmSpill(true) : setSpill(false))}
           title={t("spillMode")}
           description={state.me.spillMode ? t("spillOnCopy") : t("spillOffCopy")}
         />

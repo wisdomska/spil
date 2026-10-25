@@ -17,6 +17,8 @@ type SheetProps = {
   closeButton?: boolean;
   children: React.ReactNode;
   className?: string;
+  /** Where focus starts when it opens (default: the first focusable element). */
+  initialFocus?: React.RefObject<HTMLElement | null>;
 };
 
 /**
@@ -33,6 +35,7 @@ export function Sheet({
   closeButton,
   children,
   className,
+  initialFocus,
 }: SheetProps) {
   const t = useTranslations("common");
   return (
@@ -44,6 +47,11 @@ export function Sheet({
         />
         <Dialog.Content
           onEscapeKeyDown={(e) => !dismissible && e.preventDefault()}
+          onOpenAutoFocus={(e) => {
+            if (!initialFocus?.current) return;
+            e.preventDefault();
+            initialFocus.current.focus();
+          }}
           onPointerDownOutside={(e) => !dismissible && e.preventDefault()}
           className={cn(
             "fixed grid grid-cols-[minmax(0,1fr)] gap-4 overflow-y-auto bg-surface-raised text-text outline-none",

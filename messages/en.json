@@ -587,7 +587,11 @@
     "spillPassed": "{name} passed. No pressure.",
     "spillYouTelling": "You're telling it. Over to you.",
     "spillYouPassed": "You passed. No pressure.",
-    "badgesLink": "See your badges"
+    "badgesLink": "See your badges",
+    "spillConfirmTitle": "Turn on Spill Mode?",
+    "spillConfirmBody": "Everyone in this room will see your yes and no answers next to your name. People can screenshot, so only turn it on if you're comfortable.",
+    "spillConfirmYes": "Spill it",
+    "spillConfirmNo": "Keep private"
   },
   "share": {
     "title": "Your card",

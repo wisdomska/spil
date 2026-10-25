@@ -455,3 +455,9 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] The roster shows "Sat out" for that player instead of a count (until they lock in their guesses).
 - [x] Driven by the player's own `sat_out` status in the room state rather than a separate broadcast, so a missed realtime event or a reload cannot skip it.
 - Tests: e2e `tests/e2e/moved-on.spec.ts` (sheet, copy, roster, no repeat after reload).
+
+### SPIL-16: Spill Mode confirmation, keep scroll position
+
+- [x] Turning Spill Mode on opens "Turn on Spill Mode?" with the screenshot warning, "Spill it" and "Keep private"; focus starts on "Keep private" (new `initialFocus` on `Sheet`). Keep private leaves it off. Turning it off is instant with the existing toast.
+- [x] No scroll jump: nothing in the results, switch or toast scrolls or moves focus, and the page holds its position (checked within 4 px) after Spill Mode turns on and the list updates.
+- Tests: e2e `tests/e2e/spill-confirm.spec.ts`.
