@@ -16,7 +16,7 @@ import {
 import {
   checkAnswerSubmission,
   ranksPlayers,
-  ratesStatements,
+  answersWithRatings,
   votesForPlayers,
   type AnswerValue,
 } from "@/lib/game";
@@ -48,9 +48,9 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   if (answers.error) throw fromDbError(answers.error);
 
   const mode = roomMode(room.room);
-  if (ratesStatements(mode) || votesForPlayers(mode) || ranksPlayers(mode)) {
+  if (answersWithRatings(mode) || votesForPlayers(mode) || ranksPlayers(mode)) {
     // Hot Takes rates every statement; Most Likely To and Rank the Room cover every prompt.
-    const given = ratesStatements(mode)
+    const given = answersWithRatings(mode)
       ? await myRatings(room.room, room.me.id)
       : votesForPlayers(mode)
         ? await myVotes(room.room, room.me.id)

@@ -276,7 +276,7 @@ d("host tools", () => {
     const notBuilt = await host.call("POST", "/rooms", {
       ageBand: "18_plus",
       packId: "classic",
-      mode: "imposter",
+      mode: "two_truths",
     });
     expect(code(notBuilt)).toBe("MODE_UNAVAILABLE");
 
@@ -561,6 +561,75 @@ d("host tools", () => {
     expect(revealed.body.results.best[aId]).toMatchObject({ place: 1 });
     expect(revealed.body.room.reveal.total).toBe(5 + revealed.body.results.awards.length);
     expect(JSON.stringify(revealed.body)).not.toContain("myRanks");
+  });
+
+  it("Imposter: one secret player gets other questions, the room votes, the reveal names them", async () => {
+    const room = await fullRoom(3, "imposter", 5, "imposter");
+    const players = room.players as [Player, Player, Player];
+    expect((await players[0].call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);
+    const states = await Promise.all(
+      players.map((p) => p.call("GET", `/rooms/${room.roomCode}/state`)),
+    );
+    // Exactly one phone shows different questions, and nothing in any state says who.
+    const firsts = states.map((s) => s.body.questions[0].text as string);
+    const odd = firsts.findIndex((t) => firsts.filter((x) => x === t).length === 1);
+    expect(odd).toBeGreaterThanOrEqual(0);
+    expect(firsts.filter((t) => t !== firsts[odd])).toHaveLength(2);
+    for (const s of states) expect(JSON.stringify(s.body)).not.toMatch(/imposter"?:|alt_?text/i);
+    const ids = states.map((s) => s.body.me.id as string);
+    const imposterId = ids[odd]!;
+    const crew = players.filter((_, i) => i !== odd);
+    const imp = players[odd]!;
+
+    for (const p of players) {
+      const s = await p.call("GET", `/rooms/${room.roomCode}/state`);
+      await p.call("PUT", `/rooms/${room.roomCode}/ratings`, {
+        ratings: s.body.questions.map((q: { id: string }) => ({ questionId: q.id, value: 60 })),
+      });
+      expect((await p.call("POST", `/rooms/${room.roomCode}/answers/submit`)).status).toBe(200);
+    }
+    const voting = await crew[0]!.call("GET", `/rooms/${room.roomCode}/state`);
+    expect(voting.body.room.status).toBe("guessing");
+    expect(voting.body.board).toHaveLength(5);
+    expect(voting.body.board[0].answers).toHaveLength(3);
+    expect(JSON.stringify(voting.body.board)).not.toContain("altText");
+    expect(JSON.stringify(voting.body.board)).not.toContain(firsts[odd]);
+
+    expect(code(await crew[0]!.call("POST", `/rooms/${room.roomCode}/guesses/submit`))).toBe(
+      "INCOMPLETE",
+    );
+    const self = await crew[0]!.call("PUT", `/rooms/${room.roomCode}/suspect`, {
+      targetId: ids[players.indexOf(crew[0]!)],
+    });
+    expect(code(self)).toBe("INVALID_TARGET");
+    // The crew both vote for the imposter (one changes their mind first); the imposter votes crew.
+    await crew[0]!.call("PUT", `/rooms/${room.roomCode}/suspect`, {
+      targetId: ids[players.indexOf(crew[1]!)],
+    });
+    await crew[0]!.call("PUT", `/rooms/${room.roomCode}/suspect`, { targetId: imposterId });
+    await crew[1]!.call("PUT", `/rooms/${room.roomCode}/suspect`, { targetId: imposterId });
+    await imp.call("PUT", `/rooms/${room.roomCode}/suspect`, {
+      targetId: ids[players.indexOf(crew[0]!)],
+    });
+    for (const p of players)
+      expect((await p.call("POST", `/rooms/${room.roomCode}/guesses/submit`)).status).toBe(200);
+
+    const revealed = await players[0].call("POST", `/rooms/${room.roomCode}/advance`, {
+      from: "ready",
+    });
+    expect(revealed.status).toBe(200);
+    const outcome = revealed.body.results.imposter;
+    expect(outcome).toMatchObject({ imposterId, caught: true, top: [imposterId], voters: 3 });
+    expect(outcome.board[0].altText).toBe(firsts[odd]);
+    const pts = Object.fromEntries(
+      revealed.body.results.rows.map((r: { playerId: string; mindReader: number }) => [
+        r.playerId,
+        r.mindReader,
+      ]),
+    );
+    expect(pts[imposterId]).toBe(0);
+    for (const id of ids.filter((x) => x !== imposterId)) expect(pts[id]).toBe(10);
+    expect(revealed.body.room.reveal.total).toBe(2 + revealed.body.results.awards.length);
   });
 
   it("two players are enough to start", async () => {

@@ -21,6 +21,7 @@ import { PercentGuessView } from "./PercentGuessView";
 import { QuestionView } from "./QuestionView";
 import { RankView } from "./RankView";
 import { RateView } from "./RateView";
+import { SuspectView } from "./SuspectView";
 import { VoteView } from "./VoteView";
 import { ReadyView } from "./ReadyView";
 import { ResultsView } from "./ResultsView";
@@ -165,6 +166,7 @@ export function RoomApp({ code }: { code: string }) {
         likely={state.room.mode === "most_likely" ? state.results.likely : undefined}
         flags={state.room.mode === "red_green" ? state.results.flags : undefined}
         ranked={state.room.mode === "rank_room" ? state.results.ranked : undefined}
+        imposter={state.room.mode === "imposter" ? state.results.imposter : undefined}
         average={state.room.mode === "hot_takes"}
         reveal={state.room.reveal!}
         isHost={state.me.isHost}
@@ -181,8 +183,9 @@ export function RoomApp({ code }: { code: string }) {
   const likely = state.room.mode === "most_likely";
   const flags = state.room.mode === "red_green";
   const rank = state.room.mode === "rank_room";
+  const imposter = state.room.mode === "imposter";
   // Modes without a Spill Score show points for reading the room in the roster.
-  const pointsOnly = hot || likely || flags || rank;
+  const pointsOnly = hot || likely || flags || rank || imposter;
   const statusFor = (id: string) => {
     const p = state.players.find((x) => x.id === id);
     if (!p) return "";
@@ -198,7 +201,7 @@ export function RoomApp({ code }: { code: string }) {
     if (state.room.status === "guessing") return c("guessing");
     // My own count comes from this phone, so it never waits for the server (SPIL-03).
     const answered =
-      p.id === state.me.id && hot
+      p.id === state.me.id && (hot || imposter)
         ? Object.keys(state.myRatings ?? {}).length
         : p.id === state.me.id && likely
           ? Object.keys(state.myVotes ?? {}).length
@@ -268,10 +271,11 @@ export function RoomApp({ code }: { code: string }) {
             onAddTest={() => actions.addTestPlayers.mutate(1, { onError: fail })}
           />
         )}
-        {screen === "question" && hot && (
+        {screen === "question" && (hot || imposter) && (
           <RateView
             key={state.room.round}
             state={state}
+            imposter={imposter}
             onDone={() => actions.submitAnswers.mutateAsync(undefined).catch(fail)}
           />
         )}
@@ -289,7 +293,7 @@ export function RoomApp({ code }: { code: string }) {
             onDone={() => actions.submitAnswers.mutateAsync(undefined).catch(fail)}
           />
         )}
-        {screen === "question" && !hot && !likely && !rank && (
+        {screen === "question" && !hot && !likely && !rank && !imposter && (
           <QuestionView
             key={state.room.round}
             state={state}
@@ -322,6 +326,13 @@ export function RoomApp({ code }: { code: string }) {
             average={hot}
             skipping={actions.skipToReveal.isPending}
             onSkip={skip}
+            onDone={() => actions.submitGuesses.mutateAsync(undefined).catch(fail)}
+          />
+        )}
+        {screen === "guess" && imposter && (
+          <SuspectView
+            key={state.room.round}
+            state={state}
             onDone={() => actions.submitGuesses.mutateAsync(undefined).catch(fail)}
           />
         )}

@@ -11,6 +11,10 @@ import {
   swipesFlags,
   rankRoomResults,
   ranksPlayers,
+  answersWithRatings,
+  hasImposter,
+  imposterBoard,
+  imposterResults,
   isMode,
   modeMinPlayers,
   roomPercentResults,
@@ -193,6 +197,46 @@ async function currentQuestions(room: RoomRow) {
   }));
 }
 
+/**
+ * Imposter: the alternative question for each of the round's questions. Kept apart from
+ * currentQuestions so it never reaches a client by accident; only the imposter's own phone and
+ * the reveal see it.
+ */
+async function altTexts(room: RoomRow) {
+  const { data, error } = await db()
+    .from("room_questions")
+    .select("question_id, questions(alt_text)")
+    .eq("room_id", room.id)
+    .eq("round", room.round);
+  if (error) throw fromDbError(error);
+  return Object.fromEntries(
+    (data ?? []).map((r) => [
+      r.question_id,
+      (r.questions as { alt_text: string | null } | null)?.alt_text ?? "",
+    ]),
+  ) as Record<string, string>;
+}
+
+/** Imposter: who the imposter is this round (service role only; players cannot read it yet). */
+export async function imposterOf(room: RoomRow) {
+  const { data, error } = await db()
+    .from("imposters")
+    .select("player_id")
+    .eq("room_id", room.id)
+    .eq("round", room.round)
+    .maybeSingle();
+  if (error) throw fromDbError(error);
+  return data?.player_id ?? null;
+}
+
+/** Imposter: each player's vote this round, voter id to suspect id. */
+async function roundSuspects(room: RoomRow) {
+  const rows = await roundInputs(room, "vote");
+  return Object.fromEntries(
+    rows.filter((r) => !r.question_id && r.target_id).map((r) => [r.player_id, r.target_id!]),
+  ) as Record<string, string>;
+}
+
 async function roundAnswers(room: RoomRow) {
   const { data, error } = await db()
     .from("answers")
@@ -312,10 +356,15 @@ async function resultsInput(room: RoomRow, players: PlayerRow[]) {
     roundAnswers(room),
     roundGuesses(room),
     guessesQuestions(roomMode(room)) ? roundInputs(room, "percent") : Promise.resolve([]),
-    ratesStatements(roomMode(room)) ? roundInputs(room, "rating") : Promise.resolve([]),
+    answersWithRatings(roomMode(room)) ? roundInputs(room, "rating") : Promise.resolve([]),
+    // Imposter votes are also kind vote, but carry no question; they are read separately.
     votesForPlayers(roomMode(room)) ? roundInputs(room, "vote") : Promise.resolve([]),
     ranksPlayers(roomMode(room)) ? roundInputs(room, "rank") : Promise.resolve([]),
   ]);
+  const imposterMode = hasImposter(roomMode(room));
+  const [imposterId, altText, suspects] = imposterMode
+    ? await Promise.all([imposterOf(room), altTexts(room), roundSuspects(room)])
+    : [null, {} as Record<string, string>, {} as Record<string, string>];
   const byPlayer = (id: string) =>
     Object.fromEntries(
       answers.filter((a) => a.player_id === id).map((a) => [a.question_id, a.value as AnswerValue]),
@@ -341,7 +390,13 @@ async function resultsInput(room: RoomRow, players: PlayerRow[]) {
     ratings: typeof ratings;
     votes: typeof votes;
     ranks: Record<string, Record<string, string[]>>;
+    imposterId: string | null;
+    altText: Record<string, string>;
+    suspects: Record<string, string>;
   } = {
+    imposterId,
+    altText,
+    suspects,
     questions,
     percentGuesses,
     ratings,
@@ -374,7 +429,9 @@ export async function finalize(room: RoomRow, players: PlayerRow[]) {
         ? flagResults(input)
         : ranksPlayers(roomMode(room))
           ? rankRoomResults(input)
-          : computeResults(input));
+          : hasImposter(roomMode(room))
+            ? imposterResults(input)
+            : computeResults(input));
   if (percent) {
     // Keep each guess's points on its input, so this round never changes later.
     const updates = percent.percentQuestions.flatMap((q) =>
@@ -447,7 +504,10 @@ export async function advancePhaseIfReady(room: RoomRow, players: PlayerRow[]): 
         // room goes to Lights down.
         room.status === "guessing" && skipsGuessing(roomMode(room))
         ? 0
-        : undefined;
+        : // Imposter: everyone has one vote to cast.
+          room.status === "guessing" && hasImposter(roomMode(room))
+          ? 1
+          : undefined;
   const plan = planAdvance(room.status, players.map(toPhase), { questionTargets });
   if (plan.lock.length) {
     const { error } = await db()
@@ -559,7 +619,7 @@ export async function autoplayBots(room: RoomRow) {
           await db().from("players").update({ answers_submitted_at: now }).eq("id", bot.id);
           return;
         }
-        if (ratesStatements(roomMode(room))) {
+        if (answersWithRatings(roomMode(room))) {
           await db().rpc("save_mode_inputs", {
             p_player: bot.id,
             p_room: room.id,
@@ -588,7 +648,24 @@ export async function autoplayBots(room: RoomRow) {
     );
   }
 
-  if (room.status === "guessing" && guessesQuestions(roomMode(room))) {
+  if (room.status === "guessing" && hasImposter(roomMode(room))) {
+    await Promise.all(
+      bots
+        .filter((b) => !b.guesses_submitted_at)
+        .map(async (bot) => {
+          const others = players.filter((p) => p.id !== bot.id && isScoredPlayer(p));
+          if (others.length)
+            await db().rpc("save_mode_inputs", {
+              p_player: bot.id,
+              p_room: room.id,
+              p_round: room.round,
+              p_kind: "vote",
+              p_inputs: [{ target_id: others[Math.floor(Math.random() * others.length)]!.id }],
+            });
+          await db().from("players").update({ guesses_submitted_at: now }).eq("id", bot.id);
+        }),
+    );
+  } else if (room.status === "guessing" && guessesQuestions(roomMode(room))) {
     const questions = await percentTargets(room, players);
     await Promise.all(
       bots
@@ -608,7 +685,11 @@ export async function autoplayBots(room: RoomRow) {
           await db().from("players").update({ guesses_submitted_at: now }).eq("id", bot.id);
         }),
     );
-  } else if (room.status === "guessing" && !skipsGuessing(roomMode(room))) {
+  } else if (
+    room.status === "guessing" &&
+    !skipsGuessing(roomMode(room)) &&
+    !hasImposter(roomMode(room))
+  ) {
     const targets = players.filter((p) => p.status === "active" || p.status === "sat_out");
     await Promise.all(
       bots
@@ -669,7 +750,7 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
   ]);
   // Hot Takes counts ratings and Most Likely To votes, not yes or no answers (SPIL-03).
   const rated =
-    room.status === "answering" && ratesStatements(roomMode(room))
+    room.status === "answering" && answersWithRatings(roomMode(room))
       ? await roundInputs(room, "rating")
       : room.status === "answering" && votesForPlayers(roomMode(room))
         ? await roundInputs(room, "vote")
@@ -747,7 +828,12 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
 
   if (room.status === "answering") {
     state.questions = questions;
-    if (ratesStatements(roomMode(room))) state.myRatings = await myRatings(room, me.id);
+    // Imposter: the imposter's phone shows their alternative questions, and nothing says so.
+    if (hasImposter(roomMode(room)) && (await imposterOf(room)) === me.id) {
+      const alt = await altTexts(room);
+      state.questions = questions.map((q) => ({ id: q.id, text: alt[q.id] || q.text }));
+    }
+    if (answersWithRatings(roomMode(room))) state.myRatings = await myRatings(room, me.id);
     if (votesForPlayers(roomMode(room))) state.myVotes = await myVotes(room, me.id);
     if (ranksPlayers(roomMode(room))) state.myRanks = await myRanks(room, me.id);
     state.myAnswers = Object.fromEntries(
@@ -761,6 +847,16 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     state.myGuesses = Object.fromEntries(
       guesses.filter((g) => g.guesser_id === me.id).map((g) => [g.target_id, g.value]),
     );
+    if (room.status === "guessing" && hasImposter(roomMode(room))) {
+      // Everyone's numbers against the real questions; the imposter's questions stay hidden.
+      const input = await resultsInput(room, players);
+      state.board = imposterBoard(input).map((row) => ({
+        questionId: row.questionId,
+        text: row.text,
+        answers: row.answers,
+      }));
+      state.mySuspect = input.suspects[me.id];
+    }
     if (room.status === "guessing" && guessesQuestions(roomMode(room))) {
       const [targets, mine] = await Promise.all([
         percentTargets(room, players),
@@ -807,21 +903,24 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     const likely = votesForPlayers(roomMode(room)) ? mostLikelyResults(input) : null;
     const flags = swipesFlags(roomMode(room)) ? flagResults(input) : null;
     const ranked = ranksPlayers(roomMode(room)) ? rankRoomResults(input) : null;
+    const imposter = hasImposter(roomMode(room)) ? imposterResults(input).imposter : null;
     state.room.reveal = {
       index: room.reveal_index,
       at: room.reveal_at ?? room.revealed_at ?? new Date().toISOString(),
       total: guessesQuestions(roomMode(room))
         ? revealSlides(percent.length, awardRows.length, "question").length
-        : likely || flags || ranked
-          ? revealSlides(
-              likely?.likely.length ?? flags?.flags.length ?? ranked?.ranked.length ?? 0,
-              awardRows.length,
-              "question",
-            ).length
-          : revealSlides(
-              spillGroups((rows ?? []).map((r) => ({ score: r.spill_score }))).length,
-              awardRows.length,
-            ).length,
+        : imposter
+          ? revealSlides(2, awardRows.length, "question").length
+          : likely || flags || ranked
+            ? revealSlides(
+                likely?.likely.length ?? flags?.flags.length ?? ranked?.ranked.length ?? 0,
+                awardRows.length,
+                "question",
+              ).length
+            : revealSlides(
+                spillGroups((rows ?? []).map((r) => ({ score: r.spill_score }))).length,
+                awardRows.length,
+              ).length,
     };
     state.results = {
       // Only Room Percentage reveals by question; classic rooms leave it out.
@@ -837,6 +936,8 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       // Rank the Room: the room's order per prompt and each player's highest place.
       ranked: ranked?.ranked,
       best: ranked?.best,
+      // Imposter: the vote, who it was and their questions (only now that the room is revealed).
+      imposter: imposter ?? undefined,
       exact: computed.guessPoints
         .filter((g) => g.points - (g.closest ? CLOSEST_BONUS : 0) === 10)
         .map((g) => ({ guesserId: g.guesserId, targetId: g.targetId })),
@@ -899,6 +1000,10 @@ export async function revealPlan(room: RoomRow, players: PlayerRow[]) {
   if (swipesFlags(roomMode(room))) {
     const scenarios = flagResults(await resultsInput(room, players)).flags.length;
     return { groups: scenarios, slides: revealSlides(scenarios, awards, "question") };
+  }
+  if (hasImposter(roomMode(room))) {
+    // Two slides: the room's vote, then who the imposter was.
+    return { groups: 2, slides: revealSlides(2, awards, "question") };
   }
   if (ranksPlayers(roomMode(room))) {
     const prompts = rankRoomResults(await resultsInput(room, players)).ranked.length;

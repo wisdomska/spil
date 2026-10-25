@@ -301,3 +301,15 @@ Notes:
 - [x] Test players rank too.
 - Tests: unit `tests/unit/game/rankRoom.test.ts` (order, ties, points, best place, shared shuffle), API (incomplete and repeated orders refused, re-rank replaces, no guessing, order, points, best), e2e `tests/e2e/rank-room.spec.ts` (three phones, built with the arrow buttons). pgTAP `17_rank_room_test.sql`. Screens checked at 375 wide: ranking, reveal and results.
 - Migration 20261024002100, applied to staging; production at the Batch 1 release.
+
+### Imposter (Batch 1, game mode 6)
+
+- [x] /create offers Imposter; it plays only pairs packs (Imposter, 30 harmless pairs, 13+). This is the one mode where answers are shown to the room: the mode card and the answering screen both say so, and no "Have you ever" pack can be played in it.
+- [x] Needs 3 players. At start the server picks one active player at random as the imposter, in a table nobody can read before the reveal. The imposter is not told: their phone simply shows the alternative questions. Answers are 0 to 100 on the vessel.
+- [x] Voting: everyone sees the real questions with every player's number (never the imposter's questions), then votes for anyone but themselves. A changed vote replaces the old one. Locking the vote submits.
+- [x] Points: 10 for a vote for the imposter; the imposter gets 20 for escaping. A tie at the top means the room could not agree, so the imposter escapes. Only the Mind Reader award.
+- [x] Reveal: two host-paced slides, the room's vote (counts only) then "The imposter was" with a Caught or Got away sticker and the questions they were asked.
+- [x] Results: the imposter sees "You were the imposter" with Caught or Got away with it; everyone else sees who it was and their points. The Questions tab shows each question, the imposter's version and everyone's numbers.
+- [x] Test players answer and vote.
+- Tests: unit `tests/unit/game/imposter.test.ts` (caught, tie, wrong pick, self votes, board), API (exactly one phone sees other questions and no state names the imposter, the vote board hides the alternatives, self vote refused, vote replaced, caught, points, reveal length), e2e `tests/e2e/imposter.spec.ts` (three phones find the imposter by comparing questions). pgTAP `18_imposter_test.sql`. Screens checked at 375 wide: answering, vote, reveal and results.
+- Migration 20261024002200, applied to staging; production at the Batch 1 release.

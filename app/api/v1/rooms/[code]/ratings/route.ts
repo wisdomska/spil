@@ -2,7 +2,7 @@ import { codeOf, requireUser, type CodeParams } from "@/lib/api/auth";
 import { ApiError, fromDbError } from "@/lib/api/errors";
 import { readBody, route } from "@/lib/api/handler";
 import { requireMember, requirePhase, roomMode } from "@/lib/api/rooms";
-import { ratesStatements } from "@/lib/game";
+import { answersWithRatings } from "@/lib/game";
 import { rateLimit } from "@/lib/ratelimit";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { putRatings } from "@/lib/validation/schemas";
@@ -18,7 +18,7 @@ export const PUT = route<CodeParams>(async (request, ctx) => {
   const room = await requireMember(code, userId);
   await rateLimit("answers", room.me.id);
   requirePhase(room.room, "answering");
-  if (!ratesStatements(roomMode(room.room))) throw new ApiError("WRONG_PHASE");
+  if (!answersWithRatings(roomMode(room.room))) throw new ApiError("WRONG_PHASE");
   if (room.me.status !== "active") throw new ApiError("WRONG_PHASE");
   if (room.me.answers_submitted_at) throw new ApiError("ALREADY_SUBMITTED");
 

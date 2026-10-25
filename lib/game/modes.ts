@@ -36,7 +36,7 @@ export const MODE_RULES: Readonly<Record<Mode, ModeRule>> = {
   // A split of 2 answers would give the other player's answer away, so 3 like the others.
   red_green: { minPlayers: 3, available: true, adultOnly: false },
   rank_room: { minPlayers: 3, available: true, adultOnly: false },
-  imposter: { minPlayers: 3, available: false, adultOnly: false },
+  imposter: { minPlayers: 3, available: true, adultOnly: false },
   two_truths: { minPlayers: 3, available: false, adultOnly: false },
   who_said: { minPlayers: 3, available: false, adultOnly: true },
   spill_or_skip: { minPlayers: 3, available: false, adultOnly: false },
@@ -66,7 +66,7 @@ export function ratesStatements(mode: Mode): boolean {
   return mode === "hot_takes";
 }
 
-export type PackFormat = "yes_no" | "statements" | "prompts" | "flags";
+export type PackFormat = "yes_no" | "statements" | "prompts" | "flags" | "pairs";
 
 /** Most Likely To: players vote for a player on each prompt; there is no guessing phase. */
 export function votesForPlayers(mode: Mode): boolean {
@@ -83,6 +83,19 @@ export function ranksPlayers(mode: Mode): boolean {
   return mode === "rank_room";
 }
 
+/**
+ * Imposter: one secret player gets different questions; answers (0 to 100, from harmless pairs
+ * packs) are shown to the room, and the guessing phase is a vote for the imposter.
+ */
+export function hasImposter(mode: Mode): boolean {
+  return mode === "imposter";
+}
+
+/** Modes that answer each question with a 0 to 100 rating on the vessel. */
+export function answersWithRatings(mode: Mode): boolean {
+  return ratesStatements(mode) || hasImposter(mode);
+}
+
 /** Modes with no guessing phase: the room goes from answering straight to Lights down. */
 export function skipsGuessing(mode: Mode): boolean {
   return votesForPlayers(mode) || swipesFlags(mode) || ranksPlayers(mode);
@@ -97,6 +110,7 @@ export function answersYesNo(mode: Mode): boolean {
 export function modeFormat(mode: Mode): PackFormat {
   if (ratesStatements(mode)) return "statements";
   if (swipesFlags(mode)) return "flags";
+  if (hasImposter(mode)) return "pairs";
   // Rank the Room plays the same prompt packs as Most Likely To.
   return votesForPlayers(mode) || ranksPlayers(mode) ? "prompts" : "yes_no";
 }

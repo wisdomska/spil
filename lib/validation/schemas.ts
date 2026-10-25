@@ -70,6 +70,9 @@ export const advance = z.object({
 
 export const playerTarget = z.object({ playerId: z.uuid() });
 
+/** Imposter: the player I think had different questions. */
+export const putSuspect = z.object({ targetId: z.uuid() });
+
 /** Rank the Room: the whole room in order on each prompt, top first. */
 export const putRanks = z.object({
   ranks: z

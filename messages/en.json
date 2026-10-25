@@ -274,7 +274,11 @@
     "rankAria": "Prompt {n} of {total}. Rank the room: most likely to {text}",
     "rankYou": "{name} (you)",
     "moveUp": "Move {name} up",
-    "moveDown": "Move {name} down"
+    "moveDown": "Move {name} down",
+    "imposterAsk": "Answer from 0 to 100",
+    "imposterHint": "Answer honestly. In this game the room sees everyone's answers.",
+    "imposterLow": "0 not at all",
+    "imposterHigh": "100 so much"
   },
   "report": {
     "title": "Report this question",
@@ -329,7 +333,12 @@
     "avgAria": "Your guess of the average for: {question}",
     "avgValueText": "{value} out of 100",
     "avgNothingTitle": "Too few ratings to guess this round.",
-    "avgNothingBody": "A statement needs 3 or more ratings before the room can guess its average. The reveal starts when the others lock in."
+    "avgNothingBody": "A statement needs 3 or more ratings before the room can guess its average. The reveal starts when the others lock in.",
+    "suspectKicker": "WHO HAD DIFFERENT QUESTIONS?",
+    "suspectTitle": "Find the imposter.",
+    "suspectBody": "Everyone answered these. One of you was asked something else, and may not know it.",
+    "suspectAria": "Your vote for the imposter",
+    "suspectLock": "Lock in my vote"
   },
   "ready": {
     "title": "Everyone's guessed.",
@@ -389,7 +398,16 @@
     "announceFlag": "{verdict}. {green} percent said green.",
     "rankKicker": "THE ROOM'S ORDER: MOST LIKELY TO",
     "rankTop": "Most likely",
-    "announceRank": "Top of the room: {names}."
+    "announceRank": "Top of the room: {names}.",
+    "voteKicker": "THE ROOM VOTED FOR",
+    "voteCount": "{count} of {total} votes",
+    "voteTie": "The room could not agree.",
+    "imposterKicker": "THE IMPOSTER WAS",
+    "caught": "Caught",
+    "escaped": "Got away",
+    "theyWere": "They were asked:",
+    "announceVote": "The room voted for {names}.",
+    "announceImposter": "The imposter was {name}."
   },
   "results": {
     "headline": "You're a",
@@ -454,7 +472,19 @@
     "bestKicker": "THE ROOM RANKED YOU #{place} FOR",
     "bestNone": "Not enough rankings to place you this round.",
     "rankPoints": "Your orders matched the room for {points} points.",
-    "rankStatsNote": "The room's order only. Nobody sees anyone's ranking."
+    "rankStatsNote": "The room's order only. Nobody sees anyone's ranking.",
+    "imposterKickerYou": "YOU WERE THE IMPOSTER",
+    "imposterKicker": "THE IMPOSTER WAS",
+    "imposterCaughtYou": "The room caught you.",
+    "imposterEscapedYou": "You got away with it for {points} points.",
+    "imposterCaught": "The room caught them.",
+    "imposterEscaped": "They got away with it.",
+    "rightVote": "You voted right for {points} points.",
+    "wrongVote": "You voted for {name}.",
+    "imposterStatsNote": "Every question, what the imposter was asked instead, and everyone's numbers.",
+    "imposterAlt": "Imposter: {text}",
+    "caughtTitle": "Caught.",
+    "escapedTitle": "Got away with it."
   },
   "share": {
     "title": "Your card",
@@ -1142,6 +1172,10 @@
     "rank_room": {
       "name": "Rank the Room",
       "body": "Put everyone in order on silly prompts, then see the room's order."
+    },
+    "imposter": {
+      "name": "Imposter",
+      "body": "Easy questions, one secret player gets different ones. Answers are shown. Find them."
     }
   }
 }

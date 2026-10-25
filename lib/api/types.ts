@@ -13,6 +13,8 @@ import type {
   FlagQuestion,
   LoneFlag,
   HotTake,
+  ImposterBoardRow,
+  ImposterOutcome,
   LikelyQuestion,
   PackFormat,
   RankQuestion,
@@ -154,6 +156,10 @@ export type RoomState = {
   myGuesses?: Record<string, number>;
   /** Room Percentage, while guessing: the questions to guess the room's yes share for. */
   percentQuestions?: Array<{ id: string; text: string }>;
+  /** Imposter, while voting: everyone's numbers against the real questions. */
+  board?: Array<Omit<ImposterBoardRow, "altText">>;
+  /** Imposter, while voting: who I voted for. */
+  mySuspect?: string;
   /** Rank the Room, while answering: my order on each prompt, player ids top first. */
   myRanks?: Record<string, string[]>;
   /** Most Likely To, while answering: my vote on each prompt, by question id. */
@@ -181,6 +187,8 @@ export type RoomState = {
     ranked?: RankQuestion[];
     /** Rank the Room: each player's highest place, by player id. */
     best?: Record<string, BestPlace>;
+    /** Imposter: the vote, who the imposter was, and every question with its alternative. */
+    imposter?: ImposterOutcome;
     /** Exact guesses, for the reveal's Bullseye stamps (SPIL-09, SPIL-11). */
     exact: Array<{ guesserId: string; targetId: string }>;
     awards: AwardRow[];

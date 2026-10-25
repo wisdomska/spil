@@ -281,6 +281,49 @@ export type Database = {
           },
         ];
       };
+      imposters: {
+        Row: {
+          created_at: string;
+          player_id: string;
+          room_id: string;
+          round: number;
+        };
+        Insert: {
+          created_at?: string;
+          player_id: string;
+          room_id: string;
+          round: number;
+        };
+        Update: {
+          created_at?: string;
+          player_id?: string;
+          room_id?: string;
+          round?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "imposters_player_id_fkey";
+            columns: ["player_id"];
+            isOneToOne: false;
+            referencedRelation: "players";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "imposters_player_id_fkey";
+            columns: ["player_id"];
+            isOneToOne: false;
+            referencedRelation: "players_public";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "imposters_room_id_fkey";
+            columns: ["room_id"];
+            isOneToOne: false;
+            referencedRelation: "rooms";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       messages: {
         Row: {
           body: string;
@@ -549,6 +592,7 @@ export type Database = {
       };
       questions: {
         Row: {
+          alt_text: string | null;
           answered_count: number;
           id: string;
           is_sample: boolean;
@@ -560,6 +604,7 @@ export type Database = {
           yes_count: number;
         };
         Insert: {
+          alt_text?: string | null;
           answered_count?: number;
           id?: string;
           is_sample?: boolean;
@@ -571,6 +616,7 @@ export type Database = {
           yes_count?: number;
         };
         Update: {
+          alt_text?: string | null;
           answered_count?: number;
           id?: string;
           is_sample?: boolean;

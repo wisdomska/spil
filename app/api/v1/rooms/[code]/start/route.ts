@@ -10,7 +10,7 @@ import {
   roomMode,
 } from "@/lib/api/rooms";
 import { getSettings } from "@/lib/flags";
-import { canStart, modeMinPlayers, type MinAge, type PlayerStatus } from "@/lib/game";
+import { canStart, hasImposter, modeMinPlayers, type MinAge, type PlayerStatus } from "@/lib/game";
 import { getAdminClient } from "@/lib/supabase/admin";
 
 /** POST /rooms/:code/start: host starts the round. Draws questions and opens answering. */
@@ -43,6 +43,17 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   if (error) throw fromDbError(error);
 
   const started = await findRoom(code);
+  // Imposter: one active player, picked at random and told nothing; only the reveal shows it.
+  if (started && hasImposter(roomMode(started))) {
+    const active = room.players.filter((p) => p.status === "active");
+    const pick = active[Math.floor(Math.random() * active.length)];
+    if (pick) {
+      const { error: pickError } = await getAdminClient()
+        .from("imposters")
+        .upsert({ room_id: started.id, round: started.round, player_id: pick.id });
+      if (pickError) throw fromDbError(pickError);
+    }
+  }
   if (started) await autoplayBots(started);
   return freshState(code, userId);
 });

@@ -14,3 +14,4 @@ export * from "./percentage";
 export * from "./mostLikely";
 export * from "./flags";
 export * from "./rankRoom";
+export * from "./imposter";

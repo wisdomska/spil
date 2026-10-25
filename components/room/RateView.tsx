@@ -13,6 +13,8 @@ import type { RoomState } from "@/lib/api/types";
 type Props = {
   state: RoomState;
   onDone: () => Promise<unknown>;
+  /** Imposter: questions answered 0 to 100, shown to the room later. */
+  imposter?: boolean;
   /** Dev fixtures only: a starting rating (otherwise there is none until the first touch). */
   initialValue?: number | null;
 };
@@ -21,7 +23,7 @@ type Props = {
  * Hot Takes: rate each statement 0 to 100 on the vessel, in private. Saved debounced; locking the
  * last one submits. Going back shows the rating already given.
  */
-export function RateView({ state, onDone, initialValue = null }: Props) {
+export function RateView({ state, onDone, imposter = false, initialValue = null }: Props) {
   const t = useTranslations("question");
   const tg = useTranslations("guess");
   const tt = useTranslations("toast");
@@ -107,11 +109,14 @@ export function RateView({ state, onDone, initialValue = null }: Props) {
       </div>
       <div className="grid gap-2.5">
         <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] text-text-muted uppercase">
-          {t("rateAsk")}
+          {imposter ? t("imposterAsk") : t("rateAsk")}
         </span>
         <h1 className="m-0 font-display text-[30px] leading-[1.05] font-extrabold tracking-[-.02em] text-balance">
           {q.text}
         </h1>
+        {imposter && (
+          <p className="m-0 text-[14px] leading-[1.4] text-text-muted">{t("imposterHint")}</p>
+        )}
       </div>
       <GuessVessel
         key={q.id}
@@ -124,8 +129,8 @@ export function RateView({ state, onDone, initialValue = null }: Props) {
         hint={tg("drag")}
         lowerLabel={t("rateLower")}
         raiseLabel={t("rateRaise")}
-        lowCaption={t("rateLow")}
-        highCaption={t("rateHigh")}
+        lowCaption={imposter ? t("imposterLow") : t("rateLow")}
+        highCaption={imposter ? t("imposterHigh") : t("rateHigh")}
       />
       {/* The vessel is tall on phones, so Lock it in stays on screen (and dragging never scrolls). */}
       <div className="sticky bottom-0 z-[5] -mx-5 mt-auto border-t border-line bg-surface/90 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] backdrop-blur-[14px] lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
