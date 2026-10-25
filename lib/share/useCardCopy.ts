@@ -23,6 +23,7 @@ export function useCardCopy() {
       domain: t("card.domain"),
       saved: t("toast.cardSaved"),
       awardName: (award: AwardKey) => t(`awards.${AWARD_KEY[award]}`),
+      duoHeadline: (pct: number) => t("card.duoHeadline", { pct }),
     }),
     [t],
   );

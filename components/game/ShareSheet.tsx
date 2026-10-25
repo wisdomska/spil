@@ -10,7 +10,7 @@ import { SwitchRow } from "@/components/ui/Switch";
 import { useToast } from "@/components/ui/Toast";
 import { cardToBlob, downloadBlob, shareOrSave } from "@/lib/share/capture";
 import { useCardCopy } from "@/lib/share/useCardCopy";
-import { ShareCard, type BoardRow } from "./ShareCard";
+import { ShareCard, type BoardRow, type DuoCard } from "./ShareCard";
 import { track } from "@/lib/analytics/posthog";
 
 type Props = {
@@ -27,6 +27,8 @@ type Props = {
   award?: AwardKey;
   board: BoardRow[];
   boardAward?: { award: AwardKey; name: string };
+  /** SPIL-23: a two-player round's group card. */
+  duo?: DuoCard;
   hideName: boolean;
   onHideName: (hide: boolean) => void;
 };
@@ -53,6 +55,7 @@ export function ShareSheet(props: Props) {
     award: props.award,
     board: props.board,
     boardAward: props.boardAward,
+    duo: props.duo,
     copy,
   };
   const filename = `spil-${props.room}-${format}.png`;

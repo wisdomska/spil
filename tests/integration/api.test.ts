@@ -1052,6 +1052,22 @@ d("host tools", () => {
     expect(reset.body.series).toBeUndefined();
   }, 360_000);
 
+  it("Duo (SPIL-23): two players get a percentage and one duo award, no room awards", async () => {
+    const room = await fullRoom(2);
+    const [host, guest] = room.players as [Player, Player];
+    const c = room.roomCode;
+    await host.call("POST", `/rooms/${c}/start`);
+    await answerAll(host, c, () => "yes");
+    await answerAll(guest, c, () => "no");
+    // Both read each other exactly: 100 for the host, 0 for the guest.
+    await guessAll(host, c, 0);
+    await guessAll(guest, c, 100);
+    await host.call("POST", `/rooms/${c}/advance`, { from: "ready" });
+    const { results } = (await guest.call("GET", `/rooms/${c}/state`)).body;
+    expect(results.awards).toEqual([]);
+    expect(results.duo).toEqual({ pct: 100, award: "soulmates", errors: [0, 0] });
+  });
+
   it("two players are enough to start", async () => {
     const room = await fullRoom(2);
     expect((await room.host.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);

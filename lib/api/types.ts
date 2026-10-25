@@ -14,6 +14,7 @@ import type {
   Crowned,
   FlagQuestion,
   LoneFlag,
+  DuoResult,
   FrameId,
   HotTake,
   LookId,
@@ -236,6 +237,8 @@ export type RoomState = {
     /** Exact guesses, for the reveal's Bullseye stamps (SPIL-09, SPIL-11). */
     exact: Array<{ guesserId: string; targetId: string }>;
     awards: AwardRow[];
+    /** SPIL-23: exactly two scored players in a classic round, both guessed. */
+    duo?: DuoResult;
     questionStats: QuestionStatRow[];
   };
 };

@@ -15,6 +15,8 @@ import {
   hasImposter,
   imposterBoard,
   imposterResults,
+  playsClassic,
+  duoResult,
   SERIES_MIN_ROUNDS,
   seriesScore,
   roundStats,
@@ -1315,6 +1317,11 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
         spillNames: q.spillNames,
       })),
     };
+    // SPIL-23: two scored players in a classic round get a duo result instead of awards.
+    if (playsClassic(roomMode(room))) {
+      const duo = duoResult(state.results.rows);
+      if (duo) state.results.duo = duo;
+    }
   }
 
   return state;

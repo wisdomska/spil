@@ -610,7 +610,26 @@
     "series": "Series",
     "seriesLine": "{name} {wins}",
     "seriesAria": "Series after {rounds} rounds: {standings}",
-    "seriesReset": "Reset series"
+    "seriesReset": "Reset series",
+    "duo": "Duo",
+    "duoTitle": "How well you know each other",
+    "duoPct": "{pct}%",
+    "duoAria": "How well you know each other: {pct}%",
+    "duoGuess": "{name} was {n} off",
+    "duoAwards": {
+      "soulmates": {
+        "name": "Soulmates",
+        "reason": "You both guessed within 5 of each other."
+      },
+      "getting_there": {
+        "name": "Getting there",
+        "reason": "You both guessed within 15 of each other."
+      },
+      "work_in_progress": {
+        "name": "Work in progress",
+        "reason": "At least one guess was more than 15 off. Rematch?"
+      }
+    }
   },
   "share": {
     "title": "Your card",
@@ -633,7 +652,8 @@
     "topped": "{name} won the round.",
     "toppedTie": "{names} tied for the win.",
     "awardLine": "{award}: {name}",
-    "domain": "spil-party.vercel.app"
+    "domain": "spil-party.vercel.app",
+    "duoHeadline": "How well we know each other: {pct}%"
   },
   "sheet": {
     "leaveTitle": "Leave this room?",

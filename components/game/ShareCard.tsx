@@ -17,6 +17,13 @@ export type BoardRow = {
   points?: number;
 };
 
+/** SPIL-23: a two-player round's group card: both vessels, the percentage and the duo award. */
+export type DuoCard = {
+  pct: number;
+  award: string;
+  players: Array<{ name: string; avatar: number; score: number }>;
+};
+
 export type ShareCardProps = {
   format: CardFormat;
   /** Scale for on-screen previews; capture always renders at 1. */
@@ -35,6 +42,7 @@ export type ShareCardProps = {
   board?: BoardRow[];
   /** Square card footer sticker, e.g. Mind Reader: Zainab. */
   boardAward?: { award: AwardKey; name: string };
+  duo?: DuoCard;
   copy: {
     spillScore: string;
     owner: (name: string) => string;
@@ -47,6 +55,7 @@ export type ShareCardProps = {
     headlineEmphasis: string;
     domain: string;
     awardName?: (award: AwardKey) => string;
+    duoHeadline?: (pct: number) => string;
   };
 };
 
@@ -128,6 +137,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
     pack,
     board = [],
     boardAward,
+    duo,
     copy,
   },
   ref,
@@ -352,112 +362,173 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
               </span>
             </div>
             <span style={{ font: "800 72px/.95 var(--font-display)", letterSpacing: "-.035em" }}>
-              {copy.topped(winners)}
+              {duo ? (copy.duoHeadline?.(duo.pct) ?? `${duo.pct}%`) : copy.topped(winners)}
             </span>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "400px 1fr",
-                gap: 56,
-                flex: 1,
-                minHeight: 0,
-              }}
-            >
+            {duo ? (
               <div
                 style={{
-                  position: "relative",
-                  borderRadius: 44,
-                  background: "var(--surface-raised)",
-                  overflow: "hidden",
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 40,
+                  flex: 1,
+                  minHeight: 0,
                 }}
               >
-                <Fill score={top?.score ?? 0} height={648} fontSize={220} waveW={64} waveH={24} />
-                <span
-                  style={{
-                    position: "absolute",
-                    left: 24,
-                    bottom: 32,
-                    display: "inline-flex",
-                    padding: "14px 26px",
-                    background: "var(--inverse)",
-                    color: "var(--on-inverse)",
-                    border: "7px solid var(--sticker-edge)",
-                    borderRadius: 14,
-                    boxShadow: "0 0 0 2px var(--sticker-ring)",
-                    font: "800 38px/1 var(--font-display)",
-                    fontStretch: "80%",
-                    transform: "rotate(-4deg)",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {labelFor(top?.score ?? 0).name}
-                </span>
-              </div>
-              {/* Rows stack from the top; a short room should not spread them down the card. */}
-              <div
-                style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start" }}
-              >
-                {board.slice(0, 6).map((p) => (
+                {duo.players.map((p) => (
                   <div
-                    key={p.rank + p.name}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 22,
-                      padding: "10px 0",
-                      borderBottom: "2px solid var(--line)",
-                    }}
+                    key={p.name}
+                    style={{ display: "flex", flexDirection: "column", gap: 20, minHeight: 0 }}
                   >
-                    <span
+                    <div
                       style={{
-                        font: "500 30px/1 var(--font-mono)",
-                        color: "var(--text-muted)",
-                        minWidth: 36,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {p.rankLabel ?? p.rank}
-                    </span>
-                    <Avatar n={p.avatar} size={68} decorative />
-                    <span
-                      style={{
+                        position: "relative",
                         flex: 1,
-                        font: "700 42px/1 var(--font-display)",
-                        letterSpacing: "-.02em",
-                        whiteSpace: "nowrap",
+                        borderRadius: 44,
+                        background: "var(--surface-raised)",
                         overflow: "hidden",
-                        textOverflow: "ellipsis",
                       }}
                     >
-                      {p.name}
-                    </span>
-                    <span
-                      style={{
-                        font: "600 44px/1 var(--font-mono)",
-                        fontVariantNumeric: "tabular-nums",
-                        display: "flex",
-                        alignItems: "baseline",
-                        gap: 8,
-                      }}
-                    >
-                      {p.points ?? p.score}
-                      {p.points != null && (
-                        <span
-                          style={{
-                            font: "500 22px/1 var(--font-mono)",
-                            color: "var(--text-muted)",
-                          }}
-                        >
-                          pts
-                        </span>
-                      )}
+                      <Fill score={p.score} height={540} fontSize={180} waveW={64} waveH={24} />
+                    </div>
+                    <span style={{ display: "flex", alignItems: "center", gap: 18 }}>
+                      <Avatar n={p.avatar} size={64} decorative />
+                      <span
+                        style={{
+                          font: "700 42px/1 var(--font-display)",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {p.name}
+                      </span>
                     </span>
                   </div>
                 ))}
               </div>
-            </div>
+            ) : (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "400px 1fr",
+                  gap: 56,
+                  flex: 1,
+                  minHeight: 0,
+                }}
+              >
+                <div
+                  style={{
+                    position: "relative",
+                    borderRadius: 44,
+                    background: "var(--surface-raised)",
+                    overflow: "hidden",
+                  }}
+                >
+                  <Fill score={top?.score ?? 0} height={648} fontSize={220} waveW={64} waveH={24} />
+                  <span
+                    style={{
+                      position: "absolute",
+                      left: 24,
+                      bottom: 32,
+                      display: "inline-flex",
+                      padding: "14px 26px",
+                      background: "var(--inverse)",
+                      color: "var(--on-inverse)",
+                      border: "7px solid var(--sticker-edge)",
+                      borderRadius: 14,
+                      boxShadow: "0 0 0 2px var(--sticker-ring)",
+                      font: "800 38px/1 var(--font-display)",
+                      fontStretch: "80%",
+                      transform: "rotate(-4deg)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {labelFor(top?.score ?? 0).name}
+                  </span>
+                </div>
+                {/* Rows stack from the top; a short room should not spread them down the card. */}
+                <div
+                  style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start" }}
+                >
+                  {board.slice(0, 6).map((p) => (
+                    <div
+                      key={p.rank + p.name}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 22,
+                        padding: "10px 0",
+                        borderBottom: "2px solid var(--line)",
+                      }}
+                    >
+                      <span
+                        style={{
+                          font: "500 30px/1 var(--font-mono)",
+                          color: "var(--text-muted)",
+                          minWidth: 36,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {p.rankLabel ?? p.rank}
+                      </span>
+                      <Avatar n={p.avatar} size={68} decorative />
+                      <span
+                        style={{
+                          flex: 1,
+                          font: "700 42px/1 var(--font-display)",
+                          letterSpacing: "-.02em",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {p.name}
+                      </span>
+                      <span
+                        style={{
+                          font: "600 44px/1 var(--font-mono)",
+                          fontVariantNumeric: "tabular-nums",
+                          display: "flex",
+                          alignItems: "baseline",
+                          gap: 8,
+                        }}
+                      >
+                        {p.points ?? p.score}
+                        {p.points != null && (
+                          <span
+                            style={{
+                              font: "500 22px/1 var(--font-mono)",
+                              color: "var(--text-muted)",
+                            }}
+                          >
+                            pts
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              {boardAward ? (
+              {duo ? (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    padding: "14px 28px",
+                    background: "var(--accent)",
+                    color: "var(--on-accent)",
+                    border: "7px solid var(--sticker-edge)",
+                    borderRadius: 999,
+                    boxShadow: "0 0 0 2px var(--sticker-ring)",
+                    font: "800 36px/1 var(--font-display)",
+                    transform: "rotate(3deg)",
+                  }}
+                >
+                  {duo.award}
+                </span>
+              ) : boardAward ? (
                 <span
                   style={{
                     display: "inline-flex",

@@ -24,3 +24,4 @@ export * from "./crews";
 export * from "./achievements";
 export * from "./series";
 export * from "./socialProof";
+export * from "./duo";

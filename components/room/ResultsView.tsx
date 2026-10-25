@@ -44,7 +44,7 @@ type Props = {
   initialShare?: boolean;
 };
 
-type Tab = "scores" | "awards" | "questions";
+type Tab = "scores" | "awards" | "questions" | "duo";
 
 export function ResultsView({
   state,
@@ -125,6 +125,9 @@ export function ResultsView({
   // Solo: nobody guessed, so there is no room guess, no points and no winner (cascade).
   const pct = state.room.mode !== "classic" && state.room.mode !== "spill_or_skip";
   const solo = (meRow?.guessedBy ?? 0) === 0;
+  // SPIL-23: two scored players see Scores and Duo; room awards and question counts need 3.
+  const duoRoom = !pct && rows.length === 2;
+  const duo = results.duo;
   // Room Percentage: nobody guesses about players; the points are for reading the room.
   const anyGuesses =
     state.room.mode === "who_said"
@@ -258,11 +261,18 @@ export function ResultsView({
         value={tab}
         onValueChange={setTab}
         className="mt-1.5"
-        items={[
-          { value: "scores", label: t("scores") },
-          { value: "awards", label: t("awards") },
-          { value: "questions", label: t("questions") },
-        ]}
+        items={
+          duoRoom
+            ? [
+                { value: "scores", label: t("scores") },
+                ...(duo ? [{ value: "duo" as const, label: t("duo") }] : []),
+              ]
+            : [
+                { value: "scores", label: t("scores") },
+                { value: "awards", label: t("awards") },
+                { value: "questions", label: t("questions") },
+              ]
+        }
       >
         <TabPanel value="scores" className="outline-none">
           <ol className="m-0 grid list-none p-0">
@@ -341,6 +351,11 @@ export function ResultsView({
             </button>
           )}
         </TabPanel>
+        {duoRoom && duo && (
+          <TabPanel value="duo" className="outline-none">
+            <DuoPanel duo={duo} rows={results.rows} />
+          </TabPanel>
+        )}
         <TabPanel value="awards" className="outline-none">
           <div className="grid gap-[18px]">
             {results.awards.length === 0 && (
@@ -503,6 +518,19 @@ export function ResultsView({
         score={score}
         award={myAward?.award}
         board={board}
+        duo={
+          duoRoom && duo
+            ? {
+                pct: duo.pct,
+                award: t(`duoAwards.${duo.award}.name`),
+                players: results.rows.map((r) => ({
+                  name: r.nickname,
+                  avatar: r.avatar,
+                  score: r.score,
+                })),
+              }
+            : undefined
+        }
         boardAward={mind && mindName ? { award: "mind_reader", name: mindName } : undefined}
         hideName={state.me.hideNameOnCard}
         onHideName={onHideName}
@@ -1234,6 +1262,45 @@ function SeriesStrip({
           {t("seriesReset")}
         </button>
       )}
+    </div>
+  );
+}
+
+/** SPIL-23: the duo tab: one big percentage, the duo award, and each guess's error. */
+function DuoPanel({
+  duo,
+  rows,
+}: {
+  duo: NonNullable<NonNullable<RoomState["results"]>["duo"]>;
+  rows: NonNullable<RoomState["results"]>["rows"];
+}) {
+  const t = useTranslations("results");
+  return (
+    <div className="grid gap-5 pt-2">
+      <div className="grid gap-2" aria-label={t("duoAria", { pct: duo.pct })} role="group">
+        <span className="text-[15px] leading-none font-semibold text-text-muted">
+          {t("duoTitle")}
+        </span>
+        <span className="font-mono text-[72px] leading-none font-semibold tracking-[-.04em] tabular-nums">
+          {t("duoPct", { pct: duo.pct })}
+        </span>
+      </div>
+      <div className="grid gap-1.5 border-y border-line py-4">
+        <span className="font-display text-[24px] leading-none font-extrabold">
+          {t(`duoAwards.${duo.award}.name`)}
+        </span>
+        <span className="text-[15px] leading-[1.45] text-text-muted">
+          {t(`duoAwards.${duo.award}.reason`)}
+        </span>
+      </div>
+      <ul className="m-0 grid list-none gap-2.5 p-0">
+        {rows.map((r, i) => (
+          <li key={r.playerId} className="flex items-center gap-2.5 text-[15px] leading-none">
+            <Avatar n={r.avatar} size={28} decorative />
+            {t("duoGuess", { name: r.nickname, n: duo.errors[i] ?? 0 })}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
