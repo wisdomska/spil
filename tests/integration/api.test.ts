@@ -981,6 +981,36 @@ d("host tools", () => {
     expect(preview.body.questions).toHaveLength(3);
   });
 
+  it("Badges: a round counts, frames unlock, locked ones are refused, others see the frame", async () => {
+    const room = await fullRoom(2);
+    const [host, guest] = room.players as [Player, Player];
+    const before = await host.call("GET", "/me/badges");
+    expect(before.body.equipped).toEqual({ frame: "none", look: "night" });
+    expect(code(await host.call("PATCH", "/me/cosmetics", { frame: "ring" }))).toBe("BAD_REQUEST");
+
+    await host.call("POST", `/rooms/${room.roomCode}/start`);
+    await answerAll(host, room.roomCode, () => "yes");
+    await answerAll(guest, room.roomCode, () => "no");
+    for (const p of [host, guest]) await guessAll(p, room.roomCode, 50);
+    await host.call("POST", `/rooms/${room.roomCode}/advance`, { from: "ready" });
+
+    const after = await host.call("GET", "/me/badges");
+    expect(after.body.stats).toMatchObject({ games: 1, hosted: 1, modes: 1 });
+    const first = after.body.achievements.find((x: { id: string }) => x.id === "first_spill");
+    expect(first.unlocked).toBe(true);
+    expect(after.body.frames).toContain("ring");
+    expect(code(await host.call("PATCH", "/me/cosmetics", { frame: "double" }))).toBe(
+      "BAD_REQUEST",
+    );
+    expect((await host.call("PATCH", "/me/cosmetics", { frame: "ring" })).body.equipped.frame).toBe(
+      "ring",
+    );
+
+    const seen = await guest.call("GET", `/rooms/${room.roomCode}/state`);
+    const hostId = (await host.call("GET", `/rooms/${room.roomCode}/state`)).body.me.id;
+    expect(seen.body.players.find((p: { id: string }) => p.id === hostId).frame).toBe("ring");
+  });
+
   it("two players are enough to start", async () => {
     const room = await fullRoom(2);
     expect((await room.host.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);

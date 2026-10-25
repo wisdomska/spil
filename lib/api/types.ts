@@ -14,7 +14,9 @@ import type {
   Crowned,
   FlagQuestion,
   LoneFlag,
+  FrameId,
   HotTake,
+  LookId,
   ImposterBoardRow,
   ImposterOutcome,
   LikelyQuestion,
@@ -87,6 +89,8 @@ export type StatePlayer = {
   lastAnswerAt?: string;
   answersSubmitted: boolean;
   guessesSubmitted: boolean;
+  /** Batch 3: the avatar frame they wear, if any. */
+  frame?: FrameId;
 };
 
 export type ResultRow = {
@@ -160,6 +164,8 @@ export type RoomState = {
     guessesSubmitted: boolean;
     spillMode: boolean;
     hideNameOnCard: boolean;
+    /** Batch 3: my share card look. */
+    look: LookId;
     /** Player ids I guess about this round (guessing only). Empty means nothing to guess. */
     targets: string[];
   };

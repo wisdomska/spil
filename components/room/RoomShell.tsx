@@ -96,7 +96,7 @@ export function RoomShell({ state, online, offline, statusFor, order, onLeave, c
           {players.map((p) => (
             <div key={p.id} className="flex items-center gap-3 py-1.5">
               <span className="relative">
-                <Avatar n={p.avatar} size={32} label={p.nickname} />
+                <Avatar n={p.avatar} size={32} label={p.nickname} frame={p.frame} />
                 {online.has(p.id) && (
                   <span
                     aria-hidden

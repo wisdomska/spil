@@ -42,10 +42,29 @@ type AvatarProps = {
   label?: string;
   decorative?: boolean;
   className?: string;
+  /** Batch 3: an unlocked frame the player wears. */
+  frame?: "none" | "ring" | "accent" | "dashed" | "double";
 };
 
+const FRAME_SHADOW = {
+  none: "inset 0 0 0 1px var(--avatar-edge)",
+  ring: "0 0 0 2px var(--text)",
+  accent: "0 0 0 3px var(--accent)",
+  dashed: "inset 0 0 0 1px var(--avatar-edge)",
+  double:
+    "0 0 0 2px var(--bg), 0 0 0 4px var(--accent), 0 0 0 6px var(--bg), 0 0 0 8px var(--text)",
+} as const;
+
 /** A player's emoji on the same plain disc for everyone, so the emoji carries the identity. */
-export function Avatar({ n, size = 48, selected, label, decorative, className }: AvatarProps) {
+export function Avatar({
+  n,
+  size = 48,
+  selected,
+  label,
+  decorative,
+  className,
+  frame = "none",
+}: AvatarProps) {
   const i = (((Math.trunc(n) || 0) % AVATAR_COUNT) + AVATAR_COUNT) % AVATAR_COUNT;
   return (
     <span
@@ -62,9 +81,9 @@ export function Avatar({ n, size = 48, selected, label, decorative, className }:
         justifyContent: "center",
         flexShrink: 0,
         background: "var(--surface-raised)",
-        boxShadow: selected
-          ? "0 0 0 3px var(--bg), 0 0 0 6px var(--accent)"
-          : "inset 0 0 0 1px var(--avatar-edge)",
+        boxShadow: selected ? "0 0 0 3px var(--bg), 0 0 0 6px var(--accent)" : FRAME_SHADOW[frame],
+        outline: !selected && frame === "dashed" ? "2px dashed var(--accent)" : undefined,
+        outlineOffset: !selected && frame === "dashed" ? 2 : undefined,
         fontFamily: EMOJI_FONT,
         fontSize: Math.round(size * 0.62),
         lineHeight: 1,

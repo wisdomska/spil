@@ -8,7 +8,8 @@
     "tvTitle": "SPIL on the big screen: {code}",
     "dailyTitle": "Today's Spill",
     "crewsTitle": "Your crews",
-    "crewTitle": "Crew"
+    "crewTitle": "Crew",
+    "badgesTitle": "Your badges"
   },
   "common": {
     "brand": "SPIL",
@@ -106,7 +107,8 @@
     "crewFull": "This crew is full.",
     "customPlaying": "Your questions are in. The room is now 18+.",
     "customAdultsOnly": "Your own questions are for rooms where everyone is 18 or older.",
-    "packPremium": "Premium packs are coming soon."
+    "packPremium": "Premium packs are coming soon.",
+    "cosmeticSaved": "Saved."
   },
   "landing": {
     "headline": "Your friends think they know you.",
@@ -152,7 +154,8 @@
       "you": "You"
     },
     "daily": "Today's Spill: one question for everyone",
-    "crews": "Your crews and season tables"
+    "crews": "Your crews and season tables",
+    "badges": "Your badges"
   },
   "join": {
     "title": "Got a code?",
@@ -582,7 +585,8 @@
     "spillTelling": "{name} is telling the story.",
     "spillPassed": "{name} passed. No pressure.",
     "spillYouTelling": "You're telling it. Over to you.",
-    "spillYouPassed": "You passed. No pressure."
+    "spillYouPassed": "You passed. No pressure.",
+    "badgesLink": "See your badges"
   },
   "share": {
     "title": "Your card",
@@ -1358,5 +1362,82 @@
     "joinCta": "Join the crew",
     "joinNote": "The crew sees your name and Mind Reader points from games you play together. Never your answers.",
     "yourCrews": "Your crews"
+  },
+  "badges": {
+    "title": "Your badges",
+    "earned": "{n} of {total} earned",
+    "progress": "{n} of {total}",
+    "unlockedLabel": "Earned",
+    "lockedLabel": "Not yet",
+    "framesTitle": "Avatar frames",
+    "looksTitle": "Card looks",
+    "unlockWith": "Earn {badge}",
+    "deviceNote": "Badges live with this device, no sign up. Frames show on your avatar in rooms; looks colour your share card.",
+    "frames": {
+      "none": "No frame",
+      "ring": "Ring",
+      "accent": "Accent",
+      "dashed": "Dashed",
+      "double": "Double"
+    },
+    "looks": {
+      "night": "Night",
+      "raised": "Slate",
+      "accent": "Glow"
+    },
+    "list": {
+      "first_spill": {
+        "name": "First Spill",
+        "body": "Finish your first round."
+      },
+      "regular": {
+        "name": "Regular",
+        "body": "Play 10 rounds."
+      },
+      "veteran": {
+        "name": "Veteran",
+        "body": "Play 50 rounds."
+      },
+      "first_win": {
+        "name": "First Win",
+        "body": "Top the points in a round with friends."
+      },
+      "champion": {
+        "name": "Champion",
+        "body": "Win 10 rounds."
+      },
+      "bullseye": {
+        "name": "Bullseye",
+        "body": "Guess something exactly right."
+      },
+      "sharpshooter": {
+        "name": "Sharpshooter",
+        "body": "Hit 10 Bullseyes."
+      },
+      "mind_reader": {
+        "name": "Mind Reader",
+        "body": "Earn 250 points reading the room."
+      },
+      "party_starter": {
+        "name": "Party Starter",
+        "body": "Host 5 rounds."
+      },
+      "explorer": {
+        "name": "Explorer",
+        "body": "Play 5 different games."
+      },
+      "game_master": {
+        "name": "Game Master",
+        "body": "Play all 10 games."
+      },
+      "crew_up": {
+        "name": "Crew Up",
+        "body": "Join a crew."
+      },
+      "daily_habit": {
+        "name": "Daily Habit",
+        "body": "Answer 7 Daily Spills."
+      }
+    }
   }
 }

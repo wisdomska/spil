@@ -20,6 +20,8 @@ type Props = {
   pack?: string;
   name: string;
   avatar: number;
+  /** Batch 3: the card look I unlocked and chose. */
+  look?: "night" | "raised" | "accent";
   score: number;
   award: AwardKey;
   board: BoardRow[];
@@ -40,6 +42,7 @@ export function ShareSheet(props: Props) {
   const cardFormat = format === "story" ? "story" : "square";
   const cardProps = {
     theme: "dark" as const,
+    look: props.look,
     room: props.room,
     pack: props.pack,
     name: props.name,

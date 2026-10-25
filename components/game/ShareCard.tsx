@@ -3,6 +3,7 @@ import { Avatar } from "@/components/brand/Avatar";
 import { AWARD_LOOK, type AwardKey } from "@/components/brand/Stickers";
 import { labelFor } from "@/lib/game";
 import { Wordmark } from "@/components/brand/Wordmark";
+import { cn } from "@/lib/cn";
 
 export type CardFormat = "story" | "square" | "og";
 /** `points` are guessing points (the ranking); older saved games only have `score`. */
@@ -21,6 +22,8 @@ export type ShareCardProps = {
   /** Scale for on-screen previews; capture always renders at 1. */
   scale?: number;
   theme?: "dark" | "light";
+  /** Batch 3: an unlocked card look; all stay in the dark theme. */
+  look?: "night" | "raised" | "accent";
   name?: string;
   hideName?: boolean;
   avatar?: number;
@@ -115,6 +118,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
     format,
     scale = 1,
     theme = "dark",
+    look: cardLook = "night",
     name = "",
     hideName,
     avatar = 0,
@@ -148,7 +152,14 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
       <div
         ref={ref}
         data-theme={theme}
-        className="bg-bg text-text"
+        className={cn(
+          "text-text",
+          cardLook === "raised"
+            ? "bg-surface-raised"
+            : cardLook === "accent"
+              ? "bg-accent-soft"
+              : "bg-bg",
+        )}
         style={{
           position: "absolute",
           left: 0,

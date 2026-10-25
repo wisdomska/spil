@@ -256,7 +256,12 @@ export function ResultsView({
                   {rankText(r.rank)}
                 </span>
                 <span className="relative shrink-0">
-                  <Avatar n={r.avatar} size={40} label={r.nickname} />
+                  <Avatar
+                    n={r.avatar}
+                    size={40}
+                    label={r.nickname}
+                    frame={state.players.find((p) => p.id === r.playerId)?.frame}
+                  />
                   {(r.bullseyes ?? 0) > 0 && (
                     <span
                       className="absolute -right-3 -bottom-2 rounded-pill border-2 border-sticker-edge bg-accent px-1.5 py-0.5 font-display text-[10px] leading-none font-extrabold whitespace-nowrap text-on-accent uppercase"
@@ -450,6 +455,7 @@ export function ResultsView({
         pack={state.room.pack.name}
         name={state.me.nickname}
         avatar={state.me.avatar}
+        look={state.me.look}
         score={score}
         award={myAward?.award ?? "open_book"}
         board={board}

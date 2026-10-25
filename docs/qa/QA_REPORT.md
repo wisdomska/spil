@@ -419,3 +419,11 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] With `payments_enabled` off (today) every pack plays and nothing is shown. With it on, a premium pack shows a Premium badge and "Premium packs are coming soon", cannot be picked, and the API refuses it (PACK_PREMIUM).
 - Tests: admin integration (mark premium, unlocked with payments off, locked and refused with payments on, everything restored). pgTAP `28_premium_packs_test.sql`.
 - Migration 20261024003300, applied to staging.
+
+### Achievements and cosmetics
+
+- [x] Owner decisions: free, kept with the device session, no sign up. Thirteen badges with progress bars on "Your badges", linked from the landing page and the results.
+- [x] Each finished round adds to every real player's stats (test players excepted): rounds, wins (rank 1, at least two players, some points), bullseyes, rounds hosted, Mind Reader points and distinct games played. Crews and Daily Spill answers count from their own tables.
+- [x] Badges unlock four avatar frames (Ring, Accent, Dashed, Double), drawn from tokens and shown in the lobby, the room roster and the results, and two share card looks (Slate, Glow), all in the dark theme. Locked ones say which badge earns them; the API refuses a locked choice.
+- Tests: unit `tests/unit/game/achievements.test.ts` (progress capped, unlocks, wins need someone to beat), API (round recorded, locked refused, frame unlocked and worn, others see it in the roster), e2e `tests/e2e/badges.spec.ts` (play solo, First Spill earned, wear Ring). pgTAP `29_achievements_test.sql`. Page checked at 375 wide.
+- Migration 20261024003400, applied to staging.

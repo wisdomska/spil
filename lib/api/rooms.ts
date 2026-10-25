@@ -15,6 +15,7 @@ import {
   hasImposter,
   imposterBoard,
   imposterResults,
+  roundStats,
   picksTruths,
   truthsCards,
   twoTruthsResults,
@@ -55,6 +56,7 @@ import {
 import { getFlags, getSettings } from "@/lib/flags";
 import { getAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/lib/supabase/database.types";
+import { framesFor, myBadges } from "./achievements";
 import { crewName, isCrewMember, recordCrewRound } from "./crews";
 import { customAllowed } from "./customPacks";
 import { ApiError, fromDbError } from "./errors";
@@ -615,6 +617,27 @@ export async function finalize(room: RoomRow, players: PlayerRow[]) {
       );
     if (pointsError) throw fromDbError(pointsError);
   }
+  // Achievements (Batch 3): add this round to every player's stats (test players excepted).
+  {
+    const byId = new Map(players.map((p) => [p.id, p]));
+    const people = results.rows.filter((r) => !byId.get(r.playerId)?.is_bot);
+    if (people.length) {
+      const { error: statsError } = await db().rpc("record_round_stats", {
+        p_rows: people.map((r) => ({
+          user_id: byId.get(r.playerId)!.user_id,
+          ...roundStats({
+            rank: r.rank,
+            points: r.mindReader,
+            bullseyes: r.bullseyes ?? 0,
+            hosted: r.playerId === room.host_player_id,
+            players: results.rows.length,
+          }),
+          mode: roomMode(room),
+        })),
+      });
+      if (statsError) throw fromDbError(statsError);
+    }
+  }
   // Crews (Batch 3): keep this round for the crew's history and season table.
   if (room.crew_id) {
     const byId = new Map(players.map((p) => [p.id, p]));
@@ -1022,7 +1045,10 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
         : (rated ?? answers).filter((a) => a.player_id === id).length;
 
   const visible = players.filter(inGame);
+  // Batch 3: frames are worn per device session; the roster shows them.
+  const frames = await framesFor(visible.map((p) => p.user_id));
   const statePlayers: StatePlayer[] = visible.map((p) => ({
+    frame: frames.get(p.user_id),
     id: p.id,
     nickname: p.nickname,
     avatar: p.avatar,
@@ -1083,6 +1109,7 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       answersSubmitted: me.answers_submitted_at != null,
       guessesSubmitted: me.guesses_submitted_at != null,
       spillMode: me.spill_mode,
+      look: (await myBadges(me.user_id)).equipped.look,
       hideNameOnCard: me.hide_name_on_card,
       // Read the room modes: the question ids this player guesses about; classic: player ids.
       targets:

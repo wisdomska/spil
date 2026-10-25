@@ -136,6 +136,7 @@ export function fixtureState({
       guessesSubmitted: me.guessesSubmitted,
       spillMode: false,
       hideNameOnCard: false,
+      look: "night",
       targets:
         status === "guessing" ? statePlayers.filter((p) => p.id !== "ama").map((p) => p.id) : [],
     },

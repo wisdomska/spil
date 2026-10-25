@@ -651,6 +651,45 @@ export type Database = {
         };
         Relationships: [];
       };
+      player_stats: {
+        Row: {
+          bullseyes: number;
+          frame: string;
+          games: number;
+          hosted: number;
+          look: string;
+          modes: string[];
+          points: number;
+          updated_at: string;
+          user_id: string;
+          wins: number;
+        };
+        Insert: {
+          bullseyes?: number;
+          frame?: string;
+          games?: number;
+          hosted?: number;
+          look?: string;
+          modes?: string[];
+          points?: number;
+          updated_at?: string;
+          user_id: string;
+          wins?: number;
+        };
+        Update: {
+          bullseyes?: number;
+          frame?: string;
+          games?: number;
+          hosted?: number;
+          look?: string;
+          modes?: string[];
+          points?: number;
+          updated_at?: string;
+          user_id?: string;
+          wins?: number;
+        };
+        Relationships: [];
+      };
       players: {
         Row: {
           age_band: Database["public"]["Enums"]["age_band"];
@@ -1270,6 +1309,7 @@ export type Database = {
       };
       nudge: { Args: { p_room: string; p_target: string }; Returns: undefined };
       record_join: { Args: never; Returns: undefined };
+      record_round_stats: { Args: { p_rows: Json }; Returns: undefined };
       save_answers: {
         Args: {
           p_answers: Json;

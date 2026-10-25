@@ -108,7 +108,7 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
                   rotate: `${rotationFor(p.rotationSeed)}deg`,
                 }}
               >
-                <Avatar n={p.avatar} size={40} label={p.nickname} />
+                <Avatar n={p.avatar} size={40} label={p.nickname} frame={p.frame} />
                 <span className="font-display text-[18px] leading-none font-bold">
                   {p.nickname}
                 </span>

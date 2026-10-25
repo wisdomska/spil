@@ -600,6 +600,8 @@ Base path `/api/v1`. JSON, camelCase. Auth via Supabase session cookie (`@supaba
 | GET | `/crews/invite/:token` | none | → `{ name, members }` | NOT_FOUND |
 | GET | `/crews/:id?season=` | member | → season table, seasons, recent rounds, members, invite token | NOT_FOUND |
 | POST | `/crews/:id/leave` | member | → `{}` | NOT_FOUND |
+| GET | `/me/badges` | session | → `{ stats, achievements: [{ id, unlocked, progress, target }], frames, looks, equipped: { frame, look } }` | |
+| PATCH | `/me/cosmetics` | session | `{ frame?, look? }` → the same. Only unlocked ones | BAD_REQUEST, RATE_LIMITED |
 | GET | `/rooms/:code/custom` | host | → the host's own questions `[{ id, text }]` | NOT_HOST |
 | POST | `/rooms/:code/custom` | host, lobby, everyone 18+, yes or no game | `{ text }` → the list. Filtered, 8 to 120 characters, up to 30 | NOT_HOST, WRONG_PHASE, CUSTOM_ADULTS_ONLY, TEXT_BLOCKED, TEXT_CONTACT, BAD_REQUEST |
 | DELETE | `/rooms/:code/custom/:id` | host, lobby | → the list | NOT_HOST, WRONG_PHASE |
