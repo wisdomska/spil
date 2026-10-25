@@ -442,3 +442,9 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] Awards come only from the server (`pickAwards` at finalize, stored in `awards`, read by the results). The story and group cards, the Awards tab and the landing page "last game" card all read that list; with no award the card renders without the badge.
 - [x] The landing demo keeps its sample badge only when there is no last game.
 - Tests: e2e `tests/e2e/awards-source.spec.ts` (solo round: Awards tab says awards start at 3, no award name on either card size).
+
+### SPIL-14: "Start the game" ignores the first tap
+
+- [x] Cause: every room action wrote its fresh state into the cache, but a state fetch already in flight (started by the lobby change just before) could land afterwards and put the lobby back. The game had started; the host's screen did not show it until the next refetch, so a second tap "worked".
+- [x] Fix: actions cancel any in-flight state fetch before writing their result (`lib/room/useRoom.ts`). This covers every action (start, advance, reveal, rematch, Spill Mode), not only Start. `canStart` already came only from server state and refusals already map to toasts.
+- Tests: e2e `tests/e2e/start-tap.spec.ts` (pack change, guest leaves and rejoins, one tap starts within 10 s). It failed 1 run in 3 before the fix and passed 4 of 4 after.

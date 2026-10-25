@@ -28,13 +28,16 @@ export function useRoomState(code: string, live: { current: boolean }) {
 /** Room actions; each returns the fresh state, which replaces the cache. */
 export function useRoomActions(code: string) {
   const qc = useQueryClient();
-  const setState = (state: RoomState | Record<string, never>) => {
+  const setState = async (state: RoomState | Record<string, never>) => {
+    // SPIL-14: a state fetch still in flight read the room before this action, so it must not
+    // land after the action's fresh state and put the old screen back (the "ignored first tap").
+    await qc.cancelQueries({ queryKey: roomKey(code) });
     if (state && "room" in state) qc.setQueryData(roomKey(code), state);
     else qc.invalidateQueries({ queryKey: roomKey(code) });
   };
   const call = (method: string, path: string, body?: unknown) =>
-    api<RoomState>(method, `/rooms/${code}${path}`, body).then((s) => {
-      setState(s);
+    api<RoomState>(method, `/rooms/${code}${path}`, body).then(async (s) => {
+      await setState(s);
       return s;
     });
   const start = useMutation({ mutationFn: () => call("POST", "/start") });
