@@ -1,5 +1,31 @@
 # Changelog
 
+## Unreleased
+
+Waiting on the open preview PRs (wisdomska/spil#45 to #63 and the SPIL-24 to 33 PR); the version is set at release.
+
+### New ways to play
+
+- Nine new game modes next to Classic: Room Percentage, Hot Takes, Most Likely To, Red Flag Green
+  Flag, Rank the Room, Imposter, Two Truths, Who Said That? (18+) and Spill or Skip.
+- Party Mode (a TV screen for the room), live reactions on the reveal, Today's Spill (one question
+  for everyone, with streaks), crews with season tables, custom questions in 18+ rooms, teen,
+  seasonal and local packs, premium packs behind the payments flag (free for now), and badges that
+  unlock avatar frames and share card looks.
+
+### Results and polish (SPIL-12 to SPIL-33)
+
+- Results read right for every label, show only awards the room earned, and two-player rooms get a
+  Duo tab and a duo card.
+- One-tap Rematch with the same pack, a series score across rounds, and "Change pack".
+- Start always starts on the first tap; a player the host moved on is told why; Spill Mode asks
+  first; your name and face are remembered on this phone.
+- Invites show whose room it is; a full code joins by itself; skips left are always shown and going
+  back shows what you said; taps during the card exit are kept.
+- Lobby QR code, a 20 second nudge cooldown, named faces for screen readers, haptics on Android,
+  install to home screen, landing stickers that never cover a button, a weekly rooms counter, and
+  vessel numbers the wave never hides.
+
 ## 1.4.0 (2026-10-24)
 
 - The best guesser wins the round. Results rank by guessing points and say who won; every row
