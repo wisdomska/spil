@@ -222,9 +222,11 @@
     "errInvalid": "Pick a different nickname. That one is not allowed.",
     "face": "Pick your face",
     "avatarGroup": "Avatar",
-    "noSignup": "No signup. This name lives in this room only.",
+    "noSignup": "No signup. Your name and face are remembered on this phone only.",
     "openLobby": "Open the lobby",
-    "joinRoom": "Join the room"
+    "joinRoom": "Join the room",
+    "notYou": "Not you?",
+    "notYouAria": "Not you? Clear the saved name and face"
   },
   "room": {
     "code": "Room code",

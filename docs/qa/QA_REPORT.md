@@ -461,3 +461,10 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] Turning Spill Mode on opens "Turn on Spill Mode?" with the screenshot warning, "Spill it" and "Keep private"; focus starts on "Keep private" (new `initialFocus` on `Sheet`). Keep private leaves it off. Turning it off is instant with the existing toast.
 - [x] No scroll jump: nothing in the results, switch or toast scrolls or moves focus, and the page holds its position (checked within 4 px) after Spill Mode turns on and the list updates.
 - Tests: e2e `tests/e2e/spill-confirm.spec.ts`.
+
+### SPIL-17: Remember nickname and face on this device
+
+- [x] After a successful join or create, the nickname and face are kept in this phone's storage (`spil.profile`, never sent anywhere). The next room's form is filled in: zero typing to join.
+- [x] "Not you?" next to the Nickname label clears both (screen readers hear "Not you? Clear the saved name and face", so it is not confused with the age "Not you?"). Blocked storage just means typing again. Duplicate names still get errTaken.
+- [x] The no-signup line now says the name is remembered on this phone only.
+- Tests: unit `tests/unit/profile/device.test.ts` (only valid saved values are used), e2e `tests/e2e/remember-profile.spec.ts`; `age.spec.ts` still passes.

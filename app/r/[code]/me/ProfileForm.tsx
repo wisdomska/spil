@@ -17,6 +17,7 @@ import { api, ClientApiError, ensureSession } from "@/lib/api/client";
 import type { PublicRoom } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import { track } from "@/lib/analytics/posthog";
+import { clearProfile, readProfile, saveProfile } from "@/lib/profile/device";
 import { bandFloor } from "@/lib/game";
 
 const ROOM_ERRORS: Record<string, ErrorVariant> = {
@@ -34,8 +35,12 @@ const ROOM_ERRORS: Record<string, ErrorVariant> = {
 export function ProfileForm({ code }: { code: string }) {
   const t = useTranslations("profile");
   const router = useRouter();
-  const [nick, setNick] = useState("");
-  const [avatar, setAvatar] = useState(() => Math.floor(Math.random() * AVATAR_COUNT));
+  // SPIL-17: the last name and face used on this phone, so the next room needs no typing.
+  const [saved, setSaved] = useState(() => readProfile(AVATAR_COUNT));
+  const [nick, setNick] = useState(saved?.nickname ?? "");
+  const [avatar, setAvatar] = useState(
+    () => saved?.avatar ?? Math.floor(Math.random() * AVATAR_COUNT),
+  );
   const [nickErr, setNickErr] = useState<string | null>(null);
   const [roomErr, setRoomErr] = useState<ErrorVariant | null>(null);
   const [busy, setBusy] = useBusy();
@@ -95,6 +100,7 @@ export function ProfileForm({ code }: { code: string }) {
         avatar,
         ageBand: band,
       });
+      saveProfile({ nickname: nick, avatar });
       track("player_joined", { pack: room.data.pack.id, isHost });
       router.replace(`/r/${code}`);
     } catch (e) {
@@ -119,9 +125,27 @@ export function ProfileForm({ code }: { code: string }) {
         <PlayingAs band={band} locked={locked} onNotYou={clearAge} />
       </div>
       <div className="grid gap-2">
-        <label htmlFor="spil-nick" className="text-[14px] leading-none font-semibold">
-          {t("nickname")}
-        </label>
+        <div className="flex items-center justify-between gap-3">
+          <label htmlFor="spil-nick" className="text-[14px] leading-none font-semibold">
+            {t("nickname")}
+          </label>
+          {saved && (
+            <button
+              type="button"
+              aria-label={t("notYouAria")}
+              onClick={() => {
+                clearProfile();
+                setSaved(null);
+                setNick("");
+                setNickErr(null);
+                setAvatar(Math.floor(Math.random() * AVATAR_COUNT));
+              }}
+              className="border-0 bg-transparent p-0 text-[14px] leading-none font-semibold text-text-muted underline underline-offset-4 hover:text-text"
+            >
+              {t("notYou")}
+            </button>
+          )}
+        </div>
         <input
           id="spil-nick"
           value={nick}
