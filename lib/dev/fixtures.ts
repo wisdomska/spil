@@ -123,6 +123,7 @@ export function fixtureState({
       testPlayers: true,
       pollingOnly: false,
       partyMode: false,
+      customAllowed: false,
       channel: "room:fixture",
     },
     me: {

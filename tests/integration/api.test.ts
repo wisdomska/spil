@@ -915,6 +915,60 @@ d("host tools", () => {
     ).toBe("NOT_FOUND");
   });
 
+  it("Custom packs: host only, 18+ rooms only, filtered, private to the room, kept on rematch", async () => {
+    const room = await fullRoom(2);
+    const [host, guest] = room.players as [Player, Player];
+    const add = (p: Player, text: string) =>
+      p.call("POST", `/rooms/${room.roomCode}/custom`, { text });
+    expect(code(await add(guest, "eaten a whole cake alone"))).toBe("NOT_HOST");
+    expect(code(await add(host, "called someone a f4g"))).toBe("TEXT_BLOCKED");
+    const first = await add(host, "Have you ever eaten a whole cake alone?");
+    expect(first.body).toEqual([{ id: expect.any(String), text: "eaten a whole cake alone?" }]);
+    expect(code(await host.call("POST", `/rooms/${room.roomCode}/custom/use`))).toBe("BAD_REQUEST");
+    for (const t of [
+      "sung in the shower",
+      "missed a flight",
+      "laughed at a funeral",
+      "texted the wrong person",
+    ])
+      await add(host, t);
+    const used = await host.call("POST", `/rooms/${room.roomCode}/custom/use`);
+    expect(used.status).toBe(200);
+    expect(used.body.room.pack.minAge).toBe(18);
+    // Never listed for anyone else.
+    const listed = await guest.call("GET", "/packs?band=18_plus");
+    expect(listed.body.some((p: { id: string }) => p.id === used.body.room.pack.id)).toBe(false);
+    await host.call("POST", `/rooms/${room.roomCode}/start`);
+    const playing = await guest.call("GET", `/rooms/${room.roomCode}/state`);
+    const texts = playing.body.questions.map((q: { text: string }) => q.text);
+    expect(texts.length).toBeGreaterThan(0);
+    expect(texts.every((t: string) => t.endsWith("?"))).toBe(true);
+
+    // A room with a 16 to 17 player cannot write its own.
+    const mixed = await anonPlayer();
+    const created = await mixed.call("POST", "/rooms", { ageBand: "18_plus", packId: "classic" });
+    await mixed.call("POST", `/rooms/${created.body.code}/join`, {
+      ageBand: "18_plus",
+      nickname: "Host",
+      avatar: 1,
+    });
+    const teen = await anonPlayer();
+    await teen.call("POST", `/rooms/${created.body.code}/join`, {
+      ageBand: "16_17",
+      nickname: "Teen",
+      avatar: 2,
+    });
+    const mixedState = await mixed.call("GET", `/rooms/${created.body.code}/state`);
+    expect(mixedState.body.room.customAllowed).toBe(false);
+    expect(
+      code(
+        await mixed.call("POST", `/rooms/${created.body.code}/custom`, {
+          text: "sung in the shower",
+        }),
+      ),
+    ).toBe("CUSTOM_ADULTS_ONLY");
+  });
+
   it("two players are enough to start", async () => {
     const room = await fullRoom(2);
     expect((await room.host.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);

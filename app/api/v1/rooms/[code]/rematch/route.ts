@@ -1,6 +1,7 @@
 import { codeOf, requireUser, type CodeParams } from "@/lib/api/auth";
 import { fromDbError } from "@/lib/api/errors";
 import { readBody, route } from "@/lib/api/handler";
+import { isOwnCustom } from "@/lib/api/customPacks";
 import { requireLivePack } from "@/lib/api/packs";
 import {
   freshState,
@@ -27,22 +28,26 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   requirePhase(room.room, "revealed");
   const db = getAdminClient();
 
-  const pack = await requireLivePack(
-    body.packId ?? room.room.pack_id,
-    roomFloor(room.players),
-    modeFormat(roomMode(room.room)),
-  );
-  const { error } = await db
-    .from("rooms")
-    .update({
-      pack_id: pack.id,
-      min_age: pack.minAge,
-      question_count: body.questionCount
-        ? Math.min(body.questionCount, pack.questionCount)
-        : room.room.question_count,
-    })
-    .eq("id", room.room.id);
-  if (error) throw fromDbError(error);
+  const packId = body.packId ?? room.room.pack_id;
+  // Custom packs (Batch 3): a rematch keeps the room's own questions.
+  if (!isOwnCustom(room.room, packId)) {
+    const pack = await requireLivePack(
+      packId,
+      roomFloor(room.players),
+      modeFormat(roomMode(room.room)),
+    );
+    const { error } = await db
+      .from("rooms")
+      .update({
+        pack_id: pack.id,
+        min_age: pack.minAge,
+        question_count: body.questionCount
+          ? Math.min(body.questionCount, pack.questionCount)
+          : room.room.question_count,
+      })
+      .eq("id", room.room.id);
+    if (error) throw fromDbError(error);
+  }
 
   // Everyone who sat out comes back for the new round.
   await db

@@ -600,6 +600,10 @@ Base path `/api/v1`. JSON, camelCase. Auth via Supabase session cookie (`@supaba
 | GET | `/crews/invite/:token` | none | → `{ name, members }` | NOT_FOUND |
 | GET | `/crews/:id?season=` | member | → season table, seasons, recent rounds, members, invite token | NOT_FOUND |
 | POST | `/crews/:id/leave` | member | → `{}` | NOT_FOUND |
+| GET | `/rooms/:code/custom` | host | → the host's own questions `[{ id, text }]` | NOT_HOST |
+| POST | `/rooms/:code/custom` | host, lobby, everyone 18+, yes or no game | `{ text }` → the list. Filtered, 8 to 120 characters, up to 30 | NOT_HOST, WRONG_PHASE, CUSTOM_ADULTS_ONLY, TEXT_BLOCKED, TEXT_CONTACT, BAD_REQUEST |
+| DELETE | `/rooms/:code/custom/:id` | host, lobby | → the list | NOT_HOST, WRONG_PHASE |
+| POST | `/rooms/:code/custom/use` | host, lobby, 5 or more questions | → state. The room plays them and becomes 18+ | NOT_HOST, CUSTOM_ADULTS_ONLY, BAD_REQUEST |
 | PUT | `/rooms/:code/percent` | member, guessing, Room Percentage or Hot Takes | `{ guesses: [{ questionId, value 0 to 100 }] }` → `{ saved, total }`. Only questions 3 or more answered or rated | WRONG_PHASE, ALREADY_SUBMITTED, UNKNOWN_QUESTION |
 | POST | `/rooms/:code/kick` | host, lobby | `{playerId}` → state | NOT_HOST, WRONG_PHASE |
 | POST | `/rooms/:code/nudge` | host | `{playerId}` → `{}` (1 per target per minute) | RATE_LIMITED |

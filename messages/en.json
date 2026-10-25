@@ -103,7 +103,9 @@
     "crewJoined": "You joined {name}.",
     "crewLinkCopied": "Invite link copied.",
     "crewLeft": "You left {name}.",
-    "crewFull": "This crew is full."
+    "crewFull": "This crew is full.",
+    "customPlaying": "Your questions are in. The room is now 18+.",
+    "customAdultsOnly": "Your own questions are for rooms where everyone is 18 or older."
   },
   "landing": {
     "headline": "Your friends think they know you.",
@@ -248,7 +250,15 @@
     "partyTitle": "Show the game on a big screen",
     "partyBody": "Open this link on a TV or laptop everyone can see. Phones stay the controllers. Only share it with this room.",
     "partyCopy": "Copy the screen link",
-    "partyOpen": "Open it on this device"
+    "partyOpen": "Open it on this device",
+    "customOpen": "Write your own questions",
+    "customTitle": "Your own questions",
+    "customBody": "For this room only, and everyone here is 18 or older. Every question is checked for slurs and contact details, and players can report one.",
+    "customAdd": "Add",
+    "customCount": "{n} of {max}",
+    "customRemove": "Remove: {text}",
+    "customNeedMore": "Write {n, plural, one {# more} other {# more}} to play them",
+    "customPlay": "Play these {n} questions"
   },
   "question": {
     "offline": "You're offline. Keep going, your answers send when you're back.",

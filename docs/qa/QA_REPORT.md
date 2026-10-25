@@ -394,3 +394,13 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] Invite links show only the crew's name and size before joining; joining asks for the name the crew sees. Crews hold up to 20 members.
 - Tests: unit `tests/unit/game/crews.test.ts` (season keys, members only, ties), API (host only, filter, offered not added, members only, round recorded, invite, leave, start a room as the crew), e2e `tests/e2e/crews.spec.ts` (save, a friend joins from the results, season table). pgTAP `25_crews_test.sql`. Crew page checked at 375 wide.
 - Migration 20261024002900, applied to staging.
+
+### Custom packs written by hosts
+
+- [x] Owner rules: 18+ rooms only, profanity filter, reportable, visible only to the room that made them.
+- [x] In the lobby, the host sees "Write your own questions" only when everyone in the room is 18 or older and the game plays yes or no questions. A room with a 16 to 17 player refuses it (CUSTOM_ADULTS_ONLY).
+- [x] Each question is typed after "Have you ever" (typing it is fine; it is taken off), goes through the text filter (slurs and contact details refused, swear words masked) and is 8 to 120 characters. Up to 30 per room; 5 to play.
+- [x] Playing them makes the room 18+ (no minor can join after), keeps them for rematches, and never lists them anywhere else: they are a hidden pack owned by the room, deleted with it, and absent from the admin pack list.
+- [x] Reportable: the usual report button on the question card works; a report reaches the admin queue, where the question can be hidden.
+- Tests: API (host only, filter, prefix removed, 5 needed, room becomes 18+, never listed, played, mixed ages refused), e2e `tests/e2e/custom-pack.spec.ts` (write five, refused handle, play solo, a custom question shows). pgTAP `26_custom_packs_test.sql`.
+- Migrations 20261024003000 and 20261024003100, applied to staging (see the staging incident note in MIGRATIONS.md).

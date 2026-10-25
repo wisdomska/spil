@@ -19,7 +19,7 @@ export const GET = route(async (request): Promise<Overview> => {
       .gte("day", isoDay(now, 29))
       .order("day", { ascending: false }),
     db.from("pack_plays").select("pack_id, started").gte("day", weekStart),
-    db.from("packs").select("id, name").order("sort_order").order("name"),
+    db.from("packs").select("id, name").is("room_id", null).order("sort_order").order("name"),
     db.from("reports").select("question_id").eq("status", "open").not("question_id", "is", null),
     getCounts(),
     db

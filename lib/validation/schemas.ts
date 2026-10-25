@@ -72,6 +72,9 @@ export const advance = z.object({
 
 export const playerTarget = z.object({ playerId: z.uuid() });
 
+/** Custom packs: one question written by the host ("Have you ever" is added by the app). */
+export const customQuestionBody = z.object({ text: z.string().max(400) });
+
 /** Crews: save the room's group as a crew. */
 export const createCrewBody = z.object({
   roomCode: z.string().trim().min(4).max(8),

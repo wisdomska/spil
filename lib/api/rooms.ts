@@ -56,6 +56,7 @@ import { getFlags, getSettings } from "@/lib/flags";
 import { getAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/lib/supabase/database.types";
 import { crewName, isCrewMember, recordCrewRound } from "./crews";
+import { customAllowed } from "./customPacks";
 import { ApiError, fromDbError } from "./errors";
 import type { PackSummary, RoomState, StatePlayer, TvState } from "./types";
 
@@ -128,7 +129,7 @@ const inGame = (p: PlayerRow) => p.status === "active" || p.status === "sat_out"
 async function loadRoomFull(code: string) {
   const { data, error } = await db()
     .from("rooms")
-    .select("*, players!players_room_id_fkey(*), packs(*)")
+    .select("*, players!players_room_id_fkey(*), packs!rooms_pack_id_fkey(*)")
     .eq("code", code)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -1062,6 +1063,7 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       testPlayers: flags.test_players,
       pollingOnly: flags.polling_only,
       partyMode: flags.party_mode,
+      customAllowed: customAllowed({ room, players }),
       // Crews (Batch 3): the crew this room plays as, and whether I am in it.
       crew: room.crew_id
         ? {

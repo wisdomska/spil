@@ -36,7 +36,7 @@ export const packSnapshot = (p: PackRow) => ({
 export async function listPacks(): Promise<AdminPack[]> {
   const db = getAdminClient();
   const [packs, questions, plays] = await Promise.all([
-    db.from("packs").select("*").order("sort_order").order("name"),
+    db.from("packs").select("*").is("room_id", null).order("sort_order").order("name"),
     fetchAll<{ pack_id: string; status: string }>((from, to) =>
       db.from("questions").select("pack_id, status").range(from, to),
     ),
