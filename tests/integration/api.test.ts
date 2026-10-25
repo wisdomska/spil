@@ -114,6 +114,7 @@ d("a full game with 3 players", () => {
       status: "lobby",
       playerCount: 3,
       hostNickname: "Player 1",
+      hostAvatar: expect.any(Number),
     });
     const state = await room.host.call("GET", `/rooms/${room.roomCode}/state`);
     expect(state.body.me.isHost).toBe(true);

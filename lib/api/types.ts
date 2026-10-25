@@ -65,6 +65,8 @@ export type PublicRoom = {
   status: RoomStatus;
   pack: PackSummary;
   hostNickname: string | null;
+  /** SPIL-19: the host face for the invite header. */
+  hostAvatar: number | null;
   playerCount: number;
   maxPlayers: number;
   /** True when the caller already plays in this room. */

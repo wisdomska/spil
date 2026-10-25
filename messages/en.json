@@ -227,7 +227,9 @@
     "openLobby": "Open the lobby",
     "joinRoom": "Join the room",
     "notYou": "Not you?",
-    "notYouAria": "Not you? Clear the saved name and face"
+    "notYouAria": "Not you? Clear the saved name and face",
+    "joining": "Joining {host}'s room",
+    "joiningMeta": "{pack} · {n} in"
   },
   "room": {
     "code": "Room code",

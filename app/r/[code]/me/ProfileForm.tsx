@@ -32,7 +32,7 @@ const ROOM_ERRORS: Record<string, ErrorVariant> = {
  * Age (once per device, SPIL-02), then nickname and face. First player in becomes the host. A
  * guest below the room's minimum age gets the "18+ room" screen and no player row is made.
  */
-export function ProfileForm({ code }: { code: string }) {
+export function ProfileForm({ code, initialRoom }: { code: string; initialRoom?: PublicRoom }) {
   const t = useTranslations("profile");
   const router = useRouter();
   // SPIL-17: the last name and face used on this phone, so the next room needs no typing.
@@ -50,6 +50,8 @@ export function ProfileForm({ code }: { code: string }) {
   const room = useQuery({
     queryKey: ["room-public", code],
     queryFn: () => api<PublicRoom>("GET", `/rooms/${code}`),
+    // SPIL-19: the server already read it; this refetch only adds "joined" for this device.
+    initialData: initialRoom,
     retry: false,
   });
 

@@ -19,6 +19,7 @@ const PUBLIC_ROOM = (pack: "classic" | "afterdark", status = "lobby", playerCoun
       ? { id: "classic", name: "Classic", icon: "cards", isAdult: false, heat: null }
       : { id: "afterdark", name: "After Dark", icon: "moon-stars", isAdult: true, heat: "spicy" },
   hostNickname: "Ama",
+  hostAvatar: 4,
   playerCount,
   maxPlayers: 12,
   joined: false,

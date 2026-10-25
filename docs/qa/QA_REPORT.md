@@ -477,3 +477,11 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] Wins are computed from the results already kept per round; the only storage is `rooms.series_start`.
 - Tests: unit `tests/unit/game/series.test.ts` (three games, ties, no scorer), API "Series (SPIL-18)" (one tap keeps the pack, guest refused, wins over 3 rounds with a tie, guest sees the same, reset host only), e2e `tests/e2e/rematch.spec.ts` (3 of 3 runs) and the existing change-pack rematch e2e. pgTAP `30_series_test.sql`.
 - Migration 20261024003500, applied to staging.
+
+### SPIL-19: Invite page shows room context, no skeleton
+
+- [x] Above the age gate and the nickname form: the host's face (40 px), "Joining {host}'s room" and "{pack} · {n} in". Rendered on the server, so it is in the first paint (the HTML carries it before any script). Not shown to the host creating the room.
+- [x] The form's room query starts from the server's copy (`initialData`), so it no longer waits on a skeleton for the room; the refetch only adds whether this phone already joined. The 18+ blocked state, "No room here", "Dried up", "Too late" and "Full house" are unchanged.
+- [x] `GET /rooms/:code` and the page share one server function (`lib/api/publicRoom.ts`), which now also returns `hostAvatar`.
+- Not measured: LCP on throttled 4G (needs a deployed build; listed in FOLLOW_UPS).
+- Tests: e2e `tests/e2e/invite-header.spec.ts` (card in the server HTML and on screen, none for a missing room), API preview test checks `hostAvatar`.
