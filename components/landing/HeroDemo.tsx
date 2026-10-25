@@ -3,6 +3,7 @@
 import { DropIcon, HandPointingIcon, HandsPrayingIcon, HorseIcon } from "@phosphor-icons/react";
 import {
   animate,
+  motion,
   useMotionValue,
   useMotionValueEvent,
   useReducedMotion,
@@ -26,6 +27,10 @@ const PEOPLE = [
 ] as const;
 
 const IDLE = [68, 36, 50];
+// Where the vessel sits in the demo (top padding, phone border, header rows) and the sticker size.
+const VESSEL_TOP = 126;
+const VESSEL_H = 250;
+const STICKER_H = 44;
 const easeInOutCubic = (k: number) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
 const easeOutCubic = (k: number) => 1 - Math.pow(1 - k, 3);
 
@@ -40,6 +45,11 @@ export function HeroDemo() {
   const [guess, setGuess] = useState(50);
   const level = useMotionValue(50);
   const num = useTransform(level, (v) => String(Math.round(v)));
+  // SPIL-22: the label sticker sits at the liquid line, never lower than the vessel's bottom.
+  const stickerTop = useTransform(
+    level,
+    (v) => VESSEL_TOP + (1 - Math.max(0, Math.min(100, v)) / 100) * VESSEL_H - STICKER_H / 2,
+  );
   const [label, setLabel] = useState(labelFor(50));
   const anim = useRef<AnimationPlaybackControls | null>(null);
   const idleTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -226,21 +236,20 @@ export function HeroDemo() {
           </button>
         </div>
       </div>
-      <span
-        key={label.id}
+      <motion.span
         aria-hidden
-        className={reduced ? undefined : "animate-slap-quick"}
-        style={{
-          ...labelStickerStyle(label.name as LabelName, -5, 20),
-          position: "absolute",
-          left: "calc(50% - 168px)",
-          top: 318,
-          pointerEvents: "none",
-          zIndex: 2,
-        }}
+        data-testid="demo-label"
+        className="absolute"
+        style={{ left: "calc(50% - 168px)", top: stickerTop, pointerEvents: "none", zIndex: 2 }}
       >
-        {label.name}
-      </span>
+        <span
+          key={label.id}
+          className={reduced ? undefined : "animate-slap-quick"}
+          style={{ ...labelStickerStyle(label.name as LabelName, -5, 20), display: "inline-flex" }}
+        >
+          {label.name}
+        </span>
+      </motion.span>
       {revealed && (
         <span
           aria-hidden
@@ -254,8 +263,11 @@ export function HeroDemo() {
           {tAward(person.award)}
         </span>
       )}
+      {/* SPIL-22: the "You" pill sits on the phone's top-right corner, clear of every button. */}
       <span
-        className="absolute bottom-10 left-[calc(50%+70px)] inline-flex items-center gap-2 rounded-pill border-[3px] border-sticker-edge bg-surface-raised py-1 pr-3.5 pl-1"
+        aria-hidden
+        data-testid="demo-you"
+        className="pointer-events-none absolute top-0 right-[calc(50%-150px)] z-[2] inline-flex items-center gap-2 rounded-pill border-[3px] border-sticker-edge bg-surface-raised py-1 pr-3.5 pl-1"
         style={{ boxShadow: "0 0 0 1.5px var(--sticker-ring)", transform: "rotate(3deg)" }}
       >
         <Avatar n={0} size={32} decorative />

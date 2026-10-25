@@ -2,6 +2,7 @@ import { LockSimpleIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { HeroDemo } from "@/components/landing/HeroDemo";
+import { RoomsCounter } from "@/components/landing/RoomsCounter";
 import { ShareDemo } from "@/components/landing/ShareDemo";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
@@ -46,6 +47,7 @@ export default async function Landing() {
                   {c("joinWithCode")}
                 </Link>
               </div>
+              <RoomsCounter />
               <Link
                 href="/daily"
                 className="w-fit text-[15px] leading-[1.4] font-semibold text-accent-ink underline underline-offset-4 hover:text-text"

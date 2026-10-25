@@ -23,3 +23,4 @@ export * from "./daily";
 export * from "./crews";
 export * from "./achievements";
 export * from "./series";
+export * from "./socialProof";

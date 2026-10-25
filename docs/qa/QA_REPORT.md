@@ -497,3 +497,11 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 
 - [x] As soon as four characters a code can have are in (typed or pasted; I, O, 0 and 1 never appear in codes), the button turns to the filled accent style and the code submits after 150 ms. Errors keep the current copy.
 - Tests: e2e `tests/e2e/join-code.spec.ts` (three characters and an impossible letter stay disabled, the fourth joins without a tap, a missing room shows the error); the shared join helper now relies on auto-submit, so every helper-based e2e covers it.
+
+### SPIL-22: Landing demo motion, sticker overlap, social proof
+
+- [x] Idle motion: the liquid's idle slosh already stopped for good on the first touch, drag or key, with the pulsing "Drag" chip until then; kept as is.
+- [x] The "You" pill moved to the phone's top-right corner and the label sticker now rides the liquid line on the left edge, both pointer-events none. At 375 and 1280 px, at the lowest and highest liquid, both stay at least 12 px from "Reveal the score".
+- [x] "{n} rooms spilled this week" with a pulsing dot under the hero buttons, hidden below 50. Counts rooms whose reveal started in the last 7 days; cached 10 minutes (`"use cache"`), and `GET /api/v1/stats/public` sends `s-maxage=600`. Only a count leaves the database.
+- [x] B2 fixed: the landing page no longer scrolls sideways at 320 px.
+- Tests: unit `socialProof.test.ts` (floor), e2e `tests/e2e/landing-demo.spec.ts` (clearances at two widths and two levels, no sideways scroll at 320, counter shown or hidden by the API's number). Screenshots checked at 375 and 1280.

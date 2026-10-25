@@ -157,7 +157,8 @@
     },
     "daily": "Today's Spill: one question for everyone",
     "crews": "Your crews and season tables",
-    "badges": "Your badges"
+    "badges": "Your badges",
+    "roomsThisWeek": "{n, number} rooms spilled this week"
   },
   "join": {
     "title": "Got a code?",

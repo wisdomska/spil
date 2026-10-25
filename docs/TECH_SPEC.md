@@ -592,6 +592,7 @@ Base path `/api/v1`. JSON, camelCase. Auth via Supabase session cookie (`@supaba
 | POST | `/rooms/:code/tv` | host, party_mode flag | `{}` → `{ token }`. Pairs a big screen; the same token after the first time | NOT_HOST, FEATURE_OFF |
 | GET | `/rooms/:code/tv?t=` | no account, token | → TvState: room, players, results; never per-player fields | TV_NOT_PAIRED, FEATURE_OFF, RATE_LIMITED |
 | POST | `/rooms/:code/react` | member, revealed | `{ emoji }` → `{}`. One of six fixed emoji, broadcast as `reaction`, never stored | BAD_REQUEST, WRONG_PHASE, RATE_LIMITED (30/min/player) |
+| GET | `/stats/public` | none | → `{ roomsThisWeek }`, rooms whose reveal started in the last 7 days. Cached 10 minutes (SPIL-22) | |
 | GET | `/daily` | session | → `{ day, question, mine, share, total }`. Share only once 10 answered and after I answer | |
 | POST | `/daily` | session | `{ value: yes or no }` → the same. One answer a day; a second keeps the first | BAD_REQUEST, RATE_LIMITED |
 | GET | `/crews` | session | → my crews `[{ id, name, members }]` | |
