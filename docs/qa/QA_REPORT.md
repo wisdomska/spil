@@ -325,3 +325,15 @@ Notes:
 - [x] Results lead with how many your card fooled, then your points. The Questions tab shows each card.
 - Tests: unit `tests/unit/game/twoTruths.test.ts`, API (card checked against answers, card needed when possible, no card allowed otherwise, cards hide the spill, own card refused, spots, points), e2e `tests/e2e/two-truths.spec.ts` (three phones, one without a card). pgTAP `19_two_truths_test.sql`. Screens checked at 375 wide: card picker, reveal and results.
 - Migration 20261024002300, applied to staging; production at the Batch 1 release.
+
+### Who Said That? (Batch 1, game mode 8, 18+ only)
+
+- [x] Owner rules for player-written text: profanity filter, reporting, 18+ rooms only.
+- [x] Only offered to 18+ hosts and only with the 18+ Who Said That? pack (30 open prompts); the API refuses it otherwise (MODE_UNAVAILABLE). At most 5 prompts per round.
+- [x] Answering: a short written answer per prompt, up to 140 characters. The screen says names are revealed at the end and no links, numbers or handles. The server filter (`lib/moderation/filter.ts`, unit tested) refuses slurs, hate and threats (also spelt with numbers, symbols or spaces), refuses contact details (links, emails, phone numbers, @handles) and masks common swear words; it does not trip on words like Scunthorpe or raccoon.
+- [x] Guessing: one answer at a time, everyone else's answers only, shuffled, never with an author; pick who wrote it (never yourself).
+- [x] Points: 10 for each right guess, 5 for each player an answer fools. Only the Mind Reader and Clueless awards.
+- [x] Reveal: one slide per prompt: every answer, then who wrote it and how many guessed right.
+- [x] Results: how many you guessed right and your points. The Questions tab lists every answer and author with a Report button: a report hides the answer for everyone straight away and reaches the admin Reports queue as "Answer: ... (hidden in the room)", where the author can be removed.
+- Tests: unit `tests/unit/moderation/filter.test.ts` and `tests/unit/game/whoSaid.test.ts`, API (16 to 17 refused, 5 prompts, blocked and contact answers refused, swear masked, guessing hides authors, own answer refused, scoring, report hides), e2e `tests/e2e/who-said.spec.ts` (three phones, a refused link, guesses, reveal, a report). pgTAP `20_who_said_test.sql`. Results screen checked at 375 wide.
+- Migration 20261024002400, applied to staging; production at the Batch 1 release.

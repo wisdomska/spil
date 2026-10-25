@@ -41,6 +41,7 @@ export function ReportsSection() {
   const shown = paging.slice(rows);
 
   const subject = (r: AdminReport) => {
+    if (r.type === "answer") return t("answer", { text: r.answerText ?? t("deletedAnswer") });
     if (r.type === "nickname" || (!r.questionId && r.playerId))
       return t("nickname", { name: r.playerNickname ?? t("unknownPlayer") });
     if (r.questionId || r.type === "question") return r.questionText ?? t("deletedQuestion");

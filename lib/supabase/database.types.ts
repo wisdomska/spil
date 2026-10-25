@@ -355,6 +355,7 @@ export type Database = {
         Row: {
           body: string | null;
           closest: boolean;
+          hidden: boolean;
           id: string;
           kind: string;
           player_id: string;
@@ -369,6 +370,7 @@ export type Database = {
         Insert: {
           body?: string | null;
           closest?: boolean;
+          hidden?: boolean;
           id?: string;
           kind: string;
           player_id: string;
@@ -383,6 +385,7 @@ export type Database = {
         Update: {
           body?: string | null;
           closest?: boolean;
+          hidden?: boolean;
           id?: string;
           kind?: string;
           player_id?: string;
@@ -659,6 +662,7 @@ export type Database = {
         Row: {
           created_at: string;
           id: string;
+          mode_input_id: string | null;
           player_id: string | null;
           question_id: string | null;
           reason: string;
@@ -672,6 +676,7 @@ export type Database = {
         Insert: {
           created_at?: string;
           id?: string;
+          mode_input_id?: string | null;
           player_id?: string | null;
           question_id?: string | null;
           reason: string;
@@ -685,6 +690,7 @@ export type Database = {
         Update: {
           created_at?: string;
           id?: string;
+          mode_input_id?: string | null;
           player_id?: string | null;
           question_id?: string | null;
           reason?: string;
@@ -696,6 +702,13 @@ export type Database = {
           type?: Database["public"]["Enums"]["report_type"];
         };
         Relationships: [
+          {
+            foreignKeyName: "reports_mode_input_id_fkey";
+            columns: ["mode_input_id"];
+            isOneToOne: false;
+            referencedRelation: "mode_inputs";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "reports_player_id_fkey";
             columns: ["player_id"];
@@ -956,6 +969,76 @@ export type Database = {
         };
         Relationships: [];
       };
+      text_guesses: {
+        Row: {
+          answer_id: string;
+          author_id: string;
+          player_id: string;
+          room_id: string;
+          round: number;
+          updated_at: string;
+        };
+        Insert: {
+          answer_id: string;
+          author_id: string;
+          player_id: string;
+          room_id: string;
+          round: number;
+          updated_at?: string;
+        };
+        Update: {
+          answer_id?: string;
+          author_id?: string;
+          player_id?: string;
+          room_id?: string;
+          round?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "text_guesses_answer_id_fkey";
+            columns: ["answer_id"];
+            isOneToOne: false;
+            referencedRelation: "mode_inputs";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "text_guesses_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "players";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "text_guesses_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "players_public";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "text_guesses_player_id_fkey";
+            columns: ["player_id"];
+            isOneToOne: false;
+            referencedRelation: "players";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "text_guesses_player_id_fkey";
+            columns: ["player_id"];
+            isOneToOne: false;
+            referencedRelation: "players_public";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "text_guesses_room_id_fkey";
+            columns: ["room_id"];
+            isOneToOne: false;
+            referencedRelation: "rooms";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       players_public: {
@@ -1082,7 +1165,7 @@ export type Database = {
       player_status: "active" | "left" | "removed" | "sat_out";
       q_status: "live" | "draft" | "hidden";
       report_status: "open" | "actioned" | "dismissed";
-      report_type: "question" | "nickname" | "other";
+      report_type: "question" | "nickname" | "other" | "answer";
       room_status: "lobby" | "answering" | "guessing" | "ready" | "revealed" | "closed";
     };
     CompositeTypes: {
@@ -1215,7 +1298,7 @@ export const Constants = {
       player_status: ["active", "left", "removed", "sat_out"],
       q_status: ["live", "draft", "hidden"],
       report_status: ["open", "actioned", "dismissed"],
-      report_type: ["question", "nickname", "other"],
+      report_type: ["question", "nickname", "other", "answer"],
       room_status: ["lobby", "answering", "guessing", "ready", "revealed", "closed"],
     },
   },

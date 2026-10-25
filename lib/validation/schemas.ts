@@ -70,6 +70,25 @@ export const advance = z.object({
 
 export const playerTarget = z.object({ playerId: z.uuid() });
 
+/** Who Said That?: my written answers (the filter runs on the server). */
+export const putTexts = z.object({
+  texts: z
+    .array(z.object({ questionId: z.uuid(), body: z.string().max(400) }))
+    .min(1)
+    .max(10),
+});
+
+/** Who Said That?: who I think wrote each answer. */
+export const putWhose = z.object({
+  guesses: z
+    .array(z.object({ answerId: z.uuid(), authorId: z.uuid() }))
+    .min(1)
+    .max(100),
+});
+
+/** Report a written answer; it is hidden for everyone straight away. */
+export const reportAnswer = z.object({ reason: z.string().trim().max(280).optional() });
+
 /** Two Truths: my card, two questions I said yes to and one I said no to. */
 export const putPick = z.object({
   truths: z.array(z.uuid()).length(2),

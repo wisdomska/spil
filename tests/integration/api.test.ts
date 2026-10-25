@@ -698,6 +698,85 @@ d("host tools", () => {
     expect(revealed.body.room.reveal.total).toBe(2 + revealed.body.results.awards.length);
   });
 
+  it("Who Said That?: 18+ only, filtered answers, anonymous guessing, report hides", async () => {
+    const teen = await anonPlayer();
+    const young = await teen.call("POST", "/rooms", {
+      ageBand: "16_17",
+      packId: "who_said",
+      mode: "who_said",
+    });
+    expect(code(young)).toBe("MODE_UNAVAILABLE");
+
+    const room = await fullRoom(3, "who_said", 10, "who_said");
+    const players = room.players as [Player, Player, Player];
+    const [a] = players;
+    expect((await a.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);
+    const state = await a.call("GET", `/rooms/${room.roomCode}/state`);
+    const qs: Array<{ id: string }> = state.body.questions;
+    expect(qs).toHaveLength(5);
+    expect(state.body.room.questionCount).toBe(5);
+
+    const write = (p: Player, body: string, q = qs[0]!.id) =>
+      p.call("PUT", `/rooms/${room.roomCode}/texts`, { texts: [{ questionId: q, body }] });
+    expect(code(await write(a, "what a f4g move"))).toBe("TEXT_BLOCKED");
+    expect(code(await write(a, "dm me at ama@example.com"))).toBe("TEXT_CONTACT");
+    expect((await write(a, "that was shit")).body.saved[qs[0]!.id]).toBe("that was s***");
+
+    const ids = await Promise.all(
+      players.map((p) =>
+        p.call("GET", `/rooms/${room.roomCode}/state`).then((s) => s.body.me.id as string),
+      ),
+    );
+    for (const [i, p] of players.entries())
+      for (const q of qs)
+        expect((await write(p, `Answer from player ${i}`, q.id)).status).toBe(200);
+    for (const p of players)
+      expect((await p.call("POST", `/rooms/${room.roomCode}/answers/submit`)).status).toBe(200);
+
+    const guessing = await a.call("GET", `/rooms/${room.roomCode}/state`);
+    expect(guessing.body.room.status).toBe("guessing");
+    const toGuess = guessing.body.toGuess as Array<{
+      answers: Array<{ id: string; body: string }>;
+    }>;
+    expect(toGuess.flatMap((q) => q.answers)).toHaveLength(10);
+    expect(JSON.stringify(guessing.body.toGuess)).not.toContain("playerId");
+    expect(JSON.stringify(guessing.body.toGuess)).not.toContain("Answer from player 0");
+
+    // Everyone guesses every author right: the answer says who wrote it.
+    for (const [i, p] of players.entries()) {
+      const s = await p.call("GET", `/rooms/${room.roomCode}/state`);
+      const guesses = (s.body.toGuess as Array<{ answers: Array<{ id: string; body: string }> }>)
+        .flatMap((q) => q.answers)
+        .map((x) => ({ answerId: x.id, authorId: ids[Number(x.body.slice(-1))]! }));
+      if (i === 0) {
+        const self = await p.call("PUT", `/rooms/${room.roomCode}/whose`, {
+          guesses: [{ answerId: guesses[0]!.answerId, authorId: ids[0] }],
+        });
+        expect(code(self)).toBe("INVALID_TARGET");
+      }
+      expect((await p.call("PUT", `/rooms/${room.roomCode}/whose`, { guesses })).status).toBe(200);
+      expect((await p.call("POST", `/rooms/${room.roomCode}/guesses/submit`)).status).toBe(200);
+    }
+
+    const revealed = await a.call("POST", `/rooms/${room.roomCode}/advance`, { from: "ready" });
+    expect(revealed.body.room.status).toBe("revealed");
+    const pts = revealed.body.results.rows.map((r: { mindReader: number }) => r.mindReader);
+    expect(pts).toEqual([100, 100, 100]);
+    expect(revealed.body.results.spotted[ids[0]!]).toEqual({ right: 10, total: 10 });
+
+    // A report hides the answer for everyone.
+    const target = revealed.body.results.said[0].answers[0];
+    const reported = await players[1].call(
+      "POST",
+      `/rooms/${room.roomCode}/answers/${target.id}/report`,
+      {},
+    );
+    expect(reported.body.hidden).toBe(true);
+    const after = await players[2].call("GET", `/rooms/${room.roomCode}/state`);
+    const same = after.body.results.said[0].answers.find((x: { id: string }) => x.id === target.id);
+    expect(same).toMatchObject({ hidden: true, body: "" });
+  });
+
   it("two players are enough to start", async () => {
     const room = await fullRoom(2);
     expect((await room.host.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);

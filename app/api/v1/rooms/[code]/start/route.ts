@@ -10,7 +10,15 @@ import {
   roomMode,
 } from "@/lib/api/rooms";
 import { getSettings } from "@/lib/flags";
-import { canStart, hasImposter, modeMinPlayers, type MinAge, type PlayerStatus } from "@/lib/game";
+import {
+  canStart,
+  hasImposter,
+  MAX_WRITTEN_PROMPTS,
+  modeMinPlayers,
+  writesAnswers,
+  type MinAge,
+  type PlayerStatus,
+} from "@/lib/game";
 import { getAdminClient } from "@/lib/supabase/admin";
 
 /** POST /rooms/:code/start: host starts the round. Draws questions and opens answering. */
@@ -38,7 +46,10 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   const { error } = await getAdminClient().rpc("start_round", {
     p_room: room.room.id,
     p_pack: pack.id,
-    p_n: room.room.question_count ?? settings.questionsPerGame,
+    // Who Said That? plays at most 5 prompts, so the guessing stays quick.
+    p_n: writesAnswers(roomMode(room.room))
+      ? Math.min(room.room.question_count ?? settings.questionsPerGame, MAX_WRITTEN_PROMPTS)
+      : (room.room.question_count ?? settings.questionsPerGame),
   });
   if (error) throw fromDbError(error);
 

@@ -6,6 +6,7 @@ import {
   isScoredPlayer,
   mySpots,
   percentTargets,
+  toGuessFor,
   truthsCardsFor,
   roomMode,
   loadPlayers,
@@ -13,7 +14,7 @@ import {
   requireMember,
   requirePhase,
 } from "@/lib/api/rooms";
-import { guessesQuestions, hasImposter, picksTruths } from "@/lib/game";
+import { guessesQuestions, hasImposter, picksTruths, writesAnswers } from "@/lib/game";
 import { getAdminClient } from "@/lib/supabase/admin";
 
 /** POST /rooms/:code/guesses/submit: locks guesses. Needs one guess per other scored player. */
@@ -26,6 +27,27 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   // Players who sat out answering can still guess ("They can still guess.").
 
   const db = getAdminClient();
+  if (writesAnswers(roomMode(room.room))) {
+    const [toGuess, { data: mine, error: mineError }] = await Promise.all([
+      toGuessFor(room.room, room.players, room.me.id),
+      db
+        .from("text_guesses")
+        .select("answer_id")
+        .eq("player_id", room.me.id)
+        .eq("round", room.room.round),
+    ]);
+    if (mineError) throw fromDbError(mineError);
+    const have = new Set((mine ?? []).map((g) => g.answer_id));
+    if (toGuess.some((q) => q.answers.some((a) => !have.has(a.id))))
+      throw new ApiError("INCOMPLETE");
+    await db
+      .from("players")
+      .update({ guesses_submitted_at: new Date().toISOString() })
+      .eq("id", room.me.id)
+      .is("guesses_submitted_at", null);
+    await advancePhaseIfReady(room.room, await loadPlayers(room.room.id));
+    return freshState(code, userId);
+  }
   if (picksTruths(roomMode(room.room))) {
     const [cards, spots] = await Promise.all([
       truthsCardsFor(room.room, room.players),

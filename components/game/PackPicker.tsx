@@ -216,7 +216,9 @@ export function PackPicker({
                                 ? "prompts"
                                 : p.format === "flags"
                                   ? "scenarios"
-                                  : "questions",
+                                  : p.format === "open"
+                                    ? "open"
+                                    : "questions",
                             { count: p.questionCount },
                           )}
                         </span>
@@ -377,11 +379,14 @@ function PackPreview({
                   className="grid gap-1.5 rounded-card border border-line bg-surface p-4"
                 >
                   {/* Statements (Hot Takes) read on their own; prompts and questions get their opener. */}
-                  {pack?.format !== "statements" && pack?.format !== "flags" && (
-                    <span className="text-[13px] leading-none font-semibold text-text-muted">
-                      {pack?.format === "prompts" ? tq("likelyPrefix") : tq("haveYouEver")}
-                    </span>
-                  )}
+                  {pack?.format !== "statements" &&
+                    pack?.format !== "flags" &&
+                    pack?.format !== "open" &&
+                    pack?.format !== "pairs" && (
+                      <span className="text-[13px] leading-none font-semibold text-text-muted">
+                        {pack?.format === "prompts" ? tq("likelyPrefix") : tq("haveYouEver")}
+                      </span>
+                    )}
                   <span className="text-[17px] leading-[1.35] font-semibold text-pretty">
                     {text}
                   </span>

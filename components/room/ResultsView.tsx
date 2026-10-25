@@ -19,6 +19,7 @@ import { SegmentedTabs, TabPanel } from "@/components/ui/SegmentedTabs";
 import { Sheet } from "@/components/ui/Sheet";
 import { SwitchRow } from "@/components/ui/Switch";
 import { useToast } from "@/components/ui/Toast";
+import { api } from "@/lib/api/client";
 import type { RoomState } from "@/lib/api/types";
 import { isTiedRank, labelById, rankByGuessing, verdictBand } from "@/lib/game";
 import { saveLastGame } from "@/lib/share/capture";
@@ -61,8 +62,9 @@ export function ResultsView({
   const rank = state.room.mode === "rank_room";
   const imposter = state.room.mode === "imposter";
   const truths = state.room.mode === "two_truths";
+  const said = state.room.mode === "who_said";
   // Modes without a Spill Score: no labels, Spill Mode or share card.
-  const noSpill = hot || likely || flags || rank || imposter || truths;
+  const noSpill = hot || likely || flags || rank || imposter || truths || said;
 
   const rows = rankByGuessing(results?.rows ?? []);
   const ranks = rows.map((r) => r.rank);
@@ -107,19 +109,21 @@ export function ResultsView({
   const solo = (meRow?.guessedBy ?? 0) === 0;
   // Room Percentage: nobody guesses about players; the points are for reading the room.
   const anyGuesses =
-    state.room.mode === "two_truths"
-      ? (results.cards ?? []).some((c) => c.guessers > 0)
-      : state.room.mode === "imposter"
-        ? (results.imposter?.voters ?? 0) > 0
-        : state.room.mode === "rank_room"
-          ? (results.ranked ?? []).length > 0
-          : state.room.mode === "red_green"
-            ? (results.flags ?? []).length > 0
-            : state.room.mode === "most_likely"
-              ? (results.likely ?? []).length > 0
-              : pct
-                ? (results.percent ?? []).some((q) => q.guesses.length > 0)
-                : rows.some((r) => (r.guessedBy ?? 0) > 0);
+    state.room.mode === "who_said"
+      ? Object.values(results.spotted ?? {}).some((s) => s.total > 0)
+      : state.room.mode === "two_truths"
+        ? (results.cards ?? []).some((c) => c.guessers > 0)
+        : state.room.mode === "imposter"
+          ? (results.imposter?.voters ?? 0) > 0
+          : state.room.mode === "rank_room"
+            ? (results.ranked ?? []).length > 0
+            : state.room.mode === "red_green"
+              ? (results.flags ?? []).length > 0
+              : state.room.mode === "most_likely"
+                ? (results.likely ?? []).length > 0
+                : pct
+                  ? (results.percent ?? []).some((q) => q.guesses.length > 0)
+                  : rows.some((r) => (r.guessedBy ?? 0) > 0);
   const band = verdictBand(gap);
   const verdict =
     band === "well" ? t("verdictWell") : band === "little" ? t("verdictLittle") : t("verdictNone");
@@ -127,7 +131,9 @@ export function ResultsView({
 
   return (
     <div className="flex flex-col gap-[22px]">
-      {truths ? (
+      {said ? (
+        <WhoHeader spotted={results.spotted?.[state.me.id]} points={meRow?.mindReader ?? 0} />
+      ) : truths ? (
         <CardHeader
           card={results.cards?.find((c) => c.playerId === state.me.id)}
           points={meRow?.mindReader ?? 0}
@@ -285,7 +291,7 @@ export function ResultsView({
               </li>
             ))}
           </ol>
-          {anyGuesses && !likely && !flags && !rank && !imposter && !truths && (
+          {anyGuesses && !likely && !flags && !rank && !imposter && !truths && !said && (
             <button
               type="button"
               onClick={() => setExplain(true)}
@@ -326,7 +332,9 @@ export function ResultsView({
           </div>
         </TabPanel>
         <TabPanel value="questions" className="outline-none">
-          {truths ? (
+          {said ? (
+            <SaidStats said={results.said ?? []} rows={rows} code={state.room.code} />
+          ) : truths ? (
             <CardStats cards={results.cards ?? []} rows={rows} />
           ) : imposter && results.imposter ? (
             <ImposterStats outcome={results.imposter} rows={rows} />
@@ -877,6 +885,107 @@ function CardStats({
               </span>
             </span>
           ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Who Said That?: how many authors you guessed right, and your points. */
+function WhoHeader({
+  spotted,
+  points,
+}: {
+  spotted: { right: number; total: number } | undefined;
+  points: number;
+}) {
+  const t = useTranslations("results");
+  return (
+    <div className="grid gap-2.5">
+      {spotted && spotted.total > 0 && (
+        <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] text-text-muted">
+          {t("whoKicker")}
+        </span>
+      )}
+      <h1 className="m-0 font-display text-[36px] leading-[1] font-extrabold tracking-display">
+        {spotted && spotted.total > 0
+          ? t("whoTitle", { right: spotted.right, total: spotted.total })
+          : t("whoNone")}
+      </h1>
+      <p className="m-0 text-[16px] leading-[1.45] text-text-muted">{t("whoPoints", { points })}</p>
+    </div>
+  );
+}
+
+/**
+ * Who Said That? questions tab: every answer and who wrote it, each with a Report button. A
+ * report hides the answer for everyone straight away and reaches the admin console.
+ */
+function SaidStats({
+  said,
+  rows,
+  code,
+}: {
+  said: Array<{
+    questionId: string;
+    text: string;
+    answers: Array<{ id: string; playerId: string; body: string; hidden: boolean }>;
+  }>;
+  rows: Array<{ playerId: string; nickname: string }>;
+  code: string;
+}) {
+  const t = useTranslations("results");
+  const tr = useTranslations("reveal");
+  const tt = useTranslations("toast");
+  const toast = useToast();
+  const [reported, setReported] = useState<Record<string, boolean>>({});
+  const name = (id: string) => rows.find((r) => r.playerId === id)?.nickname ?? "";
+  const report = async (id: string) => {
+    try {
+      await api("POST", `/rooms/${code}/answers/${id}/report`, {});
+      setReported((r) => ({ ...r, [id]: true }));
+      toast(tt("answerReported"));
+    } catch {
+      toast(tt("somethingWrong"), "err");
+    }
+  };
+  return (
+    <div className="grid gap-4">
+      <p className="m-0 text-[14px] leading-[1.45] text-text-muted">{t("saidStatsNote")}</p>
+      {said.length === 0 && <p className="m-0 text-[15px] text-text-muted">{t("statsEmpty")}</p>}
+      {said.map((q) => (
+        <div key={q.questionId} className="grid gap-2.5 border-b border-line pb-4">
+          <span className="font-display text-[18px] leading-[1.2] font-bold">{q.text}</span>
+          {q.answers.map((a) => {
+            const gone = a.hidden || reported[a.id];
+            return (
+              <div key={a.id} className="flex items-start gap-3">
+                <div className="grid min-w-0 flex-1 gap-1">
+                  <span className="text-[15px] leading-[1.35] font-medium">
+                    {gone ? <span className="text-text-muted">{tr("hiddenAnswer")}</span> : a.body}
+                  </span>
+                  <span className="text-[13px] leading-none font-semibold text-text-muted">
+                    {name(a.playerId)}
+                  </span>
+                </div>
+                {!gone && (
+                  <button
+                    type="button"
+                    aria-label={t("reportAria", { text: a.body })}
+                    onClick={() => report(a.id)}
+                    className="h-11 shrink-0 rounded-pill border border-line bg-transparent px-3.5 text-[14px] leading-none font-semibold text-text hover:bg-surface-raised"
+                  >
+                    {t("report")}
+                  </button>
+                )}
+                {reported[a.id] && (
+                  <span className="shrink-0 text-[13px] leading-none font-semibold text-text-muted">
+                    {t("reported")}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
       ))}
     </div>

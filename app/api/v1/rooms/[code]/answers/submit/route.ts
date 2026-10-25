@@ -20,6 +20,7 @@ import {
   canMakeCard,
   picksTruths,
   validPick,
+  writesAnswers,
   votesForPlayers,
   type AnswerValue,
 } from "@/lib/game";
@@ -51,7 +52,18 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   if (answers.error) throw fromDbError(answers.error);
 
   const mode = roomMode(room.room);
-  if (answersWithRatings(mode) || votesForPlayers(mode) || ranksPlayers(mode)) {
+  if (writesAnswers(mode)) {
+    // Who Said That?: an answer to every prompt.
+    const { data: texts, error: textsError } = await db
+      .from("mode_inputs")
+      .select("question_id")
+      .eq("player_id", room.me.id)
+      .eq("round", room.room.round)
+      .eq("kind", "text");
+    if (textsError) throw fromDbError(textsError);
+    const have = new Set((texts ?? []).map((t) => t.question_id));
+    if ((drawn.data ?? []).some((q) => !have.has(q.question_id))) throw new ApiError("INCOMPLETE");
+  } else if (answersWithRatings(mode) || votesForPlayers(mode) || ranksPlayers(mode)) {
     // Hot Takes rates every statement; Most Likely To and Rank the Room cover every prompt.
     const given = answersWithRatings(mode)
       ? await myRatings(room.room, room.me.id)

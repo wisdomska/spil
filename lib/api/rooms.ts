@@ -18,6 +18,10 @@ import {
   picksTruths,
   truthsCards,
   twoTruthsResults,
+  writesAnswers,
+  answersToGuess,
+  whoSaidResults,
+  MAX_WRITTEN_PROMPTS,
   isMode,
   modeMinPlayers,
   roomPercentResults,
@@ -256,6 +260,44 @@ function spotsFrom(
   return out;
 }
 
+/** Who Said That?: this round's written answers, with ids, bodies and whether hidden. */
+async function roundTexts(room: RoomRow) {
+  const { data, error } = await db()
+    .from("mode_inputs")
+    .select("id, player_id, question_id, body, hidden")
+    .eq("room_id", room.id)
+    .eq("round", room.round)
+    .eq("kind", "text");
+  if (error) throw fromDbError(error);
+  return (data ?? [])
+    .filter((r) => r.question_id && r.body)
+    .map((r) => ({
+      id: r.id,
+      playerId: r.player_id,
+      questionId: r.question_id!,
+      body: r.body!,
+      hidden: r.hidden,
+    }));
+}
+
+/** Who Said That?: every guess this round, guesser to answer id to author id. */
+async function roundWhose(room: RoomRow) {
+  const { data, error } = await db()
+    .from("text_guesses")
+    .select("player_id, answer_id, author_id")
+    .eq("room_id", room.id)
+    .eq("round", room.round);
+  if (error) throw fromDbError(error);
+  const out: Record<string, Record<string, string>> = {};
+  for (const g of data ?? []) (out[g.player_id] ??= {})[g.answer_id] = g.author_id;
+  return out;
+}
+
+/** Who Said That?: the answers a player guesses on (everyone else's, no authors). */
+export async function toGuessFor(room: RoomRow, players: PlayerRow[], playerId: string) {
+  return answersToGuess(await resultsInput(room, players), playerId);
+}
+
 /** Two Truths: the cards this round, shuffled, never saying which is the spill. */
 export async function truthsCardsFor(room: RoomRow, players: PlayerRow[]) {
   return truthsCards(await resultsInput(room, players));
@@ -406,6 +448,10 @@ async function resultsInput(room: RoomRow, players: PlayerRow[]) {
     ranksPlayers(roomMode(room)) ? roundInputs(room, "rank") : Promise.resolve([]),
   ]);
   const imposterMode = hasImposter(roomMode(room));
+  const writtenMode = writesAnswers(roomMode(room));
+  const [texts, whose] = writtenMode
+    ? await Promise.all([roundTexts(room), roundWhose(room)])
+    : [[], {} as Record<string, Record<string, string>>];
   const truthsMode = picksTruths(roomMode(room));
   const [pickRows, spotRows] = truthsMode
     ? await Promise.all([roundInputs(room, "pick"), roundInputs(room, "spot")])
@@ -441,10 +487,14 @@ async function resultsInput(room: RoomRow, players: PlayerRow[]) {
     imposterId: string | null;
     altText: Record<string, string>;
     suspects: Record<string, string>;
+    texts: typeof texts;
+    whose: typeof whose;
     picks: Record<string, { truths: string[]; spill: string }>;
     spots: Record<string, Record<string, string>>;
     seed: string;
   } = {
+    texts,
+    whose,
     picks: picksFrom(pickRows),
     spots: spotsFrom(spotRows),
     seed: `${room.id}:${room.round}`,
@@ -487,7 +537,9 @@ export async function finalize(room: RoomRow, players: PlayerRow[]) {
             ? imposterResults(input)
             : picksTruths(roomMode(room))
               ? twoTruthsResults(input)
-              : computeResults(input));
+              : writesAnswers(roomMode(room))
+                ? whoSaidResults(input)
+                : computeResults(input));
   if (percent) {
     // Keep each guess's points on its input, so this round never changes later.
     const updates = percent.percentQuestions.flatMap((q) =>
@@ -564,14 +616,20 @@ export async function advancePhaseIfReady(room: RoomRow, players: PlayerRow[]): 
           room.status === "guessing" && hasImposter(roomMode(room))
           ? 1
           : undefined;
-  // Two Truths: each player spots every card but their own.
-  const cards =
-    room.status === "guessing" && picksTruths(roomMode(room))
-      ? truthsCards(await resultsInput(room, players))
+  // Two Truths: each player spots every card but their own. Who Said That?: every answer
+  // but their own.
+  const guessInput =
+    room.status === "guessing" && (picksTruths(roomMode(room)) || writesAnswers(roomMode(room)))
+      ? await resultsInput(room, players)
       : null;
+  const cards = guessInput && picksTruths(roomMode(room)) ? truthsCards(guessInput) : null;
   const plan = planAdvance(room.status, players.map(toPhase), {
     questionTargets,
-    targetCount: cards ? (id) => cards.filter((c) => c.playerId !== id).length : undefined,
+    targetCount: cards
+      ? (id) => cards.filter((c) => c.playerId !== id).length
+      : guessInput
+        ? (id) => answersToGuess(guessInput, id).reduce((n, q) => n + q.answers.length, 0)
+        : undefined,
   });
   if (plan.lock.length) {
     const { error } = await db()
@@ -651,6 +709,20 @@ export async function autoplayBots(room: RoomRow) {
     await Promise.all(
       pending.map(async (bot) => {
         const lean = 0.15 + (bot.rotation_seed % 70) / 100;
+        if (writesAnswers(roomMode(room))) {
+          await db().rpc("save_mode_inputs", {
+            p_player: bot.id,
+            p_room: room.id,
+            p_round: room.round,
+            p_kind: "text",
+            p_inputs: questions.map((q, i) => ({
+              question_id: q.id,
+              body: `Test answer ${i + 1} from ${bot.nickname}`,
+            })),
+          });
+          await db().from("players").update({ answers_submitted_at: now }).eq("id", bot.id);
+          return;
+        }
         if (ranksPlayers(roomMode(room))) {
           const everyone = players.filter(isScoredPlayer);
           await db().rpc("save_mode_inputs", {
@@ -728,7 +800,27 @@ export async function autoplayBots(room: RoomRow) {
     );
   }
 
-  if (room.status === "guessing" && picksTruths(roomMode(room))) {
+  if (room.status === "guessing" && writesAnswers(roomMode(room))) {
+    const input = await resultsInput(room, players);
+    await Promise.all(
+      bots
+        .filter((b) => !b.guesses_submitted_at)
+        .map(async (bot) => {
+          const others = players.filter((p) => p.id !== bot.id && isScoredPlayer(p));
+          const rows = answersToGuess(input, bot.id).flatMap((q) =>
+            q.answers.map((a) => ({
+              player_id: bot.id,
+              answer_id: a.id,
+              room_id: room.id,
+              round: room.round,
+              author_id: others[Math.floor(Math.random() * others.length)]!.id,
+            })),
+          );
+          if (rows.length && others.length) await db().from("text_guesses").upsert(rows);
+          await db().from("players").update({ guesses_submitted_at: now }).eq("id", bot.id);
+        }),
+    );
+  } else if (room.status === "guessing" && picksTruths(roomMode(room))) {
     const cards = truthsCards(await resultsInput(room, players));
     await Promise.all(
       bots
@@ -790,7 +882,8 @@ export async function autoplayBots(room: RoomRow) {
     room.status === "guessing" &&
     !skipsGuessing(roomMode(room)) &&
     !hasImposter(roomMode(room)) &&
-    !picksTruths(roomMode(room))
+    !picksTruths(roomMode(room)) &&
+    !writesAnswers(roomMode(room))
   ) {
     const targets = players.filter((p) => p.status === "active" || p.status === "sat_out");
     await Promise.all(
@@ -850,6 +943,9 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       ? roundGuesses(room)
       : Promise.resolve([]),
   ]);
+  // Who Said That? counts written answers.
+  const written =
+    room.status === "answering" && writesAnswers(roomMode(room)) ? await roundTexts(room) : null;
   // Hot Takes counts ratings and Most Likely To votes, not yes or no answers (SPIL-03).
   const rated =
     room.status === "answering" && answersWithRatings(roomMode(room))
@@ -863,9 +959,11 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       ? await roundInputs(room, "rank")
       : null;
   const countFor = (id: string) =>
-    rankRows
-      ? new Set(rankRows.filter((r) => r.player_id === id).map((r) => r.question_id)).size
-      : (rated ?? answers).filter((a) => a.player_id === id).length;
+    written
+      ? written.filter((t) => t.playerId === id).length
+      : rankRows
+        ? new Set(rankRows.filter((r) => r.player_id === id).map((r) => r.question_id)).size
+        : (rated ?? answers).filter((a) => a.player_id === id).length;
 
   const visible = players.filter(inGame);
   const statePlayers: StatePlayer[] = visible.map((p) => ({
@@ -896,7 +994,10 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       round: room.round,
       pack: packSummary(pack),
       mode: roomMode(room),
-      questionCount: room.question_count ?? settings.questionsPerGame,
+      // Who Said That? plays at most 5 prompts.
+      questionCount: writesAnswers(roomMode(room))
+        ? Math.min(room.question_count ?? settings.questionsPerGame, MAX_WRITTEN_PROMPTS)
+        : (room.question_count ?? settings.questionsPerGame),
       revealedAt: room.revealed_at ?? undefined,
       guessingAt: room.guessing_at ?? undefined,
       settings: {
@@ -919,15 +1020,17 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       hideNameOnCard: me.hide_name_on_card,
       // Read the room modes: the question ids this player guesses about; classic: player ids.
       targets:
-        room.status === "guessing" && picksTruths(roomMode(room))
-          ? truthsCards(await resultsInput(room, players))
-              .filter((c) => c.playerId !== me.id)
-              .map((c) => c.playerId)
-          : room.status === "guessing" && !skipsGuessing(roomMode(room))
-            ? guessesQuestions(roomMode(room))
-              ? (await percentTargets(room, players)).map((q) => q.id)
-              : guessTargets(players.map(toPhase), me.id).map((p) => p.id)
-            : [],
+        room.status === "guessing" && writesAnswers(roomMode(room))
+          ? (await toGuessFor(room, players, me.id)).flatMap((q) => q.answers.map((a) => a.id))
+          : room.status === "guessing" && picksTruths(roomMode(room))
+            ? truthsCards(await resultsInput(room, players))
+                .filter((c) => c.playerId !== me.id)
+                .map((c) => c.playerId)
+            : room.status === "guessing" && !skipsGuessing(roomMode(room))
+              ? guessesQuestions(roomMode(room))
+                ? (await percentTargets(room, players)).map((q) => q.id)
+                : guessTargets(players.map(toPhase), me.id).map((p) => p.id)
+              : [],
     },
     players: statePlayers,
   };
@@ -940,6 +1043,12 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       state.questions = questions.map((q) => ({ id: q.id, text: alt[q.id] || q.text }));
     }
     if (answersWithRatings(roomMode(room))) state.myRatings = await myRatings(room, me.id);
+    if (writesAnswers(roomMode(room)))
+      state.myTexts = Object.fromEntries(
+        (await roundTexts(room))
+          .filter((t) => t.playerId === me.id)
+          .map((t) => [t.questionId, t.body]),
+      );
     if (picksTruths(roomMode(room))) {
       const mine = picksFrom(
         (await roundInputs(room, "pick")).filter((r) => r.player_id === me.id),
@@ -959,6 +1068,12 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     state.myGuesses = Object.fromEntries(
       guesses.filter((g) => g.guesser_id === me.id).map((g) => [g.target_id, g.value]),
     );
+    if (room.status === "guessing" && writesAnswers(roomMode(room))) {
+      // Everyone else's answers, shuffled, never saying who wrote them.
+      const input = await resultsInput(room, players);
+      state.toGuess = answersToGuess(input, me.id);
+      state.myWhose = input.whose[me.id] ?? {};
+    }
     if (room.status === "guessing" && picksTruths(roomMode(room))) {
       // The cards, shuffled, never saying which is the spill.
       const input = await resultsInput(room, players);
@@ -1023,6 +1138,7 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     const ranked = ranksPlayers(roomMode(room)) ? rankRoomResults(input) : null;
     const imposter = hasImposter(roomMode(room)) ? imposterResults(input).imposter : null;
     const truths = picksTruths(roomMode(room)) ? twoTruthsResults(input).cards : null;
+    const written = writesAnswers(roomMode(room)) ? whoSaidResults(input) : null;
     state.room.reveal = {
       index: room.reveal_index,
       at: room.reveal_at ?? room.revealed_at ?? new Date().toISOString(),
@@ -1032,16 +1148,18 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
           ? revealSlides(2, awardRows.length, "question").length
           : truths
             ? revealSlides(truths.length, awardRows.length, "question").length
-            : likely || flags || ranked
-              ? revealSlides(
-                  likely?.likely.length ?? flags?.flags.length ?? ranked?.ranked.length ?? 0,
-                  awardRows.length,
-                  "question",
-                ).length
-              : revealSlides(
-                  spillGroups((rows ?? []).map((r) => ({ score: r.spill_score }))).length,
-                  awardRows.length,
-                ).length,
+            : written
+              ? revealSlides(written.said.length, awardRows.length, "question").length
+              : likely || flags || ranked
+                ? revealSlides(
+                    likely?.likely.length ?? flags?.flags.length ?? ranked?.ranked.length ?? 0,
+                    awardRows.length,
+                    "question",
+                  ).length
+                : revealSlides(
+                    spillGroups((rows ?? []).map((r) => ({ score: r.spill_score }))).length,
+                    awardRows.length,
+                  ).length,
     };
     state.results = {
       // Only Room Percentage reveals by question; classic rooms leave it out.
@@ -1061,6 +1179,12 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       imposter: imposter ?? undefined,
       // Two Truths: each card with its spill and the spots, now the room is revealed.
       cards: truths ?? undefined,
+      // Who Said That?: each prompt's answers with who wrote them; hidden ones carry no text.
+      said: written?.said.map((q) => ({
+        ...q,
+        answers: q.answers.map((a) => (a.hidden ? { ...a, body: "" } : a)),
+      })),
+      spotted: written?.spotted,
       exact: computed.guessPoints
         .filter((g) => g.points - (g.closest ? CLOSEST_BONUS : 0) === 10)
         .map((g) => ({ guesserId: g.guesserId, targetId: g.targetId })),
@@ -1123,6 +1247,10 @@ export async function revealPlan(room: RoomRow, players: PlayerRow[]) {
   if (swipesFlags(roomMode(room))) {
     const scenarios = flagResults(await resultsInput(room, players)).flags.length;
     return { groups: scenarios, slides: revealSlides(scenarios, awards, "question") };
+  }
+  if (writesAnswers(roomMode(room))) {
+    const prompts = whoSaidResults(await resultsInput(room, players)).said.length;
+    return { groups: prompts, slides: revealSlides(prompts, awards, "question") };
   }
   if (picksTruths(roomMode(room))) {
     const cards = twoTruthsResults(await resultsInput(room, players)).cards.length;

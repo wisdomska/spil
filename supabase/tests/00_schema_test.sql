@@ -9,7 +9,7 @@ select tables_are(
     'packs', 'questions', 'settings', 'feature_flags',
     'rooms', 'room_questions', 'players', 'answers', 'guesses', 'results', 'awards',
     'reports', 'messages', 'admins', 'audit_log', 'rate_limits', 'stats_daily', 'pack_plays',
-    'captcha_events', 'mode_inputs', 'imposters'
+    'captcha_events', 'mode_inputs', 'imposters', 'text_guesses'
   ],
   'public schema has exactly the spec tables'
 );
@@ -123,8 +123,8 @@ select ok(
 select is((select count(*)::int from public.settings), 1, 'settings is a singleton');
 select is(
   (select array_agg(id order by id) from public.packs where status = 'live'),
-  array['afterdark', 'campus', 'classic', 'groupchat', 'hot_takes', 'imposter', 'kink', 'most_likely', 'nolimits', 'red_green', 'roadtrip', 'sheets', 'work'],
-  'thirteen live packs (nine seed, four from the Batch 1 mode migrations 1800 to 2200)'
+  array['afterdark', 'campus', 'classic', 'groupchat', 'hot_takes', 'imposter', 'kink', 'most_likely', 'nolimits', 'red_green', 'roadtrip', 'sheets', 'who_said', 'work'],
+  'fourteen live packs (nine seed, five from the Batch 1 mode migrations 1800 to 2400)'
 );
 select is((select status::text from public.packs where id = 'purity'), 'draft', 'purity pack is draft');
 select is(

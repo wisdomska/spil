@@ -8,6 +8,7 @@ import type {
   PercentQuestion,
   PlayerStatus,
   RoomStatus,
+  AnonAnswer,
   BestPlace,
   CardItem,
   Crowned,
@@ -20,6 +21,7 @@ import type {
   PackFormat,
   RankQuestion,
   TruthsCard,
+  WhoSaidQuestion,
 } from "@/lib/game";
 
 export type HeatLevel = "spicy" | "explicit" | "intense";
@@ -158,6 +160,12 @@ export type RoomState = {
   myGuesses?: Record<string, number>;
   /** Room Percentage, while guessing: the questions to guess the room's yes share for. */
   percentQuestions?: Array<{ id: string; text: string }>;
+  /** Who Said That?, while answering: my answers so far, by question id. */
+  myTexts?: Record<string, string>;
+  /** Who Said That?, while guessing: everyone else's answers per prompt, no authors. */
+  toGuess?: Array<{ questionId: string; text: string; answers: AnonAnswer[] }>;
+  /** Who Said That?, while guessing: my guess per answer id. */
+  myWhose?: Record<string, string>;
   /** Two Truths, while answering: my card if I have picked one. */
   myPick?: { truths: string[]; spill: string };
   /** Two Truths, while guessing: every card, shuffled, never saying which is the spill. */
@@ -199,6 +207,10 @@ export type RoomState = {
     imposter?: ImposterOutcome;
     /** Two Truths: each card with its spill and how many spotted each question. */
     cards?: TruthsCard[];
+    /** Who Said That?: each prompt's answers with their authors (hidden ones without text). */
+    said?: WhoSaidQuestion[];
+    /** Who Said That?: right guesses and guesses made, by player id. */
+    spotted?: Record<string, { right: number; total: number }>;
     /** Exact guesses, for the reveal's Bullseye stamps (SPIL-09, SPIL-11). */
     exact: Array<{ guesserId: string; targetId: string }>;
     awards: AwardRow[];

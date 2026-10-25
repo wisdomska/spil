@@ -28,6 +28,7 @@ import {
   type GroupStep,
   type ImposterOutcome,
   type TruthsCard,
+  type WhoSaidQuestion,
   type FlagQuestion,
   type LikelyQuestion,
   type PercentQuestion,
@@ -64,6 +65,8 @@ type Props = {
   imposter?: ImposterOutcome;
   /** Two Truths: one slide per card. */
   cards?: TruthsCard[];
+  /** Who Said That?: one slide per prompt, every answer with who wrote it. */
+  said?: WhoSaidQuestion[];
   /** Dev fixtures only: hold the stage at this many ms into the slide. */
   freezeAt?: number;
 };
@@ -93,6 +96,7 @@ export function RevealStage({
   ranked,
   imposter,
   cards,
+  said,
   freezeAt,
 }: Props) {
   const t = useTranslations("reveal");
@@ -110,10 +114,12 @@ export function RevealStage({
           ? revealSlides(2, awards.length, "question")
           : cards
             ? revealSlides(cards.length, awards.length, "question")
-            : likely || flags || ranked
-              ? revealSlides((likely ?? flags ?? ranked)!.length, awards.length, "question")
-              : revealSlides(groups.length, awards.length),
-    [percent, likely, flags, ranked, imposter, cards, groups, awards],
+            : said
+              ? revealSlides(said.length, awards.length, "question")
+              : likely || flags || ranked
+                ? revealSlides((likely ?? flags ?? ranked)!.length, awards.length, "question")
+                : revealSlides(groups.length, awards.length),
+    [percent, likely, flags, ranked, imposter, cards, said, groups, awards],
   );
   const slide = slides[Math.min(reveal.index, slides.length - 1)];
   const startedAt = Date.parse(reveal.at);
@@ -135,6 +141,7 @@ export function RevealStage({
   const ordered = slide?.kind === "question" ? ranked?.[slide.question] : undefined;
   const imposterStep = slide?.kind === "question" && imposter ? slide.question : null;
   const card = slide?.kind === "question" ? cards?.[slide.question] : undefined;
+  const saidQ = slide?.kind === "question" ? said?.[slide.question] : undefined;
   // The vessel fills to the share of votes the room's pick got.
   const promptShare = prompt
     ? Math.round(((prompt.tally[0]?.count ?? 0) / Math.max(1, prompt.voters)) * 100)
@@ -148,7 +155,16 @@ export function RevealStage({
     const score =
       group?.score ?? question?.actual ?? (prompt ? promptShare : (scenario?.greenShare ?? 0));
     const at = (ms: number) => {
-      if (group || question || prompt || scenario || ordered || card || imposterStep !== null) {
+      if (
+        group ||
+        question ||
+        prompt ||
+        scenario ||
+        ordered ||
+        card ||
+        saidQ ||
+        imposterStep !== null
+      ) {
         const g = group ? groupStep(ms, topBeat) : questionStep(ms);
         count.set(
           g.step === "fill"
@@ -194,6 +210,7 @@ export function RevealStage({
     ordered,
     imposterStep,
     card,
+    saidQ,
     topBeat,
     minMs,
     startedAt,
@@ -236,16 +253,18 @@ export function RevealStage({
           ? t("counter", { n: slide.question + 1, total: 2 })
           : cards
             ? t("counter", { n: slide.question + 1, total: cards.length })
-            : ranked
-              ? t("promptCounter", { n: slide.question + 1, total: ranked.length })
-              : flags
-                ? t("scenarioCounter", { n: slide.question + 1, total: flags.length })
-                : likely
-                  ? t("promptCounter", { n: slide.question + 1, total: likely.length })
-                  : t(average ? "takeCounter" : "questionCounter", {
-                      n: slide.question + 1,
-                      total: percent?.length ?? 0,
-                    })
+            : said
+              ? t("counter", { n: slide.question + 1, total: said.length })
+              : ranked
+                ? t("promptCounter", { n: slide.question + 1, total: ranked.length })
+                : flags
+                  ? t("scenarioCounter", { n: slide.question + 1, total: flags.length })
+                  : likely
+                    ? t("promptCounter", { n: slide.question + 1, total: likely.length })
+                    : t(average ? "takeCounter" : "questionCounter", {
+                        n: slide.question + 1,
+                        total: percent?.length ?? 0,
+                      })
         : t("counter", { n: slide.group + 1, total: groups.length });
 
   return (
@@ -426,6 +445,8 @@ export function RevealStage({
           height={desktop ? 300 : 220}
         />
       )}
+
+      {saidQ && <SaidSlide q={saidQ} rows={rows} stamped={stamped} step={step} reduced={reduced} />}
 
       {card && (
         <CardSlide card={card} rows={rows} step={step} stamped={stamped} reduced={reduced} />
@@ -1150,6 +1171,65 @@ function CardSlide({
       </ul>
       <span className="sr-only" aria-live="polite">
         {stamped ? t("announceCard", { name: owner?.nickname ?? "", text: spillText }) : ""}
+      </span>
+    </div>
+  );
+}
+
+/** Who Said That?: the prompt and every answer, then who wrote each and how many guessed it. */
+function SaidSlide({
+  q,
+  rows,
+  stamped,
+  step,
+  reduced,
+}: {
+  q: WhoSaidQuestion;
+  rows: ResultRow[];
+  stamped: boolean;
+  step: GroupStep;
+  reduced: boolean;
+}) {
+  const t = useTranslations("reveal");
+  const rise = reduced ? "animate-[fade_300ms_both]" : "animate-[rise_300ms_var(--ease-out)_both]";
+  return (
+    <div className="flex flex-1 flex-col gap-[18px]">
+      <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] text-text-muted">
+        {t("saidKicker")}
+      </span>
+      <h2 className="m-0 font-display text-[26px] leading-[1.1] font-extrabold tracking-[-.02em] text-balance">
+        {q.text}
+      </h2>
+      <ul className="m-0 grid list-none gap-2.5 p-0">
+        {q.answers.map((a) => {
+          const who = rows.find((r) => r.playerId === a.playerId);
+          return (
+            <li
+              key={a.id}
+              className="grid gap-2 rounded-card border border-line bg-surface px-4 py-3.5"
+            >
+              <span className="text-[17px] leading-[1.35] font-semibold">
+                {a.hidden ? <span className="text-text-muted">{t("hiddenAnswer")}</span> : a.body}
+              </span>
+              {stamped && who && (
+                <span
+                  className={cn("flex items-center gap-2 text-[15px] leading-none font-bold", rise)}
+                >
+                  <Avatar n={who.avatar} size={28} label={who.nickname} />
+                  {who.nickname}
+                  {step === "verdict" && a.guessers > 0 && (
+                    <span className="ml-auto font-mono text-[13px] font-medium text-text-muted">
+                      {t("saidRight", { right: a.right, total: a.guessers })}
+                    </span>
+                  )}
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      <span className="sr-only" aria-live="polite">
+        {stamped ? t("announceSaid", { text: q.text }) : ""}
       </span>
     </div>
   );

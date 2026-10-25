@@ -16,3 +16,4 @@ export * from "./flags";
 export * from "./rankRoom";
 export * from "./imposter";
 export * from "./twoTruths";
+export * from "./whoSaid";

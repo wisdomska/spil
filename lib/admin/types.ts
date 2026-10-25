@@ -75,7 +75,9 @@ export type AdminQuestion = {
 
 export type AdminReport = {
   id: string;
-  type: "question" | "nickname" | "other";
+  type: "question" | "nickname" | "other" | "answer";
+  /** Who Said That?: the reported written answer, already hidden in the room. */
+  answerText: string | null;
   questionId: string | null;
   questionText: string | null;
   questionStatus: QStatus | null;

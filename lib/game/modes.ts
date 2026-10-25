@@ -38,7 +38,7 @@ export const MODE_RULES: Readonly<Record<Mode, ModeRule>> = {
   rank_room: { minPlayers: 3, available: true, adultOnly: false },
   imposter: { minPlayers: 3, available: true, adultOnly: false },
   two_truths: { minPlayers: 3, available: true, adultOnly: false },
-  who_said: { minPlayers: 3, available: false, adultOnly: true },
+  who_said: { minPlayers: 3, available: true, adultOnly: true },
   spill_or_skip: { minPlayers: 3, available: false, adultOnly: false },
 };
 
@@ -66,7 +66,7 @@ export function ratesStatements(mode: Mode): boolean {
   return mode === "hot_takes";
 }
 
-export type PackFormat = "yes_no" | "statements" | "prompts" | "flags" | "pairs";
+export type PackFormat = "yes_no" | "statements" | "prompts" | "flags" | "pairs" | "open";
 
 /** Most Likely To: players vote for a player on each prompt; there is no guessing phase. */
 export function votesForPlayers(mode: Mode): boolean {
@@ -104,6 +104,16 @@ export function picksTruths(mode: Mode): boolean {
   return mode === "two_truths";
 }
 
+/**
+ * Who Said That?: players write short answers (filtered), then guess who wrote each. 18+ rooms
+ * only, and at most 5 prompts so the guessing stays quick.
+ */
+export function writesAnswers(mode: Mode): boolean {
+  return mode === "who_said";
+}
+
+export const MAX_WRITTEN_PROMPTS = 5;
+
 /** Modes with no guessing phase: the room goes from answering straight to Lights down. */
 export function skipsGuessing(mode: Mode): boolean {
   return votesForPlayers(mode) || swipesFlags(mode) || ranksPlayers(mode);
@@ -119,6 +129,7 @@ export function modeFormat(mode: Mode): PackFormat {
   if (ratesStatements(mode)) return "statements";
   if (swipesFlags(mode)) return "flags";
   if (hasImposter(mode)) return "pairs";
+  if (writesAnswers(mode)) return "open";
   // Rank the Room plays the same prompt packs as Most Likely To.
   return votesForPlayers(mode) || ranksPlayers(mode) ? "prompts" : "yes_no";
 }
