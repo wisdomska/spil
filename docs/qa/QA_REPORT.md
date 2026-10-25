@@ -337,3 +337,16 @@ Notes:
 - [x] Results: how many you guessed right and your points. The Questions tab lists every answer and author with a Report button: a report hides the answer for everyone straight away and reaches the admin Reports queue as "Answer: ... (hidden in the room)", where the author can be removed.
 - Tests: unit `tests/unit/moderation/filter.test.ts` and `tests/unit/game/whoSaid.test.ts`, API (16 to 17 refused, 5 prompts, blocked and contact answers refused, swear masked, guessing hides authors, own answer refused, scoring, report hides), e2e `tests/e2e/who-said.spec.ts` (three phones, a refused link, guesses, reveal, a report). pgTAP `20_who_said_test.sql`. Results screen checked at 375 wide.
 - Migration 20261024002400, applied to staging; production at the Batch 1 release.
+
+### Spill or Skip (Batch 1, game mode 9)
+
+- [x] /create offers Spill or Skip; it plays the classic round with the ordinary packs (answers, guesses, reveal and results as in classic).
+- [x] On the results a Spill or Skip panel lists every yes from players in Spill Mode (they chose to show their yeses) plus Skip. Players who are not in Spill Mode can never be picked; the API refuses it. Switching Spill Mode on adds that player's yeses live.
+- [x] One vote per player, changeable. Votes show live on every phone. The room's pick is one clear favourite with more votes than Skip; otherwise no story.
+- [x] The picked player sees "The room wants your story" and can tell it or pass; everyone sees which. Only the picked player can answer.
+- Tests: unit `tests/unit/game/spillOrSkip.test.ts` (options, pick, ties, Skip wins, invalid votes), API (no options before Spill Mode, non Spill Mode player refused, pick, only the picked player answers, pass), e2e `tests/e2e/spill-or-skip.spec.ts` (three phones, vote, tell). pgTAP `21_spill_or_skip_test.sql`. Panel checked at 375 wide.
+- Migration 20261024002500, applied to staging; production at the Batch 1 release.
+
+### Batch 1 complete
+
+All nine game modes are built, each in its own pull request stacked in order (#45 to #53): Room Percentage, Hot Takes, Most Likely To, Red Flag Green Flag, Rank the Room, Imposter, Two Truths and a Spill, Who Said That?, Spill or Skip. Migrations 1600 to 2500 are on staging. CI has not run on any of them because GitHub Actions is not starting jobs for this account (billing); they land on preview in order once it does, and production follows with the owner's go ahead.

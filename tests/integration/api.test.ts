@@ -276,9 +276,9 @@ d("host tools", () => {
     const notBuilt = await host.call("POST", "/rooms", {
       ageBand: "18_plus",
       packId: "classic",
-      mode: "spill_or_skip",
+      mode: "poker",
     });
-    expect(code(notBuilt)).toBe("MODE_UNAVAILABLE");
+    expect(notBuilt.status).toBe(400);
 
     const pair = await fullRoom(2, "classic", 5, "room_percentage");
     const lobby = await pair.host.call("GET", `/rooms/${pair.roomCode}/state`);
@@ -775,6 +775,45 @@ d("host tools", () => {
     const after = await players[2].call("GET", `/rooms/${room.roomCode}/state`);
     const same = after.body.results.said[0].answers.find((x: { id: string }) => x.id === target.id);
     expect(same).toMatchObject({ hidden: true, body: "" });
+  });
+
+  it("Spill or Skip: after a classic round, vote for one Spill Mode story; the pick can pass", async () => {
+    const room = await fullRoom(3, "classic", 5, "spill_or_skip");
+    const [a, b, c] = room.players as [Player, Player, Player];
+    expect((await a.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);
+    await answerAll(a, room.roomCode, () => "yes");
+    await answerAll(b, room.roomCode, () => "yes");
+    await answerAll(c, room.roomCode, () => "no");
+    for (const p of [a, b, c]) await guessAll(p, room.roomCode, 50);
+    const revealed = await a.call("POST", `/rooms/${room.roomCode}/advance`, { from: "ready" });
+    expect(revealed.body.room.status).toBe("revealed");
+    // Nobody is in Spill Mode yet: nothing to vote for.
+    expect(revealed.body.results.spill.options).toEqual([]);
+
+    await a.call("PATCH", `/rooms/${room.roomCode}/me`, { spillMode: true });
+    const s = await b.call("GET", `/rooms/${room.roomCode}/state`);
+    const aId = (await a.call("GET", `/rooms/${room.roomCode}/state`)).body.me.id;
+    const bId = s.body.me.id;
+    const options = s.body.results.spill.options as Array<{ questionId: string; playerId: string }>;
+    expect(options).toHaveLength(5);
+    expect(options.every((o) => o.playerId === aId)).toBe(true);
+    // b said yes too but is not in Spill Mode, so cannot be picked.
+    const notOpen = await c.call("PUT", `/rooms/${room.roomCode}/spill-vote`, {
+      questionId: options[0]!.questionId,
+      targetId: bId,
+    });
+    expect(code(notOpen)).toBe("INVALID_TARGET");
+
+    const pickA = { questionId: options[0]!.questionId, targetId: aId };
+    await b.call("PUT", `/rooms/${room.roomCode}/spill-vote`, pickA);
+    const after = await c.call("PUT", `/rooms/${room.roomCode}/spill-vote`, pickA);
+    await a.call("PUT", `/rooms/${room.roomCode}/spill-vote`, { skip: true });
+    expect(after.body.results.spill.pick).toMatchObject({ playerId: aId });
+    expect(code(await b.call("PUT", `/rooms/${room.roomCode}/spill-answer`, { spill: true }))).toBe(
+      "FORBIDDEN",
+    );
+    const told = await a.call("PUT", `/rooms/${room.roomCode}/spill-answer`, { spill: false });
+    expect(told.body.results.spill).toMatchObject({ answer: "skip", skips: 1, voters: 3 });
   });
 
   it("two players are enough to start", async () => {

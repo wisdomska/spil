@@ -39,7 +39,7 @@ export const MODE_RULES: Readonly<Record<Mode, ModeRule>> = {
   imposter: { minPlayers: 3, available: true, adultOnly: false },
   two_truths: { minPlayers: 3, available: true, adultOnly: false },
   who_said: { minPlayers: 3, available: true, adultOnly: true },
-  spill_or_skip: { minPlayers: 3, available: false, adultOnly: false },
+  spill_or_skip: { minPlayers: 3, available: true, adultOnly: false },
 };
 
 export function isMode(value: unknown): value is Mode {
@@ -113,6 +113,16 @@ export function writesAnswers(mode: Mode): boolean {
 }
 
 export const MAX_WRITTEN_PROMPTS = 5;
+
+/** Spill or Skip: a classic round, then the room votes on the results for one story to hear. */
+export function votesForStory(mode: Mode): boolean {
+  return mode === "spill_or_skip";
+}
+
+/** Modes that play the classic round (answer, guess scores, reveal). */
+export function playsClassic(mode: Mode): boolean {
+  return mode === "classic" || votesForStory(mode);
+}
 
 /** Modes with no guessing phase: the room goes from answering straight to Lights down. */
 export function skipsGuessing(mode: Mode): boolean {

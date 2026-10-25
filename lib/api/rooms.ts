@@ -19,6 +19,10 @@ import {
   truthsCards,
   twoTruthsResults,
   writesAnswers,
+  votesForStory,
+  spillOptions,
+  tallySpill,
+  type SpillVote,
   answersToGuess,
   whoSaidResults,
   MAX_WRITTEN_PROMPTS,
@@ -258,6 +262,40 @@ function spotsFrom(
   for (const r of rows)
     if (r.question_id && r.target_id) (out[r.player_id] ??= {})[r.target_id] = r.question_id;
   return out;
+}
+
+/** Spill or Skip: the room's votes, the pick, and whether the picked player spills. */
+async function spillState(
+  room: RoomRow,
+  input: Awaited<ReturnType<typeof resultsInput>>,
+  meId: string,
+) {
+  const [picks, ratings] = await Promise.all([
+    roundInputs(room, "pick"),
+    roundInputs(room, "rating"),
+  ]);
+  const votes: Record<string, SpillVote> = {};
+  for (const p of picks)
+    votes[p.player_id] =
+      p.value === 0 || !p.question_id || !p.target_id
+        ? "skip"
+        : { questionId: p.question_id, playerId: p.target_id };
+  const tally = tallySpill(spillOptions(input.questions, input.players), votes);
+  const reply = tally.pick
+    ? ratings.find(
+        (r) => r.player_id === tally.pick!.playerId && r.question_id === tally.pick!.questionId,
+      )
+    : undefined;
+  return {
+    ...tally,
+    answer: reply ? (reply.value === 100 ? ("spill" as const) : ("skip" as const)) : null,
+    myVote: votes[meId] ?? null,
+  };
+}
+
+/** Spill or Skip: the options and votes as they stand (for the vote and answer routes). */
+export async function spillStateFor(room: RoomRow, players: PlayerRow[], meId: string) {
+  return spillState(room, await resultsInput(room, players), meId);
 }
 
 /** Who Said That?: this round's written answers, with ids, bodies and whether hidden. */
@@ -1139,6 +1177,7 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     const imposter = hasImposter(roomMode(room)) ? imposterResults(input).imposter : null;
     const truths = picksTruths(roomMode(room)) ? twoTruthsResults(input).cards : null;
     const written = writesAnswers(roomMode(room)) ? whoSaidResults(input) : null;
+    const story = votesForStory(roomMode(room)) ? await spillState(room, input, me.id) : null;
     state.room.reveal = {
       index: room.reveal_index,
       at: room.reveal_at ?? room.revealed_at ?? new Date().toISOString(),
@@ -1185,6 +1224,8 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
         answers: q.answers.map((a) => (a.hidden ? { ...a, body: "" } : a)),
       })),
       spotted: written?.spotted,
+      // Spill or Skip: only Spill Mode players' yeses, the votes and the pick.
+      spill: story ?? undefined,
       exact: computed.guessPoints
         .filter((g) => g.points - (g.closest ? CLOSEST_BONUS : 0) === 10)
         .map((g) => ({ guesserId: g.guesserId, targetId: g.targetId })),

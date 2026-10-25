@@ -1119,6 +1119,10 @@ export type Database = {
       };
       is_room_member: { Args: { p_room: string }; Returns: boolean };
       is_room_revealed: { Args: { p_room: string }; Returns: boolean };
+      notify_room: {
+        Args: { p_event: string; p_room: string };
+        Returns: undefined;
+      };
       nudge: { Args: { p_room: string; p_target: string }; Returns: undefined };
       record_join: { Args: never; Returns: undefined };
       save_answers: {

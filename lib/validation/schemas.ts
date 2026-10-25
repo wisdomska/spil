@@ -70,6 +70,15 @@ export const advance = z.object({
 
 export const playerTarget = z.object({ playerId: z.uuid() });
 
+/** Spill or Skip: the story I want to hear, or skip. */
+export const putSpillVote = z.union([
+  z.object({ questionId: z.uuid(), targetId: z.uuid() }),
+  z.object({ skip: z.literal(true) }),
+]);
+
+/** Spill or Skip: the picked player tells the story or passes. */
+export const putSpillAnswer = z.object({ spill: z.boolean() });
+
 /** Who Said That?: my written answers (the filter runs on the server). */
 export const putTexts = z.object({
   texts: z

@@ -17,3 +17,4 @@ export * from "./rankRoom";
 export * from "./imposter";
 export * from "./twoTruths";
 export * from "./whoSaid";
+export * from "./spillOrSkip";

@@ -385,15 +385,16 @@ export function RoomApp({ code }: { code: string }) {
             onDone={() => actions.submitGuesses.mutateAsync(undefined).catch(fail)}
           />
         )}
-        {screen === "guess" && state.room.mode === "classic" && (
-          <GuessView
-            key={state.room.round}
-            state={state}
-            skipping={actions.skipToReveal.isPending}
-            onSkip={skip}
-            onDone={() => actions.submitGuesses.mutateAsync(undefined).catch(fail)}
-          />
-        )}
+        {screen === "guess" &&
+          (state.room.mode === "classic" || state.room.mode === "spill_or_skip") && (
+            <GuessView
+              key={state.room.round}
+              state={state}
+              skipping={actions.skipToReveal.isPending}
+              onSkip={skip}
+              onDone={() => actions.submitGuesses.mutateAsync(undefined).catch(fail)}
+            />
+          )}
         {screen === "ready" && (
           <ReadyView
             state={state}

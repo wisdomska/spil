@@ -20,6 +20,9 @@ import { Sheet } from "@/components/ui/Sheet";
 import { SwitchRow } from "@/components/ui/Switch";
 import { useToast } from "@/components/ui/Toast";
 import { api } from "@/lib/api/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { cn } from "@/lib/cn";
+import { Button } from "@/components/ui/Button";
 import type { RoomState } from "@/lib/api/types";
 import { isTiedRank, labelById, rankByGuessing, verdictBand } from "@/lib/game";
 import { saveLastGame } from "@/lib/share/capture";
@@ -105,7 +108,7 @@ export function ResultsView({
   const guess = meRow?.avgGuessAbout ?? 0;
   const gap = Math.abs(score - guess);
   // Solo: nobody guessed, so there is no room guess, no points and no winner (cascade).
-  const pct = state.room.mode !== "classic";
+  const pct = state.room.mode !== "classic" && state.room.mode !== "spill_or_skip";
   const solo = (meRow?.guessedBy ?? 0) === 0;
   // Room Percentage: nobody guesses about players; the points are for reading the room.
   const anyGuesses =
@@ -216,6 +219,15 @@ export function ResultsView({
               ? t("winnerYou", { points: winners[0]!.mindReader })
               : t("winner", { name: winners[0]!.nickname, points: winners[0]!.mindReader })}
         </p>
+      )}
+
+      {state.room.mode === "spill_or_skip" && results.spill && (
+        <SpillPanel
+          spill={results.spill}
+          meId={state.me.id}
+          code={state.room.code}
+          name={(id) => rows.find((r) => r.playerId === id)?.nickname ?? ""}
+        />
       )}
 
       <SegmentedTabs
@@ -989,5 +1001,149 @@ function SaidStats({
         </div>
       ))}
     </div>
+  );
+}
+
+/**
+ * Spill or Skip: vote for one Spill Mode yes to hear the story behind, or skip. Shows the votes
+ * as they come in, the room's pick, and lets the picked player tell it or pass.
+ */
+function SpillPanel({
+  spill,
+  meId,
+  code,
+  name,
+}: {
+  spill: NonNullable<NonNullable<RoomState["results"]>["spill"]>;
+  meId: string;
+  code: string;
+  name: (id: string) => string;
+}) {
+  const t = useTranslations("results");
+  const tt = useTranslations("toast");
+  const toast = useToast();
+  const qc = useQueryClient();
+  const key = (o: { questionId: string; playerId: string }) => `${o.questionId}:${o.playerId}`;
+  const mine = spill.myVote === "skip" ? "skip" : spill.myVote ? key(spill.myVote) : null;
+  const [choice, setChoice] = useState<string | null>(mine);
+  const [busy, setBusy] = useState(false);
+  const send = async (path: string, body: unknown) => {
+    setBusy(true);
+    try {
+      const next = await api<RoomState>("PUT", `/rooms/${code}/${path}`, body);
+      qc.setQueryData(["room", code], next);
+    } catch {
+      toast(tt("somethingWrong"), "err");
+    } finally {
+      setBusy(false);
+    }
+  };
+  const vote = () => {
+    if (!choice) return;
+    if (choice === "skip") return send("spill-vote", { skip: true });
+    const [questionId, targetId] = choice.split(":");
+    return send("spill-vote", { questionId, targetId });
+  };
+  const count = (o: { questionId: string; playerId: string }) =>
+    spill.tally.find((x) => key(x) === key(o))?.count ?? 0;
+  const pick = spill.pick;
+  const ROW =
+    "flex min-h-14 w-full items-center gap-3 rounded-card border-[1.5px] px-4 py-3 text-left text-[15px] leading-[1.35] font-semibold";
+  return (
+    <section className="grid gap-3 rounded-card border border-line bg-surface p-4">
+      <h2 className="m-0 font-display text-[24px] leading-none font-extrabold">
+        {t("spillTitle")}
+      </h2>
+      <p className="m-0 text-[14px] leading-[1.45] text-text-muted">
+        {spill.options.length ? t("spillBody") : t("spillNone")}
+      </p>
+      <div role="radiogroup" aria-label={t("spillTitle")} className="grid gap-2">
+        {spill.options.map((o) => {
+          const on = choice === key(o);
+          return (
+            <button
+              key={key(o)}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              onClick={() => setChoice(key(o))}
+              className={cn(
+                ROW,
+                on ? "border-accent bg-accent-soft" : "border-line bg-surface-raised",
+              )}
+            >
+              <span className="min-w-0 flex-1">
+                {t("spillOption", { name: name(o.playerId), text: o.text })}
+              </span>
+              <span className="font-mono text-[13px] font-medium text-text-muted">
+                {t("spillVotes", { count: count(o) })}
+              </span>
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          role="radio"
+          aria-checked={choice === "skip"}
+          onClick={() => setChoice("skip")}
+          className={cn(
+            ROW,
+            choice === "skip" ? "border-text bg-surface-raised" : "border-line bg-surface-raised",
+          )}
+        >
+          <span className="min-w-0 flex-1">{t("spillSkip")}</span>
+          <span className="font-mono text-[13px] font-medium text-text-muted">
+            {t("spillSkips", { count: spill.skips })}
+          </span>
+        </button>
+      </div>
+      <Button
+        block
+        size="md"
+        softDisabled={!choice || choice === mine}
+        loading={busy}
+        onClick={vote}
+      >
+        {t("spillVote")}
+      </Button>
+      <p aria-live="polite" className="m-0 text-[15px] leading-[1.45] font-semibold">
+        {!pick
+          ? spill.voters > 0 && (
+              <span className="font-medium text-text-muted">{t("spillNoPick")}</span>
+            )
+          : spill.answer === "spill"
+            ? pick.playerId === meId
+              ? t("spillYouTelling")
+              : t("spillTelling", { name: name(pick.playerId) })
+            : spill.answer === "skip"
+              ? pick.playerId === meId
+                ? t("spillYouPassed")
+                : t("spillPassed", { name: name(pick.playerId) })
+              : pick.playerId === meId
+                ? t("spillPickedYou", { text: pick.text })
+                : t("spillPicked", { name: name(pick.playerId), text: pick.text })}
+      </p>
+      {pick && pick.playerId === meId && !spill.answer && (
+        <div className="flex gap-2.5">
+          <Button
+            size="md"
+            className="flex-1"
+            loading={busy}
+            onClick={() => send("spill-answer", { spill: true })}
+          >
+            {t("spillTell")}
+          </Button>
+          <Button
+            size="md"
+            variant="secondary"
+            className="flex-1"
+            loading={busy}
+            onClick={() => send("spill-answer", { spill: false })}
+          >
+            {t("spillPass")}
+          </Button>
+        </div>
+      )}
+    </section>
   );
 }

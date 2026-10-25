@@ -20,6 +20,8 @@ import type {
   LikelyQuestion,
   PackFormat,
   RankQuestion,
+  SpillTally,
+  SpillVote,
   TruthsCard,
   WhoSaidQuestion,
 } from "@/lib/game";
@@ -211,6 +213,8 @@ export type RoomState = {
     said?: WhoSaidQuestion[];
     /** Who Said That?: right guesses and guesses made, by player id. */
     spotted?: Record<string, { right: number; total: number }>;
+    /** Spill or Skip: the options (Spill Mode yeses), votes, the pick and its answer. */
+    spill?: SpillTally & { answer: "spill" | "skip" | null; myVote: SpillVote | null };
     /** Exact guesses, for the reveal's Bullseye stamps (SPIL-09, SPIL-11). */
     exact: Array<{ guesserId: string; targetId: string }>;
     awards: AwardRow[];

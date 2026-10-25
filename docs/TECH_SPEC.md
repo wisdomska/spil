@@ -587,6 +587,8 @@ Base path `/api/v1`. JSON, camelCase. Auth via Supabase session cookie (`@supaba
 | PUT | `/rooms/:code/texts` | member, answering, Who Said That? | `{ texts: [{ questionId, body }] }` → `{ saved }` (the filtered text). Slurs and contact details refused, swear words masked | WRONG_PHASE, ALREADY_SUBMITTED, UNKNOWN_QUESTION, TEXT_BLOCKED, TEXT_CONTACT, TEXT_EMPTY |
 | PUT | `/rooms/:code/whose` | member, guessing, Who Said That? | `{ guesses: [{ answerId, authorId }] }` → `{ saved }`. Others' answers only, never yourself as author | WRONG_PHASE, ALREADY_SUBMITTED, INVALID_TARGET |
 | POST | `/rooms/:code/answers/:answerId/report` | member | `{ reason? }` → `{ hidden: true }`. Hides the answer for everyone and files an answer report | NOT_FOUND, RATE_LIMITED |
+| PUT | `/rooms/:code/spill-vote` | member, revealed, Spill or Skip | `{ questionId, targetId }` or `{ skip: true }` → state. Only Spill Mode players' yeses; one vote per player | WRONG_PHASE, INVALID_TARGET |
+| PUT | `/rooms/:code/spill-answer` | the picked player, revealed, Spill or Skip | `{ spill }` → state. Tell the story or pass | WRONG_PHASE, FORBIDDEN |
 | PUT | `/rooms/:code/percent` | member, guessing, Room Percentage or Hot Takes | `{ guesses: [{ questionId, value 0 to 100 }] }` → `{ saved, total }`. Only questions 3 or more answered or rated | WRONG_PHASE, ALREADY_SUBMITTED, UNKNOWN_QUESTION |
 | POST | `/rooms/:code/kick` | host, lobby | `{playerId}` → state | NOT_HOST, WRONG_PHASE |
 | POST | `/rooms/:code/nudge` | host | `{playerId}` → `{}` (1 per target per minute) | RATE_LIMITED |

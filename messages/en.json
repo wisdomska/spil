@@ -534,7 +534,24 @@
     "saidStatsNote": "Every answer and who wrote it. Report anything that crosses a line; it is hidden for everyone.",
     "report": "Report",
     "reportAria": "Report this answer: {text}",
-    "reported": "Reported"
+    "reported": "Reported",
+    "spillTitle": "Spill or Skip",
+    "spillBody": "Vote for one yes you want the story behind. Only players in Spill Mode can be picked.",
+    "spillNone": "Nobody is in Spill Mode yet. Switch it on below to be pickable, or skip.",
+    "spillOption": "{name}: Have you ever {text}",
+    "spillSkip": "Skip, no story this time",
+    "spillVote": "Vote",
+    "spillVotes": "{count, plural, one {# vote} other {# votes}}",
+    "spillSkips": "{count, plural, one {# skip} other {# skips}}",
+    "spillPicked": "The room wants {name}'s story: Have you ever {text}",
+    "spillPickedYou": "The room wants your story: Have you ever {text}",
+    "spillNoPick": "No story yet. It needs one clear favourite with more votes than Skip.",
+    "spillTell": "I'll tell it",
+    "spillPass": "Pass",
+    "spillTelling": "{name} is telling the story.",
+    "spillPassed": "{name} passed. No pressure.",
+    "spillYouTelling": "You're telling it. Over to you.",
+    "spillYouPassed": "You passed. No pressure."
   },
   "share": {
     "title": "Your card",
@@ -1236,6 +1253,10 @@
     "who_said": {
       "name": "Who Said That?",
       "body": "Write short answers, then guess who wrote what. 18+ only. Names are revealed at the end."
+    },
+    "spill_or_skip": {
+      "name": "Spill or Skip",
+      "body": "Play the classic game, then vote for one story you want to hear. Anyone can pass."
     }
   }
 }

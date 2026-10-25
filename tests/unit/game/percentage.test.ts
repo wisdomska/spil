@@ -72,6 +72,7 @@ describe("Room Percentage", () => {
       "rank_room",
       "imposter",
       "two_truths",
+      "spill_or_skip",
     ]);
   });
 });
