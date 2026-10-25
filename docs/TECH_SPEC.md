@@ -594,6 +594,12 @@ Base path `/api/v1`. JSON, camelCase. Auth via Supabase session cookie (`@supaba
 | POST | `/rooms/:code/react` | member, revealed | `{ emoji }` → `{}`. One of six fixed emoji, broadcast as `reaction`, never stored | BAD_REQUEST, WRONG_PHASE, RATE_LIMITED (30/min/player) |
 | GET | `/daily` | session | → `{ day, question, mine, share, total }`. Share only once 10 answered and after I answer | |
 | POST | `/daily` | session | `{ value: yes or no }` → the same. One answer a day; a second keeps the first | BAD_REQUEST, RATE_LIMITED |
+| GET | `/crews` | session | → my crews `[{ id, name, members }]` | |
+| POST | `/crews` | host, revealed room | `{ roomCode, name }` → `{ id, token }`. Saves the group; only the host joins; records the round | NOT_HOST, WRONG_PHASE, TEXT_BLOCKED, TEXT_CONTACT |
+| POST | `/crews/join` | session | `{ token, nickname }` or `{ roomCode }` → `{ id }` | NOT_FOUND, ROOM_FULL, TEXT_BLOCKED |
+| GET | `/crews/invite/:token` | none | → `{ name, members }` | NOT_FOUND |
+| GET | `/crews/:id?season=` | member | → season table, seasons, recent rounds, members, invite token | NOT_FOUND |
+| POST | `/crews/:id/leave` | member | → `{}` | NOT_FOUND |
 | PUT | `/rooms/:code/percent` | member, guessing, Room Percentage or Hot Takes | `{ guesses: [{ questionId, value 0 to 100 }] }` → `{ saved, total }`. Only questions 3 or more answered or rated | WRONG_PHASE, ALREADY_SUBMITTED, UNKNOWN_QUESTION |
 | POST | `/rooms/:code/kick` | host, lobby | `{playerId}` → state | NOT_HOST, WRONG_PHASE |
 | POST | `/rooms/:code/nudge` | host | `{playerId}` → `{}` (1 per target per minute) | RATE_LIMITED |

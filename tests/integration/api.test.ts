@@ -856,6 +856,65 @@ d("host tools", () => {
     expect(JSON.stringify(after.body)).not.toContain("user_id");
   });
 
+  it("Crews: saved after a game, joined by choice, members only, season table", async () => {
+    const room = await fullRoom(3);
+    const [host, b, c] = room.players as [Player, Player, Player];
+    await host.call("POST", `/rooms/${room.roomCode}/start`);
+    await answerAll(host, room.roomCode, () => "yes");
+    await answerAll(b, room.roomCode, () => "no");
+    await answerAll(c, room.roomCode, (i) => (i < 2 ? "yes" : "no"));
+    for (const p of [host, b, c]) await guessAll(p, room.roomCode, 40);
+    await host.call("POST", `/rooms/${room.roomCode}/advance`, { from: "ready" });
+
+    expect(
+      code(await b.call("POST", "/crews", { roomCode: room.roomCode, name: "Not mine" })),
+    ).toBe("NOT_HOST");
+    expect(
+      code(await host.call("POST", "/crews", { roomCode: room.roomCode, name: "f4g crew" })),
+    ).toBe("TEXT_BLOCKED");
+    const crew = await host.call("POST", "/crews", { roomCode: room.roomCode, name: "Lagos Fam" });
+    expect(crew.status).toBe(200);
+    const crewId: string = crew.body.id;
+
+    // Only the host joined; the others are offered it.
+    const bState = await b.call("GET", `/rooms/${room.roomCode}/state`);
+    expect(bState.body.room.crew).toMatchObject({ id: crewId, name: "Lagos Fam", member: false });
+    expect(code(await b.call("GET", `/crews/${crewId}`))).toBe("NOT_FOUND");
+    expect((await b.call("POST", "/crews/join", { roomCode: room.roomCode })).status).toBe(200);
+    const seen = await b.call("GET", `/crews/${crewId}`);
+    expect(seen.body.members).toHaveLength(2);
+    // The round just played counts for members only.
+    expect(seen.body.table).toHaveLength(2);
+    expect(seen.body.rounds).toHaveLength(1);
+    expect(JSON.stringify(seen.body)).not.toMatch(/spill_?score|answers/i);
+
+    const invite = await anonPlayer();
+    expect((await invite.call("GET", `/crews/invite/${crew.body.token}`)).body).toEqual({
+      name: "Lagos Fam",
+      members: 2,
+    });
+    expect(
+      (await invite.call("POST", "/crews/join", { token: crew.body.token, nickname: "Esi" }))
+        .status,
+    ).toBe(200);
+    expect((await invite.call("GET", "/crews")).body).toEqual([
+      { id: crewId, name: "Lagos Fam", members: 3 },
+    ]);
+    await invite.call("POST", `/crews/${crewId}/leave`);
+    expect((await invite.call("GET", "/crews")).body).toEqual([]);
+
+    // A member can start a room as the crew; someone else cannot.
+    const asCrew = await b.call("POST", "/rooms", {
+      ageBand: "18_plus",
+      packId: "classic",
+      crewId,
+    });
+    expect(asCrew.status).toBe(200);
+    expect(
+      code(await invite.call("POST", "/rooms", { ageBand: "18_plus", packId: "classic", crewId })),
+    ).toBe("NOT_FOUND");
+  });
+
   it("two players are enough to start", async () => {
     const room = await fullRoom(2);
     expect((await room.host.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);

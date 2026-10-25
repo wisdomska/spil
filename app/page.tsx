@@ -52,6 +52,12 @@ export default async function Landing() {
               >
                 {t("daily")}
               </Link>
+              <Link
+                href="/crews"
+                className="w-fit text-[15px] leading-[1.4] font-semibold text-text-muted underline underline-offset-4 hover:text-text"
+              >
+                {t("crews")}
+              </Link>
               <span className="flex items-center gap-2 text-[14px] leading-[1.4] font-medium text-text-muted">
                 <LockSimpleIcon size={18} aria-hidden />
                 {c("privacyLine")}

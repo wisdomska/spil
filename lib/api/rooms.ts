@@ -55,6 +55,7 @@ import {
 import { getFlags, getSettings } from "@/lib/flags";
 import { getAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/lib/supabase/database.types";
+import { crewName, isCrewMember, recordCrewRound } from "./crews";
 import { ApiError, fromDbError } from "./errors";
 import type { PackSummary, RoomState, StatePlayer, TvState } from "./types";
 
@@ -613,6 +614,22 @@ export async function finalize(room: RoomRow, players: PlayerRow[]) {
       );
     if (pointsError) throw fromDbError(pointsError);
   }
+  // Crews (Batch 3): keep this round for the crew's history and season table.
+  if (room.crew_id) {
+    const byId = new Map(players.map((p) => [p.id, p]));
+    await recordCrewRound({
+      crewId: room.crew_id,
+      roomCode: room.code,
+      round: room.round,
+      mode: roomMode(room),
+      scores: results.rows.flatMap((r) => {
+        const p = byId.get(r.playerId);
+        return p
+          ? [{ userId: p.user_id, nickname: p.nickname, points: r.mindReader, rank: r.rank }]
+          : [];
+      }),
+    });
+  }
   const { error } = await db().rpc("save_results", {
     p_room: room.id,
     p_round: room.round,
@@ -1045,6 +1062,14 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       testPlayers: flags.test_players,
       pollingOnly: flags.polling_only,
       partyMode: flags.party_mode,
+      // Crews (Batch 3): the crew this room plays as, and whether I am in it.
+      crew: room.crew_id
+        ? {
+            id: room.crew_id,
+            name: (await crewName(room.crew_id)) ?? "",
+            member: await isCrewMember(room.crew_id, me.user_id),
+          }
+        : undefined,
       channel: `room:${room.id}`,
     },
     me: {

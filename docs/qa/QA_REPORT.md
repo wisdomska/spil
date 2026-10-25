@@ -382,3 +382,15 @@ All nine game modes are built, each in its own pull request stacked in order (#4
 ### Batch 2 complete
 
 Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Batch 1.
+
+## Batch 3: coming back
+
+### Crews and seasons
+
+- [x] No signup (owner decision): crews live with the device session; an invite link brings people (or a lost device) back.
+- [x] After a game, the host can save the group as a crew (name through the text filter, up to 40 characters). Only the host joins; everyone else in the room is offered "Join {crew}" on their results and joins with one tap. Nobody is added without choosing.
+- [x] A crew page (members only): the season table for a calendar month (Mind Reader points, rounds and wins, ties share a place), previous seasons, recent rounds, members, the invite link, "Start a game with this crew" and Leave. "Your crews" lists them, linked from the landing page.
+- [x] Rounds played as the crew (a room started from the crew, or saved as one, including the round just played and rematches) keep only nicknames, Mind Reader points and ranks; never answers or Spill Scores.
+- [x] Invite links show only the crew's name and size before joining; joining asks for the name the crew sees. Crews hold up to 20 members.
+- Tests: unit `tests/unit/game/crews.test.ts` (season keys, members only, ties), API (host only, filter, offered not added, members only, round recorded, invite, leave, start a room as the crew), e2e `tests/e2e/crews.spec.ts` (save, a friend joins from the results, season table). pgTAP `25_crews_test.sql`. Crew page checked at 375 wide.
+- Migration 20261024002900, applied to staging.

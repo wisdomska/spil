@@ -32,6 +32,8 @@ export const mode = z.enum([
 
 export const createRoom = z.object({
   ageBand,
+  /** Crews (Batch 3): start the room as this crew (the host must be a member). */
+  crewId: z.uuid().optional(),
   mode: mode.default("classic"),
   packId,
   questionCount: z.number().int().min(1).max(100).optional(),
@@ -69,6 +71,18 @@ export const advance = z.object({
 });
 
 export const playerTarget = z.object({ playerId: z.uuid() });
+
+/** Crews: save the room's group as a crew. */
+export const createCrewBody = z.object({
+  roomCode: z.string().trim().min(4).max(8),
+  name: z.string().max(200),
+});
+
+/** Crews: join by invite link, or from a room that plays as the crew. */
+export const joinCrewBody = z.union([
+  z.object({ token: z.string().min(16).max(64), nickname: z.string().max(200) }),
+  z.object({ roomCode: z.string().trim().min(4).max(8) }),
+]);
 
 /** Daily Spill: today's answer. */
 export const postDaily = z.object({ value: z.enum(["yes", "no"]) });

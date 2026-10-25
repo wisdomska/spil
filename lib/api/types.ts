@@ -143,6 +143,8 @@ export type RoomState = {
     channel: string;
     /** Party Mode (Batch 2) is switched on: the host may pair a big screen. */
     partyMode: boolean;
+    /** Crews (Batch 3): the crew this room plays as. */
+    crew?: { id: string; name: string; member: boolean };
   };
   me: {
     id: string;

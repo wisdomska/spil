@@ -19,6 +19,7 @@ import { SegmentedTabs, TabPanel } from "@/components/ui/SegmentedTabs";
 import { Sheet } from "@/components/ui/Sheet";
 import { SwitchRow } from "@/components/ui/Switch";
 import { useToast } from "@/components/ui/Toast";
+import { CrewPanel } from "@/components/crews/CrewPanel";
 import { api } from "@/lib/api/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/cn";
@@ -402,6 +403,8 @@ export function ResultsView({
           )}
         </TabPanel>
       </SegmentedTabs>
+
+      <CrewPanel state={state} />
 
       {!noSpill && (
         <SwitchRow

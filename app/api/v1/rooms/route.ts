@@ -1,6 +1,7 @@
 import { requireUser } from "@/lib/api/auth";
 import { ApiError, fromDbError } from "@/lib/api/errors";
 import { clientIp, readBody, route } from "@/lib/api/handler";
+import { isCrewMember } from "@/lib/api/crews";
 import { requireLivePack } from "@/lib/api/packs";
 import { bandFloor, generateCode, MODE_RULES, modeFormat } from "@/lib/game";
 import { rateLimit } from "@/lib/ratelimit";
@@ -18,6 +19,7 @@ export const POST = route(async (request) => {
   // SPIL-02: the host's band only; the exact age never leaves their device.
   if (body.ageBand === "under_13") throw new ApiError("AGE_TOO_YOUNG");
   const floor = bandFloor(body.ageBand);
+  if (body.crewId && !(await isCrewMember(body.crewId, userId))) throw new ApiError("NOT_FOUND");
   const rule = MODE_RULES[body.mode];
   if (!rule.available || (rule.adultOnly && floor < 18)) throw new ApiError("MODE_UNAVAILABLE");
   await rateLimit("roomCreate", userId);
@@ -30,14 +32,17 @@ export const POST = route(async (request) => {
   // Insert and retry on the unique live-code index, so two rooms can never share a code.
   for (let attempt = 0; attempt < 8; attempt++) {
     const code = generateCode();
-    const { error } = await getAdminClient().from("rooms").insert({
-      code,
-      pack_id: pack.id,
-      created_by: userId,
-      question_count: questionCount,
-      min_age: pack.minAge,
-      mode: body.mode,
-    });
+    const { error } = await getAdminClient()
+      .from("rooms")
+      .insert({
+        code,
+        pack_id: pack.id,
+        created_by: userId,
+        question_count: questionCount,
+        min_age: pack.minAge,
+        mode: body.mode,
+        crew_id: body.crewId ?? null,
+      });
     if (!error) return { code };
     if (error.code !== "23505") throw fromDbError(error);
   }

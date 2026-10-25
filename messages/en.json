@@ -6,7 +6,9 @@
     "roomTitle": "Join room {code} on SPIL",
     "roomDescription": "{host} is playing {pack}. Tap to join with a nickname. No signup.",
     "tvTitle": "SPIL on the big screen: {code}",
-    "dailyTitle": "Today's Spill"
+    "dailyTitle": "Today's Spill",
+    "crewsTitle": "Your crews",
+    "crewTitle": "Crew"
   },
   "common": {
     "brand": "SPIL",
@@ -97,7 +99,11 @@
     "textContact": "No links, emails, numbers or handles in answers.",
     "textEmpty": "Write something first, up to 140 characters.",
     "answerReported": "Reported. The answer is hidden for everyone.",
-    "linkCopiedTv": "Screen link copied."
+    "linkCopiedTv": "Screen link copied.",
+    "crewJoined": "You joined {name}.",
+    "crewLinkCopied": "Invite link copied.",
+    "crewLeft": "You left {name}.",
+    "crewFull": "This crew is full."
   },
   "landing": {
     "headline": "Your friends think they know you.",
@@ -142,7 +148,8 @@
       "next": "Next player",
       "you": "You"
     },
-    "daily": "Today's Spill: one question for everyone"
+    "daily": "Today's Spill: one question for everyone",
+    "crews": "Your crews and season tables"
   },
   "join": {
     "title": "Got a code?",
@@ -1293,5 +1300,46 @@
     "tooFew": "The share shows once 10 people have answered. Check back later.",
     "streak": "{days, plural, one {# day in a row} other {# days in a row}}",
     "privacy": "Your answer is never shown to anyone. The streak lives on this device only."
+  },
+  "crews": {
+    "kicker": "CREW",
+    "saveTitle": "Save this group as a crew",
+    "saveBody": "Keep a season table across games. Only you join now; everyone else here can join with one tap or an invite link.",
+    "save": "Save as a crew",
+    "nameLabel": "Crew name",
+    "saveCta": "Save crew",
+    "playingAs": "Playing as {name}",
+    "joinBody": "Join to keep your Mind Reader points in the crew's season table. Answers and Spill Scores are never kept.",
+    "join": "Join {name}",
+    "copyInvite": "Copy the invite link",
+    "openCrew": "Open the crew's season table",
+    "startGame": "Start a game with this crew",
+    "season": "Season: {month}",
+    "previous": "Previous",
+    "next": "Next",
+    "previousSeason": "Previous season",
+    "nextSeason": "Next season",
+    "seasonEmpty": "No rounds this season yet.",
+    "seasonNote": "Mind Reader points from rounds played as the crew. Answers and Spill Scores are never kept.",
+    "roundsWins": "{rounds, plural, one {# round} other {# rounds}} · {wins, plural, one {# win} other {# wins}}",
+    "history": "Recent rounds",
+    "historyEmpty": "No rounds yet.",
+    "won": "{name} won",
+    "members": "{n, plural, one {# member} other {# members}}",
+    "you": "{name} (you)",
+    "leave": "Leave this crew",
+    "leaveTitle": "Leave {name}?",
+    "leaveBody": "Your rounds stop counting in the season table. You can join again with the invite link.",
+    "leaveCta": "Leave crew",
+    "stay": "Stay",
+    "listTitle": "Your crews",
+    "listEmpty": "No crews yet. Save one from the results of a game.",
+    "deviceNote": "Crews live with this device, no sign up. Lost them? Ask a member for the invite link.",
+    "inviteKicker": "YOU'RE INVITED TO A CREW",
+    "loading": "Loading the crew",
+    "nicknameLabel": "Your name in the crew",
+    "joinCta": "Join the crew",
+    "joinNote": "The crew sees your name and Mind Reader points from games you play together. Never your answers.",
+    "yourCrews": "Your crews"
   }
 }

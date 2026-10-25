@@ -95,6 +95,7 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
       const { code } = await api<{ code: string }>("POST", "/rooms", {
         ageBand: band,
         mode: game,
+        crewId: params.get("crew") ?? undefined,
         packId,
         questionCount,
         captchaToken: captchaToken || undefined,

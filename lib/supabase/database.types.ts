@@ -197,6 +197,97 @@ export type Database = {
         };
         Relationships: [];
       };
+      crew_members: {
+        Row: {
+          crew_id: string;
+          joined_at: string;
+          nickname: string;
+          user_id: string;
+        };
+        Insert: {
+          crew_id: string;
+          joined_at?: string;
+          nickname: string;
+          user_id: string;
+        };
+        Update: {
+          crew_id?: string;
+          joined_at?: string;
+          nickname?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "crew_members_crew_id_fkey";
+            columns: ["crew_id"];
+            isOneToOne: false;
+            referencedRelation: "crews";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      crew_rounds: {
+        Row: {
+          crew_id: string;
+          id: string;
+          mode: string;
+          played_at: string;
+          room_code: string;
+          round: number;
+          scores: Json;
+        };
+        Insert: {
+          crew_id: string;
+          id?: string;
+          mode: string;
+          played_at?: string;
+          room_code: string;
+          round: number;
+          scores?: Json;
+        };
+        Update: {
+          crew_id?: string;
+          id?: string;
+          mode?: string;
+          played_at?: string;
+          room_code?: string;
+          round?: number;
+          scores?: Json;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "crew_rounds_crew_id_fkey";
+            columns: ["crew_id"];
+            isOneToOne: false;
+            referencedRelation: "crews";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      crews: {
+        Row: {
+          created_at: string;
+          created_by: string;
+          id: string;
+          invite_token: string;
+          name: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by: string;
+          id?: string;
+          invite_token: string;
+          name: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string;
+          id?: string;
+          invite_token?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
       daily_answers: {
         Row: {
           created_at: string;
@@ -867,6 +958,7 @@ export type Database = {
           code: string;
           created_at: string;
           created_by: string;
+          crew_id: string | null;
           expires_at: string;
           final_round: number;
           guessing_at: string | null;
@@ -890,6 +982,7 @@ export type Database = {
           code: string;
           created_at?: string;
           created_by: string;
+          crew_id?: string | null;
           expires_at?: string;
           final_round?: number;
           guessing_at?: string | null;
@@ -913,6 +1006,7 @@ export type Database = {
           code?: string;
           created_at?: string;
           created_by?: string;
+          crew_id?: string | null;
           expires_at?: string;
           final_round?: number;
           guessing_at?: string | null;
@@ -933,6 +1027,13 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "rooms_crew_id_fkey";
+            columns: ["crew_id"];
+            isOneToOne: false;
+            referencedRelation: "crews";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "rooms_host_fk";
             columns: ["host_player_id"];
@@ -1112,6 +1213,7 @@ export type Database = {
           code: string;
           created_at: string;
           created_by: string;
+          crew_id: string | null;
           expires_at: string;
           final_round: number;
           guessing_at: string | null;
@@ -1153,6 +1255,7 @@ export type Database = {
         Args: { p_roles?: Database["public"]["Enums"]["admin_role"][] };
         Returns: boolean;
       };
+      is_crew_member: { Args: { p_crew: string }; Returns: boolean };
       is_room_member: { Args: { p_room: string }; Returns: boolean };
       is_room_revealed: { Args: { p_room: string }; Returns: boolean };
       notify_room: {
