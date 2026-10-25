@@ -27,6 +27,7 @@ import {
   verdictBand,
   type GroupStep,
   type ImposterOutcome,
+  type TruthsCard,
   type FlagQuestion,
   type LikelyQuestion,
   type PercentQuestion,
@@ -61,6 +62,8 @@ type Props = {
   ranked?: RankQuestion[];
   /** Imposter: two slides, the room's vote then who the imposter was. */
   imposter?: ImposterOutcome;
+  /** Two Truths: one slide per card. */
+  cards?: TruthsCard[];
   /** Dev fixtures only: hold the stage at this many ms into the slide. */
   freezeAt?: number;
 };
@@ -89,6 +92,7 @@ export function RevealStage({
   flags,
   ranked,
   imposter,
+  cards,
   freezeAt,
 }: Props) {
   const t = useTranslations("reveal");
@@ -104,10 +108,12 @@ export function RevealStage({
         ? revealSlides(percent.length, awards.length, "question")
         : imposter
           ? revealSlides(2, awards.length, "question")
-          : likely || flags || ranked
-            ? revealSlides((likely ?? flags ?? ranked)!.length, awards.length, "question")
-            : revealSlides(groups.length, awards.length),
-    [percent, likely, flags, ranked, imposter, groups, awards],
+          : cards
+            ? revealSlides(cards.length, awards.length, "question")
+            : likely || flags || ranked
+              ? revealSlides((likely ?? flags ?? ranked)!.length, awards.length, "question")
+              : revealSlides(groups.length, awards.length),
+    [percent, likely, flags, ranked, imposter, cards, groups, awards],
   );
   const slide = slides[Math.min(reveal.index, slides.length - 1)];
   const startedAt = Date.parse(reveal.at);
@@ -128,6 +134,7 @@ export function RevealStage({
   const scenario = slide?.kind === "question" ? flags?.[slide.question] : undefined;
   const ordered = slide?.kind === "question" ? ranked?.[slide.question] : undefined;
   const imposterStep = slide?.kind === "question" && imposter ? slide.question : null;
+  const card = slide?.kind === "question" ? cards?.[slide.question] : undefined;
   // The vessel fills to the share of votes the room's pick got.
   const promptShare = prompt
     ? Math.round(((prompt.tally[0]?.count ?? 0) / Math.max(1, prompt.voters)) * 100)
@@ -141,7 +148,7 @@ export function RevealStage({
     const score =
       group?.score ?? question?.actual ?? (prompt ? promptShare : (scenario?.greenShare ?? 0));
     const at = (ms: number) => {
-      if (group || question || prompt || scenario || ordered || imposterStep !== null) {
+      if (group || question || prompt || scenario || ordered || card || imposterStep !== null) {
         const g = group ? groupStep(ms, topBeat) : questionStep(ms);
         count.set(
           g.step === "fill"
@@ -186,6 +193,7 @@ export function RevealStage({
     scenario,
     ordered,
     imposterStep,
+    card,
     topBeat,
     minMs,
     startedAt,
@@ -226,16 +234,18 @@ export function RevealStage({
       : slide.kind === "question"
         ? imposter
           ? t("counter", { n: slide.question + 1, total: 2 })
-          : ranked
-            ? t("promptCounter", { n: slide.question + 1, total: ranked.length })
-            : flags
-              ? t("scenarioCounter", { n: slide.question + 1, total: flags.length })
-              : likely
-                ? t("promptCounter", { n: slide.question + 1, total: likely.length })
-                : t(average ? "takeCounter" : "questionCounter", {
-                    n: slide.question + 1,
-                    total: percent?.length ?? 0,
-                  })
+          : cards
+            ? t("counter", { n: slide.question + 1, total: cards.length })
+            : ranked
+              ? t("promptCounter", { n: slide.question + 1, total: ranked.length })
+              : flags
+                ? t("scenarioCounter", { n: slide.question + 1, total: flags.length })
+                : likely
+                  ? t("promptCounter", { n: slide.question + 1, total: likely.length })
+                  : t(average ? "takeCounter" : "questionCounter", {
+                      n: slide.question + 1,
+                      total: percent?.length ?? 0,
+                    })
         : t("counter", { n: slide.group + 1, total: groups.length });
 
   return (
@@ -415,6 +425,10 @@ export function RevealStage({
           reduced={reduced}
           height={desktop ? 300 : 220}
         />
+      )}
+
+      {card && (
+        <CardSlide card={card} rows={rows} step={step} stamped={stamped} reduced={reduced} />
       )}
 
       {imposter && imposterStep !== null && (
@@ -1058,6 +1072,84 @@ function ImposterSlide({
       )}
       <span className="sr-only" aria-live="polite">
         {stamped && imp ? t("announceImposter", { name: imp.nickname }) : ""}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * Two Truths and a Spill: the player's three questions, then the spill stamped and the truths
+ * marked, with how many picked each one. Only the three questions the player chose to show.
+ */
+function CardSlide({
+  card,
+  rows,
+  step,
+  stamped,
+  reduced,
+}: {
+  card: TruthsCard;
+  rows: ResultRow[];
+  step: GroupStep;
+  stamped: boolean;
+  reduced: boolean;
+}) {
+  const t = useTranslations("reveal");
+  const tq = useTranslations("question");
+  const owner = rows.find((r) => r.playerId === card.playerId);
+  const spillText = card.items.find((i) => i.questionId === card.spill)?.text ?? "";
+  const rise = reduced ? "animate-[fade_300ms_both]" : "animate-[rise_300ms_var(--ease-out)_both]";
+  return (
+    <div className="flex flex-1 flex-col gap-[18px]">
+      <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] text-text-muted uppercase">
+        {t("cardKicker", { name: owner?.nickname ?? "" })}
+      </span>
+      {owner && <Avatar n={owner.avatar} size={64} label={owner.nickname} />}
+      <ul className="m-0 grid list-none gap-2.5 p-0">
+        {card.items.map((item) => {
+          const isSpill = item.questionId === card.spill;
+          return (
+            <li
+              key={item.questionId}
+              className={cn(
+                "relative grid gap-2 rounded-card border px-4 py-3.5",
+                stamped && isSpill ? "border-accent bg-accent-soft" : "border-line bg-surface",
+              )}
+            >
+              <span className="pr-16 text-[17px] leading-[1.3] font-semibold">
+                {tq("haveYouEver")} {item.text}
+              </span>
+              {step === "verdict" && (
+                <span
+                  className={cn(
+                    "font-mono text-[13px] leading-none font-medium text-text-muted",
+                    rise,
+                  )}
+                >
+                  {t("picked", { count: card.spotted[item.questionId] ?? 0 })}
+                </span>
+              )}
+              {stamped && (
+                <span
+                  className={cn(
+                    "absolute top-3 right-3 rounded-pill border-[3px] border-sticker-edge px-2.5 py-1 font-display text-[13px] leading-none font-extrabold whitespace-nowrap",
+                    isSpill ? "bg-accent text-on-accent" : "bg-inverse text-on-inverse",
+                    reduced ? "animate-[fade_300ms_both]" : "animate-slap",
+                  )}
+                  style={{
+                    boxShadow: "0 0 0 1.5px var(--sticker-ring)",
+                    rotate: isSpill ? "-6deg" : "4deg",
+                  }}
+                >
+                  {isSpill ? t("spillStamp") : t("truthStamp")}
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      <span className="sr-only" aria-live="polite">
+        {stamped ? t("announceCard", { name: owner?.nickname ?? "", text: spillText }) : ""}
       </span>
     </div>
   );

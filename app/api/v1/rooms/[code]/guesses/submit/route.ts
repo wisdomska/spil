@@ -4,14 +4,16 @@ import { route } from "@/lib/api/handler";
 import {
   freshState,
   isScoredPlayer,
+  mySpots,
   percentTargets,
+  truthsCardsFor,
   roomMode,
   loadPlayers,
   advancePhaseIfReady,
   requireMember,
   requirePhase,
 } from "@/lib/api/rooms";
-import { guessesQuestions, hasImposter } from "@/lib/game";
+import { guessesQuestions, hasImposter, picksTruths } from "@/lib/game";
 import { getAdminClient } from "@/lib/supabase/admin";
 
 /** POST /rooms/:code/guesses/submit: locks guesses. Needs one guess per other scored player. */
@@ -24,6 +26,21 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   // Players who sat out answering can still guess ("They can still guess.").
 
   const db = getAdminClient();
+  if (picksTruths(roomMode(room.room))) {
+    const [cards, spots] = await Promise.all([
+      truthsCardsFor(room.room, room.players),
+      mySpots(room.room, room.me.id),
+    ]);
+    if (cards.some((c) => c.playerId !== room.me.id && !spots[c.playerId]))
+      throw new ApiError("INCOMPLETE");
+    await db
+      .from("players")
+      .update({ guesses_submitted_at: new Date().toISOString() })
+      .eq("id", room.me.id)
+      .is("guesses_submitted_at", null);
+    await advancePhaseIfReady(room.room, await loadPlayers(room.room.id));
+    return freshState(code, userId);
+  }
   if (hasImposter(roomMode(room.room))) {
     // Imposter: the vote is the whole guessing phase.
     const { data: vote, error: voteError } = await db

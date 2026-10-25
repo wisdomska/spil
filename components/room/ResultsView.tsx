@@ -60,8 +60,9 @@ export function ResultsView({
   const flags = state.room.mode === "red_green";
   const rank = state.room.mode === "rank_room";
   const imposter = state.room.mode === "imposter";
+  const truths = state.room.mode === "two_truths";
   // Modes without a Spill Score: no labels, Spill Mode or share card.
-  const noSpill = hot || likely || flags || rank || imposter;
+  const noSpill = hot || likely || flags || rank || imposter || truths;
 
   const rows = rankByGuessing(results?.rows ?? []);
   const ranks = rows.map((r) => r.rank);
@@ -106,17 +107,19 @@ export function ResultsView({
   const solo = (meRow?.guessedBy ?? 0) === 0;
   // Room Percentage: nobody guesses about players; the points are for reading the room.
   const anyGuesses =
-    state.room.mode === "imposter"
-      ? (results.imposter?.voters ?? 0) > 0
-      : state.room.mode === "rank_room"
-        ? (results.ranked ?? []).length > 0
-        : state.room.mode === "red_green"
-          ? (results.flags ?? []).length > 0
-          : state.room.mode === "most_likely"
-            ? (results.likely ?? []).length > 0
-            : pct
-              ? (results.percent ?? []).some((q) => q.guesses.length > 0)
-              : rows.some((r) => (r.guessedBy ?? 0) > 0);
+    state.room.mode === "two_truths"
+      ? (results.cards ?? []).some((c) => c.guessers > 0)
+      : state.room.mode === "imposter"
+        ? (results.imposter?.voters ?? 0) > 0
+        : state.room.mode === "rank_room"
+          ? (results.ranked ?? []).length > 0
+          : state.room.mode === "red_green"
+            ? (results.flags ?? []).length > 0
+            : state.room.mode === "most_likely"
+              ? (results.likely ?? []).length > 0
+              : pct
+                ? (results.percent ?? []).some((q) => q.guesses.length > 0)
+                : rows.some((r) => (r.guessedBy ?? 0) > 0);
   const band = verdictBand(gap);
   const verdict =
     band === "well" ? t("verdictWell") : band === "little" ? t("verdictLittle") : t("verdictNone");
@@ -124,7 +127,12 @@ export function ResultsView({
 
   return (
     <div className="flex flex-col gap-[22px]">
-      {imposter && results.imposter ? (
+      {truths ? (
+        <CardHeader
+          card={results.cards?.find((c) => c.playerId === state.me.id)}
+          points={meRow?.mindReader ?? 0}
+        />
+      ) : imposter && results.imposter ? (
         <ImposterHeader
           outcome={results.imposter}
           meId={state.me.id}
@@ -277,7 +285,7 @@ export function ResultsView({
               </li>
             ))}
           </ol>
-          {anyGuesses && !likely && !flags && !rank && !imposter && (
+          {anyGuesses && !likely && !flags && !rank && !imposter && !truths && (
             <button
               type="button"
               onClick={() => setExplain(true)}
@@ -318,7 +326,9 @@ export function ResultsView({
           </div>
         </TabPanel>
         <TabPanel value="questions" className="outline-none">
-          {imposter && results.imposter ? (
+          {truths ? (
+            <CardStats cards={results.cards ?? []} rows={rows} />
+          ) : imposter && results.imposter ? (
             <ImposterStats outcome={results.imposter} rows={rows} />
           ) : rank ? (
             <RankStats ranked={results.ranked ?? []} rows={rows} />
@@ -798,6 +808,75 @@ function ImposterStats({
           <span className="font-mono text-[14px] leading-[1.5] text-text-muted">
             {b.answers.map((a) => `${name(a.playerId)} ${a.value}`).join(", ")}
           </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Two Truths and a Spill: how many your card fooled, and your points. */
+function CardHeader({
+  card,
+  points,
+}: {
+  card: { guessers: number; fooled: number } | undefined;
+  points: number;
+}) {
+  const t = useTranslations("results");
+  return (
+    <div className="grid gap-2.5">
+      {card && (
+        <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] text-text-muted">
+          {t("cardKicker")}
+        </span>
+      )}
+      <h1 className="m-0 font-display text-[36px] leading-[1] font-extrabold tracking-display">
+        {card ? t("cardTitle", { fooled: card.fooled, total: card.guessers }) : t("cardNone")}
+      </h1>
+      <p className="m-0 text-[16px] leading-[1.45] text-text-muted">
+        {t("cardPoints", { points })}
+      </p>
+    </div>
+  );
+}
+
+/** Two Truths questions tab: each card, its spill, and the picks. Only what players showed. */
+function CardStats({
+  cards,
+  rows,
+}: {
+  cards: Array<{
+    playerId: string;
+    spill: string;
+    items: Array<{ questionId: string; text: string }>;
+    spotted: Record<string, number>;
+  }>;
+  rows: Array<{ playerId: string; nickname: string }>;
+}) {
+  const t = useTranslations("results");
+  const tr = useTranslations("reveal");
+  const tq = useTranslations("question");
+  const name = (id: string) => rows.find((r) => r.playerId === id)?.nickname ?? "";
+  return (
+    <div className="grid gap-4">
+      <p className="m-0 text-[14px] leading-[1.45] text-text-muted">{t("cardsStatsNote")}</p>
+      {cards.length === 0 && <p className="m-0 text-[15px] text-text-muted">{t("statsEmpty")}</p>}
+      {cards.map((c) => (
+        <div key={c.playerId} className="grid gap-2 border-b border-line pb-4">
+          <span className="font-display text-[18px] leading-[1.2] font-bold">
+            {name(c.playerId)}
+          </span>
+          {c.items.map((i) => (
+            <span key={i.questionId} className="text-[15px] leading-[1.35] font-medium">
+              <span className="font-semibold">
+                {i.questionId === c.spill ? tr("spillStamp") : tr("truthStamp")}:
+              </span>{" "}
+              {tq("haveYouEver")} {i.text}{" "}
+              <span className="font-mono text-[13px] text-text-muted">
+                ({tr("picked", { count: c.spotted[i.questionId] ?? 0 })})
+              </span>
+            </span>
+          ))}
         </div>
       ))}
     </div>

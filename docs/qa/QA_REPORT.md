@@ -313,3 +313,15 @@ Notes:
 - [x] Test players answer and vote.
 - Tests: unit `tests/unit/game/imposter.test.ts` (caught, tie, wrong pick, self votes, board), API (exactly one phone sees other questions and no state names the imposter, the vote board hides the alternatives, self vote refused, vote replaced, caught, points, reveal length), e2e `tests/e2e/imposter.spec.ts` (three phones find the imposter by comparing questions). pgTAP `18_imposter_test.sql`. Screens checked at 375 wide: answering, vote, reveal and results.
 - Migration 20261024002200, applied to staging; production at the Batch 1 release.
+
+### Two Truths and a Spill (Batch 1, game mode 7)
+
+- [x] /create offers Two Truths and a Spill; it plays the ordinary yes or no packs.
+- [x] Answering is the usual swipe. Then each player picks their card from their own answers: two they said yes to and one they said no to. Only these three are ever shown, and the screen says so. The API checks the card against the player's real answers (INVALID_PICK otherwise).
+- [x] Players without 2 yes answers and 1 no get "Not enough for a card this round" and can still spot everyone else's.
+- [x] Guessing: one card at a time, three questions in a shuffled order (never marked), pick the spill. A changed spot replaces the old one.
+- [x] Points: 10 for each spill spotted, 5 for each player your card fools. Only the Mind Reader and Clueless awards.
+- [x] Reveal: one slide per card: the questions, then Spill and True stickers and how many picked each.
+- [x] Results lead with how many your card fooled, then your points. The Questions tab shows each card.
+- Tests: unit `tests/unit/game/twoTruths.test.ts`, API (card checked against answers, card needed when possible, no card allowed otherwise, cards hide the spill, own card refused, spots, points), e2e `tests/e2e/two-truths.spec.ts` (three phones, one without a card). pgTAP `19_two_truths_test.sql`. Screens checked at 375 wide: card picker, reveal and results.
+- Migration 20261024002300, applied to staging; production at the Batch 1 release.

@@ -71,6 +71,7 @@ describe("Room Percentage", () => {
       "red_green",
       "rank_room",
       "imposter",
+      "two_truths",
     ]);
   });
 });

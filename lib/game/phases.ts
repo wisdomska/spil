@@ -149,11 +149,14 @@ export function planAdvance(
   opts: {
     /** Modes where players guess about questions (Room Percentage): how many they can guess. */
     questionTargets?: number;
+    /** Modes where it differs per player (Two Truths: every card but your own). */
+    targetCount?: (playerId: string) => number;
   } = {},
 ): AdvancePlan {
   if (status === "answering") return { lock: [], to: allAnswered(players) ? "guessing" : null };
   if (status !== "guessing") return { lock: [], to: null };
-  const targets = (id: string) => opts.questionTargets ?? guessTargets(players, id).length;
+  const targets = (id: string) =>
+    opts.targetCount?.(id) ?? opts.questionTargets ?? guessTargets(players, id).length;
   const lock = guessingPlayers(players)
     .filter((p) => p.guessesSubmittedAt == null && targets(p.id) === 0)
     .map((p) => p.id);

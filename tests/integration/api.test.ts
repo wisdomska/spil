@@ -276,7 +276,7 @@ d("host tools", () => {
     const notBuilt = await host.call("POST", "/rooms", {
       ageBand: "18_plus",
       packId: "classic",
-      mode: "two_truths",
+      mode: "spill_or_skip",
     });
     expect(code(notBuilt)).toBe("MODE_UNAVAILABLE");
 
@@ -629,6 +629,72 @@ d("host tools", () => {
     );
     expect(pts[imposterId]).toBe(0);
     for (const id of ids.filter((x) => x !== imposterId)) expect(pts[id]).toBe(10);
+    expect(revealed.body.room.reveal.total).toBe(2 + revealed.body.results.awards.length);
+  });
+
+  it("Two Truths: cards from your own answers, spots, points for spotting and fooling", async () => {
+    const room = await fullRoom(3, "classic", 5, "two_truths");
+    const [a, b, c] = room.players as [Player, Player, Player];
+    expect((await a.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);
+    const qs: Array<{ id: string }> = (await a.call("GET", `/rooms/${room.roomCode}/state`)).body
+      .questions;
+    const save = (p: Player, values: string) =>
+      p.call("PUT", `/rooms/${room.roomCode}/answers`, {
+        answers: qs.map((q, i) => ({ questionId: q.id, value: values[i] === "Y" ? "yes" : "no" })),
+      });
+    await save(a, "YYNYN");
+    await save(b, "YYNYN");
+    await save(c, "YYYYY");
+    const pick = (p: Player, t: number[], s: number) =>
+      p.call("PUT", `/rooms/${room.roomCode}/pick`, {
+        truths: t.map((i) => qs[i]!.id),
+        spill: qs[s]!.id,
+      });
+    expect(code(await pick(a, [0, 2], 1))).toBe("INVALID_PICK");
+    expect(code(await a.call("POST", `/rooms/${room.roomCode}/answers/submit`))).toBe("INCOMPLETE");
+    expect((await pick(a, [0, 1], 2)).status).toBe(200);
+    expect((await pick(b, [0, 3], 4)).status).toBe(200);
+    // c said yes to everything, so has no card and can still lock in.
+    for (const p of [a, b, c])
+      expect((await p.call("POST", `/rooms/${room.roomCode}/answers/submit`)).status).toBe(200);
+
+    const ids = await Promise.all(
+      [a, b, c].map((p) =>
+        p.call("GET", `/rooms/${room.roomCode}/state`).then((s) => s.body.me.id),
+      ),
+    );
+    const [aId, bId] = ids as [string, string, string];
+    const guessing = await c.call("GET", `/rooms/${room.roomCode}/state`);
+    expect(guessing.body.room.status).toBe("guessing");
+    expect(guessing.body.cards.map((x: { playerId: string }) => x.playerId).sort()).toEqual(
+      [aId, bId].sort(),
+    );
+    expect(JSON.stringify(guessing.body.cards)).not.toContain("spill");
+
+    const spot = (p: Player, spots: Array<[string, number]>) =>
+      p.call("PUT", `/rooms/${room.roomCode}/spots`, {
+        spots: spots.map(([targetId, i]) => ({ targetId, questionId: qs[i]!.id })),
+      });
+    expect(code(await spot(a, [[aId, 2]]))).toBe("INVALID_TARGET");
+    await spot(c, [[aId, 2]]);
+    expect(code(await c.call("POST", `/rooms/${room.roomCode}/guesses/submit`))).toBe("INCOMPLETE");
+    await spot(c, [[bId, 0]]);
+    await spot(a, [[bId, 4]]);
+    await spot(b, [[aId, 0]]);
+    for (const p of [a, b, c])
+      expect((await p.call("POST", `/rooms/${room.roomCode}/guesses/submit`)).status).toBe(200);
+
+    const revealed = await a.call("POST", `/rooms/${room.roomCode}/advance`, { from: "ready" });
+    const pts = Object.fromEntries(
+      revealed.body.results.rows.map((r: { playerId: string; mindReader: number }) => [
+        r.playerId,
+        r.mindReader,
+      ]),
+    );
+    // a: spotted b (10) and fooled b (5). b: fooled c (5). c: spotted a (10).
+    expect(pts).toEqual({ [aId]: 15, [bId]: 5, [ids[2]!]: 10 });
+    const cardA = revealed.body.results.cards.find((x: { playerId: string }) => x.playerId === aId);
+    expect(cardA).toMatchObject({ spill: qs[2]!.id, guessers: 2, fooled: 1 });
     expect(revealed.body.room.reveal.total).toBe(2 + revealed.body.results.awards.length);
   });
 

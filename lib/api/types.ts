@@ -9,6 +9,7 @@ import type {
   PlayerStatus,
   RoomStatus,
   BestPlace,
+  CardItem,
   Crowned,
   FlagQuestion,
   LoneFlag,
@@ -18,6 +19,7 @@ import type {
   LikelyQuestion,
   PackFormat,
   RankQuestion,
+  TruthsCard,
 } from "@/lib/game";
 
 export type HeatLevel = "spicy" | "explicit" | "intense";
@@ -156,6 +158,12 @@ export type RoomState = {
   myGuesses?: Record<string, number>;
   /** Room Percentage, while guessing: the questions to guess the room's yes share for. */
   percentQuestions?: Array<{ id: string; text: string }>;
+  /** Two Truths, while answering: my card if I have picked one. */
+  myPick?: { truths: string[]; spill: string };
+  /** Two Truths, while guessing: every card, shuffled, never saying which is the spill. */
+  cards?: Array<{ playerId: string; items: CardItem[] }>;
+  /** Two Truths, while guessing: my spot on each card, by card owner. */
+  mySpots?: Record<string, string>;
   /** Imposter, while voting: everyone's numbers against the real questions. */
   board?: Array<Omit<ImposterBoardRow, "altText">>;
   /** Imposter, while voting: who I voted for. */
@@ -189,6 +197,8 @@ export type RoomState = {
     best?: Record<string, BestPlace>;
     /** Imposter: the vote, who the imposter was, and every question with its alternative. */
     imposter?: ImposterOutcome;
+    /** Two Truths: each card with its spill and how many spotted each question. */
+    cards?: TruthsCard[];
     /** Exact guesses, for the reveal's Bullseye stamps (SPIL-09, SPIL-11). */
     exact: Array<{ guesserId: string; targetId: string }>;
     awards: AwardRow[];

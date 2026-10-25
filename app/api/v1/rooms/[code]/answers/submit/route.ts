@@ -17,6 +17,9 @@ import {
   checkAnswerSubmission,
   ranksPlayers,
   answersWithRatings,
+  canMakeCard,
+  picksTruths,
+  validPick,
   votesForPlayers,
   type AnswerValue,
 } from "@/lib/game";
@@ -57,11 +60,29 @@ export const POST = route<CodeParams>(async (request, ctx) => {
         : await myRanks(room.room, room.me.id);
     if ((drawn.data ?? []).some((q) => !(q.question_id in given))) throw new ApiError("INCOMPLETE");
   } else {
+    const mine = Object.fromEntries(
+      (answers.data ?? []).map((a) => [a.question_id, a.value as AnswerValue]),
+    );
     const check = checkAnswerSubmission(
-      Object.fromEntries((answers.data ?? []).map((a) => [a.question_id, a.value as AnswerValue])),
+      mine,
       (drawn.data ?? []).map((q) => q.question_id),
     );
     if (!check.ok) throw new ApiError(check.code);
+    // Two Truths: a card is needed from anyone with 2 yes answers and 1 no.
+    if (picksTruths(mode) && canMakeCard(mine)) {
+      const { data: card, error: cardError } = await db
+        .from("mode_inputs")
+        .select("question_id, value")
+        .eq("player_id", room.me.id)
+        .eq("round", room.room.round)
+        .eq("kind", "pick");
+      if (cardError) throw fromDbError(cardError);
+      const pick = {
+        truths: (card ?? []).filter((c) => c.value === 1).map((c) => c.question_id!),
+        spill: (card ?? []).find((c) => c.value === 0)?.question_id ?? "",
+      };
+      if (!validPick(mine, pick)) throw new ApiError("INCOMPLETE");
+    }
   }
 
   await db

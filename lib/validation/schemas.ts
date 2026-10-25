@@ -70,6 +70,20 @@ export const advance = z.object({
 
 export const playerTarget = z.object({ playerId: z.uuid() });
 
+/** Two Truths: my card, two questions I said yes to and one I said no to. */
+export const putPick = z.object({
+  truths: z.array(z.uuid()).length(2),
+  spill: z.uuid(),
+});
+
+/** Two Truths: the question I think is the spill on each card. */
+export const putSpots = z.object({
+  spots: z
+    .array(z.object({ targetId: z.uuid(), questionId: z.uuid() }))
+    .min(1)
+    .max(20),
+});
+
 /** Imposter: the player I think had different questions. */
 export const putSuspect = z.object({ targetId: z.uuid() });
 

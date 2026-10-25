@@ -20,7 +20,9 @@ import { LobbyView } from "./LobbyView";
 import { PercentGuessView } from "./PercentGuessView";
 import { QuestionView } from "./QuestionView";
 import { RankView } from "./RankView";
+import { PickView } from "./PickView";
 import { RateView } from "./RateView";
+import { SpotView } from "./SpotView";
 import { SuspectView } from "./SuspectView";
 import { VoteView } from "./VoteView";
 import { ReadyView } from "./ReadyView";
@@ -167,6 +169,7 @@ export function RoomApp({ code }: { code: string }) {
         flags={state.room.mode === "red_green" ? state.results.flags : undefined}
         ranked={state.room.mode === "rank_room" ? state.results.ranked : undefined}
         imposter={state.room.mode === "imposter" ? state.results.imposter : undefined}
+        cards={state.room.mode === "two_truths" ? state.results.cards : undefined}
         average={state.room.mode === "hot_takes"}
         reveal={state.room.reveal!}
         isHost={state.me.isHost}
@@ -184,8 +187,11 @@ export function RoomApp({ code }: { code: string }) {
   const flags = state.room.mode === "red_green";
   const rank = state.room.mode === "rank_room";
   const imposter = state.room.mode === "imposter";
+  const truths = state.room.mode === "two_truths";
+  // Two Truths: once every question is answered, the card picker comes next.
+  const picking = truths && (state.questions ?? []).every((q) => q.id in (state.myAnswers ?? {}));
   // Modes without a Spill Score show points for reading the room in the roster.
-  const pointsOnly = hot || likely || flags || rank || imposter;
+  const pointsOnly = hot || likely || flags || rank || imposter || truths;
   const statusFor = (id: string) => {
     const p = state.players.find((x) => x.id === id);
     if (!p) return "";
@@ -293,12 +299,23 @@ export function RoomApp({ code }: { code: string }) {
             onDone={() => actions.submitAnswers.mutateAsync(undefined).catch(fail)}
           />
         )}
-        {screen === "question" && !hot && !likely && !rank && !imposter && (
+        {screen === "question" && picking && (
+          <PickView
+            key={state.room.round}
+            state={state}
+            onDone={() => actions.submitAnswers.mutateAsync(undefined).catch(fail)}
+          />
+        )}
+        {screen === "question" && !hot && !likely && !rank && !imposter && !picking && (
           <QuestionView
             key={state.room.round}
             state={state}
             flags={flags}
-            onDone={() => actions.submitAnswers.mutateAsync(undefined).catch(fail)}
+            onDone={() =>
+              truths
+                ? qc.invalidateQueries({ queryKey: roomKey(code) })
+                : actions.submitAnswers.mutateAsync(undefined).catch(fail)
+            }
           />
         )}
         {screen === "waiting" && (
@@ -324,6 +341,15 @@ export function RoomApp({ code }: { code: string }) {
             key={state.room.round}
             state={state}
             average={hot}
+            skipping={actions.skipToReveal.isPending}
+            onSkip={skip}
+            onDone={() => actions.submitGuesses.mutateAsync(undefined).catch(fail)}
+          />
+        )}
+        {screen === "guess" && truths && (
+          <SpotView
+            key={state.room.round}
+            state={state}
             skipping={actions.skipToReveal.isPending}
             onSkip={skip}
             onDone={() => actions.submitGuesses.mutateAsync(undefined).catch(fail)}

@@ -582,6 +582,8 @@ Base path `/api/v1`. JSON, camelCase. Auth via Supabase session cookie (`@supaba
 | PUT | `/rooms/:code/votes` | member, answering, Most Likely To | `{ votes: [{ questionId, targetId }] }` → `{ saved, answered }`. One vote per prompt, never yourself; broadcasts progress | WRONG_PHASE, ALREADY_SUBMITTED, UNKNOWN_QUESTION, INVALID_TARGET |
 | PUT | `/rooms/:code/ranks` | member, answering, Rank the Room | `{ ranks: [{ questionId, order: [playerId] }] }` → `{ saved, answered }`. Each order is everyone in the game once, top first; a new order replaces the old | WRONG_PHASE, ALREADY_SUBMITTED, UNKNOWN_QUESTION, INVALID_TARGET |
 | PUT | `/rooms/:code/suspect` | member, guessing, Imposter | `{ targetId }` → `{ saved }`. One vote, never yourself; a new vote replaces the old | WRONG_PHASE, ALREADY_SUBMITTED, INVALID_TARGET |
+| PUT | `/rooms/:code/pick` | member, answering, Two Truths | `{ truths: [q, q], spill: q }` → `{ saved }`. Truths answered yes, spill answered no | WRONG_PHASE, ALREADY_SUBMITTED, INVALID_PICK |
+| PUT | `/rooms/:code/spots` | member, guessing, Two Truths | `{ spots: [{ targetId, questionId }] }` → `{ saved }`. One spot per card, never your own | WRONG_PHASE, ALREADY_SUBMITTED, INVALID_TARGET |
 | PUT | `/rooms/:code/percent` | member, guessing, Room Percentage or Hot Takes | `{ guesses: [{ questionId, value 0 to 100 }] }` → `{ saved, total }`. Only questions 3 or more answered or rated | WRONG_PHASE, ALREADY_SUBMITTED, UNKNOWN_QUESTION |
 | POST | `/rooms/:code/kick` | host, lobby | `{playerId}` → state | NOT_HOST, WRONG_PHASE |
 | POST | `/rooms/:code/nudge` | host | `{playerId}` → `{}` (1 per target per minute) | RATE_LIMITED |

@@ -37,7 +37,7 @@ export const MODE_RULES: Readonly<Record<Mode, ModeRule>> = {
   red_green: { minPlayers: 3, available: true, adultOnly: false },
   rank_room: { minPlayers: 3, available: true, adultOnly: false },
   imposter: { minPlayers: 3, available: true, adultOnly: false },
-  two_truths: { minPlayers: 3, available: false, adultOnly: false },
+  two_truths: { minPlayers: 3, available: true, adultOnly: false },
   who_said: { minPlayers: 3, available: false, adultOnly: true },
   spill_or_skip: { minPlayers: 3, available: false, adultOnly: false },
 };
@@ -96,6 +96,14 @@ export function answersWithRatings(mode: Mode): boolean {
   return ratesStatements(mode) || hasImposter(mode);
 }
 
+/**
+ * Two Truths and a Spill: yes or no answers, then each player picks a card of two truths and a
+ * spill from their own answers, and the guessing phase spots the spill on each card.
+ */
+export function picksTruths(mode: Mode): boolean {
+  return mode === "two_truths";
+}
+
 /** Modes with no guessing phase: the room goes from answering straight to Lights down. */
 export function skipsGuessing(mode: Mode): boolean {
   return votesForPlayers(mode) || swipesFlags(mode) || ranksPlayers(mode);
@@ -103,7 +111,7 @@ export function skipsGuessing(mode: Mode): boolean {
 
 /** Modes that answer with the yes or no swipe (Red Flag, Green Flag reads it as green or red). */
 export function answersYesNo(mode: Mode): boolean {
-  return modeFormat(mode) === "yes_no" || swipesFlags(mode);
+  return modeFormat(mode) === "yes_no" || swipesFlags(mode) || picksTruths(mode);
 }
 
 /** The kind of pack a mode plays: statements, prompts, scenarios, or yes or no questions. */

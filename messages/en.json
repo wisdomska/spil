@@ -278,7 +278,16 @@
     "imposterAsk": "Answer from 0 to 100",
     "imposterHint": "Answer honestly. In this game the room sees everyone's answers.",
     "imposterLow": "0 not at all",
-    "imposterHigh": "100 so much"
+    "imposterHigh": "100 so much",
+    "pickKicker": "YOUR CARD",
+    "pickTitle": "Two truths and a spill.",
+    "pickBody": "Pick two questions you said yes to and one you said no to. Only these three are shown, and only to this room.",
+    "pickTruths": "Your truths: pick 2 you said yes to",
+    "pickSpill": "Your spill: pick 1 you said no to",
+    "pickLock": "Lock in my card",
+    "noCardTitle": "Not enough for a card this round.",
+    "noCardBody": "A card needs 2 yes answers and 1 no. You can still spot everyone else's spill.",
+    "noCardCta": "Continue"
   },
   "report": {
     "title": "Report this question",
@@ -338,7 +347,13 @@
     "suspectTitle": "Find the imposter.",
     "suspectBody": "Everyone answered these. One of you was asked something else, and may not know it.",
     "suspectAria": "Your vote for the imposter",
-    "suspectLock": "Lock in my vote"
+    "suspectLock": "Lock in my vote",
+    "spotCount": "Card {n} of {total}",
+    "spotTitle": "Spot {name}'s spill.",
+    "spotBody": "Two of these are true. One is a lie.",
+    "spotAria": "Which one is {name}'s spill?",
+    "noCardsTitle": "No cards to spot.",
+    "noCardsBody": "Nobody else made a card this round. The reveal starts when the others lock in."
   },
   "ready": {
     "title": "Everyone's guessed.",
@@ -407,7 +422,12 @@
     "escaped": "Got away",
     "theyWere": "They were asked:",
     "announceVote": "The room voted for {names}.",
-    "announceImposter": "The imposter was {name}."
+    "announceImposter": "The imposter was {name}.",
+    "cardKicker": "{name}'S CARD",
+    "spillStamp": "Spill",
+    "truthStamp": "True",
+    "picked": "{count, plural, =0 {Nobody picked this} one {# picked this} other {# picked this}}",
+    "announceCard": "{name}'s spill: Have you ever {text}"
   },
   "results": {
     "headline": "You're a",
@@ -484,7 +504,12 @@
     "imposterStatsNote": "Every question, what the imposter was asked instead, and everyone's numbers.",
     "imposterAlt": "Imposter: {text}",
     "caughtTitle": "Caught.",
-    "escapedTitle": "Got away with it."
+    "escapedTitle": "Got away with it.",
+    "cardKicker": "YOUR CARD FOOLED",
+    "cardTitle": "{fooled} of {total}.",
+    "cardNone": "No card this round.",
+    "cardPoints": "You scored {points} points spotting spills and fooling the room.",
+    "cardsStatsNote": "Each card, its spill, and how many picked each question. Only what players chose to show."
   },
   "share": {
     "title": "Your card",
@@ -1176,6 +1201,10 @@
     "imposter": {
       "name": "Imposter",
       "body": "Easy questions, one secret player gets different ones. Answers are shown. Find them."
+    },
+    "two_truths": {
+      "name": "Two Truths and a Spill",
+      "body": "Answer yes or no, then show two truths and one lie from your answers. Spot everyone's lie."
     }
   }
 }
