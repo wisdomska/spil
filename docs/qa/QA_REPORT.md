@@ -369,3 +369,16 @@ All nine game modes are built, each in its own pull request stacked in order (#4
 - [x] Only during the reveal and results, only the fixed emoji (the database checks too), 30 a minute per player, never stored. Reactions do not make phones reload the room.
 - Tests: API (refused before the reveal, unknown emoji refused, rate limit), e2e `tests/e2e/reactions.spec.ts` (a tap on one phone shows on the other). pgTAP `23_reactions_test.sql`. Reveal with reactions checked.
 - Migration 20261024002700, applied to staging.
+
+### Daily Spill
+
+- [x] /daily (linked from the landing page as "Today's Spill"): one question a day for everyone, from the 13+ Classic pack, walked one a day so none repeats until all have had a day. The day runs on UTC (Ghana time).
+- [x] The age screen runs first (under 13 is refused, like the rest of the site). One answer per person per day, tied to their anonymous session; a second answer keeps the first.
+- [x] After answering: your answer, and the share of SPIL that said yes once 10 or more answered ("The share shows once 10 people have answered" before that). Nobody's answer is ever shown.
+- [x] The streak (days in a row) lives on the device only; it survives reloads and storage failures do not block answering.
+- Tests: unit `tests/unit/game/daily.test.ts` (UTC days, no repeats, share threshold, streak), API (first answer kept, bad values refused, share after 10 answers, no user ids), e2e `tests/e2e/daily.spec.ts` (landing link, age, answer, streak, reload). pgTAP `24_daily_spill_test.sql`. Page checked at 375 wide.
+- Migration 20261024002800, applied to staging.
+
+### Batch 2 complete
+
+Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Batch 1.

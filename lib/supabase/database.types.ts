@@ -197,6 +197,38 @@ export type Database = {
         };
         Relationships: [];
       };
+      daily_answers: {
+        Row: {
+          created_at: string;
+          day: string;
+          question_id: string;
+          user_id: string;
+          value: Database["public"]["Enums"]["answer_value"];
+        };
+        Insert: {
+          created_at?: string;
+          day: string;
+          question_id: string;
+          user_id: string;
+          value: Database["public"]["Enums"]["answer_value"];
+        };
+        Update: {
+          created_at?: string;
+          day?: string;
+          question_id?: string;
+          user_id?: string;
+          value?: Database["public"]["Enums"]["answer_value"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "daily_answers_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       feature_flags: {
         Row: {
           enabled: boolean;

@@ -5,7 +5,8 @@
     "description": "Your friends think they know you. Prove it. Answer “Have you ever…” questions in private, guess each other's score, then watch the scores spill.",
     "roomTitle": "Join room {code} on SPIL",
     "roomDescription": "{host} is playing {pack}. Tap to join with a nickname. No signup.",
-    "tvTitle": "SPIL on the big screen: {code}"
+    "tvTitle": "SPIL on the big screen: {code}",
+    "dailyTitle": "Today's Spill"
   },
   "common": {
     "brand": "SPIL",
@@ -140,7 +141,8 @@
       "reveal": "Reveal the score",
       "next": "Next player",
       "you": "You"
-    }
+    },
+    "daily": "Today's Spill: one question for everyone"
   },
   "join": {
     "title": "Got a code?",
@@ -1281,5 +1283,15 @@
     "unpairedBody": "Ask the host to tap Party Mode in the lobby and open the link on this screen.",
     "offTitle": "Party Mode is switched off.",
     "offBody": "It can be switched on in the admin console."
+  },
+  "daily": {
+    "kicker": "TODAY'S SPILL",
+    "loading": "Pouring today's question",
+    "youYes": "You said yes.",
+    "youNo": "You said no.",
+    "share": "{share}% of SPIL said yes, out of {total} answers so far.",
+    "tooFew": "The share shows once 10 people have answered. Check back later.",
+    "streak": "{days, plural, one {# day in a row} other {# days in a row}}",
+    "privacy": "Your answer is never shown to anyone. The streak lives on this device only."
   }
 }

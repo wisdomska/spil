@@ -19,3 +19,4 @@ export * from "./twoTruths";
 export * from "./whoSaid";
 export * from "./spillOrSkip";
 export * from "./reactions";
+export * from "./daily";

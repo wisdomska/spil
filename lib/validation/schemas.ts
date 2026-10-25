@@ -70,6 +70,9 @@ export const advance = z.object({
 
 export const playerTarget = z.object({ playerId: z.uuid() });
 
+/** Daily Spill: today's answer. */
+export const postDaily = z.object({ value: z.enum(["yes", "no"]) });
+
 /** A live reaction during the reveal: one of the fixed emoji. */
 export const postReaction = z.object({ emoji: z.string().max(8) });
 

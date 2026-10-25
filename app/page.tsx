@@ -46,6 +46,12 @@ export default async function Landing() {
                   {c("joinWithCode")}
                 </Link>
               </div>
+              <Link
+                href="/daily"
+                className="w-fit text-[15px] leading-[1.4] font-semibold text-accent-ink underline underline-offset-4 hover:text-text"
+              >
+                {t("daily")}
+              </Link>
               <span className="flex items-center gap-2 text-[14px] leading-[1.4] font-medium text-text-muted">
                 <LockSimpleIcon size={18} aria-hidden />
                 {c("privacyLine")}

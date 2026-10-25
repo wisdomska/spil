@@ -51,6 +51,7 @@ export const SCOPES = {
     "landing.headlineEmphasis",
   ],
   tv: ["tv", "reveal", "labels", "awards", "results", "modes", "question", "error"],
+  daily: ["daily", "age", "question", "error"],
   contact: ["pages.contactPage"],
   adminAuth: ["admin.badge", "admin.title", "admin.login", "admin.reset", "admin.common"],
   admin: ["admin", "modes"],

@@ -829,10 +829,31 @@ d("host tools", () => {
     await a.call("POST", `/rooms/${room.roomCode}/advance`, { from: "ready" });
     expect(code(await react(a, "hello"))).toBe("BAD_REQUEST");
     expect((await react(b, "🔥")).status).toBe(200);
-    let limited = false;
-    for (let i = 0; i < 31 && !limited; i++)
-      limited = code(await react(a, "😂")) === "RATE_LIMITED";
+    // A burst at once lands in one window (the counter works in clock windows).
+    const burst = await Promise.all(Array.from({ length: 35 }, () => react(a, "😂")));
+    const limited = burst.some((r) => code(r) === "RATE_LIMITED");
     expect(limited).toBe(true);
+  });
+
+  it("Daily Spill: one answer a day each, the share only once 10 answered", async () => {
+    const first = await anonPlayer();
+    const today = await first.call("GET", "/daily");
+    expect(today.status).toBe(200);
+    expect(today.body.question.text.length).toBeGreaterThan(0);
+    expect(today.body.mine).toBeNull();
+    expect(today.body.share).toBeNull();
+    const saved = await first.call("POST", "/daily", { value: "yes" });
+    expect(saved.body.mine).toBe("yes");
+    // A second answer on the same day keeps the first.
+    expect((await first.call("POST", "/daily", { value: "no" })).body.mine).toBe("yes");
+    expect(code(await first.call("POST", "/daily", { value: "skip" }))).toBe("BAD_REQUEST");
+    const others = await Promise.all(Array.from({ length: 10 }, () => anonPlayer()));
+    for (const p of others) await p.call("POST", "/daily", { value: "no" });
+    const after = await first.call("GET", "/daily");
+    expect(after.body.total).toBeGreaterThanOrEqual(11);
+    expect(after.body.share).not.toBeNull();
+    // Nobody else's answer is ever listed.
+    expect(JSON.stringify(after.body)).not.toContain("user_id");
   });
 
   it("two players are enough to start", async () => {

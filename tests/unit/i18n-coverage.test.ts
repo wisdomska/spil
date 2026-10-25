@@ -23,6 +23,7 @@ const ENTRIES: Record<Scope | "base", string[]> = {
   profile: ["app/r/[code]/me/ProfileForm.tsx"],
   room: ["components/room/RoomApp.tsx"],
   tv: ["components/tv/TvApp.tsx"],
+  daily: ["components/daily/DailySpill.tsx"],
   contact: ["app/contact/ContactForm.tsx"],
   adminAuth: ["components/admin/LoginForm.tsx", "components/admin/ResetForm.tsx"],
   admin: ["components/admin/ConsoleShell.tsx"],
