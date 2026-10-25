@@ -80,6 +80,16 @@ export function RoomApp({ code }: { code: string }) {
   const actions = useRoomActions(code);
   const [leaving, setLeaving] = useState(false);
   const [shake, setShake] = useState(0);
+  // SPIL-15: the round this phone already saw "The host moved on." for (kept for reloads).
+  const movedOnStore = `spil.movedOn.${code}`;
+  const [movedOnSeen, setMovedOnSeen] = useState<number | null>(() => {
+    try {
+      const v = sessionStorage.getItem(movedOnStore);
+      return v ? Number(v) : null;
+    } catch {
+      return null;
+    }
+  });
 
   const onNudge = useCallback(
     (target: string) => {
@@ -201,6 +211,17 @@ export function RoomApp({ code }: { code: string }) {
   }
 
   const results = state.results?.rows ?? [];
+  const movedOn =
+    state.me.status === "sat_out" &&
+    state.room.status === "guessing" &&
+    !state.me.guessesSubmitted &&
+    movedOnSeen !== state.room.round;
+  const dismissMovedOn = () => {
+    setMovedOnSeen(state.room.round);
+    try {
+      sessionStorage.setItem(movedOnStore, String(state.room.round));
+    } catch {}
+  };
   const hot = state.room.mode === "hot_takes";
   const likely = state.room.mode === "most_likely";
   const flags = state.room.mode === "red_green";
@@ -222,6 +243,9 @@ export function RoomApp({ code }: { code: string }) {
       // Hot Takes has no Spill Score: the roster shows points for reading the room.
       return String((pointsOnly ? row?.mindReader : row?.score) ?? "");
     }
+    // SPIL-15: a player the host moved on without shows that, not a count.
+    if (p.status === "sat_out" && !(state.room.status === "guessing" && p.guessesSubmitted))
+      return c("satOut");
     const done = state.room.status === "guessing" ? p.guessesSubmitted : p.answersSubmitted;
     if (done) return state.room.status === "guessing" ? c("locked") : c("done");
     if (state.room.status === "guessing") return c("guessing");
@@ -434,6 +458,15 @@ export function RoomApp({ code }: { code: string }) {
           />
         )}
       </RoomShell>
+
+      <Sheet
+        open={movedOn}
+        onOpenChange={(open) => !open && dismissMovedOn()}
+        title={ts("movedOnTitle")}
+        description={ts("movedOnBody")}
+      >
+        <Button onClick={dismissMovedOn}>{c("gotIt")}</Button>
+      </Sheet>
 
       <Sheet
         open={leaving}

@@ -43,7 +43,8 @@
     "statements": "{count} statements",
     "prompts": "{count} prompts",
     "scenarios": "{count} scenarios",
-    "open": "{count} prompts"
+    "open": "{count} prompts",
+    "satOut": "Sat out"
   },
   "age": {
     "kickerHost": "STEP 1 OF 2",
@@ -616,7 +617,9 @@
     "leaveHostNext": "You are the host. The next player in the room takes over.",
     "leaveHostOnly": "You are the only real player, so the room closes.",
     "leaveInGame": "You cannot rejoin this game once you leave. Your answers stay private.",
-    "leaveLobby": "You can join again with the code while the lobby is open."
+    "leaveLobby": "You can join again with the code while the lobby is open.",
+    "movedOnTitle": "The host moved on.",
+    "movedOnBody": "Your answers so far won't count this round, but you can still guess."
   },
   "labels": {
     "fresh": "Fresh Out The Box",

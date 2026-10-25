@@ -448,3 +448,10 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] Cause: every room action wrote its fresh state into the cache, but a state fetch already in flight (started by the lobby change just before) could land afterwards and put the lobby back. The game had started; the host's screen did not show it until the next refetch, so a second tap "worked".
 - [x] Fix: actions cancel any in-flight state fetch before writing their result (`lib/room/useRoom.ts`). This covers every action (start, advance, reveal, rematch, Spill Mode), not only Start. `canStart` already came only from server state and refusals already map to toasts.
 - Tests: e2e `tests/e2e/start-tap.spec.ts` (pack change, guest leaves and rejoins, one tap starts within 10 s). It failed 1 run in 3 before the fix and passed 4 of 4 after.
+
+### SPIL-15: Tell the moved-on player what happened
+
+- [x] When the host moves on without them, the player gets a sheet before guessing: "The host moved on." / "Your answers so far won't count this round, but you can still guess." / "Got it". It shows once per round on that phone, also after a reload.
+- [x] The roster shows "Sat out" for that player instead of a count (until they lock in their guesses).
+- [x] Driven by the player's own `sat_out` status in the room state rather than a separate broadcast, so a missed realtime event or a reload cannot skip it.
+- Tests: e2e `tests/e2e/moved-on.spec.ts` (sheet, copy, roster, no repeat after reload).
