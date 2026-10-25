@@ -555,3 +555,9 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] The server allows one nudge per player per 20 s, enforced inside the `nudge` function with `players.nudged_at` and a conditional update, so two quick taps can never both pass (the old clock-window limit could let two through across a window edge). The route keeps a per-room flood limit.
 - Tests: API "Nudge (SPIL-29)" (second within 20 s refused, guest refused), e2e `tests/e2e/nudge-cooldown.spec.ts` (countdown, extra taps send nothing), pgTAP `31_nudge_cooldown_test.sql`.
 - Migration 20261024003600, applied to staging.
+
+### SPIL-30: Web app manifest
+
+- [x] `app/manifest.ts`: name and short name "SPIL", start at /, standalone, portrait, background and theme colour from the bg token the viewport already uses (dark only), icons 192 and 512 px plus a 512 px maskable one with the mark inside the safe zone.
+- [x] Icons are rendered from app/icon.svg by `scripts/build-icons.mjs` into public/icons (the favicon and Apple icon come out byte for byte the same).
+- Tests: e2e `tests/e2e/manifest.spec.ts` (linked manifest, fields, every icon served as PNG). Lighthouse is in FOLLOW_UPS.
