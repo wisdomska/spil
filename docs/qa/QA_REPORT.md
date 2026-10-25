@@ -524,3 +524,9 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - Tests: unit `vessel.test.ts` (mask with and without crest); every e2e that shows a vessel still passes.
 
 - Follow-up on SPIL-22 (found in the SPIL-24 screenshots): riding the liquid line, the label sticker could cover the big number when the liquid was high. It now rides the line only below the number and sits just under it otherwise; still clear of the Reveal button (landing-demo e2e).
+
+### SPIL-25: Leave room lands on the wrong page
+
+- [x] Cause: leaving made the next state fetch answer "not in this room", and the room screen then sent the player to the nickname form, racing the move home.
+- [x] Fix: Leave marks the room as left and cancels in-flight fetches first, so that redirect stands down; the player lands on / with "You left the room." and focus on "Start a game". Leaving the lobby lands on / as well (rejoining with the code still works).
+- Tests: e2e `tests/e2e/leave-home.spec.ts` (leave mid-game, home, toast, focus, still home after 2.5 s).

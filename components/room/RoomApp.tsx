@@ -35,6 +35,7 @@ import { RoomShell } from "./RoomShell";
 import { RoomSkeleton } from "./RoomSkeleton";
 import { WaitingView } from "./WaitingView";
 import { track } from "@/lib/analytics/posthog";
+import { markLeft } from "@/components/landing/FocusAfterLeave";
 
 type Screen = "lobby" | "question" | "waiting" | "guess" | "ready" | "reveal" | "results";
 
@@ -147,8 +148,12 @@ export function RoomApp({ code }: { code: string }) {
 
   // Not a player here yet: the profile screen joins (lobby), otherwise show why.
   const error = query.error;
+  // SPIL-25: after Leave, the refetch that says "not in this room" must not send me to the
+  // nickname form; Leave goes home.
+  const leftRef = useRef(false);
   useEffect(() => {
     if (
+      !leftRef.current &&
       error instanceof ClientApiError &&
       (error.code === "NOT_IN_ROOM" || error.code === "UNAUTHENTICATED") &&
       error.message !== "REMOVED"
@@ -280,6 +285,8 @@ export function RoomApp({ code }: { code: string }) {
   };
 
   const leave = async () => {
+    leftRef.current = true;
+    await qc.cancelQueries({ queryKey: roomKey(code) });
     try {
       await actions.leave.mutateAsync(undefined);
     } catch {
@@ -287,6 +294,7 @@ export function RoomApp({ code }: { code: string }) {
     }
     qc.removeQueries({ queryKey: roomKey(code) });
     toast(tt("leftRoom"));
+    markLeft();
     router.replace("/");
   };
 

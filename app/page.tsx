@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { HeroDemo } from "@/components/landing/HeroDemo";
 import { RoomsCounter } from "@/components/landing/RoomsCounter";
+import { FocusAfterLeave } from "@/components/landing/FocusAfterLeave";
 import { ShareDemo } from "@/components/landing/ShareDemo";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
@@ -35,6 +36,7 @@ export default async function Landing() {
               </p>
               <div className="flex max-w-[520px] flex-wrap gap-2.5">
                 <Link
+                  id="start-room"
                   href="/create"
                   className="flex h-14 flex-[1_1_200px] items-center justify-center rounded-pill bg-accent px-7 text-[17px] leading-none font-semibold text-on-accent no-underline hover:text-on-accent hover:shadow-[inset_0_0_0_99px_var(--press-glow)] active:scale-[.97]"
                 >
@@ -48,6 +50,7 @@ export default async function Landing() {
                 </Link>
               </div>
               <RoomsCounter />
+              <FocusAfterLeave targetId="start-room" />
               <Link
                 href="/daily"
                 className="w-fit text-[15px] leading-[1.4] font-semibold text-accent-ink underline underline-offset-4 hover:text-text"
