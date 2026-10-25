@@ -522,3 +522,5 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 - [x] Fix: one element draws the crest and the liquid, masked by the liquid's outline (`liquidMask` in lib/vessel.ts), and holds the dark copy. The crest and the dark copy share one shape and move together, so a bubble never covers a digit and the colour flips exactly along the wave. Same change on the share card's vessels. The vessel stays aria-hidden, so screen readers read the value once from its label.
 - [x] Checked by screenshot at 0, 20, 50, 60, 93 and 100 on the 250 px demo vessel and on the 136 px results vessel; the reveal and share card use the same code.
 - Tests: unit `vessel.test.ts` (mask with and without crest); every e2e that shows a vessel still passes.
+
+- Follow-up on SPIL-22 (found in the SPIL-24 screenshots): riding the liquid line, the label sticker could cover the big number when the liquid was high. It now rides the line only below the number and sits just under it otherwise; still clear of the Reveal button (landing-demo e2e).

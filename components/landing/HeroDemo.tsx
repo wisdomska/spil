@@ -31,6 +31,8 @@ const IDLE = [68, 36, 50];
 const VESSEL_TOP = 126;
 const VESSEL_H = 250;
 const STICKER_H = 44;
+/** The big number's lower edge (104 px digits, centred in the vessel): the sticker stays below. */
+const NUMBER_BOTTOM = VESSEL_TOP + VESSEL_H / 2 + 44;
 const easeInOutCubic = (k: number) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
 const easeOutCubic = (k: number) => 1 - Math.pow(1 - k, 3);
 
@@ -45,11 +47,12 @@ export function HeroDemo() {
   const [guess, setGuess] = useState(50);
   const level = useMotionValue(50);
   const num = useTransform(level, (v) => String(Math.round(v)));
-  // SPIL-22: the label sticker sits at the liquid line, never lower than the vessel's bottom.
-  const stickerTop = useTransform(
-    level,
-    (v) => VESSEL_TOP + (1 - Math.max(0, Math.min(100, v)) / 100) * VESSEL_H - STICKER_H / 2,
-  );
+  // SPIL-22: the label sticker rides the liquid line on the left edge, but never over the big
+  // number and never below the vessel (so it stays clear of the Reveal button).
+  const stickerTop = useTransform(level, (v) => {
+    const line = VESSEL_TOP + (1 - Math.max(0, Math.min(100, v)) / 100) * VESSEL_H;
+    return Math.max(NUMBER_BOTTOM, line - STICKER_H / 2);
+  });
   const [label, setLabel] = useState(labelFor(50));
   const anim = useRef<AnimationPlaybackControls | null>(null);
   const idleTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
