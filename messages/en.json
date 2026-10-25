@@ -61,15 +61,6 @@
     "band16": "16 to 17",
     "band18": "18+"
   },
-  "theme": {
-    "label": "Theme",
-    "dark": "Dark",
-    "light": "Light",
-    "system": "System",
-    "toLight": "Switch to light theme",
-    "toDark": "Switch to dark theme",
-    "menu": "Choose theme"
-  },
   "toast": {
     "linkCopied": "Link copied. Share it with your friends.",
     "linkCopiedNoShare": "Link copied. Sharing is not available on this device.",

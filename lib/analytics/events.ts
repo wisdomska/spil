@@ -16,7 +16,6 @@ export type AnalyticsEvents = {
   rematch_started: { packChanged: boolean };
   question_reported: { reason: string };
   error_shown: { variant: string };
-  theme_changed: { theme: "dark" | "light" | "system" };
 };
 
 export type AnalyticsEvent = keyof AnalyticsEvents;

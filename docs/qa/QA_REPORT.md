@@ -571,3 +571,8 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 
 - [x] `scrollbar-gutter: stable` on html, so short pages (no scrollbar) and long pages keep the same width.
 - Tests: e2e `tests/e2e/header-stable.spec.ts` (header position and width equal on /, /join and /create).
+
+### SPIL-33: Theme toggle, remove dead strings
+
+- [x] The whole `theme` message namespace (label, dark, light, system, toLight, toDark, menu) and the `theme_changed` analytics event are removed; nothing rendered them. The light tokens stay in tokens.css (owner decision: dark only for now).
+- Tests: unit `tests/unit/copy/dead-strings.test.ts` (no theme strings, no theme event at the type level); copy check and i18n coverage pass.
