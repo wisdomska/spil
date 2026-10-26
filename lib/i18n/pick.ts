@@ -22,8 +22,8 @@ export function pickMessages(all: Messages, paths: readonly string[]): Messages 
   return out;
 }
 
-/** Every page: the site header, sheets, toasts and error screens. */
-export const BASE_SCOPE = ["common", "toast", "error"] as const;
+/** Every page: the site header and its menu, sheets, toasts and error screens. */
+export const BASE_SCOPE = ["common", "toast", "error", "menu"] as const;
 
 /** Client namespaces per route. The admin console alone gets "admin", after its session check. */
 export const SCOPES = {
@@ -31,6 +31,7 @@ export const SCOPES = {
   create: ["age", "packs", "packInfo", "question", "modes", "setup"],
   join: ["join"],
   profile: ["profile", "age"],
+  profilePage: ["profilePage", "profile"],
   room: [
     "room",
     "lobby",

@@ -1,14 +1,14 @@
 "use client";
 
 import { LockSimpleIcon, WarningCircleIcon } from "@phosphor-icons/react";
-import * as RadioGroup from "@radix-ui/react-radio-group";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useBusy } from "@/lib/useBusy";
 import { AgeGate, PlayingAs } from "@/components/age/AgeGate";
-import { Avatar, AVATAR_COUNT } from "@/components/brand/Avatar";
+import { AVATAR_COUNT } from "@/components/brand/Avatar";
+import { FacePicker } from "@/components/profile/FacePicker";
 import { ErrorScreen, type ErrorVariant } from "@/components/site/ErrorScreen";
 import { Button } from "@/components/ui/Button";
 import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
@@ -18,7 +18,7 @@ import type { PublicRoom } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import { track } from "@/lib/analytics/posthog";
 import { clearProfile, readProfile, saveProfile } from "@/lib/profile/device";
-import { avatarKey, bandFloor, offeredAvatars, randomAvatar } from "@/lib/game";
+import { bandFloor, offeredAvatars, randomAvatar } from "@/lib/game";
 
 const ROOM_ERRORS: Record<string, ErrorVariant> = {
   ROOM_NOT_FOUND: "notfound",
@@ -180,26 +180,7 @@ export function ProfileForm({ code, initialRoom }: { code: string; initialRoom?:
           {nickErr ?? t("help")}
         </span>
       </div>
-      <fieldset className="m-0 grid gap-3 border-0 p-0">
-        <legend className="mb-3 p-0 text-[14px] leading-none font-semibold">{t("face")}</legend>
-        <RadioGroup.Root
-          aria-label={t("avatarGroup")}
-          value={String(face)}
-          onValueChange={(v) => setAvatar(Number(v))}
-          className="grid grid-cols-6 gap-x-1 gap-y-1.5"
-        >
-          {faces.map((i) => (
-            <RadioGroup.Item
-              key={i}
-              value={String(i)}
-              aria-label={t("avatar", { name: t(`avatarNames.${avatarKey(i)}`) })}
-              className="grid h-[54px] place-items-center rounded-pill border-0 bg-transparent p-0 hover:bg-surface-raised"
-            >
-              <Avatar n={i} size={42} selected={face === i} decorative />
-            </RadioGroup.Item>
-          ))}
-        </RadioGroup.Root>
-      </fieldset>
+      <FacePicker faces={faces} value={face} onChange={setAvatar} />
       <div className="mt-auto grid gap-2.5">
         <span className="flex items-center gap-2 text-[14px] leading-[1.4] font-medium text-text-muted">
           <LockSimpleIcon size={18} aria-hidden />

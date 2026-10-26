@@ -149,9 +149,6 @@
       "next": "Next player",
       "you": "You"
     },
-    "daily": "Today's Spill: one question for everyone",
-    "crews": "Your crews and season tables",
-    "badges": "Your badges",
     "roomsThisWeek": "{n, number} rooms spilled this week"
   },
   "join": {
@@ -1546,5 +1543,27 @@
     "changeGame": "Change game",
     "storyVote": "Story vote at the end",
     "storyVoteBody": "After the reveal, the room picks one yes they want the story behind. Anyone can pass. Needs 3 or more players."
+  },
+  "menu": {
+    "open": "Menu",
+    "openNamed": "Menu for {name}",
+    "title": "Menu",
+    "close": "Close the menu",
+    "guest": "Guest",
+    "onThisPhone": "Change your name and face",
+    "badges": "Your badges",
+    "crews": "Your crews",
+    "daily": "Today's Spill",
+    "howTo": "How to play",
+    "settings": "Profile settings"
+  },
+  "profilePage": {
+    "title": "Your profile",
+    "lede": "Your name and face fill in when you start or join a room. They stay on this phone.",
+    "save": "Save",
+    "saved": "Saved. Your next room starts with this name and face.",
+    "forget": "Forget this name and face",
+    "forgotten": "Forgotten. You'll pick a name and face in your next room.",
+    "metaTitle": "Your profile"
   }
 }

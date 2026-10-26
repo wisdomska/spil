@@ -1,37 +1,32 @@
 "use client";
 
-import { ArrowLeftIcon, QuestionIcon } from "@phosphor-icons/react";
+import { ArrowLeftIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Suspense } from "react";
 import { Wordmark } from "@/components/brand/Wordmark";
+import { ProfileMenu } from "@/components/site/ProfileMenu";
 import { cn } from "@/lib/cn";
 
 /** Floating pill header shared by the landing and pre-room screens (design: App header). */
 export function SiteHeader({
   back,
   narrow,
-  hideHowTo,
 }: {
   /** Where Back goes. Omit on the landing page (wordmark on the left instead). */
   back?: string;
   /** Match a 720 px reading column (info pages) instead of the full page width. */
   narrow?: boolean;
-  /** Info pages have their own tabs, so the header link would repeat the first one. */
-  hideHowTo?: boolean;
 }) {
   const t = useTranslations("common");
   const router = useRouter();
 
-  const howTo = hideHowTo ? null : (
-    <Link
-      href="/how-to-play"
-      aria-label={t("howToPlay")}
-      className="relative flex h-12 min-w-12 items-center justify-center gap-2 rounded-pill text-[15px] leading-none font-semibold whitespace-nowrap text-text no-underline hover:bg-surface-raised hover:text-text lg:px-[18px]"
-    >
-      <QuestionIcon size={20} aria-hidden />
-      <span className="sr-only lg:not-sr-only">{t("howToPlay")}</span>
-    </Link>
+  // The menu marks the current page, so it reads the URL: static pages prerender the slot.
+  const menu = (
+    <Suspense fallback={<span aria-hidden className="block size-12" />}>
+      <ProfileMenu />
+    </Suspense>
   );
 
   return (
@@ -61,14 +56,14 @@ export function SiteHeader({
           <Link href="/" className="flex justify-center text-text no-underline hover:text-text">
             <Wordmark size={26} />
           </Link>
-          <span className="flex items-center justify-end gap-1">{howTo}</span>
+          <span className="flex items-center justify-end gap-1">{menu}</span>
         </>
       ) : (
         <>
           <Link href="/" className="text-text no-underline hover:text-text">
             <Wordmark size={30} />
           </Link>
-          <div className="flex items-center gap-1">{howTo}</div>
+          <div className="flex items-center gap-1">{menu}</div>
         </>
       )}
     </header>

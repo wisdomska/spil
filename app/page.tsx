@@ -51,24 +51,6 @@ export default async function Landing() {
               </div>
               <RoomsCounter />
               <FocusAfterLeave targetId="start-room" />
-              <Link
-                href="/daily"
-                className="w-fit text-[15px] leading-[1.4] font-semibold text-accent-ink underline underline-offset-4 hover:text-text"
-              >
-                {t("daily")}
-              </Link>
-              <Link
-                href="/crews"
-                className="w-fit text-[15px] leading-[1.4] font-semibold text-text-muted underline underline-offset-4 hover:text-text"
-              >
-                {t("crews")}
-              </Link>
-              <Link
-                href="/badges"
-                className="w-fit text-[15px] leading-[1.4] font-semibold text-text-muted underline underline-offset-4 hover:text-text"
-              >
-                {t("badges")}
-              </Link>
               <span className="flex items-center gap-2 text-[14px] leading-[1.4] font-medium text-text-muted">
                 <LockSimpleIcon size={18} aria-hidden />
                 {c("privacyLine")}

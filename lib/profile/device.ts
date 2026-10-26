@@ -34,6 +34,7 @@ export function readProfile(avatarCount: number): DeviceProfile | null {
 export function saveProfile(profile: DeviceProfile) {
   try {
     localStorage.setItem(KEY, JSON.stringify({ ...profile, nickname: profile.nickname.trim() }));
+    notify();
   } catch {
     // storage blocked: the player types it next time
   }
@@ -42,5 +43,35 @@ export function saveProfile(profile: DeviceProfile) {
 export function clearProfile() {
   try {
     localStorage.removeItem(KEY);
+    notify();
   } catch {}
+}
+
+/** Fired on this tab when the saved name and face change (other tabs get "storage"). */
+const CHANGED = "spil:profile";
+
+function notify() {
+  try {
+    window.dispatchEvent(new Event(CHANGED));
+  } catch {}
+}
+
+/** Subscribe to the saved name and face, for useSyncExternalStore. */
+export function subscribeProfile(onChange: () => void) {
+  const onStorage = (e: StorageEvent) => e.key === KEY && onChange();
+  window.addEventListener(CHANGED, onChange);
+  window.addEventListener("storage", onStorage);
+  return () => {
+    window.removeEventListener(CHANGED, onChange);
+    window.removeEventListener("storage", onStorage);
+  };
+}
+
+/** The raw stored value, so useSyncExternalStore gets a stable snapshot between changes. */
+export function profileSnapshot(): string | null {
+  try {
+    return localStorage.getItem(KEY);
+  } catch {
+    return null;
+  }
 }

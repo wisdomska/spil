@@ -22,7 +22,7 @@ export async function InfoPage({ tab, children }: { tab: InfoTab; children: Reac
   const label = (k: InfoTab) => (k === "howto" ? t("common.howToPlay") : t(`pages.${k}`));
   return (
     <div className="flex min-h-[100dvh] flex-col">
-      <SiteHeader back="/" narrow hideHowTo />
+      <SiteHeader back="/" narrow />
       {/* Same column as the header pill, so header, tabs and text share one left edge. */}
       <div className="mx-auto box-border w-[calc(100%-24px)] max-w-[720px] pt-1 pb-14">
         <TabScroller

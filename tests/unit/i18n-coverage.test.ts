@@ -21,6 +21,7 @@ const ENTRIES: Record<Scope | "base", string[]> = {
   create: ["app/create/CreateRoom.tsx", "components/game/GameStep.tsx"],
   join: ["app/join/JoinForm.tsx"],
   profile: ["app/r/[code]/me/ProfileForm.tsx"],
+  profilePage: ["components/profile/ProfilePage.tsx"],
   room: ["components/room/RoomApp.tsx"],
   tv: ["components/tv/TvApp.tsx"],
   daily: ["components/daily/DailySpill.tsx"],
