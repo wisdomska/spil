@@ -115,7 +115,8 @@ export function useTurnstile() {
   const getToken = useCallback(async (): Promise<string | undefined> => {
     if (!SITE_KEY) return "";
     render();
-    if (!window.turnstile || !widget.current) return undefined;
+    // Not loaded yet (a fast tap right after the page opens): wait for it within the same
+    // budget, since render() starts the check as soon as the script is ready.
     const cached = ready.current;
     ready.current = null;
     if (cached && Date.now() - cached.at < TOKEN_TTL_MS) {

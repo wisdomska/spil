@@ -13,6 +13,7 @@ test("a refused bot check shows the error, a toast and a visible check; then it 
   const { page, context } = await phone(browser, "guest");
   await page.goto("/create");
   await passAgeGate(page, 25);
+  await page.getByRole("button", { name: /^Spill Score/ }).click();
 
   // The server refuses the first attempt, as Cloudflare would for a failed check.
   let refused = false;
