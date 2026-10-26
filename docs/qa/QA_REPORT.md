@@ -576,3 +576,30 @@ Party Mode (#54), live reactions (#55) and the Daily Spill (#56), stacked on Bat
 
 - [x] The whole `theme` message namespace (label, dark, light, system, toLight, toDark, menu) and the `theme_changed` analytics event are removed; nothing rendered them. The light tokens stay in tokens.css (owner decision: dark only for now).
 - Tests: unit `tests/unit/copy/dead-strings.test.ts` (no theme strings, no theme event at the type level); copy check and i18n coverage pass.
+
+## UI and UX audit (2026-10-26)
+
+Every screen captured at 375, 768 and 1280 px (tests/visual/baseline.spec.ts, now also covering landing, join, how to play, Today's Spill, crews and badges; `BASELINE_VIEWPORTS` picks a subset), reviewed one by one, fixed, then captured again: 116 screens, nothing scrolls sideways.
+
+Admin console
+
+- [x] Settings: the number fields grew past their grid cells and overlapped (the inner input kept the browser's 20-character width). Fields now shrink to their cell; the four settings sit in a 2 by 2 grid.
+- [x] Proper pagination on every table: row range, rows per page (10, 20, 50, 100), previous and next, numbered pages with gaps (1 … 9 10 11 … 46; fewer numbers on phones), current page marked for screen readers. Page, size, filters and search live in the URL, so reload and back keep the view. The page stays on screen while the next one loads.
+- [x] Rooms, reports, inbox and audit page on the server with a total (`?page=&size=&status=&q=`). Before, the lists stopped at 500 rooms, 500 reports, 500 messages and 300 audit entries (staging had 908 rooms); every row is now reachable. Without `page` the endpoints keep their old list shape.
+- [x] Overview: six tiles in a five-column grid left an empty block; now 3 by 2 (2 by 3 on phones). "Needs a look" said "No open reports" while 15 were open (it only counted question reports); it now links to the open reports.
+- [x] Questions and the nav badges counted a room's own custom questions (shown with raw ids like custom_d690…); they belong to that room and are moderated through Reports, so they are left out.
+- [x] Tables: Rooms clipped its Close button at 1280 px and Questions its actions on phones; long pack and game names now wrap, and on phones a question's status sits under its text.
+
+Game and pages
+
+- [x] SPIL-32 follow-up: the reserved scrollbar gutter showed as a strip without the film grain; the page now always shows the native dark scrollbar instead (same width, no strip; phones unchanged).
+- [x] Badges and Crews showed a blank page while loading; both have skeletons, Crews has an error retry and an empty state with "Start a game".
+- [x] Today's Spill used the room age gate copy ("Before you join", "in this room only"); it now says "Before you play" and "on this device only".
+- [x] Lobby on desktop: "Room code" labelled the QR card; the label now shows only where the code does.
+- [x] Results: Share my card and Rematch are equal widths.
+- [x] Join: a code with O, I, 0 or 1 left the button silently disabled (SPIL-21); it now says codes never use those characters.
+- [x] Answering on a phone: the progress bar shrank to a stub next to "Skip · 5 left"; below 640 px it has its own line.
+- [x] Skip button: its accessible name now matches the visible "Skip · 5 left" (axe label-content-name-mismatch).
+- [x] Badges: one-line cards no longer spread their content when a neighbour has two lines.
+- Reviewed and kept: the pack picker's masonry layout (ragged column ends are part of the design) and the admin chip row that scrolls sideways on phones.
+- Tests: unit `tests/unit/admin/paging.test.ts`; admin API (pages without overlap, filters, size fallback, search with special characters, old list shape, no custom questions); e2e admin-rooms, a11y, daily, crews, badges, join-code, skip-state, header-stable, rapid-taps and the mobile smoke passed; unit 413 passed.

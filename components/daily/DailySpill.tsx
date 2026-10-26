@@ -52,7 +52,7 @@ export function DailySpill({ ageLockHours }: { ageLockHours: number }) {
 
   if (stored === undefined) return <main className="min-h-[60dvh]" aria-busy="true" />;
   if (stored === "under_13") return <ErrorScreen variant="tooYoung" />;
-  if (!band) return <AgeGate who="guest" onAge={(years) => setAge(years, ageLockHours)} />;
+  if (!band) return <AgeGate who="player" onAge={(years) => setAge(years, ageLockHours)} />;
   if (today.error) return <ErrorScreen variant="server" onRetry={() => today.refetch()} />;
   const d = today.data;
 

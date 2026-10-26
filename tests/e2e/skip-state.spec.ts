@@ -13,10 +13,10 @@ test("skip count and answered state on back", async ({ browser }) => {
 
   const card = (n: number) => page.getByRole("group", { name: new RegExp(`^Question ${n} of 10`) });
   await expect(card(1)).toBeVisible();
-  await expect(page.getByRole("button", { name: /1 skip left/ })).toHaveText("Skip · 1 left");
+  await expect(page.getByRole("button", { name: "Skip · 1 left" })).toHaveText("Skip · 1 left");
   await page.keyboard.press("y");
   await expect(card(2)).toBeVisible();
-  await page.getByRole("button", { name: /1 skip left/ }).click();
+  await page.getByRole("button", { name: "Skip · 1 left" }).click();
   await expect(card(3)).toBeVisible();
   const none = page.getByRole("button", { name: "No skips left" });
   await expect(none).toHaveAttribute("aria-disabled", "true");

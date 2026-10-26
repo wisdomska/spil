@@ -55,7 +55,9 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
   return (
     <div className="flex flex-1 flex-col gap-[26px]">
       <div className="grid gap-2.5">
-        <span className="text-[14px] leading-none font-semibold text-text-muted">{tr("code")}</span>
+        <span className="text-[14px] leading-none font-semibold text-text-muted lg:hidden">
+          {tr("code")}
+        </span>
         <span className="font-mono text-[76px] leading-none font-semibold tracking-[.06em] lg:hidden">
           {room.code}
         </span>

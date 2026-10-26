@@ -482,17 +482,17 @@ export function ResultsView({
           <button
             type="button"
             onClick={() => setShare(true)}
-            className="flex h-14 flex-1 items-center justify-center gap-2 rounded-pill border-[1.5px] border-text bg-transparent text-[17px] leading-none font-semibold text-text hover:bg-surface-raised"
+            className="flex h-14 min-w-0 flex-1 basis-0 items-center justify-center gap-2 rounded-pill border-[1.5px] border-text bg-transparent text-[17px] leading-none font-semibold text-text hover:bg-surface-raised"
           >
             {t("share")}
           </button>
         )}
         {state.me.isHost ? (
-          <Button className="flex-1" loading={rematching} onClick={onRematch}>
+          <Button className="min-w-0 flex-1 basis-0 px-4" loading={rematching} onClick={onRematch}>
             {t("rematch")}
           </Button>
         ) : (
-          <span className="flex min-h-14 flex-1 items-center justify-center gap-2 rounded-pill border border-dashed border-line-strong px-3 text-center text-[14px] leading-[1.3] font-medium text-text-muted">
+          <span className="flex min-h-14 min-w-0 flex-1 basis-0 items-center justify-center gap-2 rounded-pill border border-dashed border-line-strong px-3 text-center text-[14px] leading-[1.3] font-medium text-text-muted">
             <HourglassMediumIcon size={18} aria-hidden />
             {t("guestRematch", { host: host?.nickname ?? "" })}
           </span>

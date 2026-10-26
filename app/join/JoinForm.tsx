@@ -54,8 +54,11 @@ export function JoinForm() {
     return () => clearTimeout(id);
   }, [ready, code]);
 
-  const message =
-    error === "full"
+  // Four characters a code can never have: say why instead of a silently disabled button.
+  const badChars = !error && code.length === 4 && !ready;
+  const message = badChars
+    ? t("badChars")
+    : error === "full"
       ? t("full", { max })
       : error === "offline"
         ? c("tryAgain")
@@ -77,7 +80,7 @@ export function JoinForm() {
             setError(null);
           }}
           onSubmit={submit}
-          invalid={Boolean(error)}
+          invalid={Boolean(error) || badChars}
           describedBy="spil-code-msg"
           autoFocus
         />

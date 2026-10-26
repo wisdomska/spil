@@ -230,7 +230,8 @@ export function QuestionView({ state, onDone, flags = false, preview }: Props) {
           <span>{t("offline")}</span>
         </div>
       )}
-      <div className="flex items-center gap-2">
+      {/* Below 640 px the progress bar gets its own line, so it never shrinks to a stub. */}
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-3">
         <button
           type="button"
           aria-label={t("previous")}
@@ -239,13 +240,14 @@ export function QuestionView({ state, onDone, flags = false, preview }: Props) {
         >
           <ArrowLeftIcon aria-hidden />
         </button>
-        <PourProgress value={Math.min(qi, total)} total={total} label={t("progress")} />
-        <span className="min-w-12 text-right font-mono text-[14px] leading-none font-medium tabular-nums">
+        <div className="order-last flex basis-full sm:order-none sm:flex-1 sm:basis-auto">
+          <PourProgress value={Math.min(qi, total)} total={total} label={t("progress")} />
+        </div>
+        <span className="min-w-12 font-mono text-[14px] leading-none font-medium tabular-nums max-sm:flex-1 sm:text-right">
           {qi + 1}/{total}
         </span>
         <button
           type="button"
-          aria-label={noSkips ? t("skipNone") : t("skipLeftAria", { n: skipsAvailable })}
           aria-disabled={noSkips || undefined}
           title={noSkips ? t("skipLimit") : undefined}
           onClick={() => answer("skip", true)}

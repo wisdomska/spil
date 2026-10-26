@@ -12,7 +12,7 @@ import { FRAMES } from "./frames";
  */
 const OUT = process.env.BASELINE_DIR ?? "tests/visual/baseline";
 
-const VIEWPORTS: Array<{ label: string; width: number; height: number; scale?: number }> = [
+const ALL_VIEWPORTS: Array<{ label: string; width: number; height: number; scale?: number }> = [
   ...[320, 360, 375, 390, 414].map((w) => ({ label: `w${w}`, width: w, height: 812 })),
   { label: "w768", width: 768, height: 1024 },
   { label: "w1024", width: 1024, height: 768 },
@@ -24,6 +24,10 @@ const VIEWPORTS: Array<{ label: string; width: number; height: number; scale?: n
   { label: "zoom200", width: 640, height: 400, scale: 2 },
 ];
 
+// BASELINE_VIEWPORTS=w375,w1280 runs a subset (for a quick audit).
+const ONLY = process.env.BASELINE_VIEWPORTS?.split(",");
+const VIEWPORTS = ONLY ? ALL_VIEWPORTS.filter((v) => ONLY.includes(v.label)) : ALL_VIEWPORTS;
+
 const settle = (page: Page) => page.waitForTimeout(900);
 const route = (path: string) => async (page: Page) => {
   await page.goto(path);
@@ -33,7 +37,13 @@ const route = (path: string) => async (page: Page) => {
 // Game screens from the design-parity list (fixtures and mocked API), plus pages it does not cover.
 const SCREENS: Array<{ slug: string; go: (page: Page) => Promise<void> }> = [
   ...FRAMES.filter((f) => f.set === "mobile").map((f) => ({ slug: f.slug, go: f.go })),
+  { slug: "page-landing", go: route("/") },
+  { slug: "page-join", go: route("/join") },
   { slug: "page-create", go: route("/create") },
+  { slug: "page-how-to-play", go: route("/how-to-play") },
+  { slug: "page-daily", go: route("/daily") },
+  { slug: "page-crews", go: route("/crews") },
+  { slug: "page-badges", go: route("/badges") },
   { slug: "page-safety", go: route("/safety") },
   { slug: "page-not-found", go: route("/not-a-page") },
 ];

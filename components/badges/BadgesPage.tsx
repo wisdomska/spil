@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/brand/Avatar";
 import { ErrorScreen } from "@/components/site/ErrorScreen";
+import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import type { Badges } from "@/lib/api/achievements";
 import { api, ensureSession } from "@/lib/api/client";
@@ -35,7 +36,20 @@ export function BadgesPage() {
   });
   if (q.error) return <ErrorScreen variant="server" onRetry={() => q.refetch()} />;
   const b = q.data;
-  if (!b) return <main className="min-h-[60dvh]" aria-busy="true" />;
+  if (!b)
+    return (
+      <main className="mx-auto box-border flex w-full max-w-[720px] flex-1 flex-col gap-8 px-5 pt-6 pb-10">
+        <SkeletonGroup label={t("title")} className="gap-3">
+          <Skeleton className="h-10 w-56 rounded-input" />
+          <Skeleton className="h-5 w-32 rounded-input" />
+          <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3">
+            {Array.from({ length: 6 }, (_, i) => (
+              <Skeleton key={i} className="h-[112px] rounded-card" />
+            ))}
+          </div>
+        </SkeletonGroup>
+      </main>
+    );
 
   const choose = async (body: { frame?: FrameId; look?: LookId }) => {
     try {
@@ -64,7 +78,7 @@ export function BadgesPage() {
           <li
             key={a.id}
             className={cn(
-              "grid gap-2 rounded-card border p-4",
+              "grid grid-rows-[auto_1fr_auto] gap-2 rounded-card border p-4",
               a.unlocked ? "border-accent bg-accent-soft" : "border-line bg-surface",
             )}
           >

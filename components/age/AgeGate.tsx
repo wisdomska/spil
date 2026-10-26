@@ -8,8 +8,8 @@ import { isRealAge } from "@/lib/game";
 import { cn } from "@/lib/cn";
 
 type Props = {
-  /** The host sees "Step 1 of 2", a guest "Before you join". */
-  who: "host" | "guest";
+  /** The host sees "Step 1 of 2", a guest "Before you join", Today's Spill "Before you play". */
+  who: "host" | "guest" | "player";
   /** Gets the typed age once it is real (1 to 99); the caller keeps only its band. */
   onAge: (years: number) => void;
 };
@@ -33,7 +33,7 @@ export function AgeGate({ who, onAge }: Props) {
   return (
     <main className="mx-auto box-border flex w-full max-w-[440px] flex-1 flex-col gap-5 px-4 pt-6 pb-7 sm:px-5">
       <span className="font-mono text-[13px] leading-none font-medium text-text-muted">
-        {who === "host" ? t("kickerHost") : t("kickerGuest")}
+        {who === "host" ? t("kickerHost") : who === "player" ? t("kickerPlay") : t("kickerGuest")}
       </span>
       <h1 className="m-0 font-display text-display-m leading-[.98] font-extrabold tracking-display text-balance">
         {t("title")}
@@ -83,7 +83,7 @@ export function AgeGate({ who, onAge }: Props) {
         </Button>
         <span className="flex items-center gap-2 text-[14px] leading-[1.4] font-medium text-text-muted">
           <LockSimpleIcon size={18} aria-hidden className="shrink-0" />
-          {t("privacy")}
+          {who === "player" ? t("privacyDevice") : t("privacy")}
         </span>
       </div>
     </main>

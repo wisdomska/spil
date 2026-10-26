@@ -11,8 +11,9 @@
 }
 
 html {
-  /* SPIL-32: the scrollbar space is always kept, so the header never shifts between pages. */
-  scrollbar-gutter: stable;
+  /* SPIL-32: the scrollbar is always there (dark, from color-scheme), so the header never shifts
+     between short and long pages. An empty scrollbar-gutter showed as a strip without the grain. */
+  overflow-y: scroll;
   font-synthesis: none;
   background: var(--bg);
   color: var(--text);

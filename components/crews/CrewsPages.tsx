@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { ErrorScreen } from "@/components/site/ErrorScreen";
 import { Button } from "@/components/ui/Button";
+import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import type { CrewSummary } from "@/lib/api/crews";
 import { api, ClientApiError, ensureSession } from "@/lib/api/client";
@@ -15,6 +16,7 @@ import { MAX_CREW_NAME } from "@/lib/game";
 /** My crews: every crew this device is in. */
 export function CrewsList() {
   const t = useTranslations("crews");
+  const c = useTranslations("common");
   const q = useQuery({
     queryKey: ["crews"],
     queryFn: async () => {
@@ -22,13 +24,29 @@ export function CrewsList() {
       return api<CrewSummary[]>("GET", "/crews");
     },
   });
+  if (q.isError && !q.data) return <ErrorScreen variant="server" onRetry={() => q.refetch()} />;
   return (
     <main className="mx-auto box-border flex w-full max-w-[640px] flex-1 flex-col gap-6 px-5 pt-6 pb-10">
       <h1 className="m-0 font-display text-display-m leading-[1] font-extrabold tracking-display">
         {t("listTitle")}
       </h1>
+      {q.isPending && (
+        <SkeletonGroup label={t("listTitle")} className="gap-2.5">
+          {[0, 1].map((i) => (
+            <Skeleton key={i} className="h-[66px] w-full rounded-card" />
+          ))}
+        </SkeletonGroup>
+      )}
       {q.data && q.data.length === 0 && (
-        <p className="m-0 text-[16px] leading-[1.5] text-text-muted">{t("listEmpty")}</p>
+        <div className="grid justify-items-start gap-4 rounded-card border border-line bg-surface p-5">
+          <p className="m-0 text-[16px] leading-[1.5]">{t("listEmpty")}</p>
+          <Link
+            href="/create"
+            className="flex h-12 items-center rounded-pill bg-accent px-6 text-[16px] leading-none font-semibold text-on-accent no-underline hover:text-on-accent hover:shadow-[inset_0_0_0_99px_var(--press-glow)] active:scale-[.97]"
+          >
+            {c("startRoom")}
+          </Link>
+        </div>
       )}
       <ul className="m-0 grid list-none gap-2.5 p-0">
         {(q.data ?? []).map((c) => (

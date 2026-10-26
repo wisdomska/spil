@@ -50,8 +50,8 @@ const fixture = (screen: string, variant = "") => async (page: Page) => {
 const joinError = (code: string, error: string, room?: unknown) => async (page: Page) => {
   if (room) await mockRoom(page, room);
   else await mockRoom(page, { error: { code: error, message: "" } }, error === "ROOM_EXPIRED" ? 410 : 404);
+  // A full code submits by itself (SPIL-21).
   await page.goto(`/join?code=${code}`);
-  await page.getByRole("button", { name: "Join with code" }).click();
   await settle(page);
 };
 
@@ -60,7 +60,7 @@ const profile = (pack: "classic" | "afterdark", error = false) => async (page: P
   await withAge(page);
   await page.goto("/r/K7QX/me");
   await page.getByLabel("Nickname").fill(error ? "A" : "Ama");
-  await page.getByRole("radio", { name: pack === "afterdark" ? "Avatar 17" : "Avatar 1", exact: true }).click();
+  await page.getByRole("radio", { name: pack === "afterdark" ? "Avatar: Clown" : "Avatar: Devil", exact: true }).click();
   if (error) await page.getByLabel("Nickname").press("Enter");
   await settle(page);
 };
@@ -83,7 +83,7 @@ const MOBILE: Array<[string, string, (page: Page) => Promise<void>]> = [
     },
   ],
   ["Join, invalid code", "join-invalid", joinError("Z9Z9", "ROOM_NOT_FOUND")],
-  ["Join, expired", "join-expired", joinError("OLD1", "ROOM_EXPIRED")],
+  ["Join, expired", "join-expired", joinError("QLDX", "ROOM_EXPIRED")],
   ["Join, room full", "join-full", joinError("FULL", "", { ...PUBLIC_ROOM("classic", "lobby", 12) })],
   ["Join, already started", "join-started", joinError("LATE", "", { ...PUBLIC_ROOM("classic", "answering", 5) })],
   [
