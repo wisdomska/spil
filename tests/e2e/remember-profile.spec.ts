@@ -12,6 +12,7 @@ test("nickname and face are remembered on this device", async ({ browser }) => {
 
   await page.goto("/create");
   await passAgeGate(page);
+  await page.getByRole("button", { name: /^Spill Score/ }).click();
   await page.getByRole("button", { name: /^Continue with/ }).click();
   await page.waitForURL(/\/r\/[A-Z0-9]{4}\/me$/, { timeout: 30_000 });
   const nickname = page.getByLabel("Nickname");
@@ -32,6 +33,7 @@ test("nickname and face are remembered on this device", async ({ browser }) => {
   await expect(page.getByRole("heading", { name: "In the room" })).toBeVisible();
   await page.goto("/create");
   await passAgeGate(page);
+  await page.getByRole("button", { name: /^Spill Score/ }).click();
   await page.getByRole("button", { name: /^Continue with/ }).click();
   await page.waitForURL(/\/r\/[A-Z0-9]{4}\/me$/, { timeout: 30_000 });
   await page.getByRole("button", { name: "Open the lobby" }).click();

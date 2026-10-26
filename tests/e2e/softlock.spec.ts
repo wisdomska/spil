@@ -42,6 +42,8 @@ test("move on without them never softlocks (SPIL-01)", async ({ browser }) => {
 
   // The guest still guesses about the host; locking that is the last thing the room waits for.
   await expect(guest.page.getByText("Guess 1 of 1")).toBeVisible();
+  // SPIL-15: the player left behind is told why first.
+  await guest.page.getByRole("button", { name: "Got it" }).click();
   await guess(guest.page, 60);
   await lockIn(guest.page);
 

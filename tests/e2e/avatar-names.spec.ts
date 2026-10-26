@@ -9,6 +9,7 @@ test.beforeEach(({}, info) => {
 async function profileFor(pack: RegExp, page: import("@playwright/test").Page) {
   await page.goto("/create");
   await passAgeGate(page);
+  await page.getByRole("button", { name: /^Spill Score/ }).click();
   await page
     .getByRole("radiogroup", { name: "Question pack" })
     .getByRole("radio", { name: pack })
