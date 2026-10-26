@@ -18,6 +18,7 @@ import { useRoomChannel } from "@/lib/realtime/useRoomChannel";
 import { useAnswerQueue } from "@/lib/room/answerQueue";
 import { roomKey, useRoomActions, useRoomState } from "@/lib/room/useRoom";
 import { GuessView } from "./GuessView";
+import { LoadingRetry } from "./LoadingRetry";
 import { LobbyView } from "./LobbyView";
 import { PercentGuessView } from "./PercentGuessView";
 import { QuestionView } from "./QuestionView";
@@ -64,7 +65,7 @@ function errorFor(error: unknown): ErrorVariant {
   if (error.code === "ROOM_EXPIRED") return "expired";
   if (error.code === "ROOM_NOT_FOUND") return "notfound";
   if (error.code === "NOT_IN_ROOM" && error.message === "REMOVED") return "removed";
-  return error.status >= 500 ? "waking" : "notfound";
+  return "notfound";
 }
 
 /** The whole in-room experience; the server decides the phase, this only renders it. */
@@ -80,6 +81,8 @@ export function RoomApp({ code }: { code: string }) {
   const state = query.data;
   const actions = useRoomActions(code);
   const [leaving, setLeaving] = useState(false);
+  const refetch = query.refetch;
+  const retry = useCallback(() => void refetch(), [refetch]);
   const [shake, setShake] = useState(0);
   // SPIL-15: the round this phone already saw "The host moved on." for (kept for reloads).
   const movedOnStore = `spil.movedOn.${code}`;
@@ -172,8 +175,12 @@ export function RoomApp({ code }: { code: string }) {
     toast(tt("somethingWrong"), "err");
   };
 
+  // A server hiccup (5xx) is retried quietly behind the loading skeleton, or behind the game
+  // already on screen; only real answers (gone, expired, removed, offline) get a full screen.
+  const transient = error instanceof ClientApiError && error.status >= 500;
   if (
     error &&
+    !transient &&
     !(
       error instanceof ClientApiError &&
       (error.code === "NOT_IN_ROOM" || error.code === "UNAUTHENTICATED") &&
@@ -187,6 +194,9 @@ export function RoomApp({ code }: { code: string }) {
     return (
       <div className="mx-auto box-border w-full max-w-[520px] px-5 pt-20">
         <RoomSkeleton />
+        {/* Mounted for as long as the room has not loaded: a first load that keeps failing
+            clears its error on every new try, so the error alone would keep restarting it. */}
+        <LoadingRetry onRetry={retry} />
       </div>
     );
   }
@@ -300,6 +310,7 @@ export function RoomApp({ code }: { code: string }) {
 
   return (
     <div key={shake} className={shake ? "animate-shake" : undefined}>
+      {transient && <LoadingRetry onRetry={retry} floating />}
       <RoomShell
         state={state}
         online={channel.online}

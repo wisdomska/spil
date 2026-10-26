@@ -264,7 +264,9 @@
     "shareInvite": "Share invite",
     "inviteTitle": "Invite your friends",
     "inviteBody": "Share the link with your friends. They tap it and they're in.",
-    "moreApps": "More"
+    "moreApps": "More",
+    "slow": "This is taking longer than usual.",
+    "slowRetry": "Try again"
   },
   "lobby": {
     "loading": "Loading room",

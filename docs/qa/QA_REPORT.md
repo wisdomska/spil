@@ -603,3 +603,10 @@ Game and pages
 - [x] Badges: one-line cards no longer spread their content when a neighbour has two lines.
 - Reviewed and kept: the pack picker's masonry layout (ragged column ends are part of the design) and the admin chip row that scrolls sideways on phones.
 - Tests: unit `tests/unit/admin/paging.test.ts`; admin API (pages without overlap, filters, size fallback, search with special characters, old list shape, no custom questions); e2e admin-rooms, a11y, daily, crews, badges, join-code, skip-state, header-stable, rapid-taps and the mobile smoke passed; unit 413 passed.
+
+### Quiet loading instead of "Waking the server up" (owner request 2026-10-25)
+
+- [x] A server error while loading a room no longer takes over the screen with server talk. The loading skeleton stays and the room retries every 3 seconds; after 6 seconds a single quiet line says "This is taking longer than usual." with Try again. When loading works again the room appears without a tap.
+- [x] A failed refresh during a game keeps the game on screen and retries in the background; only if it keeps failing does a small pill show the same line at the bottom.
+- [x] Real answers keep their screens: offline, room gone, expired, removed.
+- Tests: e2e `tests/e2e/quiet-loading.spec.ts` (503s on the room state: skeleton, no mention of servers, the quiet line, recovery by itself). Checked at desktop width.
