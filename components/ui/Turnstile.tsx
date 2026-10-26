@@ -37,6 +37,8 @@ export function useTurnstile() {
   const holder = useRef<HTMLDivElement>(null);
   const visibleHolder = useRef<HTMLDivElement>(null);
   const widget = useRef<string | null>(null);
+  /** The node the current widget was rendered into. */
+  const renderedIn = useRef<HTMLElement | null>(null);
   const ready = useRef<{ token: string; at: number } | null>(null);
   const running = useRef(false);
   const waiters = useRef<Array<(token: string | undefined) => void>>([]);
@@ -63,7 +65,16 @@ export function useTurnstile() {
   }, []);
 
   const render = useCallback(() => {
-    if (!SITE_KEY || !holder.current || !window.turnstile || widget.current) return;
+    if (!SITE_KEY || !holder.current || !window.turnstile) return;
+    // A remounted holder strands the old widget in a detached node: start over in the new one.
+    if (widget.current && !renderedIn.current?.isConnected) {
+      window.turnstile.remove(widget.current);
+      widget.current = null;
+      running.current = false;
+      ready.current = null;
+    }
+    if (widget.current) return;
+    renderedIn.current = holder.current;
     widget.current = window.turnstile.render(holder.current, {
       sitekey: SITE_KEY,
       size: "invisible",
@@ -85,6 +96,7 @@ export function useTurnstile() {
     if (!needsInteraction || !SITE_KEY || !window.turnstile || !visibleHolder.current) return;
     if (widget.current) window.turnstile.remove(widget.current);
     running.current = false;
+    renderedIn.current = visibleHolder.current;
     widget.current = window.turnstile.render(visibleHolder.current, {
       sitekey: SITE_KEY,
       size: "flexible",

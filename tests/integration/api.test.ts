@@ -1241,3 +1241,113 @@ d("host tools", () => {
     expect(done.body.room.status).toBe("ready");
   });
 });
+
+d("two-step setup", () => {
+  it("the host sees the pack's size in the lobby; guests do not", async () => {
+    const room = await fullRoom(2);
+    const [host, guest] = room.players as [Player, Player];
+    const hostState = await host.call("GET", `/rooms/${room.roomCode}/state`);
+    expect(hostState.body.room.packQuestions).toBe(30);
+    const guestState = await guest.call("GET", `/rooms/${room.roomCode}/state`);
+    expect(guestState.body.room.packQuestions).toBeUndefined();
+  });
+
+  it("GET /rooms/:code/packs?all=1 lists every format; without it, only the game's", async () => {
+    const room = await fullRoom(2);
+    const formats = (r: { body: { packs: Array<{ format: string }> } }) =>
+      new Set(r.body.packs.map((p) => p.format));
+    const own = await room.host.call("GET", `/rooms/${room.roomCode}/packs`);
+    expect([...formats(own)]).toEqual(["yes_no"]);
+    const all = await room.host.call("GET", `/rooms/${room.roomCode}/packs?all=1`);
+    expect(formats(all)).toEqual(
+      new Set(["yes_no", "statements", "prompts", "flags", "pairs", "open"]),
+    );
+    expect(all.body.someHidden).toBe(false);
+  });
+
+  it("PATCH /rooms/:code/pack changes the game; the pack must fit it", async () => {
+    const room = await fullRoom(3);
+    const path = `/rooms/${room.roomCode}/pack`;
+    const misfit = await room.host.call("PATCH", path, { packId: "classic", mode: "hot_takes" });
+    expect(code(misfit)).toBe("PACK_NOT_ALLOWED");
+    const ok = await room.host.call("PATCH", path, {
+      packId: "most_likely",
+      mode: "rank_room",
+      questionCount: 5,
+    });
+    expect(ok.status, JSON.stringify(ok.body)).toBe(200);
+    const state = await room.host.call("GET", `/rooms/${room.roomCode}/state`);
+    expect(state.body.room.mode).toBe("rank_room");
+    expect(state.body.room.pack.id).toBe("most_likely");
+    expect(code(await room.players[1]!.call("PATCH", path, { packId: "classic" }))).toBe(
+      "NOT_HOST",
+    );
+  });
+
+  it("an adult-only game is refused with a 13 to 17 player in the room", async () => {
+    const host = await anonPlayer();
+    const created = await host.call("POST", "/rooms", { ageBand: "18_plus", packId: "classic" });
+    const roomCode = created.body.code;
+    await host.call("POST", `/rooms/${roomCode}/join`, {
+      ageBand: "18_plus",
+      nickname: "Host",
+      avatar: 0,
+    });
+    const teen = await anonPlayer();
+    await teen.call("POST", `/rooms/${roomCode}/join`, {
+      ageBand: "16_17",
+      nickname: "Esi",
+      avatar: 1,
+    });
+    const patched = await host.call("PATCH", `/rooms/${roomCode}/pack`, {
+      packId: "who_said",
+      mode: "who_said",
+    });
+    expect(patched.status).toBe(409);
+    expect(code(patched)).toBe("MODE_UNAVAILABLE");
+    const listed = await host.call("GET", `/rooms/${roomCode}/packs?all=1`);
+    expect(listed.body.packs.some((p: { id: string }) => p.id === "who_said")).toBe(false);
+    expect(listed.body.someHidden).toBe(true);
+  });
+
+  it("POST /rematch can change the game, with the same checks", async () => {
+    const room = await fullRoom(3);
+    const [a, b, c] = room.players as [Player, Player, Player];
+    expect((await a.call("POST", `/rooms/${room.roomCode}/start`)).status).toBe(200);
+    for (const p of [a, b, c]) await answerAll(p, room.roomCode, () => "yes");
+    for (const p of [a, b, c]) await guessAll(p, room.roomCode, 50);
+    await a.call("POST", `/rooms/${room.roomCode}/advance`, { from: "ready" });
+    const path = `/rooms/${room.roomCode}/rematch`;
+    const misfit = await a.call("POST", path, { packId: "classic", mode: "most_likely" });
+    expect(code(misfit)).toBe("PACK_NOT_ALLOWED");
+    const next = await a.call("POST", path, { packId: "hot_takes", mode: "hot_takes" });
+    expect(next.status, JSON.stringify(next.body)).toBe(200);
+    expect(next.body.room.status).toBe("lobby");
+    expect(next.body.room.mode).toBe("hot_takes");
+    expect(next.body.room.pack.id).toBe("hot_takes");
+  });
+
+  it("POST /rematch refuses an adult-only game with a 13 to 17 player", async () => {
+    const host = await anonPlayer();
+    const created = await host.call("POST", "/rooms", { ageBand: "18_plus", packId: "classic" });
+    const roomCode = created.body.code;
+    const players = [host, await anonPlayer(), await anonPlayer()];
+    const bands = ["18_plus", "16_17", "18_plus"];
+    for (const [i, p] of players.entries())
+      await p.call("POST", `/rooms/${roomCode}/join`, {
+        ageBand: bands[i],
+        nickname: `P${i + 1}`,
+        avatar: i,
+      });
+    expect((await host.call("POST", `/rooms/${roomCode}/start`)).status).toBe(200);
+    for (const p of players) await answerAll(p, roomCode, () => "no");
+    for (const p of players) await guessAll(p, roomCode, 0);
+    await host.call("POST", `/rooms/${roomCode}/advance`, { from: "ready" });
+    const res = await host.call("POST", `/rooms/${roomCode}/rematch`, {
+      packId: "who_said",
+      mode: "who_said",
+    });
+    expect(res.status).toBe(409);
+    expect(code(res)).toBe("MODE_UNAVAILABLE");
+  });
+});

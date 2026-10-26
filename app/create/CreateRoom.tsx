@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { AgeGate, PlayingAs } from "@/components/age/AgeGate";
 import { GameStep, type PlayAgain } from "@/components/game/GameStep";
 import { PackPicker } from "@/components/game/PackPicker";
@@ -179,12 +179,21 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
       ? { ...last, packName: again.name }
       : null;
 
+  const withCheck = (step: ReactNode) => (
+    <>
+      {step}
+      {element}
+    </>
+  );
+
   const hidden = inRoom && forRoom.data?.someHidden && (
     <p className="m-0 text-[14px] leading-[1.4] text-text-muted">{t("someHidden")}</p>
   );
 
+  // The invisible bot check stays mounted in one place across both steps: moving its holder
+  // would strand the widget in a detached node and Continue would never get a token.
   if (!game)
-    return (
+    return withCheck(
       <main className="mx-auto box-border flex w-full max-w-[880px] flex-1 flex-col gap-5 px-5 pt-4 pb-10">
         <div className="grid gap-2.5">
           <h1 className="m-0 font-display text-display-l font-extrabold tracking-display">
@@ -216,14 +225,13 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
           </p>
         )}
         {challenge}
-        {element}
-      </main>
+      </main>,
     );
 
   const fit = packsForMode(packs ?? [], game);
   const storyVote = game === FEATURED_MODE || game === STORY_VOTE_MODE;
   const initialPack = params.get("pack") ?? undefined;
-  return (
+  return withCheck(
     <main className="mx-auto box-border flex w-full max-w-[880px] flex-1 flex-col gap-5 px-5 pt-4">
       <div className="grid gap-3">
         <h1 className="m-0 font-display text-display-l font-extrabold tracking-display">
@@ -271,8 +279,7 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
       ) : (
         <PickerSkeleton label={t("group")} bare />
       )}
-      {element}
-    </main>
+    </main>,
   );
 }
 

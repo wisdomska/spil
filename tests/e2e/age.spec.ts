@@ -26,9 +26,11 @@ test("18+ host and 15-year-old guest (SPIL-02)", async ({ browser }) => {
   await host.page.goto("/create");
   await expect(host.page.getByText("STEP 1 OF 2")).toBeVisible();
   await passAgeGate(host.page, 30);
-  await expect(host.page.getByRole("heading", { name: "After dark · 18+" })).toBeVisible();
   await expect(host.page.getByText("Playing as 18+")).toBeVisible();
   await expect(host.page.getByRole("button", { name: "Not you?" })).toBeVisible();
+  await expect(host.page.getByRole("button", { name: /^Who Said That/ })).toBeVisible();
+  await host.page.getByRole("button", { name: /^Spill Score/ }).click();
+  await expect(host.page.getByRole("heading", { name: "After dark · 18+" })).toBeVisible();
 
   const code = await createRoom(host.page, { pack: "classic", count: 5, nickname: "Ama" });
 

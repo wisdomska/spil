@@ -131,7 +131,8 @@ test("host leaves the lobby and the next player takes over", async ({ browser })
   await host.page.getByRole("button", { name: "Leave room" }).first().click();
   await host.page.getByRole("dialog").getByRole("button", { name: "Leave room" }).click();
   await host.page.waitForURL(/\/$/);
-  await expect(guest.page.getByRole("button", { name: "Start the game" })).toBeVisible({
+  // Alone in the room, the new host is offered solo play.
+  await expect(guest.page.getByRole("button", { name: "Play solo" })).toBeVisible({
     timeout: 40_000,
   });
   await host.context.close();
