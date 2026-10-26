@@ -1,8 +1,16 @@
 # Changelog
 
-## Unreleased
+## 1.6.0 (2026-11-01)
 
-Waiting on the open preview PRs (wisdomska/spil#45 to #63 and the SPIL-24 to 33 PR); the version is set at release.
+### Admin console
+
+- Proper pagination on every table: numbered pages, rows per page, and the page kept in the URL.
+  Rooms, reports, inbox and the audit log page on the server, so every row is reachable.
+- Settings fields no longer overlap; the overview counts every open report.
+
+### Loading
+
+- No more "Waking the server up": a slow room keeps its loading screen and retries quietly.
 
 ### New ways to play
 
