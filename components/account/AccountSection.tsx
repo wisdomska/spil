@@ -251,7 +251,7 @@ function SignedIn({ username }: { username: string }) {
     >
       <h2
         id="account-title"
-        className="m-0 flex items-center gap-2.5 font-display text-[24px] leading-none font-extrabold tracking-[-.02em] break-all"
+        className="m-0 flex items-center gap-2.5 font-display text-[24px] leading-[1.1] font-extrabold tracking-[-.02em] [overflow-wrap:anywhere]"
       >
         <UserCircleCheckIcon
           aria-hidden

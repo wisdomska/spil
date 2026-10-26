@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Your profile
+
+- A profile menu in the header: your face and name open Your badges, Your crews, Today's Spill,
+  How to play and Profile settings (one menu button and a side panel on phones). The landing
+  page's three text links moved into it.
+- Profile settings: change the name and face this phone fills in.
+- Optional accounts: save your progress with a username and password (no email), keep a one-time
+  recovery code, sign in on another phone and bring that phone's progress along, sign out, or
+  delete the account. Never needed to play. Saving is offered after a first crew, a first badge
+  or a 3-day streak.
+- The Today's Spill streak now follows your account.
+- The error screen no longer scrolls sideways while its sticker lands.
+
 ## 1.7.0 (2026-10-26)
 
 ### Game setup

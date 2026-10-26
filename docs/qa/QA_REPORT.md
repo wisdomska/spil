@@ -629,3 +629,27 @@ Game and pages
 - [x] Stale tests updated: the age and bot check tests now pass through the game step; "host leaves the lobby" expects Play solo, since the new host is alone (solo play).
 - Screens: games step, pack step, `/create` and the lobby captured at 375, 768 and 1280 px (`BASELINE_VIEWPORTS=w375,w768,w1280`) and reviewed; nothing scrolls sideways.
 - Tests: unit 426 passed; pgTAP 32 files, 419 tests (first run on a local Supabase in the cloud session); API 73 passed, including six new two-step setup tests; e2e desktop game-setup, age, pack-picker, botcheck, contact, rematch, start-tap and every mode spec (hot-takes, most-likely, percentage, rank-room, red-green, imposter, two-truths, who-said, spill-or-skip) passed; e2e mobile a11y and game passed, and the mobile smoke. The Spill or Skip test now confirms Spill Mode (SPIL-16 added the confirmation).
+
+## Release 1.7.0 (2026-10-26)
+
+- [x] Strict QA on the release build (1d66ead): unit 426, pgTAP 419 on a clean database, API 73, and the full e2e suite on phone and desktop (69 passed first time). The 6 failures were each run down:
+  - 3 stale tests (avatar-names and remember-profile still expected the pack list straight after the age screen; softlock never dismissed the SPIL-15 sheet), fixed and passing against the release build;
+  - 2 that need Supabase Realtime (live answer counts, reactions), which fail on the local Realtime setup and pass against staging; they fail the same way on v1.6.0 locally;
+  - 1 rooms counter test reading a page cached before the database reset, which passes on a fresh build.
+- [x] Staging (CI, Lighthouse, headers, key scan, smoke) green, then production green; the game picker checked by hand on the live site.
+- Note: the tag v1.7.0 could not be pushed from the cloud session (the git proxy refuses tag pushes).
+
+## Profile menu and optional accounts (owner request 2026-10-26)
+
+- [x] Header menu: on desktop the face and name open a dropdown (Your badges, Your crews, Today's Spill, How to play, Profile settings, then Save your progress or Sign out), the current page marked. On phones one menu button opens a panel from the right: focus trapped, Escape, scrim, close button and a swipe right all close it, rows at least 48 px, safe areas respected. Not shown in rooms (they have their own header). The landing page's three text links moved into it.
+- [x] Profile settings (`/profile`): the name and face this phone fills in, with Forget.
+- [x] Accounts: Save your progress upgrades the phone's guest in place (same id). Username 3 to 20 letters, numbers or underscores, unique whatever the case, through the nickname filter; password 10 or more, common ones refused. A one-time recovery code (stored as a scrypt hash) replaces email. Sign-in, recovery, sign-out and delete go through our own bot-checked, rate-limited endpoints. A second phone can add its guest progress on sign-in. Delete removes the profile, stats, crew memberships and daily answers; crews pass to the next member.
+- [x] Bugs found while testing:
+  - setting the password ends the user's sessions, so a player who saved their progress was signed out a moment later (the header and profile showed a guest); the server now signs the phone in again straight away;
+  - account creation was rate limited per IP and counted invalid attempts, which would lock out players sharing a carrier IP; now per guest, counted once the details are valid;
+  - the wrong-password message said "email";
+  - the save prompt promised the streak follows you, but it lived only on the phone; the streak is now counted on the server from the player's answers;
+  - the error screen scrolled sideways for a moment while its sticker slapped in (seen intermittently in the 375 px check).
+- [x] Screens at 375 px reviewed: the save form with errors, the recovery code (fits on one line), signed in, the menu signed in, sign in. Nothing scrolls sideways; axe finds no serious issues on `/profile`, `/sign-in` and `/recover`.
+- Tests: unit (account rules, streak), pgTAP `32_profiles_test.sql` (17), API "optional accounts" (sign-up, case-insensitive usernames, same answer for wrong name and password, merge with the streak, recovery single use, delete), e2e `accounts.spec.ts`, `profile-menu.spec.ts`, a11y, daily, crews, badges.
+- Before release: the migration `20261026000100_profiles.sql` must be applied to staging, then production (the deploy workflow skips migrations without the `SUPABASE_ACCESS_TOKEN` secret).

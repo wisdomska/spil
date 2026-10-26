@@ -25,7 +25,7 @@ export function RecoveryCode({ code, onDone }: { code: string; onDone: () => voi
       <p className="m-0 text-[15px] leading-[1.45] text-pretty">{t("codeBody")}</p>
       <p
         data-testid="recovery-code"
-        className="m-0 rounded-input border-[1.5px] border-line-strong bg-surface px-4 py-3.5 text-center font-mono text-[22px] leading-none font-semibold tracking-[.08em] break-all select-all"
+        className="m-0 rounded-input border-[1.5px] border-line-strong bg-surface px-4 py-3.5 text-center font-mono text-[18px] leading-none font-semibold tracking-[.06em] whitespace-nowrap select-all sm:text-[22px] sm:tracking-[.08em]"
       >
         {code}
       </p>

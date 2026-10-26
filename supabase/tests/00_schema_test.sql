@@ -9,7 +9,7 @@ select tables_are(
     'packs', 'questions', 'settings', 'feature_flags',
     'rooms', 'room_questions', 'players', 'answers', 'guesses', 'results', 'awards',
     'reports', 'messages', 'admins', 'audit_log', 'rate_limits', 'stats_daily', 'pack_plays',
-    'captcha_events', 'mode_inputs', 'imposters', 'text_guesses', 'daily_answers', 'crews', 'crew_members', 'crew_rounds', 'player_stats'
+    'captcha_events', 'mode_inputs', 'imposters', 'text_guesses', 'daily_answers', 'crews', 'crew_members', 'crew_rounds', 'player_stats', 'profiles'
   ],
   'public schema has exactly the spec tables'
 );
