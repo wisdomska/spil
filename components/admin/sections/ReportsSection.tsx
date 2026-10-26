@@ -17,28 +17,33 @@ import {
   Td,
   Tr,
   useAdminAction,
-  useAdminQuery,
+  useAdminPage,
   useAgo,
   usePaging,
+  useUrlChip,
   type ConfirmState,
 } from "@/components/admin/ui";
 import type { AdminReport } from "@/lib/admin/types";
 
 type Chip = "open" | "actioned" | "dismissed" | "all";
+const CHIPS = ["open", "actioned", "dismissed", "all"] as const;
 
 export function ReportsSection() {
   const t = useTranslations("admin.reports");
   const tn = useTranslations("admin.nav");
   const tc = useTranslations("admin.common");
-  const q = useAdminQuery<AdminReport[]>("/reports");
   const run = useAdminAction();
   const ago = useAgo();
   const paging = usePaging();
-  const [chip, setChip] = useState<Chip>("open");
+  const [chip, setChip] = useUrlChip<Chip>("status", "open", CHIPS);
   const [confirm, setConfirm] = useState<ConfirmState>(null);
-
-  const rows = (q.data ?? []).filter((r) => chip === "all" || r.status === chip);
-  const shown = paging.slice(rows);
+  // Filtered and paged on the server, so every report is reachable.
+  const q = useAdminPage<AdminReport>("/reports", {
+    page: paging.page,
+    size: paging.size,
+    status: chip,
+  });
+  const data = q.data;
 
   const subject = (r: AdminReport) => {
     if (r.type === "answer") return t("answer", { text: r.answerText ?? t("deletedAnswer") });
@@ -64,18 +69,15 @@ export function ReportsSection() {
       <Chips<Chip>
         label={tn("reports")}
         value={chip}
-        onChange={(c) => {
-          setChip(c);
-          paging.reset();
-        }}
-        items={(["open", "actioned", "dismissed", "all"] as const).map((c) => ({
+        onChange={setChip}
+        items={CHIPS.map((c) => ({
           value: c,
           label: t(`chips.${c}`),
         }))}
       />
-      {q.isError ? (
+      {q.isError && !data ? (
         <LoadError onRetry={() => q.refetch()} />
-      ) : !q.data ? (
+      ) : !data ? (
         <TableSkeleton label={tc("loading")} />
       ) : (
         <DataTable
@@ -87,14 +89,16 @@ export function ReportsSection() {
             { label: t("cols.when"), width: 110, wide: true },
             { label: t("cols.status"), width: 110 },
           ]}
-          empty={rows.length === 0}
+          empty={data.total === 0}
           emptyText={chip === "open" ? t("emptyOpen") : t("empty")}
-          total={rows.length}
+          total={data.total}
           page={paging.page}
           size={paging.size}
           onPage={paging.setPage}
+          onSize={paging.setSize}
+          busy={q.isPlaceholderData}
         >
-          {shown.map((r) => (
+          {data.rows.map((r) => (
             <Tr key={r.id}>
               <Td bold className="min-w-[180px]">
                 {subject(r)}

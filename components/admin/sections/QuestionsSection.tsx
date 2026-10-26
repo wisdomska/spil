@@ -254,7 +254,7 @@ export function QuestionsSection() {
             { label: t("cols.yesRate"), width: 90, right: true, wide: true },
             { label: t("cols.answered"), width: 100, right: true, wide: true },
             { label: t("cols.reports"), width: 80, right: true, wide: true },
-            { label: t("cols.status"), width: 100 },
+            { label: t("cols.status"), width: 100, noPhone: true },
           ]}
           empty={rows.length === 0}
           emptyText={t("empty")}
@@ -262,20 +262,24 @@ export function QuestionsSection() {
           page={paging.page}
           size={paging.size}
           onPage={paging.setPage}
+          onSize={paging.setSize}
         >
           {shown.map((x) => {
             const rate = yesRate(x.yes, x.answered);
             return (
               <Tr key={x.id}>
-                <Td className="min-w-[200px] min-[1100px]:min-w-[260px]">
+                <Td className="min-[1100px]:min-w-[260px] sm:min-w-[200px]">
                   {x.text}
                   {x.isSample && (
                     <span className="ml-2 rounded-pill bg-surface-raised px-2 py-1 align-middle text-[12px] leading-none font-semibold whitespace-nowrap text-text-muted">
                       {t("sampleTag")}
                     </span>
                   )}
+                  <span className="mt-1.5 block text-[13px] text-text-muted sm:hidden">
+                    <StatusLabel status={x.status} />
+                  </span>
                 </Td>
-                <Td muted nowrap noPhone>
+                <Td muted noPhone>
                   {packName(x.packId)}
                 </Td>
                 <Td mono right wide>
@@ -287,7 +291,7 @@ export function QuestionsSection() {
                 <Td mono right wide>
                   {x.reports}
                 </Td>
-                <Td>
+                <Td noPhone>
                   <StatusLabel status={x.status} />
                 </Td>
                 <ActionsTd>

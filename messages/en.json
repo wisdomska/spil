@@ -59,7 +59,9 @@
     "notYou": "Not you?",
     "band13": "13 to 15",
     "band16": "16 to 17",
-    "band18": "18+"
+    "band18": "18+",
+    "kickerPlay": "BEFORE YOU PLAY",
+    "privacyDevice": "No signup. Your age group stays on this device only."
   },
   "toast": {
     "linkCopied": "Link copied. Share it with your friends.",
@@ -161,7 +163,8 @@
     "invalid": "No room with that code. Check it with your host.",
     "expired": "This room has dried up. Start a fresh one.",
     "full": "This room is full. {max} players max.",
-    "started": "This game already started. Ask the host for the rematch link."
+    "started": "This game already started. Ask the host for the rematch link.",
+    "badChars": "Room codes never use O, I, 0 or 1. Check the code with your host."
   },
   "packs": {
     "title": "Pick your poison.",
@@ -359,7 +362,6 @@
     "writeCount": "{n} of {max}",
     "skipLeft": "Skip · {n} left",
     "skipNone": "No skips left",
-    "skipLeftAria": "Skip this question, {n} {n, plural, one {skip} other {skips}} left",
     "saidYes": "You said Yes",
     "saidNo": "You said No",
     "saidGreen": "You said Green flag",
@@ -913,8 +915,11 @@
       "haveYouEver": "Have you ever {text}",
       "pagination": "Pages",
       "range": "{from} to {to} of {total}",
-      "previous": "Previous",
-      "next": "Next",
+      "rangeNone": "0 of 0",
+      "rowsPerPage": "Rows per page",
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "pageLabel": "Page {page}",
       "pageOf": "Page {page} of {pages}",
       "decrease": "Lower {field}",
       "increase": "Raise {field}"
@@ -956,6 +961,7 @@
       "perPackEmpty": "No games yet this week.",
       "needsLook": "Needs a look",
       "quiet": "No open reports. Nice and quiet.",
+      "openReportsRow": "{count, plural, one {# open report to review} other {# open reports to review}}",
       "newMessages": "{count, plural, one {# new message in the Inbox} other {# new messages in the Inbox}}",
       "exported": "Exported {days} days of stats."
     },
@@ -1197,7 +1203,7 @@
         "target": "Target"
       },
       "empty": "No admin actions yet.",
-      "note": "The last 300 actions. Every action is kept.",
+      "note": "Every admin action, newest first. Nothing is ever removed.",
       "actions": {
         "signed_in": "Signed in",
         "signed_out": "Signed out",

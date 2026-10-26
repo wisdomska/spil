@@ -189,6 +189,7 @@ export function PacksSection() {
           page={paging.page}
           size={paging.size}
           onPage={paging.setPage}
+          onSize={paging.setSize}
         >
           {shown.map((p) => (
             <Tr key={p.id}>

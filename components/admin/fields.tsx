@@ -18,7 +18,8 @@ type RowProps = {
 /** Label above, muted hint below (design modal field). */
 export function FieldRow({ id, label, hint, children }: RowProps) {
   return (
-    <div className="grid content-start gap-2">
+    // min-w-0 and a minmax(0,1fr) track: a field never grows wider than its grid cell.
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-2">
       <label htmlFor={id} className="text-[14px] leading-none font-semibold">
         {label}
       </label>
@@ -91,7 +92,9 @@ export function NumberInput({
             step(-1);
           }
         }}
-        className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-[15px] font-medium text-text tabular-nums outline-none"
+        // size=1: the browser's default (about 20 characters) set the field's minimum width.
+        size={1}
+        className="h-full w-0 min-w-0 flex-1 border-0 bg-transparent p-0 text-[15px] font-medium text-text tabular-nums outline-none"
         {...rest}
       />
       <button

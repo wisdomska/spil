@@ -8,7 +8,6 @@ import {
   EnvelopeOpenIcon,
 } from "@phosphor-icons/react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 import {
   ActionsTd,
   adminApi,
@@ -21,31 +20,30 @@ import {
   Td,
   Tr,
   useAdminAction,
-  useAdminQuery,
+  useAdminPage,
   usePaging,
+  useUrlChip,
   when,
 } from "@/components/admin/ui";
 import type { AdminMessage } from "@/lib/admin/types";
 
 type Chip = "new" | "all" | "archived";
+const CHIPS = ["all", "new", "archived"] as const;
 
 export function InboxSection() {
   const t = useTranslations("admin.inbox");
   const tn = useTranslations("admin.nav");
   const tc = useTranslations("admin.common");
-  const q = useAdminQuery<AdminMessage[]>("/messages");
   const run = useAdminAction();
   const paging = usePaging();
-  const [chip, setChip] = useState<Chip>("all");
-
-  const rows = (q.data ?? []).filter((m) =>
-    chip === "archived"
-      ? m.status === "archived"
-      : chip === "new"
-        ? m.status === "new"
-        : m.status !== "archived",
-  );
-  const shown = paging.slice(rows);
+  const [chip, setChip] = useUrlChip<Chip>("status", "all", CHIPS);
+  // Filtered and paged on the server, so every message is reachable.
+  const q = useAdminPage<AdminMessage>("/messages", {
+    page: paging.page,
+    size: paging.size,
+    status: chip,
+  });
+  const data = q.data;
 
   const setStatus = (m: AdminMessage, status: AdminMessage["status"], ok: string) =>
     run(() => adminApi("PATCH", `/messages/${m.id}`, { status }), { ok });
@@ -56,18 +54,15 @@ export function InboxSection() {
       <Chips<Chip>
         label={tn("inbox")}
         value={chip}
-        onChange={(c) => {
-          setChip(c);
-          paging.reset();
-        }}
-        items={(["all", "new", "archived"] as const).map((c) => ({
+        onChange={setChip}
+        items={CHIPS.map((c) => ({
           value: c,
           label: t(`chips.${c}`),
         }))}
       />
-      {q.isError ? (
+      {q.isError && !data ? (
         <LoadError onRetry={() => q.refetch()} />
-      ) : !q.data ? (
+      ) : !data ? (
         <TableSkeleton label={tc("loading")} />
       ) : (
         <DataTable
@@ -77,14 +72,16 @@ export function InboxSection() {
             { label: t("cols.from"), width: 200, noPhone: true },
             { label: t("cols.message") },
           ]}
-          empty={rows.length === 0}
+          empty={data.total === 0}
           emptyText={t("empty")}
-          total={rows.length}
+          total={data.total}
           page={paging.page}
           size={paging.size}
           onPage={paging.setPage}
+          onSize={paging.setSize}
+          busy={q.isPlaceholderData}
         >
-          {shown.map((m) => {
+          {data.rows.map((m) => {
             const fresh = m.status === "new";
             return (
               <Tr key={m.id}>

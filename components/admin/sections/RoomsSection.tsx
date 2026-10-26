@@ -18,69 +18,55 @@ import {
   Td,
   Tr,
   useAdminAction,
-  useAdminQuery,
+  useAdminPage,
   useAgo,
   usePaging,
+  useUrlChip,
+  useUrlSearch,
   type ConfirmState,
 } from "@/components/admin/ui";
 import type { AdminRoom } from "@/lib/admin/types";
 
 type Chip = "all" | "active" | "stuck" | "finished" | "closed";
+const CHIPS = ["all", "active", "stuck", "finished", "closed"] as const;
 
 export function RoomsSection() {
   const t = useTranslations("admin.rooms");
   const tm = useTranslations("modes");
   const tn = useTranslations("admin.nav");
   const tc = useTranslations("admin.common");
-  const q = useAdminQuery<AdminRoom[]>("/rooms");
   const run = useAdminAction();
   const ago = useAgo();
   const paging = usePaging();
-  const [chip, setChip] = useState<Chip>("all");
-  const [search, setSearch] = useState("");
+  const search = useUrlSearch();
+  const [chip, setChip] = useUrlChip<Chip>("status", "all", CHIPS);
   const [confirm, setConfirm] = useState<ConfirmState>(null);
-
-  const sq = search.trim().toLowerCase();
-  const rows = (q.data ?? []).filter(
-    (r) =>
-      (!sq || r.code.toLowerCase().includes(sq)) &&
-      (chip === "all" ||
-        (chip === "stuck" && r.stuck) ||
-        (chip === "closed"
-          ? r.status === "closed"
-          : chip === "finished"
-            ? r.status === "revealed"
-            : chip === "active" && r.status !== "closed" && r.status !== "revealed")),
-  );
-  const shown = paging.slice(rows);
+  // Filtered and paged on the server, so every room is reachable however many there are.
+  const q = useAdminPage<AdminRoom>("/rooms", {
+    page: paging.page,
+    size: paging.size,
+    status: chip,
+    q: search.debounced.trim() || undefined,
+  });
+  const data = q.data;
 
   return (
     <>
       <PageHeader title={tn("rooms")}>
-        <SearchBox
-          value={search}
-          onChange={(v) => {
-            setSearch(v);
-            paging.reset();
-          }}
-          placeholder={t("searchPh")}
-        />
+        <SearchBox value={search.value} onChange={search.onChange} placeholder={t("searchPh")} />
       </PageHeader>
       <Chips<Chip>
         label={tn("rooms")}
         value={chip}
-        onChange={(c) => {
-          setChip(c);
-          paging.reset();
-        }}
-        items={(["all", "active", "stuck", "finished", "closed"] as const).map((c) => ({
+        onChange={setChip}
+        items={CHIPS.map((c) => ({
           value: c,
           label: t(`chips.${c}`),
         }))}
       />
-      {q.isError ? (
+      {q.isError && !data ? (
         <LoadError onRetry={() => q.refetch()} />
-      ) : !q.data ? (
+      ) : !data ? (
         <TableSkeleton label={tc("loading")} />
       ) : (
         <DataTable
@@ -94,25 +80,23 @@ export function RoomsSection() {
             { label: t("cols.status"), width: 130 },
             { label: t("cols.started"), width: 120, noPhone: true },
           ]}
-          empty={rows.length === 0}
+          empty={data.total === 0}
           emptyText={t("empty")}
-          total={rows.length}
+          total={data.total}
           page={paging.page}
           size={paging.size}
           onPage={paging.setPage}
+          onSize={paging.setSize}
+          busy={q.isPlaceholderData}
         >
-          {shown.map((r) => (
+          {data.rows.map((r) => (
             <Tr key={r.id}>
               <Td mono bold>
                 {r.code}
               </Td>
-              <Td nowrap noPhone>
-                {r.packName}
-              </Td>
-              <Td nowrap noPhone>
-                {tm(`${r.mode as "classic"}.name`)}
-              </Td>
-              <Td wide nowrap muted={!r.hostNickname}>
+              <Td noPhone>{r.packName}</Td>
+              <Td noPhone>{tm(`${r.mode as "classic"}.name`)}</Td>
+              <Td wide muted={!r.hostNickname}>
                 {r.hostNickname ?? t("hostLeft")}
               </Td>
               <Td mono right noPhone>

@@ -105,7 +105,7 @@ export function OverviewSection() {
       ) : (
         <>
           {/* Hairlines between tiles come from the 1 px gap over the line colour. */}
-          <section className="grid shrink-0 grid-cols-2 gap-px overflow-hidden rounded-card border border-line bg-line lg:grid-cols-5">
+          <section className="grid shrink-0 grid-cols-2 gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-3">
             {tiles.map((tile, i) => {
               const body = (
                 <>
@@ -172,11 +172,21 @@ export function OverviewSection() {
             </Panel>
             <Panel className="grid content-start gap-1 p-5">
               <h2 className="m-0 mb-2 text-[17px] leading-none font-bold">{t("needsLook")}</h2>
-              {d.flagged.length === 0 && (
+              {d.openReports === 0 && (
                 <span className="flex items-center gap-2.5 py-2.5 text-[14px] leading-[1.4] text-text-muted">
                   <CheckCircleIcon aria-hidden size={18} className="text-success" />
                   {t("quiet")}
                 </span>
+              )}
+              {/* Reports about players and written answers have no question to list. */}
+              {d.flagged.length === 0 && d.openReports > 0 && reportsHref && (
+                <Link
+                  href={reportsHref}
+                  className="flex min-h-12 items-center gap-3 border-b border-line py-2.5 text-[14px] leading-[1.4] text-text no-underline hover:bg-surface-raised hover:text-text"
+                >
+                  <FlagIcon aria-hidden size={18} className="shrink-0 text-error" />
+                  {t("openReportsRow", { count: d.openReports })}
+                </Link>
               )}
               {d.flagged.map((f) => {
                 const row = (

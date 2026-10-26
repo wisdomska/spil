@@ -86,6 +86,39 @@ d("admin access", () => {
     expect(Array.isArray(overview.body.packPlays)).toBe(true);
   });
 
+  it("pages the long lists on the server, with filters and a total", async () => {
+    for (const path of ["/admin/rooms", "/admin/reports", "/admin/messages", "/admin/audit"]) {
+      const first = await owner.call("GET", `${path}?page=1&size=10`);
+      expect(first.status, path).toBe(200);
+      expect(first.body).toMatchObject({ page: 1, size: 10 });
+      expect(first.body.rows.length, path).toBeLessThanOrEqual(10);
+      expect(first.body.total, path).toBeGreaterThanOrEqual(first.body.rows.length);
+      if (first.body.total > 10) {
+        const second = await owner.call("GET", `${path}?page=2&size=10`);
+        const ids = new Set(first.body.rows.map((r: { id: string }) => r.id));
+        expect(
+          second.body.rows.some((r: { id: string }) => ids.has(r.id)),
+          path,
+        ).toBe(false);
+      }
+    }
+    // An unknown size falls back to the default; filters narrow the total.
+    expect((await owner.call("GET", "/admin/rooms?page=1&size=37")).body.size).toBe(20);
+    const closed = await owner.call("GET", "/admin/rooms?page=1&size=100&status=closed");
+    expect(closed.body.rows.every((r: { status: string }) => r.status === "closed")).toBe(true);
+    const open = await owner.call("GET", "/admin/reports?page=1&size=100&status=open");
+    expect(open.body.rows.every((r: { status: string }) => r.status === "open")).toBe(true);
+    const search = await owner.call("GET", "/admin/audit?page=1&size=10&q=signed,(in)");
+    expect(search.status).toBe(200);
+    // Without `page` the lists keep their old shape.
+    expect(Array.isArray((await owner.call("GET", "/admin/rooms")).body)).toBe(true);
+  });
+
+  it("leaves a room's own custom questions out of the managed lists", async () => {
+    const list = await owner.call("GET", "/admin/questions");
+    expect(list.body.some((q: { packId: string }) => q.packId.startsWith("custom_"))).toBe(false);
+  });
+
   it("applies the role matrix", async () => {
     const expectStatus = async (
       a: Admin,

@@ -119,12 +119,10 @@ function GameSettings() {
             if (!busy) save();
           }}
         >
-          <div className="grid gap-[18px] sm:grid-cols-3 sm:gap-4">
+          <div className="grid gap-[18px] sm:grid-cols-2 sm:gap-x-5">
             {field("questionsPerGame", t("questionsPerGame"), t("questionsPerGameHint"), 5, 100)}
             {field("minPlayers", t("minPlayers"), t("minPlayersHint"), 1, 20)}
             {field("maxPlayers", t("maxPlayers"), t("maxPlayersHint"), 3, 20)}
-          </div>
-          <div className="grid gap-[18px] sm:grid-cols-3 sm:gap-4">
             {field("ageLockHours", t("ageLockHours"), t("ageLockHoursHint"), 1, 168)}
           </div>
           <ErrorLine>{error}</ErrorLine>

@@ -23,8 +23,9 @@ export async function getCounts(): Promise<Counts> {
       .select("id", head)
       .in("status", [...ACTIVE_STATUSES])
       .gte("created_at", activeSince()),
-    db.from("packs").select("id", head),
-    db.from("questions").select("id", head),
+    // A room's own custom pack (Batch 3) is private to that room and not managed here.
+    db.from("packs").select("id", head).is("room_id", null),
+    db.from("questions").select("id, packs!inner(room_id)", head).is("packs.room_id", null),
     db.from("reports").select("id", head).eq("status", "open"),
     db.from("messages").select("id", head).eq("status", "new"),
   ]);

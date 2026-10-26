@@ -18,10 +18,22 @@ import {
   XCircleIcon,
   type Icon,
 } from "@phosphor-icons/react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { CaretDownIcon, CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  DEFAULT_PAGE_SIZE,
+  PAGE_SIZES,
+  pageCount,
+  pageItems,
+  parsePage,
+  parseSize,
+  type PageItem,
+  type Paged,
+  type PageSize,
+} from "@/lib/admin/paging";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
@@ -50,6 +62,83 @@ export function useAdminQuery<T>(path: string, enabled = true) {
     },
     refetchInterval: 30_000,
   });
+}
+
+/**
+ * One page of a server-paged admin list (rooms, reports, inbox, audit). The page on screen stays
+ * while the next one loads, so the table never flashes back to a skeleton.
+ */
+export function useAdminPage<T>(path: string, params: Record<string, string | number | undefined>) {
+  const router = useRouter();
+  const qs = new URLSearchParams(
+    Object.entries(params)
+      .filter(([, v]) => v !== undefined && v !== "")
+      .map(([k, v]) => [k, String(v)]),
+  ).toString();
+  return useQuery<Paged<T>, ClientApiError>({
+    queryKey: ["admin", path, qs],
+    queryFn: async () => {
+      try {
+        return await api<Paged<T>>("GET", `/admin${path}?${qs}`);
+      } catch (e) {
+        if (e instanceof ClientApiError && e.status === 401) router.replace("/admin/login");
+        throw e;
+      }
+    },
+    placeholderData: keepPreviousData,
+    refetchInterval: 30_000,
+  });
+}
+
+/**
+ * Console state kept in the URL (page, size, filters, search), so a reload, the back button or a
+ * shared link opens the same view. Defaults are left out of the URL.
+ */
+export function useUrlState() {
+  const params = useSearchParams();
+  const path = usePathname();
+  const router = useRouter();
+  const set = useCallback(
+    (patch: Record<string, string | null>) => {
+      const next = new URLSearchParams(params.toString());
+      for (const [k, v] of Object.entries(patch)) {
+        if (v === null || v === "") next.delete(k);
+        else next.set(k, v);
+      }
+      const qs = next.toString();
+      router.replace(qs ? `${path}?${qs}` : path, { scroll: false });
+    },
+    [params, path, router],
+  );
+  return { params, set };
+}
+
+/** A text value kept in the URL, with the value to send the server lagging typing by 250 ms. */
+export function useUrlSearch(name = "q") {
+  const { params, set } = useUrlState();
+  const urlValue = params.get(name) ?? "";
+  const [value, setValue] = useState(urlValue);
+  const [debounced, setDebounced] = useState(urlValue);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), 250);
+    return () => clearTimeout(id);
+  }, [value]);
+  return {
+    value,
+    debounced,
+    onChange: (v: string) => {
+      setValue(v);
+      set({ [name]: v.trim() || null, page: null });
+    },
+  };
+}
+
+/** A chip filter kept in the URL; changing it goes back to page 1. */
+export function useUrlChip<T extends string>(name: string, fallback: T, allowed: readonly T[]) {
+  const { params, set } = useUrlState();
+  const raw = params.get(name) as T | null;
+  const value = raw && allowed.includes(raw) ? raw : fallback;
+  return [value, (v: T) => set({ [name]: v === fallback ? null : v, page: null })] as const;
 }
 
 /**
@@ -271,6 +360,8 @@ export function DataTable({
   page,
   size,
   onPage,
+  onSize,
+  busy,
   caption,
 }: {
   cols: Col[];
@@ -281,15 +372,27 @@ export function DataTable({
   page: number;
   size: number;
   onPage: (page: number) => void;
+  onSize?: (size: PageSize) => void;
+  /** The next page is loading; the current rows stay, dimmed. */
+  busy?: boolean;
   caption: string;
 }) {
   const t = useTranslations("admin.common");
-  const pages = Math.max(1, Math.ceil(total / size));
-  const current = Math.min(page, pages);
-  const from = (current - 1) * size + 1;
-  const to = Math.min(total, current * size);
+  const top = useRef<HTMLDivElement>(null);
+  const go = (p: number) => {
+    onPage(p);
+    // Back to the top of the table, so the new page reads from its first row.
+    top.current?.scrollIntoView({ block: "nearest" });
+  };
   return (
-    <div className="overflow-auto rounded-card border border-line bg-surface">
+    <div
+      ref={top}
+      aria-busy={busy || undefined}
+      className={cn(
+        "scroll-mt-4 overflow-auto rounded-card border border-line bg-surface transition-opacity",
+        busy && "opacity-60",
+      )}
+    >
       <table className="w-full border-collapse text-[14px] leading-[1.35]">
         <caption className="sr-only">{caption}</caption>
         <thead>
@@ -316,33 +419,131 @@ export function DataTable({
         </thead>
         <tbody>{children}</tbody>
       </table>
-      {pages > 1 && (
-        <nav
-          aria-label={t("pagination")}
-          className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-3.5 py-3"
-        >
-          <span className="font-mono text-[13px] leading-none text-text-muted">
-            {t("range", { from, to, total })}
-          </span>
-          <div className="flex items-center gap-2">
-            <OutlineButton disabled={current <= 1} onClick={() => onPage(current - 1)}>
-              {t("previous")}
-            </OutlineButton>
-            <span className="min-w-[96px] text-center font-mono text-[13px] leading-none text-text-muted">
-              {t("pageOf", { page: current, pages })}
-            </span>
-            <OutlineButton disabled={current >= pages} onClick={() => onPage(current + 1)}>
-              {t("next")}
-            </OutlineButton>
-          </div>
-        </nav>
-      )}
+      {!empty && <Pagination total={total} page={page} size={size} onPage={go} onSize={onSize} />}
       {empty && (
         <div className="px-5 py-10 text-center text-[15px] leading-[1.5] text-text-muted">
           {emptyText}
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * Table pagination: the row range, rows per page, previous and next, and numbered pages with
+ * gaps (1 … 9 10 11 … 19). Phones show fewer numbers (1 … 10 … 19). The current page is marked
+ * for screen readers with aria-current.
+ */
+export function Pagination({
+  total,
+  page,
+  size,
+  onPage,
+  onSize,
+}: {
+  total: number;
+  page: number;
+  size: number;
+  onPage: (page: number) => void;
+  onSize?: (size: PageSize) => void;
+}) {
+  const t = useTranslations("admin.common");
+  const pages = pageCount(total, size);
+  const current = Math.min(Math.max(1, page), pages);
+  const from = total === 0 ? 0 : (current - 1) * size + 1;
+  const to = Math.min(total, current * size);
+  const ARROW =
+    "grid size-10 shrink-0 place-items-center rounded-pill border border-line bg-transparent text-[18px] text-text hover:bg-surface-raised disabled:pointer-events-none disabled:opacity-35";
+  const numbers = (items: PageItem[], className: string) => (
+    <ol className={cn("m-0 list-none items-center gap-1 p-0", className)}>
+      {items.map((item, i) =>
+        item === "gap" ? (
+          <li
+            key={`gap-${i}`}
+            aria-hidden
+            className="grid size-10 place-items-center font-mono text-[13px] text-text-muted"
+          >
+            …
+          </li>
+        ) : (
+          <li key={item}>
+            <button
+              type="button"
+              aria-label={t("pageLabel", { page: item })}
+              aria-current={item === current ? "page" : undefined}
+              onClick={() => item !== current && onPage(item)}
+              className={cn(
+                "grid h-10 min-w-10 place-items-center rounded-pill border px-2 font-mono text-[13px] leading-none font-semibold tabular-nums",
+                item === current
+                  ? "border-accent bg-accent-soft text-accent-ink"
+                  : "border-transparent text-text hover:bg-surface-raised",
+              )}
+            >
+              {item}
+            </button>
+          </li>
+        ),
+      )}
+    </ol>
+  );
+  return (
+    <nav
+      aria-label={t("pagination")}
+      className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-t border-line px-3.5 py-3"
+    >
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <span className="font-mono text-[13px] leading-none text-text-muted tabular-nums">
+          {total === 0 ? t("rangeNone") : t("range", { from, to, total })}
+        </span>
+        {onSize && (
+          <label className="flex items-center gap-2 text-[13px] leading-none text-text-muted">
+            {t("rowsPerPage")}
+            <span className="relative">
+              <select
+                value={size}
+                onChange={(e) => onSize(parseSize(e.target.value))}
+                className="h-9 cursor-pointer appearance-none rounded-pill border border-line bg-transparent pr-8 pl-3 font-mono text-[13px] font-semibold text-text hover:bg-surface-raised"
+              >
+                {PAGE_SIZES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+              <CaretDownIcon
+                aria-hidden
+                size={12}
+                className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2"
+              />
+            </span>
+          </label>
+        )}
+      </div>
+      {pages > 1 && (
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            aria-label={t("previousPage")}
+            disabled={current <= 1}
+            onClick={() => onPage(current - 1)}
+            className={ARROW}
+          >
+            <CaretLeftIcon aria-hidden />
+          </button>
+          {numbers(pageItems(current, pages, 0), "flex sm:hidden")}
+          {numbers(pageItems(current, pages, 1), "hidden sm:flex")}
+          <button
+            type="button"
+            aria-label={t("nextPage")}
+            disabled={current >= pages}
+            onClick={() => onPage(current + 1)}
+            className={ARROW}
+          >
+            <CaretRightIcon aria-hidden />
+          </button>
+        </div>
+      )}
+    </nav>
   );
 }
 
@@ -484,18 +685,22 @@ export function LoadError({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-/** Client-side paging for long tables (design "Show more", 40 rows at a time). */
-/** Page-by-page tables (owner request): `slice` returns the rows for the current page. */
-export function usePaging(size = 20) {
-  const [page, setPage] = useState(1);
+/**
+ * Page and rows per page, kept in the URL (?page=3&size=50). Server-paged lists send them to the
+ * API; the packs and questions lists, which are small and searched live, use `slice`.
+ */
+export function usePaging(defaultSize: PageSize = DEFAULT_PAGE_SIZE) {
+  const { params, set } = useUrlState();
+  const page = parsePage(params.get("page"));
+  const size = parseSize(params.get("size"), defaultSize);
   return {
     page,
     size,
-    setPage,
-    reset: () => setPage(1),
+    setPage: (p: number) => set({ page: p <= 1 ? null : String(p) }),
+    setSize: (s: PageSize) => set({ size: s === defaultSize ? null : String(s), page: null }),
+    reset: () => set({ page: null }),
     slice<T>(rows: readonly T[]): T[] {
-      const last = Math.max(1, Math.ceil(rows.length / size));
-      const p = Math.min(page, last);
+      const p = Math.min(page, pageCount(rows.length, size));
       return rows.slice((p - 1) * size, p * size);
     },
   };

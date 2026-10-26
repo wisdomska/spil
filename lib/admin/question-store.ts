@@ -29,15 +29,20 @@ const toQuestion = (q: Row): AdminQuestion => ({
   updatedAt: q.updated_at,
 });
 
-/** Every question, newest edits first. Optional pack and status filters (used by the export). */
+/**
+ * Every question in the managed packs, newest edits first. A room's own custom questions are
+ * left out: they belong to that room and are moderated through Reports. Optional pack and status
+ * filters (used by the export).
+ */
 export async function listQuestions(filter: { packId?: string; status?: QStatus } = {}) {
   const db = getAdminClient();
   const rows = await fetchAll<Row>((from, to) => {
     let q = db
       .from("questions")
       .select(
-        "id, pack_id, text, status, is_sample, yes_count, answered_count, report_count, updated_at",
+        "id, pack_id, text, status, is_sample, yes_count, answered_count, report_count, updated_at, packs!inner(room_id)",
       )
+      .is("packs.room_id", null)
       .order("updated_at", { ascending: false })
       .order("id");
     if (filter.packId) q = q.eq("pack_id", filter.packId);

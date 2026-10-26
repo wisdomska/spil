@@ -1,22 +1,63 @@
 import { ApiError } from "@/lib/api/errors";
 import { route } from "@/lib/api/handler";
 import { requireAdmin } from "@/lib/admin/server";
+import { pageRange, parsePage, parseSize, type Paged } from "@/lib/admin/paging";
 import type { AdminReport } from "@/lib/admin/types";
 import { getAdminClient } from "@/lib/supabase/admin";
 
 const LIMIT = 500;
 
-/** GET /admin/reports: newest first, with the reported question or nickname and the room code. */
-export const GET = route(async (request): Promise<AdminReport[]> => {
+const SELECT =
+  "id, type, question_id, player_id, room_id, mode_input_id, reason, status, created_at";
+const STATUSES = ["open", "actioned", "dismissed"];
+
+/**
+ * GET /admin/reports: newest first, with the reported question or nickname and the room code.
+ * With `page` it returns one page `{ rows, total, page, size }` filtered by `status` (open,
+ * actioned, dismissed or all); without it, the newest 500 as a list.
+ */
+export const GET = route(async (request): Promise<AdminReport[] | Paged<AdminReport>> => {
   await requireAdmin(request, "reports.read");
   const db = getAdminClient();
-  const { data, error } = await db
-    .from("reports")
-    .select("id, type, question_id, player_id, room_id, mode_input_id, reason, status, created_at")
+  const params = new URL(request.url).searchParams;
+  if (!params.has("page")) {
+    const { data, error } = await db
+      .from("reports")
+      .select(SELECT)
+      .order("created_at", { ascending: false })
+      .limit(LIMIT);
+    if (error) throw new ApiError("INTERNAL");
+    return describe(data ?? []);
+  }
+  const page = parsePage(params.get("page"));
+  const size = parseSize(params.get("size"));
+  const status = params.get("status") ?? "open";
+  const { from, to } = pageRange(page, size);
+  let query = db.from("reports").select(SELECT, { count: "exact" });
+  if (STATUSES.includes(status)) query = query.eq("status", status as "open");
+  const { data, count, error } = await query
     .order("created_at", { ascending: false })
-    .limit(LIMIT);
+    .order("id")
+    .range(from, to);
   if (error) throw new ApiError("INTERNAL");
-  const reports = data ?? [];
+  return { rows: await describe(data ?? []), total: count ?? 0, page, size };
+});
+
+type ReportRow = {
+  id: string;
+  type: AdminReport["type"];
+  question_id: string | null;
+  player_id: string | null;
+  room_id: string | null;
+  mode_input_id: string | null;
+  reason: string;
+  status: AdminReport["status"];
+  created_at: string;
+};
+
+/** Adds the question text, nickname, answer and room code each report points at. */
+async function describe(reports: ReportRow[]): Promise<AdminReport[]> {
+  const db = getAdminClient();
   const ids = (key: "question_id" | "player_id" | "room_id" | "mode_input_id") => [
     ...new Set(reports.map((r) => r[key]).filter((v): v is string => Boolean(v))),
   ];
@@ -51,4 +92,4 @@ export const GET = route(async (request): Promise<AdminReport[]> => {
     status: x.status,
     createdAt: x.created_at,
   }));
-});
+}
