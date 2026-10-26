@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.7.0 (2026-10-26)
+
+### Game setup
+
+- Pick the game first. Games with one pack start in one tap; the rest open a pack step, and Back
+  returns to the games. Spill or Skip is now the story vote switch on the classic pack step.
+- The lobby has a Game setup card for the host: change the game or pack, and set the question
+  count. Rematch can change the game, and Play again repeats the last game on this phone.
+
+### Fixes
+
+- Who Said That? and Imposter: a player the host moved on no longer breaks guessing for everyone.
+- The bot check no longer fails when moving from the game step to the pack step, or when a game is
+  tapped straight after the age screen.
+
 ## 1.6.0 (2026-11-01)
 
 ### Admin console
