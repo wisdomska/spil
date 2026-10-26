@@ -278,7 +278,6 @@
     "need": "Need {min} players to start. {n} here.",
     "start": "Start the game",
     "addTest": "Add a test player",
-    "changePack": "Change pack: {pack}",
     "remove": "Remove {name}",
     "guestWait": "Waiting for {host} to start. Grab a drink.",
     "readySolo": "Ready to play solo.",
@@ -298,7 +297,13 @@
     "customPlay": "Play these {n} questions",
     "scanToJoin": "Scan to join",
     "showQr": "Show QR",
-    "qrAria": "QR code to join room {code}"
+    "qrAria": "QR code to join room {code}",
+    "setupLabel": "Game setup",
+    "setupGame": "Game",
+    "setupChange": "Change",
+    "setupQuestions": "Questions",
+    "setupAll": "All {n}",
+    "setupChangeAria": "Change the game or pack, now {game}"
   },
   "question": {
     "offline": "You're offline. Keep going, your answers send when you're back.",
@@ -633,7 +638,6 @@
     "spillConfirmBody": "Everyone in this room will see your yes and no answers next to your name. People can screenshot, so only turn it on if you're comfortable.",
     "spillConfirmYes": "Spill it",
     "spillConfirmNo": "Keep private",
-    "changePack": "Change pack",
     "series": "Series",
     "seriesLine": "{name} {wins}",
     "seriesAria": "Series after {rounds} rounds: {standings}",
@@ -656,7 +660,8 @@
         "name": "Work in progress",
         "reason": "At least one guess was more than 15 off. Rematch?"
       }
-    }
+    },
+    "changeGame": "Change game or pack"
   },
   "share": {
     "title": "Your card",
@@ -1516,5 +1521,30 @@
         "body": "Answer 7 Daily Spills."
       }
     }
+  },
+  "setup": {
+    "title": "What are we playing?",
+    "titleRoom": "Change the game",
+    "lede": "Most games start straight away. A few let you pick a pack next.",
+    "featuredTag": "The classic",
+    "groups": {
+      "guess": "Guess each other",
+      "vote": "Vote and rank",
+      "bluff": "Bluff and catch"
+    },
+    "solo": "Works solo",
+    "minPlayers": "{n}+ players",
+    "adult": "18+",
+    "current": "Playing now",
+    "start": "Start",
+    "packs": "{n} packs",
+    "unavailable": "No packs right now",
+    "starting": "Starting {game}",
+    "playAgain": "Play again",
+    "playAgainBody": "{game} · {pack} · {n} questions",
+    "gameLine": "Game:",
+    "changeGame": "Change game",
+    "storyVote": "Story vote at the end",
+    "storyVoteBody": "After the reveal, the room picks one yes they want the story behind. Anyone can pass. Needs 3 or more players."
   }
 }

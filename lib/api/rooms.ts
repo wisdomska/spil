@@ -1324,6 +1324,20 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
     }
   }
 
+  // Two-step setup: the host can change the length in the lobby, up to the pack's size.
+  if (room.status === "lobby" && me.id === room.host_player_id) {
+    let q = db()
+      .from("questions")
+      .select("id", { count: "exact", head: true })
+      .eq("pack_id", room.pack_id);
+    // A room's own custom questions are hidden from everyone else but play here.
+    if (!room.pack_id.startsWith("custom_")) q = q.eq("status", "live");
+    const { count } = await q;
+    state.room.packQuestions = writesAnswers(roomMode(room))
+      ? Math.min(count ?? 0, MAX_WRITTEN_PROMPTS)
+      : (count ?? 0);
+  }
+
   return state;
 }
 

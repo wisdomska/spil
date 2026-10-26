@@ -17,7 +17,9 @@ test("three players read the room and see each question's share", async ({ brows
     nickname: "Senya",
     mode: "Room Percentage",
   });
-  await expect(host.page.getByText("Game: Room Percentage")).toBeVisible();
+  await expect(host.page.getByRole("region", { name: "Game setup" })).toContainText(
+    "Room Percentage",
+  );
   await joinRoom(g1.page, code, { nickname: "Ama" });
   await expect(host.page.getByRole("button", { name: "Start the game" })).toHaveAttribute(
     "aria-disabled",

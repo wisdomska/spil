@@ -20,6 +20,8 @@ export async function hostRoom(
   await page.goto("/");
   await page.getByRole("link", { name: "Start a game" }).first().click();
   await passAgeGate(page, opts.age ?? 25);
+  await expect(page.getByRole("heading", { name: "What are we playing?" })).toBeVisible();
+  await page.getByRole("button", { name: /^Spill Score/ }).click();
   await expect(page.getByRole("heading", { name: "Pick your poison." })).toBeVisible();
   if (opts.pack)
     await page

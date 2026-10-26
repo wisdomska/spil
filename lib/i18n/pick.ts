@@ -28,7 +28,7 @@ export const BASE_SCOPE = ["common", "toast", "error"] as const;
 /** Client namespaces per route. The admin console alone gets "admin", after its session check. */
 export const SCOPES = {
   landing: ["landing", "awards", "card"],
-  create: ["age", "packs", "packInfo", "question", "modes"],
+  create: ["age", "packs", "packInfo", "question", "modes", "setup"],
   join: ["join"],
   profile: ["profile", "age"],
   room: [

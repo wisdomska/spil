@@ -29,7 +29,7 @@ export async function phone(browser: Browser, size: keyof typeof VIEWPORT = "gue
 export async function passAgeGate(page: Page, age = 25) {
   const heading = page.getByRole("heading", { name: "How old are you?" });
   const after = page.getByRole("heading", {
-    name: /What should we call you\?|Pick your poison\.|SPIL is for ages 13|18\+ pack/,
+    name: /What should we call you\?|What are we playing\?|Pick your poison\.|SPIL is for ages 13|18\+ pack/,
   });
   await heading.or(after).first().waitFor({ timeout: 30_000 });
   if (!(await heading.isVisible())) return;
@@ -57,8 +57,41 @@ export async function createRoom(
 ) {
   await page.goto("/create");
   await passAgeGate(page, age);
+  const oneTap = await pickGame(page, mode);
+  if (!oneTap) await pickPack(page, { pack, count });
+  await page.waitForURL(/\/r\/[A-Z0-9]{4}\/me$/, { timeout: 30_000 });
+  const code = page.url().match(/\/r\/([A-Z0-9]{4})\/me/)![1]!;
+  await passAgeGate(page, age);
+  await fillProfile(page, nickname);
+  await page.getByRole("button", { name: "Open the lobby" }).click();
+  await page.waitForURL(new RegExp(`/r/${code}$`));
+  await expect(page.getByRole("heading", { name: "In the room" })).toBeVisible();
+  // One-tap games start with the default length; the lobby sets any other.
+  if (oneTap && count) await setLength(page, count);
+  return code;
+}
+
+/**
+ * Step 1 of game setup: taps the game's card (Spill Score when none is given; Spill or Skip is
+ * Spill Score with the story vote switched on). Returns true when the game started in one tap.
+ */
+export async function pickGame(page: Page, mode?: string) {
+  await expect(page.getByRole("heading", { name: "What are we playing?" })).toBeVisible();
+  const story = mode === "Spill or Skip";
+  const game = !mode || story ? "Spill Score" : mode;
+  await page.getByRole("button", { name: new RegExp(`^${game}`) }).click();
+  await page.waitForURL(
+    (u) => /\/r\/[A-Z0-9]{4}\/me$/.test(u.pathname) || u.searchParams.has("game"),
+    { timeout: 30_000 },
+  );
+  if (/\/r\/[A-Z0-9]{4}\/me$/.test(new URL(page.url()).pathname)) return true;
+  if (story) await page.getByRole("switch", { name: /Story vote at the end/ }).click();
+  return false;
+}
+
+/** Step 2 of game setup: the pack, the length and Continue. */
+export async function pickPack(page: Page, { pack, count }: { pack?: string; count?: number }) {
   await expect(page.getByRole("heading", { name: "Pick your poison." })).toBeVisible();
-  if (mode) await page.getByRole("radio", { name: new RegExp(`^${mode}`) }).click();
   if (pack)
     await page
       .getByRole("radiogroup", { name: "Question pack" })
@@ -67,14 +100,15 @@ export async function createRoom(
       .click();
   if (count) await page.getByRole("radio", { name: new RegExp(`^(All )?${count}$`) }).click();
   await page.getByRole("button", { name: /^Continue with/ }).click();
-  await page.waitForURL(/\/r\/[A-Z0-9]{4}\/me$/, { timeout: 30_000 });
-  const code = page.url().match(/\/r\/([A-Z0-9]{4})\/me/)![1]!;
-  await passAgeGate(page, age);
-  await fillProfile(page, nickname);
-  await page.getByRole("button", { name: "Open the lobby" }).click();
-  await page.waitForURL(new RegExp(`/r/${code}$`));
-  await expect(page.getByRole("heading", { name: "In the room" })).toBeVisible();
-  return code;
+}
+
+/** Lobby, host: the length chips in the game setup card. */
+export async function setLength(page: Page, count: number) {
+  const setup = page.getByRole("region", { name: "Game setup" });
+  const chip = setup.getByRole("radio", { name: new RegExp(`^(All )?${count}$`) });
+  if ((await chip.count()) === 0) return;
+  await chip.click();
+  await expect(chip).toHaveAttribute("aria-checked", "true");
 }
 
 /** Guest: opens the invite link, age gate, nickname, lobby. */

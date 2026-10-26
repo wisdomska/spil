@@ -41,13 +41,16 @@ test("18+ host and 15-year-old guest (SPIL-02)", async ({ browser }) => {
   await joinRoom(teen.page, code, { nickname: "Esi" });
 
   // In the lobby the host only gets packs for the youngest player, and nobody is named.
-  await host.page.getByRole("link", { name: /Change pack/ }).click();
+  await host.page.getByRole("link", { name: /^Change the game or pack/ }).click();
   await expect(host.page.getByText("Some packs are hidden for this room.")).toBeVisible();
+  // An 18+ game is not offered while a 15-year-old is in the room.
+  await expect(host.page.getByRole("button", { name: /^Who Said That/ })).toHaveCount(0);
+  await host.page.getByRole("button", { name: /^Spill Score/ }).click();
   await expect(host.page.getByRole("radio", { name: /After Dark/ })).toHaveCount(0);
   await expect(host.page.getByText("After dark · 18+")).toHaveCount(0);
 
   // On their own /create the teen sees the 13+ packs and no hint that others exist.
-  await teen.page.goto("/create");
+  await teen.page.goto("/create?game=classic");
   await expect(teen.page.getByRole("heading", { name: "Pick your poison." })).toBeVisible();
   await expect(teen.page.getByRole("radio", { name: /Classic/ })).toBeVisible();
   await expect(teen.page.getByRole("radio", { name: /After Dark|Between the Sheets/ })).toHaveCount(

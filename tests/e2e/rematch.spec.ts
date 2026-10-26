@@ -23,7 +23,7 @@ test("one-tap rematch and the series strip", async ({ browser }) => {
       await expect(host.page.getByText(/^Series/)).toHaveCount(0);
       await expect(guest.page.getByText("Ama can start a rematch")).toBeVisible();
       await host.page.getByRole("button", { name: "Rematch" }).click();
-      await expect(host.page.getByText(/Change pack: Classic/)).toBeVisible();
+      await expect(host.page.getByRole("region", { name: "Game setup" })).toContainText("Classic");
     }
   }
   const strip = host.page.getByLabel(/^Series after 2 rounds/);

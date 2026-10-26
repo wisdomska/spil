@@ -16,7 +16,8 @@ import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { useToast } from "@/components/ui/Toast";
 import type { RoomState } from "@/lib/api/types";
-import { rotationFor } from "@/lib/game";
+import { countOptions, rotationFor } from "@/lib/game";
+import { cn } from "@/lib/cn";
 import { CustomQuestions } from "./CustomQuestions";
 import { InviteSheet } from "./InviteSheet";
 import { QrCode } from "./QrCode";
@@ -29,11 +30,21 @@ type Props = {
   starting: boolean;
   onKick: (id: string, name: string) => void;
   onAddTest: () => void;
+  /** Two-step setup: the host changes the length here. */
+  onLength?: (questionCount: number) => void;
+  lengthBusy?: boolean;
 };
 
-export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props) {
+export function LobbyView({
+  state,
+  onStart,
+  starting,
+  onKick,
+  onAddTest,
+  onLength,
+  lengthBusy,
+}: Props) {
   const t = useTranslations("lobby");
-  const tm = useTranslations("modes");
   const tr = useTranslations("room");
   const tt = useTranslations("toast");
   const c = useTranslations("common");
@@ -169,6 +180,7 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
       <div className="mt-auto grid gap-2.5">
         {isHost ? (
           <>
+            <SetupCard state={state} onLength={onLength} busy={lengthBusy} />
             <span className="flex items-center gap-2 text-[15px] leading-[1.4] font-medium text-text-muted">
               {canStart ? (
                 <CheckCircleIcon size={18} aria-hidden />
@@ -206,17 +218,6 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
             )}
             {room.partyMode && <PartyModeButton code={room.code} />}
             {room.customAllowed && <CustomQuestions code={room.code} />}
-            <Link
-              href={`/create?room=${room.code}&mode=pack&pack=${room.pack.id}`}
-              className="flex h-12 items-center justify-center gap-2 rounded-pill text-[15px] leading-none font-semibold text-text-muted no-underline hover:bg-surface-raised hover:text-text"
-            >
-              {t("changePack", { pack: room.pack.name })}
-            </Link>
-            {room.mode !== "classic" && (
-              <p className="m-0 text-center font-mono text-[13px] leading-none font-medium text-text-muted">
-                {tm("inLobby", { mode: tm(`${room.mode}.name`) })}
-              </p>
-            )}
           </>
         ) : (
           <div
@@ -231,5 +232,84 @@ export function LobbyView({ state, onStart, starting, onKick, onAddTest }: Props
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * Two-step setup, in the lobby: the game and pack with one way to change them, and the length
+ * as chips. A mis-tap on a one-tap game on /create costs one tap to undo here.
+ */
+function SetupCard({
+  state,
+  onLength,
+  busy,
+}: {
+  state: RoomState;
+  onLength?: (n: number) => void;
+  busy?: boolean;
+}) {
+  const t = useTranslations("lobby");
+  const tm = useTranslations("modes");
+  const { room } = state;
+  const total = room.packQuestions ?? 0;
+  // A room's own custom questions keep their length; there is nothing to pick.
+  const custom = room.pack.id.startsWith("custom_");
+  const options = !custom && onLength && total > 0 ? countOptions(total) : [];
+  return (
+    <section
+      aria-labelledby="lobby-setup"
+      className="grid gap-3.5 rounded-card border border-line bg-surface p-4"
+    >
+      <h2 id="lobby-setup" className="sr-only">
+        {t("setupLabel")}
+      </h2>
+      <div className="flex items-center justify-between gap-3">
+        <div className="grid min-w-0 gap-1">
+          <span className="text-[13px] leading-none text-text-muted">{t("setupGame")}</span>
+          <span className="truncate text-[17px] leading-[1.25] font-semibold">
+            {tm(`${room.mode}.name`)}
+            <span className="font-normal text-text-muted"> · {room.pack.name}</span>
+          </span>
+        </div>
+        <Link
+          href={`/create?room=${room.code}&mode=pack&current=${room.mode}&pack=${room.pack.id}`}
+          aria-label={t("setupChangeAria", { game: tm(`${room.mode}.name`) })}
+          className="flex h-11 shrink-0 items-center rounded-pill border border-line px-4 text-[15px] leading-none font-semibold text-text no-underline hover:bg-surface-raised hover:text-text"
+        >
+          {t("setupChange")}
+        </Link>
+      </div>
+      {options.length > 1 && (
+        <div className="grid gap-2">
+          <span id="lobby-length" className="text-[13px] leading-none text-text-muted">
+            {t("setupQuestions")}
+          </span>
+          <div role="radiogroup" aria-labelledby="lobby-length" className="flex flex-wrap gap-1.5">
+            {options.map((n) => {
+              const on = n === room.questionCount;
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  aria-disabled={busy || undefined}
+                  onClick={() => !on && !busy && onLength?.(n)}
+                  className={cn(
+                    "h-10 min-w-11 rounded-pill border-[1.5px] px-3 text-[14px] leading-none font-semibold tabular-nums",
+                    on
+                      ? "border-accent bg-accent-soft text-accent-ink"
+                      : "border-line-strong bg-transparent text-text hover:border-text",
+                    busy && !on && "opacity-60",
+                  )}
+                >
+                  {n === total ? t("setupAll", { n }) : n}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

@@ -15,7 +15,7 @@ async function inViewport(page: Page, name: RegExp) {
 
 test("Continue is always on screen at 375 x 812 (SPIL-08)", async ({ browser }) => {
   const { page, context } = await phone(browser, "guest");
-  await page.goto("/create");
+  await page.goto("/create?game=classic");
   await passAgeGate(page, 30);
   await expect(page.getByRole("button", { name: /^Continue with/ })).toBeVisible();
   expect(await inViewport(page, /^Continue with/)).toBe(true);
@@ -28,7 +28,7 @@ test("Continue is always on screen at 375 x 812 (SPIL-08)", async ({ browser }) 
 
 test("only the chosen tile looks selected; preview picks a pack (SPIL-08)", async ({ browser }) => {
   const { page, context } = await phone(browser, "guest");
-  await page.goto("/create");
+  await page.goto("/create?game=classic");
   await passAgeGate(page, 30);
   const packs = page.getByRole("radiogroup", { name: "Question pack" }).getByRole("radio");
   await page.getByRole("radio", { name: /Group Chat/ }).click();

@@ -341,6 +341,13 @@ export function RoomApp({ code }: { code: string }) {
               })
             }
             onAddTest={() => actions.addTestPlayers.mutate(1, { onError: fail })}
+            lengthBusy={actions.setLength.isPending}
+            onLength={(questionCount) =>
+              actions.setLength.mutate(
+                { packId: state.room.pack.id, questionCount },
+                { onError: fail },
+              )
+            }
           />
         )}
         {screen === "question" && (hot || imposter) && (

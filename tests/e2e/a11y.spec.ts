@@ -69,7 +69,7 @@ test("keyboard only: landing to age screen to pack picker with visible focus", a
       await expect(page.getByRole("heading", { name: "How old are you?" })).toBeVisible();
       await page.keyboard.type("25");
       await page.keyboard.press("Enter");
-      await expect(page.getByRole("heading", { name: "Pick your poison." })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "What are we playing?" })).toBeVisible();
       return;
     }
   }

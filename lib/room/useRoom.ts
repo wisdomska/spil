@@ -69,6 +69,10 @@ export function useRoomActions(code: string) {
   // SPIL-18: one-tap rematch with the same pack, and the host's series reset.
   const rematch = useMutation({ mutationFn: () => call("POST", "/rematch", {}) });
   const resetSeries = useMutation({ mutationFn: () => call("POST", "/series/reset") });
+  // Two-step setup: the host changes the length from the lobby.
+  const setLength = useMutation({
+    mutationFn: (v: { packId: string; questionCount: number }) => call("PATCH", "/pack", v),
+  });
   const addTestPlayers = useMutation({
     mutationFn: (count: number) => call("POST", "/test-players", { count }),
   });
@@ -76,6 +80,7 @@ export function useRoomActions(code: string) {
     start,
     rematch,
     resetSeries,
+    setLength,
     kick,
     nudge,
     advance,

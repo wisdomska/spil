@@ -185,11 +185,12 @@ test("rematch keeps the code, switches pack and starts a fresh round", async ({
   await guessAll(host.page, () => 50);
   await host.page.getByRole("button", { name: "Start the reveal" }).click();
   await host.page.getByRole("button", { name: "Skip" }).click();
-  await host.page.getByRole("link", { name: "Change pack" }).click();
+  await host.page.getByRole("link", { name: "Change game or pack" }).click();
+  await host.page.getByRole("button", { name: /^Spill Score/ }).click();
   await host.page.getByRole("radio", { name: /Campus Life/ }).click();
   await host.page.getByRole("button", { name: /Continue with Campus Life/ }).click();
   await host.page.waitForURL(new RegExp(`/r/${code}$`));
-  await expect(host.page.getByText(/Change pack: Campus Life/)).toBeVisible();
+  await expect(host.page.getByRole("region", { name: "Game setup" })).toContainText("Campus Life");
   await host.page.getByRole("button", { name: "Start the game" }).click();
   await expect(host.page.getByRole("group", { name: /^Question 1 of/ })).toBeVisible();
   await host.context.close();

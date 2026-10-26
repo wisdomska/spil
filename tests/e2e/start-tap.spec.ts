@@ -13,7 +13,8 @@ test("one tap starts the game after a pack change and a rejoin", async ({ browse
   await joinRoom(guest.page, code, { nickname: "Esi" });
   await expect(host.page.getByText("2 in. Everyone ready?")).toBeVisible();
 
-  await host.page.getByRole("link", { name: /Change pack/ }).click();
+  await host.page.getByRole("link", { name: /^Change the game or pack/ }).click();
+  await host.page.getByRole("button", { name: /^Spill Score/ }).click();
   await host.page.getByRole("radio", { name: /Campus Life/ }).click();
   await host.page.getByRole("button", { name: /Continue with Campus Life/ }).click();
   await host.page.waitForURL(new RegExp(`/r/${code}$`));

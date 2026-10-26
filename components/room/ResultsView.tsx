@@ -500,10 +500,10 @@ export function ResultsView({
       </div>
       {state.me.isHost && (
         <Link
-          href={`/create?room=${state.room.code}&mode=rematch&pack=${state.room.pack.id}`}
+          href={`/create?room=${state.room.code}&mode=rematch&current=${state.room.mode}&pack=${state.room.pack.id}`}
           className="-mt-3 w-fit self-center text-[15px] leading-[1.4] font-semibold text-text-muted underline underline-offset-4 hover:text-text"
         >
-          {t("changePack")}
+          {t("changeGame")}
         </Link>
       )}
 

@@ -154,6 +154,8 @@ export type RoomState = {
     partyMode: boolean;
     /** Custom packs (Batch 3): the host may write questions (everyone 18+, yes or no game). */
     customAllowed: boolean;
+    /** Lobby, host only: how many questions the pack has, for the length choice. */
+    packQuestions?: number;
     /** Crews (Batch 3): the crew this room plays as. */
     crew?: { id: string; name: string; member: boolean };
   };

@@ -13,28 +13,16 @@ import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
 import { api } from "@/lib/api/client";
 import type { Pack, PackSection } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
-import type { AgeBand } from "@/lib/game";
+import { countOptions, defaultCount, type AgeBand } from "@/lib/game";
 import { useIsDesktop } from "@/lib/useMedia";
 
 const PACK_INFO = new Set(["purity"]);
-/** SPIL-08: 5 · 10 · 15 · 20 · All. */
-const COUNT_OPTIONS = [5, 10, 15, 20];
 const SECTIONS: readonly PackSection[] = ["everyday", "life", "after_dark"];
 const SECTION_KEY = {
   everyday: "sectionEveryday",
   life: "sectionLife",
   after_dark: "sectionAdult",
 } as const;
-
-/** Options under the pack's size, plus "All n" (App: qnOpts). */
-export function countOptions(total: number) {
-  return [...new Set([...COUNT_OPTIONS.filter((n) => n < total), total])].filter((n) => n > 0);
-}
-
-export function defaultCount(total: number, perGame: number) {
-  const opts = countOptions(total);
-  return opts.find((n) => n >= perGame) ?? opts[opts.length - 1] ?? 0;
-}
 
 type PackPickerProps = {
   packs: Pack[];

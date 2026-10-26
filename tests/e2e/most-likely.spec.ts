@@ -26,7 +26,9 @@ test("three players vote and see who the room picked", async ({ browser }) => {
     nickname: "Senya",
     mode: "Most Likely To",
   });
-  await expect(host.page.getByText("Game: Most Likely To")).toBeVisible();
+  await expect(host.page.getByRole("region", { name: "Game setup" })).toContainText(
+    "Most Likely To",
+  );
   await joinRoom(g1.page, code, { nickname: "Ama" });
   await joinRoom(g2.page, code, { nickname: "Kofi" });
   await host.page.getByRole("button", { name: "Start the game" }).click();

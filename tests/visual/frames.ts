@@ -87,11 +87,19 @@ const MOBILE: Array<[string, string, (page: Page) => Promise<void>]> = [
   ["Join, room full", "join-full", joinError("FULL", "", { ...PUBLIC_ROOM("classic", "lobby", 12) })],
   ["Join, already started", "join-started", joinError("LATE", "", { ...PUBLIC_ROOM("classic", "answering", 5) })],
   [
+    "Game picker",
+    "games",
+    async (page) => {
+      await withAge(page);
+      await route("/create")(page);
+    },
+  ],
+  [
     "Pack picker",
     "packs",
     async (page) => {
       await withAge(page);
-      await route("/create")(page);
+      await route("/create?game=classic")(page);
     },
   ],
   ["Profile setup", "profile", profile("classic")],

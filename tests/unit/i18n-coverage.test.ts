@@ -18,7 +18,7 @@ const ENTRIES: Record<Scope | "base", string[]> = {
     "app/error.tsx",
   ],
   landing: ["components/landing/HeroDemo.tsx", "components/landing/ShareDemo.tsx"],
-  create: ["app/create/CreateRoom.tsx"],
+  create: ["app/create/CreateRoom.tsx", "components/game/GameStep.tsx"],
   join: ["app/join/JoinForm.tsx"],
   profile: ["app/r/[code]/me/ProfileForm.tsx"],
   room: ["components/room/RoomApp.tsx"],

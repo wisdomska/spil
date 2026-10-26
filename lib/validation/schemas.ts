@@ -49,6 +49,8 @@ export const joinRoom = z.object({
 export const setPack = z.object({
   packId,
   questionCount: z.number().int().min(1).max(100).optional(),
+  /** Change the game too, from the lobby (two-step setup). */
+  mode: mode.optional(),
 });
 
 export const answerValue = z.enum(["yes", "no", "skip"]);
@@ -190,6 +192,8 @@ export const patchMe = z
 
 export const rematch = z.object({
   packId: packId.optional(),
+  /** Change the game for the next round (two-step setup). */
+  mode: mode.optional(),
   questionCount: z.number().int().min(1).max(100).optional(),
 });
 

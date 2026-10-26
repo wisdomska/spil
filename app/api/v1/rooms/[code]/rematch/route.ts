@@ -1,5 +1,5 @@
 import { codeOf, requireUser, type CodeParams } from "@/lib/api/auth";
-import { fromDbError } from "@/lib/api/errors";
+import { ApiError, fromDbError } from "@/lib/api/errors";
 import { readBody, route } from "@/lib/api/handler";
 import { isOwnCustom } from "@/lib/api/customPacks";
 import { requireLivePack } from "@/lib/api/packs";
@@ -11,7 +11,7 @@ import {
   roomFloor,
   roomMode,
 } from "@/lib/api/rooms";
-import { modeFormat } from "@/lib/game";
+import { MODE_RULES, modeFormat } from "@/lib/game";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { rematch } from "@/lib/validation/schemas";
 
@@ -29,16 +29,24 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   const db = getAdminClient();
 
   const packId = body.packId ?? room.room.pack_id;
-  // Custom packs (Batch 3): a rematch keeps the room's own questions.
-  if (!isOwnCustom(room.room, packId)) {
-    const pack = await requireLivePack(
-      packId,
-      roomFloor(room.players),
-      modeFormat(roomMode(room.room)),
-    );
+  const floor = roomFloor(room.players);
+  // Two-step setup: the next round may be a different game.
+  const mode = body.mode ?? roomMode(room.room);
+  const rule = MODE_RULES[mode];
+  if (!rule.available || (rule.adultOnly && floor < 18)) throw new ApiError("MODE_UNAVAILABLE");
+  // Custom packs (Batch 3): a rematch keeps the room's own questions, which are yes or no.
+  if (isOwnCustom(room.room, packId)) {
+    if (modeFormat(mode) !== "yes_no") throw new ApiError("MODE_UNAVAILABLE");
+    if (mode !== roomMode(room.room)) {
+      const { error } = await db.from("rooms").update({ mode }).eq("id", room.room.id);
+      if (error) throw fromDbError(error);
+    }
+  } else {
+    const pack = await requireLivePack(packId, floor, modeFormat(mode));
     const { error } = await db
       .from("rooms")
       .update({
+        mode,
         pack_id: pack.id,
         min_age: pack.minAge,
         question_count: body.questionCount

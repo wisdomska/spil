@@ -36,7 +36,7 @@ test("three players rate hot takes and guess the room's average", async ({ brows
     nickname: "Senya",
     mode: "Hot Takes",
   });
-  await expect(host.page.getByText("Game: Hot Takes")).toBeVisible();
+  await expect(host.page.getByRole("region", { name: "Game setup" })).toContainText("Hot Takes");
   await joinRoom(g1.page, code, { nickname: "Ama" });
   await joinRoom(g2.page, code, { nickname: "Kofi" });
   await host.page.getByRole("button", { name: "Start the game" }).click();
