@@ -26,7 +26,7 @@ select ok(
 
 -- A second vote on the same prompt replaces the first, whoever it was for.
 insert into public.rooms (id, code, pack_id, created_by, mode)
-values ('00000000-0000-4000-8000-0000000000c3', 'LIKA', 'most_likely', gen_random_uuid(), 'most_likely');
+values ('00000000-0000-4000-8000-0000000000c3', 'LKKA', 'most_likely', gen_random_uuid(), 'most_likely');
 insert into public.players (id, room_id, user_id, nickname, avatar, rotation_seed) values
   ('00000000-0000-4000-8000-0000000000d3', '00000000-0000-4000-8000-0000000000c3', gen_random_uuid(), 'Ama', 1, 1),
   ('00000000-0000-4000-8000-0000000000d4', '00000000-0000-4000-8000-0000000000c3', gen_random_uuid(), 'Kofi', 2, 2),

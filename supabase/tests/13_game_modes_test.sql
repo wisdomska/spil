@@ -6,7 +6,7 @@ select plan(11);
 select has_column('public', 'rooms', 'mode', 'rooms have a mode');
 select col_default_is('public', 'rooms', 'mode', 'classic', 'rooms play classic by default');
 select throws_ok(
-  $$ insert into public.rooms (code, pack_id, created_by, mode) values ('MODA', 'classic', gen_random_uuid(), 'poker') $$,
+  $$ insert into public.rooms (code, pack_id, created_by, mode) values ('MDAA', 'classic', gen_random_uuid(), 'poker') $$,
   '23514', null, 'only known modes'
 );
 select has_table('public', 'mode_inputs', 'mode inputs are stored');
@@ -24,7 +24,7 @@ select policies_are(
 
 -- save_mode_inputs replaces a slot instead of adding a second row.
 insert into public.rooms (id, code, pack_id, created_by, mode)
-values ('00000000-0000-4000-8000-0000000000c1', 'MODB', 'classic', gen_random_uuid(), 'room_percentage');
+values ('00000000-0000-4000-8000-0000000000c1', 'MDBB', 'classic', gen_random_uuid(), 'room_percentage');
 insert into public.players (id, room_id, user_id, nickname, avatar, rotation_seed)
 values ('00000000-0000-4000-8000-0000000000d1', '00000000-0000-4000-8000-0000000000c1', gen_random_uuid(), 'Ama', 1, 1);
 select is(

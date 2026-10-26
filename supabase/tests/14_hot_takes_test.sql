@@ -24,7 +24,7 @@ select ok(
 
 -- Ratings update the player's live count; other kinds do not.
 insert into public.rooms (id, code, pack_id, created_by, mode)
-values ('00000000-0000-4000-8000-0000000000c2', 'HOTA', 'hot_takes', gen_random_uuid(), 'hot_takes');
+values ('00000000-0000-4000-8000-0000000000c2', 'HTTA', 'hot_takes', gen_random_uuid(), 'hot_takes');
 insert into public.players (id, room_id, user_id, nickname, avatar, rotation_seed)
 values ('00000000-0000-4000-8000-0000000000d2', '00000000-0000-4000-8000-0000000000c2', gen_random_uuid(), 'Kofi', 2, 2);
 select is(

@@ -4,7 +4,7 @@ create extension if not exists pgtap with schema extensions;
 select plan(3);
 
 insert into public.rooms (id, code, pack_id, created_by, mode)
-values ('00000000-0000-4000-8000-0000000000c6', 'TWOA', 'classic', gen_random_uuid(), 'two_truths');
+values ('00000000-0000-4000-8000-0000000000c6', 'TWWA', 'classic', gen_random_uuid(), 'two_truths');
 insert into public.players (id, room_id, user_id, nickname, avatar, rotation_seed) values
   ('00000000-0000-4000-8000-0000000000a1', '00000000-0000-4000-8000-0000000000c6', gen_random_uuid(), 'Ama', 1, 1),
   ('00000000-0000-4000-8000-0000000000a2', '00000000-0000-4000-8000-0000000000c6', gen_random_uuid(), 'Kofi', 2, 2);

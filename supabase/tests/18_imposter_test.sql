@@ -27,7 +27,7 @@ select ok(
 
 -- A changed imposter vote (no question) replaces the old one.
 insert into public.rooms (id, code, pack_id, created_by, mode)
-values ('00000000-0000-4000-8000-0000000000c5', 'IMPA', 'imposter', gen_random_uuid(), 'imposter');
+values ('00000000-0000-4000-8000-0000000000c5', 'MPPA', 'imposter', gen_random_uuid(), 'imposter');
 insert into public.players (id, room_id, user_id, nickname, avatar, rotation_seed) values
   ('00000000-0000-4000-8000-0000000000f1', '00000000-0000-4000-8000-0000000000c5', gen_random_uuid(), 'Ama', 1, 1),
   ('00000000-0000-4000-8000-0000000000f2', '00000000-0000-4000-8000-0000000000c5', gen_random_uuid(), 'Kofi', 2, 2),
