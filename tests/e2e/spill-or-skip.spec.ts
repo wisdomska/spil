@@ -30,6 +30,8 @@ test("the room votes for a story and the picked player tells it", async ({ brows
   await expect(g1.page.getByText("Nobody is in Spill Mode yet.", { exact: false })).toBeVisible();
   // Senya opens up their answers; the room can now pick one of their yeses.
   await host.page.getByRole("switch", { name: /Spill Mode/ }).click();
+  // SPIL-16: Spill Mode asks before it turns on.
+  await host.page.getByRole("button", { name: "Spill it" }).click();
   for (const g of [g1, g2]) {
     const option = g.page.getByRole("radio", { name: /^Senya: Have you ever/ }).first();
     await expect(option).toBeVisible({ timeout: 15_000 });
