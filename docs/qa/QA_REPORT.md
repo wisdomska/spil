@@ -610,3 +610,10 @@ Game and pages
 - [x] A failed refresh during a game keeps the game on screen and retries in the background; only if it keeps failing does a small pill show the same line at the bottom.
 - [x] Real answers keep their screens: offline, room gone, expired, removed.
 - Tests: e2e `tests/e2e/quiet-loading.spec.ts` (503s on the room state: skeleton, no mention of servers, the quiet line, recovery by itself). Checked at desktop width.
+
+## Hotfix: Who Said That? with a moved-on player (production report 2026-10-26)
+
+- [x] Report: in room BNGJ, "Lock it in" kept failing with "Something went wrong" while guessing who wrote an answer.
+- [x] Cause, confirmed in production data (read-only): the host moved on without Senya, who had written one answer but never locked in (sat out). The guessing pool and the author choices still included Senya, but the server only accepts scored players as authors, so every guess naming Senya, even the right one, was refused. Imposter's suspect list had the same mismatch.
+- [x] Fix: a moved-on player's answers are left out of the guessing pool and the results, as their sheet says ("Your answers so far won't count this round"); they can still guess. Who Said That? and Imposter only offer players the server accepts. If the room changes under a guessing screen, it now refreshes and says "The room just changed. Take another look and pick again." instead of a generic error.
+- Tests: unit (pool and scoring with a moved-on writer), API "Who Said That?: a player moved on mid-writing…" (fails on the old code at the exact production symptom, passes with the fix), e2e who-said, imposter, moved-on; unit 419 passed.

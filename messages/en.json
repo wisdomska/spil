@@ -103,7 +103,8 @@
     "customAdultsOnly": "Your own questions are for rooms where everyone is 18 or older.",
     "packPremium": "Premium packs are coming soon.",
     "cosmeticSaved": "Saved.",
-    "seriesReset": "Series reset. The next round starts a new one."
+    "seriesReset": "Series reset. The next round starts a new one.",
+    "roomChanged": "The room just changed. Take another look and pick again."
   },
   "landing": {
     "headline": "Your friends think they know you.",

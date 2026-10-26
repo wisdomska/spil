@@ -1,5 +1,6 @@
 import { pickAwards, type AwardResult } from "./awards";
 import { computeResults, type ResultRow, type Results, type ResultsInput } from "./results";
+import { isScoredPlayer } from "./phases";
 import { startingOrder } from "./rankRoom";
 import { toMs } from "./types";
 
@@ -55,12 +56,16 @@ export const FOOLED_AUTHOR = 5;
 
 const inGame = (p: { status: string }) => p.status === "active" || p.status === "sat_out";
 
-/** The answers a viewer guesses on: everyone else's, shown answers only, shuffled per prompt. */
+/**
+ * The answers a viewer guesses on: everyone else's, shown answers only, shuffled per prompt.
+ * Only scored players' answers count: a player the host moved on without (SPIL-15) keeps
+ * guessing, but the answers they wrote before are left out, as their sheet says.
+ */
 export function answersToGuess(
   input: Pick<WhoSaidInput, "questions" | "players" | "texts" | "seed">,
   viewerId: string,
 ): Array<{ questionId: string; text: string; answers: AnonAnswer[] }> {
-  const players = new Set(input.players.filter(inGame).map((p) => p.id));
+  const players = new Set(input.players.filter(isScoredPlayer).map((p) => p.id));
   return input.questions
     .map((q) => {
       const answers = input.texts.filter(
@@ -84,8 +89,9 @@ export function answersToGuess(
 
 export function whoSaidResults(input: WhoSaidInput): WhoSaidResults {
   const base = computeResults(input);
+  // Everyone in the game guesses; only scored players' answers are guessed on (SPIL-15).
   const players = input.players.filter(inGame);
-  const ids = new Set(players.map((p) => p.id));
+  const ids = new Set(input.players.filter(isScoredPlayer).map((p) => p.id));
   const points = new Map<string, number>();
   const spotted: Record<string, { right: number; total: number }> = {};
   const add = (id: string, n: number) => points.set(id, (points.get(id) ?? 0) + n);

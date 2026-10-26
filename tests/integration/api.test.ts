@@ -699,6 +699,44 @@ d("host tools", () => {
     expect(revealed.body.room.reveal.total).toBe(2 + revealed.body.results.awards.length);
   });
 
+  it("Who Said That?: a player moved on mid-writing is left out, and the others can lock in", async () => {
+    // Production report 2026-10-26: guesses naming a moved-on player were refused.
+    const room = await fullRoom(3, "who_said", 10, "who_said");
+    const [a, b, c] = room.players as [Player, Player, Player];
+    const r = room.roomCode;
+    expect((await a.call("POST", `/rooms/${r}/start`)).status).toBe(200);
+    const qs: Array<{ id: string }> = (await a.call("GET", `/rooms/${r}/state`)).body.questions;
+    const write = (p: Player, q: string, body: string) =>
+      p.call("PUT", `/rooms/${r}/texts`, { texts: [{ questionId: q, body }] });
+    for (const q of qs) {
+      await write(a, q.id, "from a");
+      await write(b, q.id, "from b");
+    }
+    // c writes one answer, then the host moves on without them.
+    await write(c, qs[0]!.id, "from c");
+    for (const p of [a, b])
+      expect((await p.call("POST", `/rooms/${r}/answers/submit`)).status).toBe(200);
+    expect((await a.call("POST", `/rooms/${r}/advance`, { from: "answering" })).status).toBe(200);
+
+    const s = (await a.call("GET", `/rooms/${r}/state`)).body;
+    expect(s.room.status).toBe("guessing");
+    const pool = (s.toGuess as Array<{ answers: Array<{ id: string; body: string }> }>).flatMap(
+      (q) => q.answers,
+    );
+    expect(pool.map((x) => x.body)).not.toContain("from c");
+    const bId = (await b.call("GET", `/rooms/${r}/state`)).body.me.id;
+    const guesses = pool.map((x) => ({ answerId: x.id, authorId: bId }));
+    expect((await a.call("PUT", `/rooms/${r}/whose`, { guesses })).status).toBe(200);
+    expect((await a.call("POST", `/rooms/${r}/guesses/submit`)).status).toBe(200);
+    // The moved-on player can still guess.
+    const cPool = (
+      (await c.call("GET", `/rooms/${r}/state`)).body.toGuess as Array<{
+        answers: Array<{ id: string }>;
+      }>
+    ).flatMap((q) => q.answers);
+    expect(cPool.length).toBeGreaterThan(0);
+  }, 240_000);
+
   it("Who Said That?: 18+ only, filtered answers, anonymous guessing, report hides", async () => {
     const teen = await anonPlayer();
     const young = await teen.call("POST", "/rooms", {

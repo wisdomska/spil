@@ -1,12 +1,14 @@
 "use client";
 
 import { CheckIcon } from "@phosphor-icons/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { Avatar } from "@/components/brand/Avatar";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
-import { api } from "@/lib/api/client";
+import { api, ClientApiError } from "@/lib/api/client";
+import { roomKey } from "@/lib/room/useRoom";
 import type { RoomState } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import { SkipToReveal } from "./SkipToReveal";
@@ -23,14 +25,18 @@ export function WhoView({ state, onDone, onSkip, skipping }: Props) {
   const t = useTranslations("guess");
   const tt = useTranslations("toast");
   const toast = useToast();
+  const qc = useQueryClient();
   const items = useMemo(
     () => (state.toGuess ?? []).flatMap((q) => q.answers.map((a) => ({ ...a, prompt: q.text }))),
     [state.toGuess],
   );
   const others = useMemo(
     () =>
+      // The possible authors: scored players only, the same as the server checks (SPIL-15).
       state.players.filter(
-        (p) => p.id !== state.me.id && (p.status === "active" || p.status === "sat_out"),
+        (p) =>
+          p.id !== state.me.id &&
+          (p.status === "active" || (p.status === "sat_out" && p.answersSubmitted)),
       ),
     [state.players, state.me.id],
   );
@@ -72,8 +78,13 @@ export function WhoView({ state, onDone, onSkip, skipping }: Props) {
         setAi(open);
         setPick(next[items[open]!.id] ?? null);
       } else await onDone();
-    } catch {
-      toast(tt("somethingWrong"), "err");
+    } catch (e) {
+      // The room changed under this screen (a player was moved on, the phase moved): refresh
+      // it and say so, rather than a generic error on every tap.
+      const stale =
+        e instanceof ClientApiError && ["INVALID_TARGET", "WRONG_PHASE"].includes(e.code);
+      if (stale) void qc.invalidateQueries({ queryKey: roomKey(state.room.code) });
+      toast(stale ? tt("roomChanged") : tt("somethingWrong"), "err");
     } finally {
       setBusy(false);
     }
