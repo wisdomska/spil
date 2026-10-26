@@ -1,7 +1,8 @@
 /**
  * Daily Spill (Batch 2): one question a day for everyone, from a 13+ pack. The day runs on UTC,
  * which is also Ghana's time. The share of yes only shows once enough people answered, so a
- * small count never gives anyone away. The streak is kept on the device.
+ * small count never gives anyone away. The streak is counted from the player's own answers, so it
+ * follows an account to a new phone.
  */
 export const MIN_DAILY_ANSWERS = 10;
 
@@ -28,6 +29,14 @@ export function pickDaily(ids: readonly string[], key: string): string | null {
 /** The share of yes, or null while fewer than the minimum answered. */
 export function dailyShare(yes: number, total: number): number | null {
   return total >= MIN_DAILY_ANSWERS ? Math.round((yes / total) * 100) : null;
+}
+
+/** Days in a row answered, ending today; 0 when today is not answered yet. */
+export function streakFromDays(days: readonly string[], today: string): number {
+  const answered = new Set(days.map(dayNumber));
+  let n = 0;
+  for (let d = dayNumber(today); answered.has(d); d--) n++;
+  return n;
 }
 
 export interface Streak {

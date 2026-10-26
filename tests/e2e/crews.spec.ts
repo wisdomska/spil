@@ -27,8 +27,9 @@ test("a group becomes a crew with a season table", async ({ browser }) => {
   await guest.page.getByRole("button", { name: "Join Osu Squad" }).click();
   await guest.page.getByRole("link", { name: "Open the crew's season table" }).click();
   await expect(guest.page.getByRole("heading", { name: "Osu Squad" })).toBeVisible();
-  await expect(guest.page.getByText("Ama", { exact: true }).first()).toBeVisible();
-  await expect(guest.page.getByText("Kwame", { exact: true }).first()).toBeVisible();
+  const table = guest.page.getByRole("main");
+  await expect(table.getByText("Ama", { exact: true }).first()).toBeVisible();
+  await expect(table.getByText("Kwame", { exact: true }).first()).toBeVisible();
   await host.context.close();
   await guest.context.close();
 });

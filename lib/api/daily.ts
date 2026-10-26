@@ -1,5 +1,5 @@
 import "server-only";
-import { dailyShare, dayKey, pickDaily } from "@/lib/game";
+import { dailyShare, dayKey, pickDaily, streakFromDays } from "@/lib/game";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { ApiError, fromDbError } from "./errors";
 
@@ -13,6 +13,8 @@ export type DailyState = {
   /** Share of yes once enough answered; null before that or before I answer. */
   share: number | null;
   total: number;
+  /** Days in a row answered, ending today, from my own answers (so it follows an account). */
+  streak: number;
 };
 
 async function todaysQuestion(day: string) {
@@ -34,12 +36,19 @@ async function todaysQuestion(day: string) {
 export async function dailyState(userId: string, now = Date.now()): Promise<DailyState> {
   const day = dayKey(now);
   const db = getAdminClient();
-  const [question, mine, counts] = await Promise.all([
+  const [question, mine, counts, history] = await Promise.all([
     todaysQuestion(day),
     db.from("daily_answers").select("value").eq("day", day).eq("user_id", userId).maybeSingle(),
     db.from("daily_answers").select("value").eq("day", day),
+    db
+      .from("daily_answers")
+      .select("day")
+      .eq("user_id", userId)
+      .order("day", { ascending: false })
+      .limit(400),
   ]);
   if (mine.error) throw fromDbError(mine.error);
+  if (history.error) throw fromDbError(history.error);
   if (counts.error) throw fromDbError(counts.error);
   const rows = counts.data ?? [];
   const yes = rows.filter((r) => r.value === "yes").length;
@@ -50,6 +59,10 @@ export async function dailyState(userId: string, now = Date.now()): Promise<Dail
     mine: answered,
     share: answered ? dailyShare(yes, rows.length) : null,
     total: answered ? rows.length : 0,
+    streak: streakFromDays(
+      (history.data ?? []).map((r) => r.day),
+      day,
+    ),
   };
 }
 

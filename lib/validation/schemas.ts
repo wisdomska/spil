@@ -218,3 +218,24 @@ export const message = z.object({
   body: z.string().trim().min(5).max(2000),
   captchaToken: z.string().optional(),
 });
+
+/** Optional accounts: the rules themselves live in lib/account/rules.ts. */
+const username = z.string().trim().min(1).max(40);
+const password = z.string().min(1).max(200);
+const captchaToken = z.string().max(4096).optional();
+
+export const createAccount = z.object({ username, password, captchaToken });
+export const signIn = z.object({
+  username,
+  password,
+  captchaToken,
+  /** Second phone: add this phone's guest progress to the account. */
+  mergeGuest: z.boolean().optional(),
+});
+export const recoverAccount = z.object({
+  username,
+  recoveryCode: z.string().trim().min(1).max(40),
+  password,
+  captchaToken,
+});
+export const deleteAccount = z.object({ username });

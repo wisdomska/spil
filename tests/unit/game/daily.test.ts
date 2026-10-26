@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dailyShare, dayKey, dayNumber, nextStreak, pickDaily } from "@/lib/game";
+import { dailyShare, dayKey, dayNumber, nextStreak, pickDaily, streakFromDays } from "@/lib/game";
 
 describe("Daily Spill", () => {
   it("runs on UTC days", () => {
@@ -30,5 +30,17 @@ describe("Daily Spill", () => {
       last: "2026-10-28",
       days: 1,
     });
+  });
+});
+
+describe("streak from answered days", () => {
+  it("counts days in a row ending today", () => {
+    expect(
+      streakFromDays(["2026-10-26", "2026-10-25", "2026-10-24", "2026-10-20"], "2026-10-26"),
+    ).toBe(3);
+    expect(streakFromDays(["2026-10-25", "2026-10-24"], "2026-10-26")).toBe(0);
+    expect(streakFromDays([], "2026-10-26")).toBe(0);
+    // Across a month end.
+    expect(streakFromDays(["2026-11-01", "2026-10-31"], "2026-11-01")).toBe(2);
   });
 });

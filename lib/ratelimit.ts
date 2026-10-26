@@ -13,6 +13,13 @@ export const LIMITS = {
   report: { limit: 10, window: "1 hour" },
   message: { limit: 5, window: "1 hour" },
   adminLogin: { limit: 5, window: "15 minutes" },
+  // Accounts. Creation is per guest (bots meet the bot check first). Sign-in and recovery are
+  // per username against password guessing, and loosely per IP: many players share a carrier IP.
+  accountCreate: { limit: 5, window: "1 hour" },
+  accountSignIn: { limit: 10, window: "15 minutes" },
+  accountSignInIp: { limit: 60, window: "15 minutes" },
+  accountRecover: { limit: 5, window: "1 hour" },
+  accountRecoverIp: { limit: 30, window: "1 hour" },
   write: { limit: 120, window: "1 minute" },
   // Party Mode screens poll every 2 seconds.
   tv: { limit: 120, window: "1 minute" },

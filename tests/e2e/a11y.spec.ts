@@ -25,6 +25,8 @@ const STATIC_ROUTES = [
   "/safety",
   "/contact",
   "/profile",
+  "/sign-in",
+  "/recover",
   "/not-a-page",
 ];
 

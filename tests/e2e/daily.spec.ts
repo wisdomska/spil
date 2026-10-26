@@ -9,7 +9,12 @@ test.beforeEach(({}, info) => {
 test("anyone can answer today's question and start a streak", async ({ browser }) => {
   const { page, context } = await phone(browser, "guest");
   await page.goto("/");
-  await page.getByRole("link", { name: /^Today's Spill/ }).click();
+  // Today's Spill lives in the header menu.
+  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  await page
+    .getByRole("dialog", { name: "Menu" })
+    .getByRole("link", { name: "Today's Spill" })
+    .click();
   await passAgeGate(page, 25);
   await expect(page.getByText("TODAY'S SPILL", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Have you ever");

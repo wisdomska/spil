@@ -25,13 +25,23 @@ export function pickMessages(all: Messages, paths: readonly string[]): Messages 
 /** Every page: the site header and its menu, sheets, toasts and error screens. */
 export const BASE_SCOPE = ["common", "toast", "error", "menu"] as const;
 
+/** The "save your progress" prompt shown on crews, badges and Today's Spill. */
+const SAVE_PROMPT = [
+  "account.promptCrew",
+  "account.promptBadge",
+  "account.promptStreak",
+  "account.promptAction",
+  "account.promptDismiss",
+] as const;
+
 /** Client namespaces per route. The admin console alone gets "admin", after its session check. */
 export const SCOPES = {
   landing: ["landing", "awards", "card"],
   create: ["age", "packs", "packInfo", "question", "modes", "setup"],
   join: ["join"],
   profile: ["profile", "age"],
-  profilePage: ["profilePage", "profile"],
+  profilePage: ["profilePage", "profile", "account"],
+  account: ["account"],
   room: [
     "room",
     "lobby",
@@ -53,9 +63,9 @@ export const SCOPES = {
     "landing.headlineEmphasis",
   ],
   tv: ["tv", "reveal", "labels", "awards", "results", "modes", "question", "error"],
-  daily: ["daily", "age", "question", "error"],
-  crews: ["crews", "modes", "error"],
-  badges: ["badges", "error"],
+  daily: ["daily", "age", "question", "error", ...SAVE_PROMPT],
+  crews: ["crews", "modes", "error", ...SAVE_PROMPT],
+  badges: ["badges", "error", ...SAVE_PROMPT],
   contact: ["pages.contactPage"],
   adminAuth: ["admin.badge", "admin.title", "admin.login", "admin.reset", "admin.common"],
   admin: ["admin", "modes"],

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { SavePrompt } from "@/components/account/SavePrompt";
 import { ErrorScreen } from "@/components/site/ErrorScreen";
 import { Button } from "@/components/ui/Button";
 import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
@@ -30,6 +31,7 @@ export function CrewsList() {
       <h1 className="m-0 font-display text-display-m leading-[1] font-extrabold tracking-display">
         {t("listTitle")}
       </h1>
+      {q.data && q.data.length > 0 && <SavePrompt reason="crew" />}
       {q.isPending && (
         <SkeletonGroup label={t("listTitle")} className="gap-2.5">
           {[0, 1].map((i) => (

@@ -3,6 +3,7 @@
 import { CheckIcon, LockSimpleIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
+import { SavePrompt } from "@/components/account/SavePrompt";
 import { Avatar } from "@/components/brand/Avatar";
 import { ErrorScreen } from "@/components/site/ErrorScreen";
 import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
@@ -72,6 +73,7 @@ export function BadgesPage() {
           {t("earned", { n: earned, total: b.achievements.length })}
         </p>
       </div>
+      {earned > 0 && <SavePrompt reason="badge" />}
 
       <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 p-0">
         {b.achievements.map((a) => (

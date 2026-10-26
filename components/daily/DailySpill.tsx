@@ -3,6 +3,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { SavePrompt } from "@/components/account/SavePrompt";
 import { AgeGate } from "@/components/age/AgeGate";
 import { Vessel } from "@/components/brand/Vessel";
 import { ErrorScreen } from "@/components/site/ErrorScreen";
@@ -55,6 +56,9 @@ export function DailySpill({ ageLockHours }: { ageLockHours: number }) {
   if (!band) return <AgeGate who="player" onAge={(years) => setAge(years, ageLockHours)} />;
   if (today.error) return <ErrorScreen variant="server" onRetry={() => today.refetch()} />;
   const d = today.data;
+  // The server counts from my answers (it follows an account); this phone's own count covers
+  // a streak from before a lost session.
+  const days = Math.max(d?.streak ?? 0, streak && streak.last === d?.day ? streak.days : 0);
 
   const answer = async (value: "yes" | "no") => {
     if (busy || !d) return;
@@ -128,11 +132,12 @@ export function DailySpill({ ageLockHours }: { ageLockHours: number }) {
         </div>
       )}
 
-      {streak && streak.last === d?.day && (
+      {days > 0 && (
         <p className="m-0 font-mono text-[15px] leading-none font-medium">
-          {t("streak", { days: streak.days })}
+          {t("streak", { days })}
         </p>
       )}
+      {days >= 3 && <SavePrompt reason="streak" days={days} />}
       <p className="m-0 mt-auto text-[13px] leading-[1.45] text-text-muted">{t("privacy")}</p>
     </main>
   );

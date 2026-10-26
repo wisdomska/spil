@@ -79,7 +79,7 @@ export function ErrorScreen({
   useEffect(() => track("error_shown", { variant }), [variant]);
 
   return (
-    <main className="mx-auto box-border flex w-full max-w-[520px] flex-1 flex-col justify-center gap-[22px] px-5 pt-5 pb-10">
+    <main className="mx-auto box-border flex w-full max-w-[520px] flex-1 flex-col justify-center gap-[22px] overflow-x-clip px-5 pt-5 pb-10">
       {waking ? (
         <div>
           <Vessel level={45} height={140} transition="transform 3s var(--ease-in-out)" />

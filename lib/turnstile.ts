@@ -3,7 +3,7 @@ import { getAdminClient } from "@/lib/supabase/admin";
 import { ApiError } from "./api/errors";
 import { browserFamily } from "./browser";
 
-export type CaptchaEndpoint = "create_room" | "contact";
+export type CaptchaEndpoint = "create_room" | "contact" | "account";
 /** Logs a failed check for the admin dashboard. Never blocks or fails the request itself. */
 async function logFailure(
   endpoint: CaptchaEndpoint,

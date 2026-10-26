@@ -22,6 +22,7 @@ const ENTRIES: Record<Scope | "base", string[]> = {
   join: ["app/join/JoinForm.tsx"],
   profile: ["app/r/[code]/me/ProfileForm.tsx"],
   profilePage: ["components/profile/ProfilePage.tsx"],
+  account: ["components/account/SignInPages.tsx"],
   room: ["components/room/RoomApp.tsx"],
   tv: ["components/tv/TvApp.tsx"],
   daily: ["components/daily/DailySpill.tsx"],

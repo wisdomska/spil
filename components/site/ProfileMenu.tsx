@@ -2,6 +2,8 @@
 
 import {
   CalendarCheckIcon,
+  CloudCheckIcon,
+  SignOutIcon,
   CaretDownIcon,
   GearSixIcon,
   ListIcon,
@@ -18,8 +20,11 @@ import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { Avatar, AVATAR_COUNT } from "@/components/brand/Avatar";
+import { clearAccount, useDeviceAccount } from "@/lib/account/device";
+import { api } from "@/lib/api/client";
 import { cn } from "@/lib/cn";
 import { parseProfile, profileSnapshot, subscribeProfile } from "@/lib/profile/device";
 
@@ -56,6 +61,23 @@ export function ProfileMenu() {
   const [open, setOpen] = useState(false);
   const reduced = useReducedMotion();
   const name = profile?.nickname ?? t("guest");
+  const account = useDeviceAccount();
+  const router = useRouter();
+
+  // Saving is offered until this phone signs in; then the menu offers Sign out.
+  const signOut = async () => {
+    setOpen(false);
+    try {
+      await api("POST", "/account/sign-out");
+    } catch {
+      // Signed out locally either way; the server session expires on its own.
+    }
+    clearAccount();
+    router.refresh();
+  };
+  const accountRow = account
+    ? { key: "signOut" as const, Icon: SignOutIcon }
+    : { key: "save" as const, Icon: CloudCheckIcon, href: "/profile#account" };
   const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`);
 
   const face = (size: number) =>
@@ -96,6 +118,34 @@ export function ProfileMenu() {
                 </Link>
               </DropdownMenu.Item>
             ))}
+            <DropdownMenu.Separator className="my-1 h-px bg-line" />
+            {account && (
+              <DropdownMenu.Label className="px-3 pt-1.5 pb-1 text-[13px] leading-none text-text-muted">
+                {t("signedInAs", { username: account })}
+              </DropdownMenu.Label>
+            )}
+            <DropdownMenu.Item
+              asChild
+              onSelect={accountRow.href ? undefined : () => void signOut()}
+            >
+              {accountRow.href ? (
+                <Link
+                  href={accountRow.href}
+                  className="flex h-11 items-center gap-3 rounded-[12px] px-3 text-[15px] leading-none font-semibold text-accent-ink no-underline outline-none hover:text-accent-ink data-highlighted:bg-surface"
+                >
+                  <accountRow.Icon aria-hidden size={20} />
+                  {t(accountRow.key)}
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className="flex h-11 w-full items-center gap-3 rounded-[12px] border-0 bg-transparent px-3 text-left text-[15px] leading-none font-semibold text-text outline-none data-highlighted:bg-surface"
+                >
+                  <accountRow.Icon aria-hidden size={20} />
+                  {t(accountRow.key)}
+                </button>
+              )}
+            </DropdownMenu.Item>
           </DropdownMenu.Content>
         </DropdownMenu.Portal>
       </DropdownMenu.Root>
@@ -145,8 +195,8 @@ export function ProfileMenu() {
                 {face(48)}
                 <span className="grid min-w-0 gap-1">
                   <span className="truncate text-[17px] leading-none font-bold">{name}</span>
-                  <span className="text-[14px] leading-none text-text-muted">
-                    {t("onThisPhone")}
+                  <span className="truncate text-[14px] leading-none text-text-muted">
+                    {account ? t("signedInAs", { username: account }) : t("onThisPhone")}
                   </span>
                 </span>
               </Link>
@@ -168,6 +218,27 @@ export function ProfileMenu() {
                       </Link>
                     </li>
                   ))}
+                  <li className="mt-2 border-t border-line pt-2">
+                    {accountRow.href ? (
+                      <Link
+                        href={accountRow.href}
+                        onClick={() => setOpen(false)}
+                        className="flex min-h-12 items-center gap-3.5 rounded-[14px] px-3 text-[17px] leading-none font-semibold text-accent-ink no-underline hover:bg-surface hover:text-accent-ink"
+                      >
+                        <accountRow.Icon aria-hidden size={22} />
+                        {t(accountRow.key)}
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => void signOut()}
+                        className="flex min-h-12 w-full items-center gap-3.5 rounded-[14px] border-0 bg-transparent px-3 text-left text-[17px] leading-none font-semibold text-text hover:bg-surface"
+                      >
+                        <accountRow.Icon aria-hidden size={22} />
+                        {t(accountRow.key)}
+                      </button>
+                    )}
+                  </li>
                 </ul>
               </nav>
             </motion.div>

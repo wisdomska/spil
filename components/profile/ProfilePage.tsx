@@ -3,6 +3,7 @@
 import { CheckCircleIcon, LockSimpleIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { useTranslations } from "next-intl";
 import { useState, useSyncExternalStore } from "react";
+import { AccountSection } from "@/components/account/AccountSection";
 import { AVATAR_COUNT } from "@/components/brand/Avatar";
 import { FacePicker } from "@/components/profile/FacePicker";
 import { Button } from "@/components/ui/Button";
@@ -35,7 +36,10 @@ export function ProfilePage() {
         <p className="m-0 text-[16px] leading-[1.5] text-pretty text-text-muted">{t("lede")}</p>
       </div>
       {mounted ? (
-        <ProfileForm />
+        <>
+          <ProfileForm />
+          <AccountSection />
+        </>
       ) : (
         <SkeletonGroup label={t("title")} className="gap-4">
           <Skeleton className="h-20 w-full rounded-input" />

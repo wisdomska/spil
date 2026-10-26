@@ -1351,3 +1351,115 @@ d("two-step setup", () => {
     expect(code(res)).toBe("MODE_UNAVAILABLE");
   });
 });
+
+d("optional accounts", () => {
+  const unique = () => `t_${Math.random().toString(36).slice(2, 10)}`;
+  const PASSWORD = "tiger lily jam 42";
+  const signIn = (body: Record<string, unknown>, token?: string) =>
+    fetch(`${BASE}/api/v1/account/sign-in`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(body),
+    });
+
+  it("a guest saves their progress with a username and password, and keeps their id", async () => {
+    const guest = await anonPlayer();
+    expect((await guest.call("GET", "/account")).body.account).toBeNull();
+    const name = unique();
+    expect(
+      code(await guest.call("POST", "/account", { username: "a b", password: PASSWORD })),
+    ).toBe("USERNAME_INVALID");
+    expect(code(await guest.call("POST", "/account", { username: name, password: "short" }))).toBe(
+      "PASSWORD_WEAK",
+    );
+    expect(
+      code(await guest.call("POST", "/account", { username: name, password: "Password123" })),
+    ).toBe("PASSWORD_WEAK");
+
+    const saved = await guest.call("POST", "/account", { username: name, password: PASSWORD });
+    expect(saved.status, JSON.stringify(saved.body)).toBe(200);
+    expect(saved.body.account.username).toBe(name);
+    expect(saved.body.recoveryCode).toMatch(/^[2-9A-Z]{4}(-[2-9A-Z]{4}){3}$/);
+    expect((await guest.call("GET", "/account")).body.account.username).toBe(name);
+    expect(
+      code(await guest.call("POST", "/account", { username: unique(), password: PASSWORD })),
+    ).toBe("ACCOUNT_EXISTS");
+
+    // Usernames are unique whatever their case.
+    const other = await anonPlayer();
+    expect(
+      code(
+        await other.call("POST", "/account", { username: name.toUpperCase(), password: PASSWORD }),
+      ),
+    ).toBe("USERNAME_TAKEN");
+
+    // Sign-in by username, any case; a wrong password and an unknown name answer the same.
+    const ok = await signIn({ username: name.toUpperCase(), password: PASSWORD });
+    expect(ok.status).toBe(200);
+    expect(ok.headers.get("set-cookie")).toMatch(/sb-[^=]+-auth-token/);
+    const wrong = await signIn({ username: name, password: "not the password" });
+    expect(wrong.status).toBe(401);
+    expect((await wrong.json()).error.code).toBe("INVALID_CREDENTIALS");
+    const nobody = await signIn({ username: unique(), password: PASSWORD });
+    expect((await nobody.json()).error.code).toBe("INVALID_CREDENTIALS");
+  });
+
+  it("signing in on a second phone can add that phone's guest progress", async () => {
+    const owner = await anonPlayer();
+    const name = unique();
+    await owner.call("POST", "/account", { username: name, password: PASSWORD });
+
+    const phone2 = await anonPlayer();
+    await phone2.call("POST", "/daily", { value: "yes" });
+    expect((await phone2.call("GET", "/account/guest")).body.progress).toBe(true);
+    const res = await signIn(
+      { username: name, password: PASSWORD, mergeGuest: true },
+      phone2.token,
+    );
+    const body = await res.json();
+    expect(res.status, JSON.stringify(body)).toBe(200);
+    expect(body.merged).toBe(true);
+    // The answer now belongs to the account, so the owner's phone sees it.
+    const daily = (await owner.call("GET", "/daily")).body;
+    expect(daily.mine).toBe("yes");
+    // The streak is counted from the answers, so it follows the account too.
+    expect(daily.streak).toBe(1);
+    expect((await phone2.call("GET", "/account/guest")).body.progress).toBe(false);
+  });
+
+  it("the recovery code sets a new password once; delete account removes everything", async () => {
+    const owner = await anonPlayer();
+    const name = unique();
+    const { body } = await owner.call("POST", "/account", { username: name, password: PASSWORD });
+    const recover = (recoveryCode: string, password: string) =>
+      fetch(`${BASE}/api/v1/account/recover`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ username: name, recoveryCode, password }),
+      });
+
+    expect((await recover("AAAA-BBBB-CCCC-DDDD", "brand new words 7")).status).toBe(401);
+    const used = await recover(body.recoveryCode.toLowerCase(), "brand new words 7");
+    const next = await used.json();
+    expect(used.status, JSON.stringify(next)).toBe(200);
+    expect(next.recoveryCode).not.toBe(body.recoveryCode);
+    // The old code is spent and the old password no longer works.
+    expect((await recover(body.recoveryCode, "another new one 8")).status).toBe(401);
+    expect((await signIn({ username: name, password: PASSWORD })).status).toBe(401);
+
+    await owner.call("POST", "/daily", { value: "no" });
+    expect(code(await owner.call("DELETE", "/account", { username: "someone_else" }))).toBe(
+      "BAD_REQUEST",
+    );
+    expect((await owner.call("DELETE", "/account", { username: name })).status).toBe(200);
+    expect((await signIn({ username: name, password: "brand new words 7" })).status).toBe(401);
+    // The username is free again.
+    const again = await anonPlayer();
+    expect(
+      (await again.call("POST", "/account", { username: name, password: PASSWORD })).status,
+    ).toBe(200);
+  });
+});

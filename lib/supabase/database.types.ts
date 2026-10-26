@@ -764,6 +764,27 @@ export type Database = {
           },
         ];
       };
+      profiles: {
+        Row: {
+          created_at: string;
+          recovery_hash: string;
+          user_id: string;
+          username: string;
+        };
+        Insert: {
+          created_at?: string;
+          recovery_hash: string;
+          user_id: string;
+          username: string;
+        };
+        Update: {
+          created_at?: string;
+          recovery_hash?: string;
+          user_id?: string;
+          username?: string;
+        };
+        Relationships: [];
+      };
       questions: {
         Row: {
           alt_text: string | null;
@@ -1302,6 +1323,7 @@ export type Database = {
         Returns: boolean;
       };
       current_player_ids: { Args: never; Returns: string[] };
+      delete_account_data: { Args: { p_user: string }; Returns: undefined };
       expire_rooms: { Args: never; Returns: Json };
       is_admin: {
         Args: { p_roles?: Database["public"]["Enums"]["admin_role"][] };
@@ -1310,6 +1332,7 @@ export type Database = {
       is_crew_member: { Args: { p_crew: string }; Returns: boolean };
       is_room_member: { Args: { p_room: string }; Returns: boolean };
       is_room_revealed: { Args: { p_room: string }; Returns: boolean };
+      merge_guest_progress: { Args: { p_from: string; p_into: string }; Returns: undefined };
       notify_room: {
         Args: { p_event: string; p_room: string };
         Returns: undefined;
