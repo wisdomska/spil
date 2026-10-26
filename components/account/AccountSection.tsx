@@ -14,6 +14,7 @@ import { TextField } from "@/components/ui/TextField";
 import { useToast } from "@/components/ui/Toast";
 import { useTurnstile } from "@/components/ui/Turnstile";
 import { clearAccount, saveAccount } from "@/lib/account/device";
+import { useAccountsReady } from "@/lib/account/ready";
 import { passwordProblem, usernameProblem } from "@/lib/account/rules";
 import { api, ClientApiError, ensureSession } from "@/lib/api/client";
 
@@ -37,7 +38,8 @@ async function loadAccount(): Promise<AccountState> {
 export function AccountSection() {
   const t = useTranslations("account");
   const qc = useQueryClient();
-  const q = useQuery({ queryKey: ["account"], queryFn: loadAccount });
+  const ready = useAccountsReady();
+  const q = useQuery({ queryKey: ["account"], queryFn: loadAccount, enabled: ready });
   const [code, setCode] = useState<string | null>(null);
 
   // The server is the truth for the header menu's signed-in state on this phone.
@@ -48,6 +50,8 @@ export function AccountSection() {
     else clearAccount();
   }, [q.isSuccess, username]);
 
+  // Accounts are not switched on in this database yet.
+  if (!ready) return null;
   if (!q.data) return <Skeleton className="h-[180px] rounded-card" />;
   if (code)
     return (

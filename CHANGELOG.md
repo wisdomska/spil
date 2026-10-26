@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.8.0 (2026-10-26)
 
 ### Your profile
 
@@ -11,7 +11,8 @@
 - Optional accounts: save your progress with a username and password (no email), keep a one-time
   recovery code, sign in on another phone and bring that phone's progress along, sign out, or
   delete the account. Never needed to play. Saving is offered after a first crew, a first badge
-  or a 3-day streak.
+  or a 3-day streak. Accounts switch on by themselves once their database migration is applied;
+  until then every account entry point stays hidden.
 - The Today's Spill streak now follows your account.
 - The error screen no longer scrolls sideways while its sticker lands.
 

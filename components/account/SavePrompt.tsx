@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState, useSyncExternalStore } from "react";
 import { useDeviceAccount } from "@/lib/account/device";
+import { useAccountsReady } from "@/lib/account/ready";
 
 type Reason = "crew" | "badge" | "streak";
 
@@ -26,13 +27,14 @@ function wasDismissed(reason: Reason) {
 export function SavePrompt({ reason, days }: { reason: Reason; days?: number }) {
   const t = useTranslations("account");
   const account = useDeviceAccount();
+  const ready = useAccountsReady();
   const stored = useSyncExternalStore(
     noop,
     () => wasDismissed(reason),
     () => true,
   );
   const [hidden, setHidden] = useState(false);
-  if (account || stored || hidden) return null;
+  if (!ready || account || stored || hidden) return null;
 
   const message =
     reason === "crew"

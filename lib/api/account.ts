@@ -25,6 +25,18 @@ const badCredentials = () =>
 
 export type Account = { username: string };
 
+/**
+ * Accounts need migration 20261026000100. Until a database has it, the account features hide
+ * themselves instead of failing, so the code can ship before the migration.
+ */
+export async function accountsReady(): Promise<boolean> {
+  // Not a HEAD request: a missing table answers HEAD with a bare 404 that reads as no error.
+  const { error } = await db().from("profiles").select("user_id").limit(1);
+  if (!error) return true;
+  if (error.code === "PGRST205" || error.code === "42P01") return false;
+  throw fromDbError(error);
+}
+
 export async function accountOf(userId: string): Promise<Account | null> {
   const { data, error } = await db()
     .from("profiles")
