@@ -92,7 +92,7 @@ function ProfileForm() {
           value={nick}
           maxLength={16}
           autoComplete="nickname"
-          placeholder={tp("placeholder")}
+          placeholder={t("placeholder")}
           aria-invalid={err ? true : undefined}
           aria-describedby="spil-profile-nick-msg"
           onChange={(e) => {
@@ -114,7 +114,7 @@ function ProfileForm() {
           )}
         >
           {err && <WarningCircleIcon size={18} aria-hidden className="shrink-0" />}
-          {err ?? tp("help")}
+          {err ?? t("help")}
         </span>
       </div>
       <FacePicker

@@ -1567,7 +1567,9 @@
     "saved": "Saved. Your next room starts with this name and face.",
     "forget": "Forget this name and face",
     "forgotten": "Forgotten. You'll pick a name and face in your next room.",
-    "metaTitle": "Your profile"
+    "metaTitle": "Your profile",
+    "placeholder": "The name you play under",
+    "help": "2 to 16 characters. Everyone in your rooms sees this."
   },
   "account": {
     "title": "Save your progress",
