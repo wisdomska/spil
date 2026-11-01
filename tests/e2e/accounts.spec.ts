@@ -46,7 +46,13 @@ test("save progress, sign out, sign in on a second phone with its progress, reco
   const second = await phone(browser, "guest");
   await second.page.goto("/daily");
   await passAgeGate(second.page);
-  await second.page.getByRole("button", { name: "Yes", exact: true }).click();
+  // Wait for the answer to save before leaving the page.
+  await Promise.all([
+    second.page.waitForResponse(
+      (r) => r.url().endsWith("/api/v1/daily") && r.request().method() === "POST",
+    ),
+    second.page.getByRole("button", { name: "Yes", exact: true }).click(),
+  ]);
   await second.page.goto("/sign-in");
   await second.page.getByLabel("Username").fill(username.toUpperCase());
   await second.page.getByLabel("Password", { exact: true }).fill("wrong password 1");
