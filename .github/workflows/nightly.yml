@@ -31,7 +31,7 @@ jobs:
       - name: Install browsers
         run: pnpm exec playwright install --with-deps chromium ${{ matrix.suite == 'e2e:cross' && 'webkit firefox msedge' || '' }}
       - run: pnpm ${{ matrix.suite }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-report-${{ matrix.suite == 'e2e' && 'main' || 'cross' }}
@@ -58,7 +58,7 @@ jobs:
       - run: npx -y serve@14.2.4 design -l 4500 &
       - run: pnpm test:visual
         continue-on-error: true
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: design-parity
