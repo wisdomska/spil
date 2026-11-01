@@ -22,7 +22,7 @@ jobs:
       TARGET: ${{ github.ref_name == 'main' && 'production' || 'preview' }}
     steps:
       - uses: actions/checkout@v7
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
           version: 2.121.0
       - name: Skip when the access token is not configured
