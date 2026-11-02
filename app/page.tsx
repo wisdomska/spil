@@ -55,21 +55,6 @@ export default async function Landing() {
                 <LockSimpleIcon size={18} aria-hidden />
                 {c("privacyLine")}
               </span>
-              <a
-                href="https://spuzl.vercel.app"
-                target="_blank"
-                rel="noopener"
-                className="flex w-fit max-w-full items-center gap-3 rounded-card border border-line bg-surface px-4 py-3 text-text no-underline hover:bg-surface-raised hover:text-text"
-              >
-                <span className="grid gap-1">
-                  <span className="text-[16px] leading-none font-bold">{t("spuzl")}</span>
-                  <span className="text-[14px] leading-[1.35] text-text-muted">
-                    {t("spuzlBody")}
-                  </span>
-                </span>
-                <ArrowUpRightIcon size={18} aria-hidden className="shrink-0 text-accent-ink" />
-                <span className="sr-only">{t("spuzlNewTab")}</span>
-              </a>
             </div>
             <HeroDemo />
           </section>
@@ -97,6 +82,38 @@ export default async function Landing() {
           </section>
 
           <ShareDemo />
+
+          <section
+            aria-labelledby="spuzl-title"
+            className="mx-auto box-border w-full max-w-[1200px] border-t border-line px-5 py-14"
+          >
+            <div className="grid items-center gap-6 rounded-card bg-tile-paper p-7 text-tile-on-paper sm:grid-cols-[minmax(0,1fr)_auto] sm:p-10">
+              <div className="grid gap-3">
+                <span className="font-mono text-[12px] leading-none font-semibold tracking-[.08em] uppercase">
+                  {t("spuzlKicker")}
+                </span>
+                <h2
+                  id="spuzl-title"
+                  className="m-0 font-display text-[clamp(40px,6vw,64px)] leading-[.95] font-extrabold tracking-[-.035em]"
+                >
+                  SPUZL
+                </h2>
+                <p className="m-0 max-w-[44ch] text-[18px] leading-[1.45] text-pretty">
+                  {t("spuzlBody")}
+                </p>
+              </div>
+              <a
+                href="https://spuzl.vercel.app"
+                target="_blank"
+                rel="noopener"
+                className="flex h-14 items-center justify-center gap-2 rounded-pill bg-tile-on-paper px-7 text-[17px] leading-none font-semibold text-tile-paper no-underline hover:text-tile-paper hover:opacity-90 active:scale-[.97]"
+              >
+                {t("spuzl")}
+                <ArrowUpRightIcon size={18} aria-hidden />
+                <span className="sr-only">{t("spuzlNewTab")}</span>
+              </a>
+            </div>
+          </section>
         </main>
         <SiteFooter />
       </div>
