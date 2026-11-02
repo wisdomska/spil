@@ -149,7 +149,10 @@
       "next": "Next player",
       "you": "You"
     },
-    "roomsThisWeek": "{n, number} rooms spilled this week"
+    "roomsThisWeek": "{n, number} rooms spilled this week",
+    "spuzl": "Play SPUZL",
+    "spuzlBody": "29 games, one grid.",
+    "spuzlNewTab": "(opens in a new tab)"
   },
   "join": {
     "title": "Got a code?",

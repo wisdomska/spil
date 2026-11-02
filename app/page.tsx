@@ -1,4 +1,4 @@
-import { LockSimpleIcon } from "@phosphor-icons/react/dist/ssr";
+import { ArrowUpRightIcon, LockSimpleIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { HeroDemo } from "@/components/landing/HeroDemo";
@@ -55,6 +55,21 @@ export default async function Landing() {
                 <LockSimpleIcon size={18} aria-hidden />
                 {c("privacyLine")}
               </span>
+              <a
+                href="https://spuzl.vercel.app"
+                target="_blank"
+                rel="noopener"
+                className="flex w-fit max-w-full items-center gap-3 rounded-card border border-line bg-surface px-4 py-3 text-text no-underline hover:bg-surface-raised hover:text-text"
+              >
+                <span className="grid gap-1">
+                  <span className="text-[16px] leading-none font-bold">{t("spuzl")}</span>
+                  <span className="text-[14px] leading-[1.35] text-text-muted">
+                    {t("spuzlBody")}
+                  </span>
+                </span>
+                <ArrowUpRightIcon size={18} aria-hidden className="shrink-0 text-accent-ink" />
+                <span className="sr-only">{t("spuzlNewTab")}</span>
+              </a>
             </div>
             <HeroDemo />
           </section>
