@@ -22,7 +22,7 @@ jobs:
       TARGET: ${{ github.ref_name == 'main' && 'production' || 'preview' }}
     steps:
       - uses: actions/checkout@v7
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
           version: 2.121.0
       - name: Skip when the access token is not configured
@@ -92,7 +92,7 @@ jobs:
           E2E_BASE_URL: ${{ env.SITE }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ github.ref_name == 'main' && 'https://vhrtnirvvkiybxjufmsm.supabase.co' || 'https://cambebifktqgnbthumzq.supabase.co' }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ github.ref_name == 'main' && secrets.PROD_ANON_KEY || secrets.PREVIEW_ANON_KEY }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-report-${{ github.ref_name }}
