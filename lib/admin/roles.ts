@@ -10,6 +10,7 @@ export type Permission =
   | "rooms.read"
   | "rooms.close"
   | "rooms.advance"
+  | "users.read"
   | "packs.read"
   | "packs.write"
   | "questions.read"
@@ -35,6 +36,8 @@ export const PERMISSIONS: Record<Permission, readonly AdminRole[]> = {
   "rooms.read": OWNER_MOD,
   "rooms.close": OWNER_MOD,
   "rooms.advance": OWNER_MOD,
+  // Usernames, stats and when someone was last seen; never an email or what they answered.
+  "users.read": OWNER_MOD,
   // Moderators read packs only to filter questions; they never edit them.
   "packs.read": ALL,
   "packs.write": OWNER_LEAD,
@@ -64,6 +67,7 @@ export function can(role: AdminRole | null | undefined, permission: Permission):
 export const SECTIONS = [
   "overview",
   "rooms",
+  "users",
   "packs",
   "questions",
   "reports",
@@ -76,6 +80,7 @@ export type Section = (typeof SECTIONS)[number];
 const SECTION_PERMISSION: Record<Section, Permission> = {
   overview: "overview.read",
   rooms: "rooms.read",
+  users: "users.read",
   // The Packs section is the editor; moderators reach packs through the Questions filter.
   packs: "packs.write",
   questions: "questions.read",

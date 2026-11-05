@@ -642,3 +642,37 @@ d("Premium packs (Batch 3)", () => {
     }
   });
 });
+
+d("admin users", () => {
+  it("owners and moderators see accounts and a summary; content leads and players do not", async () => {
+    const guest = await anonPlayer();
+    created.push(guest.userId);
+    const username = `it_${tag}`;
+    const saved = await guest.call("POST", "/account", {
+      username,
+      password: "tiger lily jam 42",
+    });
+    expect(saved.status, JSON.stringify(saved.body)).toBe(200);
+
+    const list = await owner.call("GET", `/admin/users?page=1&size=20&q=${username}`);
+    expect(list.status).toBe(200);
+    expect(list.body.total).toBe(1);
+    expect(list.body.rows[0]).toMatchObject({ username, games: 0, wins: 0, crews: 0 });
+    expect(list.body.rows[0].lastSeen).not.toBeNull();
+    expect(list.body.summary.accounts).toBeGreaterThanOrEqual(1);
+    expect(list.body.summary.newAccounts).toBeGreaterThanOrEqual(1);
+    expect(typeof list.body.summary.guests).toBe("number");
+    // Never an email address, not even the placeholder.
+    expect(JSON.stringify(list.body)).not.toMatch(/@|players\.spil\.invalid/);
+
+    const fresh = await owner.call("GET", `/admin/users?page=1&size=20&filter=new&q=${username}`);
+    expect(fresh.body.total).toBe(1);
+    expect(
+      (await owner.call("GET", "/admin/users?page=1&size=20&q=nobody_by_that_name")).body.total,
+    ).toBe(0);
+
+    expect((await mod.call("GET", "/admin/users?page=1")).status).toBe(200);
+    expect((await lead.call("GET", "/admin/users?page=1")).status).toBe(403);
+    expect((await player.call("GET", "/admin/users?page=1")).status).toBe(403);
+  });
+});

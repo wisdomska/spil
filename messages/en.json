@@ -920,6 +920,7 @@
       "label": "Admin sections",
       "overview": "Overview",
       "rooms": "Rooms",
+      "users": "Users",
       "packs": "Packs",
       "questions": "Questions",
       "reports": "Reports",
@@ -1040,6 +1041,37 @@
       "advanceBody": "Players who have not finished sit out this phase, as if the host tapped Move on without them. In Lights down this starts the reveal.",
       "advanceCta": "Force advance",
       "advanced": "Room {code} moved on."
+    },
+    "users": {
+      "searchPh": "Search by username",
+      "summary": "Players at a glance",
+      "tiles": {
+        "accounts": "Accounts",
+        "accountsNote": "saved their progress",
+        "new": "New this week",
+        "newNote": "accounts in the last 7 days",
+        "active": "Active this week",
+        "activeNote": "accounts seen in the last 7 days",
+        "guests": "Guest players",
+        "guestsNote": "{n} new this week"
+      },
+      "chips": {
+        "all": "All accounts",
+        "new": "New this week",
+        "active": "Active this week"
+      },
+      "cols": {
+        "username": "Username",
+        "games": "Games",
+        "wins": "Wins",
+        "points": "Points",
+        "crews": "Crews",
+        "joined": "Joined",
+        "lastSeen": "Last seen"
+      },
+      "never": "Not yet",
+      "empty": "No accounts yet. Players save their progress from the menu or their profile.",
+      "noMatch": "No accounts match."
     },
     "packs": {
       "new": "New pack",

@@ -11,6 +11,7 @@ import {
   ListBulletsIcon,
   ListIcon,
   SignOutIcon,
+  UsersThreeIcon,
   type Icon,
 } from "@phosphor-icons/react";
 import Link from "next/link";
@@ -38,6 +39,7 @@ export function useMe(): Me {
 const NAV: Record<Section, { href: string; icon: Icon; badge?: keyof Counts; alert?: boolean }> = {
   overview: { href: "/admin", icon: ChartBarIcon },
   rooms: { href: "/admin/rooms", icon: DoorOpenIcon, badge: "liveRooms" },
+  users: { href: "/admin/users", icon: UsersThreeIcon },
   packs: { href: "/admin/packs", icon: CardsIcon, badge: "packs" },
   questions: { href: "/admin/questions", icon: ListBulletsIcon, badge: "questions" },
   reports: { href: "/admin/reports", icon: FlagIcon, badge: "openReports", alert: true },

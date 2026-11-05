@@ -17,6 +17,7 @@ const MATRIX: Record<Permission, Record<AdminRole, boolean>> = {
   "rooms.read": { owner: true, content_lead: false, moderator: true },
   "rooms.close": { owner: true, content_lead: false, moderator: true },
   "rooms.advance": { owner: true, content_lead: false, moderator: true },
+  "users.read": { owner: true, content_lead: false, moderator: true },
   "packs.read": { owner: true, content_lead: true, moderator: true },
   "packs.write": { owner: true, content_lead: true, moderator: false },
   "questions.read": { owner: true, content_lead: true, moderator: true },
@@ -61,6 +62,7 @@ describe("admin roles", () => {
     expect(sectionsFor("owner")).toEqual([
       "overview",
       "rooms",
+      "users",
       "packs",
       "questions",
       "reports",
@@ -78,6 +80,7 @@ describe("admin roles", () => {
     expect(sectionsFor("moderator")).toEqual([
       "overview",
       "rooms",
+      "users",
       "questions",
       "reports",
       "inbox",

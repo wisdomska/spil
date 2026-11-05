@@ -40,6 +40,27 @@ export type AdminRoom = {
   stuck: boolean;
 };
 
+/** A player account (owner request 2026-11-05). Never carries an email address. */
+export type AdminUser = {
+  userId: string;
+  username: string;
+  createdAt: string;
+  /** Last sign-in or session refresh. */
+  lastSeen: string | null;
+  games: number;
+  wins: number;
+  points: number;
+  crews: number;
+};
+
+export type AdminUserSummary = {
+  accounts: number;
+  newAccounts: number;
+  activeAccounts: number;
+  guests: number;
+  newGuests: number;
+};
+
 export type AdminPack = {
   id: string;
   name: string;

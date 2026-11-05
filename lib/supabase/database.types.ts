@@ -1275,6 +1275,11 @@ export type Database = {
       };
     };
     Functions: {
+      admin_accounts: {
+        Args: { p_filter: string; p_limit: number; p_offset: number; p_query: string };
+        Returns: Json;
+      };
+      admin_user_summary: { Args: never; Returns: Json };
       advance_room: {
         Args: {
           p_from: Database["public"]["Enums"]["room_status"];

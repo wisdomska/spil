@@ -47,7 +47,7 @@ const SCREENS: Array<{ slug: string; go: (page: Page) => Promise<void> }> = [
   { slug: "page-safety", go: route("/safety") },
   { slug: "page-not-found", go: route("/not-a-page") },
 ];
-const ADMIN = ["", "rooms", "packs", "questions", "reports", "inbox", "audit", "settings"];
+const ADMIN = ["", "rooms", "users", "packs", "questions", "reports", "inbox", "audit", "settings"];
 
 const rows: string[] = [];
 const ROWS = join(OUT, "rows");
