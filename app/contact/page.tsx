@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { pageMetadata } from "@/lib/seo";
 import { InfoPage, Lede, PageTitle } from "@/components/site/InfoPage";
 import { IntlScope } from "@/components/site/IntlScope";
 import { ContactForm } from "./ContactForm";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("pages.contactPage");
-  return { title: t("title"), description: t("lede") };
+  return pageMetadata({ title: t("title"), description: t("lede"), path: "/contact" });
 }
 
 export default async function Contact() {

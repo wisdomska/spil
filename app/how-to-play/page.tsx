@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import { cacheLife } from "next/cache";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { pageMetadata } from "@/lib/seo";
 import { InfoPage, Lede, PageTitle, Section } from "@/components/site/InfoPage";
 import { getSettings } from "@/lib/flags";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("pages.howto");
-  return { title: t("title"), description: t("p1") };
+  return pageMetadata({ title: t("title"), description: t("description"), path: "/how-to-play" });
 }
 
 const ACCENT =

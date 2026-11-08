@@ -1,4 +1,5 @@
 import { LockSimpleIcon } from "@phosphor-icons/react/dist/ssr";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { HeroDemo } from "@/components/landing/HeroDemo";
@@ -9,10 +10,23 @@ import { SpuzlSection } from "@/components/landing/SpuzlSection";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { IntlScope } from "@/components/site/IntlScope";
+import { JsonLd } from "@/components/site/JsonLd";
+import { absolute, pageMetadata } from "@/lib/seo";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("meta");
+  return pageMetadata({
+    title: t("homeTitle"),
+    description: t("description"),
+    path: "/",
+    absoluteTitle: true,
+  });
+}
 
 export default async function Landing() {
   const t = await getTranslations("landing");
   const c = await getTranslations("common");
+  const m = await getTranslations("meta");
   const steps = [
     [t("answer"), t("answerBody"), false],
     [t("guess"), t("guessBody"), false],
@@ -80,12 +94,58 @@ export default async function Landing() {
                 </li>
               ))}
             </ol>
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              <Link
+                href="/games"
+                className="text-[16px] leading-[1.4] font-semibold text-accent-ink underline underline-offset-4 hover:text-text"
+              >
+                {t("allGames")}
+              </Link>
+              <Link
+                href="/faq"
+                className="text-[16px] leading-[1.4] font-semibold text-text-muted underline underline-offset-4 hover:text-text"
+              >
+                {t("faqLink")}
+              </Link>
+            </div>
           </section>
 
           <ShareDemo />
 
           <SpuzlSection />
         </main>
+        <JsonLd
+          data={[
+            {
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "SPIL",
+              url: absolute("/"),
+              description: m("description"),
+              inLanguage: "en",
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": ["WebApplication", "VideoGame"],
+              name: "SPIL",
+              url: absolute("/"),
+              description: m("description"),
+              applicationCategory: "GameApplication",
+              genre: ["Party game", "Social deduction", "Trivia"],
+              gamePlatform: "Web browser",
+              operatingSystem: "Any",
+              browserRequirements: "A modern web browser on a phone, tablet or computer",
+              playMode: "MultiPlayer",
+              numberOfPlayers: { "@type": "QuantitativeValue", minValue: 1, maxValue: 12 },
+              typicalAgeRange: "13-",
+              isAccessibleForFree: true,
+              offers: { "@type": "Offer", price: 0, priceCurrency: "USD" },
+              inLanguage: "en",
+              image: absolute("/og"),
+              author: { "@type": "Person", name: "Senya", url: "https://wisdomska.site" },
+            },
+          ]}
+        />
         <SiteFooter />
       </div>
     </IntlScope>

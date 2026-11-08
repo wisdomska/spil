@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { pageMetadata } from "@/lib/seo";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { IntlScope } from "@/components/site/IntlScope";
@@ -9,8 +10,12 @@ import { getSettings } from "@/lib/flags";
 import { CreateRoom, PickerSkeleton } from "./CreateRoom";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("packs");
-  return { title: t("title") };
+  const t = await getTranslations("meta");
+  return pageMetadata({
+    title: t("createTitle"),
+    description: t("createDescription"),
+    path: "/create",
+  });
 }
 
 async function Picker() {

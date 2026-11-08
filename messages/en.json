@@ -1,15 +1,21 @@
 {
   "meta": {
-    "title": "SPIL",
+    "title": "SPIL: party games you play on your phones",
     "titleTemplate": "{page} · SPIL",
-    "description": "Your friends think they know you. Prove it. Answer “Have you ever…” questions in private, guess each other's score, then watch the scores spill.",
+    "description": "Free party games for friends, played on your phones in the browser. Answer “Have you ever…” questions in private, guess each other's score, then watch the scores spill. No app, no signup.",
     "roomTitle": "Join room {code} on SPIL",
     "roomDescription": "{host} is playing {pack}. Tap to join with a nickname. No signup.",
     "tvTitle": "SPIL on the big screen: {code}",
     "dailyTitle": "Today's Spill",
     "crewsTitle": "Your crews",
     "crewTitle": "Crew",
-    "badgesTitle": "Your badges"
+    "badgesTitle": "Your badges",
+    "joinDescription": "Got a four character room code from a friend? Type it in to join their SPIL game. No app and no signup, just a nickname and a face.",
+    "createDescription": "Start a SPIL room in seconds: pick one of ten party games, share the link or the code, and play on your phones.",
+    "dailyDescription": "One “Have you ever…” question a day for everyone. Answer in a tap, see how many people said yes, and keep your streak going.",
+    "joinTitle": "Join a game with a code",
+    "createTitle": "Start a party game",
+    "homeTitle": "SPIL: party games you play on your phones"
   },
   "common": {
     "brand": "SPIL",
@@ -187,7 +193,9 @@
         "title": "Leagues",
         "body": "Join a league of 30 every Monday. The top 7 move up."
       }
-    }
+    },
+    "allGames": "See all 10 games",
+    "faqLink": "Questions? Read the FAQ"
   },
   "join": {
     "title": "Got a code?",
@@ -821,7 +829,8 @@
       "p4": "The host starts the reveal. Scores pour in from lowest to highest, labels land, then the awards. Share your card to your Status before the group chat does it for you.",
       "h5": "House rules",
       "p5": "Laugh with people, not at them. If a question isn't right for your group, skip it.",
-      "ready": "Ready to spill?"
+      "ready": "Ready to spill?",
+      "description": "How to play SPIL: start a room, share the code, answer “Have you ever…” questions in private, guess everyone's score and watch the reveal. About 15 minutes a round."
     },
     "privacyPage": {
       "title": "Privacy",
@@ -872,7 +881,9 @@
       "send": "Send message",
       "or": "Or email",
       "address": "wisdomska@gmail.com"
-    }
+    },
+    "games": "Games",
+    "faq": "FAQ"
   },
   "admin": {
     "title": "Admin",
@@ -1702,5 +1713,187 @@
     "promptDismiss": "Not now",
     "metaSignIn": "Sign in",
     "metaRecover": "Recover your account"
+  },
+  "games": {
+    "indexTitle": "Party games on SPIL",
+    "indexMetaTitle": "10 party games to play on your phones",
+    "indexLede": "Ten party games for friends, all free and all in your browser. Everyone joins on their own phone with a four character code. Pick a game, share the link, and play.",
+    "indexDescription": "Ten free party games to play on your phones: Spill Score, Most Likely To, Hot Takes, Two Truths and a Spill, Imposter, Who Said That?, Rank the Room and more. No app, no signup.",
+    "players": "{min, plural, one {1 to 12 players} other {# to 12 players}}",
+    "ageAll": "13 and older",
+    "age18": "18 and older",
+    "free": "Free, in the browser",
+    "howTitle": "How to play",
+    "examplesTitle": "Example prompts",
+    "examplesNote": "Taken from the game's question packs.",
+    "start": "Start a game of {game}",
+    "more": "More games",
+    "open": "How to play {game}",
+    "factsLabel": "At a glance",
+    "breadcrumbHome": "SPIL",
+    "modes": {
+      "classic": {
+        "slug": "spill-score",
+        "tagline": "The “Have you ever…” game, with scores.",
+        "lede": "Spill Score is SPIL's classic party game. Everyone answers “Have you ever…” questions in private on their own phone, then you guess how much each friend has done. Your Spill Score runs from 0 to 100, and the reveal shows who has done the most.",
+        "steps": [
+          "Everyone answers the same “Have you ever…” questions in private, yes or no. Nobody sees your answers.",
+          "Your Spill Score is the share of questions you said yes to, from 0 to 100. Drag the liquid to guess each friend's score.",
+          "The reveal pours the scores in from lowest to highest. The closer your guesses, the more Mind Reader points you earn, and labels and awards land at the end."
+        ],
+        "extra": "Pick from 14 question packs, from Classic and Campus Life to SHS Days and Detty December, with 18+ packs for adult rooms. You can even play it solo."
+      },
+      "room_percentage": {
+        "slug": "room-percentage",
+        "tagline": "Guess how many of you said yes.",
+        "lede": "Room Percentage turns “Have you ever…” questions into a guessing game about the whole group. Answer in private, then guess what share of the room said yes to each question.",
+        "steps": [
+          "Everyone answers the same “Have you ever…” questions in private, yes or no.",
+          "For each question, guess what percentage of the room said yes.",
+          "The reveal shows the real share for each question. The closer your guess, the more points you score."
+        ],
+        "extra": "Needs at least 3 players, so no single answer can be worked out."
+      },
+      "hot_takes": {
+        "slug": "hot-takes",
+        "tagline": "Rate spicy opinions, guess the room.",
+        "lede": "Hot Takes is a party game about opinions. Everyone rates the same spicy statements from 0 to 100 in private, then guesses the room's average.",
+        "steps": [
+          "Rate each statement from 0 (strongly disagree) to 100 (strongly agree). Your ratings stay private.",
+          "Guess the room's average rating for each one.",
+          "The reveal shows the real average. The closer your guess, the more points you earn."
+        ],
+        "extra": "Needs at least 3 players, so nobody's rating can be worked out from the average."
+      },
+      "most_likely": {
+        "slug": "most-likely-to",
+        "tagline": "Who in the room would do it?",
+        "lede": "Most Likely To is the classic party question game, on your phones. For each prompt, everyone secretly votes for the friend who is most likely to do it, then the room sees who got the votes.",
+        "steps": [
+          "A prompt appears, like “Who's most likely to forget their own birthday?”",
+          "Everyone secretly votes for one other player. Votes stay anonymous.",
+          "The results show how many votes each person got, prompt by prompt."
+        ],
+        "extra": "Needs at least 3 players. Nobody can vote for themselves, and nobody sees who voted for whom."
+      },
+      "red_green": {
+        "slug": "red-flag-green-flag",
+        "tagline": "Swipe the scenario. See the split.",
+        "lede": "Red Flag, Green Flag is a quick swiping game about friendship and dating deal breakers. Swipe each scenario green or red, then see how the room split.",
+        "steps": [
+          "A scenario appears, like “They reply to every text within a minute.”",
+          "Swipe green if it's fine by you, red if it's a red flag. Swipes stay private.",
+          "The results show how the room split on every scenario."
+        ],
+        "extra": "Needs at least 3 players, so a split never gives one person's swipe away."
+      },
+      "rank_room": {
+        "slug": "rank-the-room",
+        "tagline": "Put your friends in order.",
+        "lede": "Rank the Room is a party game where everyone puts the whole group in order on silly prompts, then sees the room's combined ranking.",
+        "steps": [
+          "A prompt appears, like “Most likely to get lost with the map open.”",
+          "Put every player in order, from most to least likely. Your order stays private.",
+          "The room's average order is revealed, and you score points for how close your order was."
+        ],
+        "extra": "Needs at least 3 players."
+      },
+      "imposter": {
+        "slug": "imposter",
+        "tagline": "One of you got different questions.",
+        "lede": "Imposter is a social deduction game for groups. Everyone answers easy questions, but one secret player gets different ones. The answers are shown side by side, and the room votes out the imposter.",
+        "steps": [
+          "Everyone rates easy questions, like “How much do you love pizza?” One secret imposter gets different questions.",
+          "All the answers are shown. Spot the ones that don't fit.",
+          "Vote for who you think the imposter is. The reveal names them."
+        ],
+        "extra": "Needs at least 3 players."
+      },
+      "two_truths": {
+        "slug": "two-truths-and-a-spill",
+        "tagline": "Two truths and a lie, built from your answers.",
+        "lede": "Two Truths and a Spill is SPIL's take on two truths and a lie. You answer “Have you ever…” questions first, then build a card of two truths and one lie from your own answers, and everyone tries to spot each other's lie.",
+        "steps": [
+          "Answer “Have you ever…” questions in private, yes or no.",
+          "Make your card: two things you have done and one you haven't, picked from your answers.",
+          "Spot the lie on everyone else's card. You score for spotting lies and for fooling people."
+        ],
+        "extra": "Needs at least 3 players."
+      },
+      "who_said": {
+        "slug": "who-said-that",
+        "tagline": "Guess who wrote each answer.",
+        "lede": "Who Said That? is a writing and guessing game for adults. Everyone writes short answers to the same questions, then guesses who wrote what. Answers stay anonymous until the names are revealed at the end.",
+        "steps": [
+          "Write a short answer to each question, like “What's the pettiest thing you've ever done?”",
+          "Answers are shown without names. Guess who wrote each one.",
+          "The reveal shows who said what and who guessed best."
+        ],
+        "extra": "18+ only, with at least 3 players. Answers go through a word filter, and anyone can report an answer."
+      },
+      "spill_or_skip": {
+        "slug": "spill-or-skip",
+        "tagline": "Play the classic, then vote for a story.",
+        "lede": "Spill or Skip adds a story vote to the classic game. After the reveal, the room votes for one yes they want the story behind, and the picked player tells it or passes.",
+        "steps": [
+          "Play a round of Spill Score: answer in private, guess scores, watch the reveal.",
+          "Players who switch on Spill Mode make their yes answers pickable. The room votes for the one they want to hear about.",
+          "The picked player tells the story, or passes. Nobody has to share."
+        ],
+        "extra": "Needs at least 3 players. It's the story vote switch when you set up Spill Score."
+      }
+    }
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "metaTitle": "FAQ",
+    "lede": "Everything people ask about SPIL, in short answers.",
+    "description": "Answers about SPIL: what it is, how many can play, whether it's free, what you need, ages, privacy and the ten games.",
+    "items": [
+      {
+        "q": "What is SPIL?",
+        "a": "SPIL is a set of party games for friends that you play on your phones, in the browser. The classic game has everyone answer “Have you ever…” questions in private, guess each other's Spill Score from 0 to 100, then watch the scores spill in a reveal."
+      },
+      {
+        "q": "Is SPIL free?",
+        "a": "Yes. SPIL is free to play, with no download and no signup."
+      },
+      {
+        "q": "Do I need an app or an account?",
+        "a": "No. SPIL runs in the browser on any phone. You join with a nickname and a face. An account is optional: save your progress with a username and password if you want to keep your badges and crews on another phone."
+      },
+      {
+        "q": "How many people can play?",
+        "a": "Up to 12 players in a room. Spill Score works with 2 or more, and even solo. Most other games need at least 3 players so nobody's answer can be worked out."
+      },
+      {
+        "q": "How do my friends join?",
+        "a": "The host taps Start a game, picks a game and shares the link or the four character room code. Everyone else opens SPIL on their own phone and taps Join with code."
+      },
+      {
+        "q": "How long does a game take?",
+        "a": "A round takes about 15 minutes. You choose how many questions to play, and Rematch starts the next round with the same room."
+      },
+      {
+        "q": "Can anyone see my answers?",
+        "a": "No. Your yes and no answers stay private. Other players see your score, label and awards. Your answers only show if you switch on Spill Mode at the end, and then only to that room."
+      },
+      {
+        "q": "What ages is SPIL for?",
+        "a": "SPIL is for ages 13 and older. Players say how old they are before they play, and packs and games marked 18+ are only offered when everyone in the room is 18 or older."
+      },
+      {
+        "q": "What games can we play?",
+        "a": "Ten: Spill Score, Room Percentage, Hot Takes, Most Likely To, Red Flag Green Flag, Rank the Room, Imposter, Two Truths and a Spill, Who Said That? (18+) and Spill or Skip."
+      },
+      {
+        "q": "Is SPIL like Never Have I Ever?",
+        "a": "Spill Score uses the same kind of “Have you ever…” questions, but answers stay private and the fun is guessing each other's score before the reveal."
+      },
+      {
+        "q": "What is Today's Spill?",
+        "a": "One “Have you ever…” question a day for everyone. Answer in a tap, see how many people said yes once enough have answered, and build a daily streak."
+      }
+    ]
   }
 }

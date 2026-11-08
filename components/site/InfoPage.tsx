@@ -4,9 +4,11 @@ import { SiteHeader } from "./SiteHeader";
 import { TabScroller } from "./TabScroller";
 import { cn } from "@/lib/cn";
 
-export type InfoTab = "howto" | "privacy" | "terms" | "safety" | "contact";
+export type InfoTab = "howto" | "games" | "faq" | "privacy" | "terms" | "safety" | "contact";
 const TABS: Array<[InfoTab, string]> = [
   ["howto", "/how-to-play"],
+  ["games", "/games"],
+  ["faq", "/faq"],
   ["privacy", "/privacy"],
   ["terms", "/terms"],
   ["safety", "/safety"],
@@ -14,10 +16,11 @@ const TABS: Array<[InfoTab, string]> = [
 ];
 
 /**
- * Long-form page shell: header, pill tab bar between the five help pages, 720 max column. On
+ * Long-form page shell: header, pill tab bar between the help pages, 720 max column. On
  * narrow phones the tabs scroll sideways inside the bar, never the page (SPIL-06).
  */
 export async function InfoPage({ tab, children }: { tab: InfoTab; children: React.ReactNode }) {
+  // A game's own page sits under the Games tab.
   const t = await getTranslations();
   const label = (k: InfoTab) => (k === "howto" ? t("common.howToPlay") : t(`pages.${k}`));
   return (

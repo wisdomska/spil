@@ -60,8 +60,10 @@ jobs:
             sleep 20
           done
           echo "::error::deployment for $GITHUB_SHA did not go live"; exit 1
+      # Staging is deliberately noindex (it must not compete with production), so Lighthouse skips
+      # the crawlable audit there; production is scored on it and checked again below.
       - name: Lighthouse (mobile)
-        run: npx -y @lhci/cli@0.15.1 autorun --collect.url="$SITE/" --collect.url="$SITE/join" --collect.url="$SITE/how-to-play"
+        run: npx -y @lhci/cli@0.15.1 autorun --collect.url="$SITE/" --collect.url="$SITE/join" --collect.url="$SITE/how-to-play" ${{ github.ref_name != 'main' && '--collect.settings.skipAudits=is-crawlable' || '' }}
       - name: Security headers
         run: |
           h=$(curl -sI "$SITE/")
@@ -77,10 +79,23 @@ jobs:
           done
       - name: Pages and health respond
         run: |
-          for path in / /join /create /how-to-play /api/health; do
+          for path in / /join /create /how-to-play /games /faq /robots.txt /sitemap.xml /llms.txt /api/health; do
             code=$(curl -s -o /dev/null -w "%{http_code}" "$SITE$path")
             [ "$code" = 200 ] || { echo "::error::$path returned $code"; exit 1; }
           done
+      # Search and AI crawlers may index production and nothing else.
+      - name: Indexing is open on production only
+        run: |
+          robots=$(curl -fsS "$SITE/robots.txt")
+          home=$(curl -fsS "$SITE/")
+          if [ "${{ github.ref_name }}" = main ]; then
+            echo "$robots" | grep -q "Sitemap: $SITE/sitemap.xml" || { echo "::error::robots.txt has no sitemap"; exit 1; }
+            echo "$home" | grep -q 'name="robots" content="noindex' && { echo "::error::production is noindex"; exit 1; } || true
+            curl -fsS "$SITE/sitemap.xml" | grep -q "<loc>$SITE/games</loc>" || { echo "::error::sitemap is missing pages"; exit 1; }
+          else
+            echo "$robots" | grep -qx "Disallow: /" || { echo "::error::staging robots.txt allows crawling"; exit 1; }
+            echo "$home" | grep -q 'name="robots" content="noindex' || { echo "::error::staging is indexable"; exit 1; }
+          fi
       # Production has Turnstile, which is built to stop a headless browser creating rooms, so the
       # full game runs on staging only.
       - run: pnpm exec playwright install --with-deps chromium

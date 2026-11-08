@@ -8,6 +8,8 @@ export async function SiteFooter() {
   const t = await getTranslations();
   const links = [
     ["/how-to-play", t("common.howToPlay")],
+    ["/games", t("pages.games")],
+    ["/faq", t("pages.faq")],
     ["/safety", t("pages.safety")],
     ["/privacy", t("pages.privacy")],
     ["/terms", t("pages.terms")],

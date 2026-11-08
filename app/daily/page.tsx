@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { pageMetadata } from "@/lib/seo";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { DailySpill } from "@/components/daily/DailySpill";
@@ -9,7 +10,11 @@ import { getSettings } from "@/lib/flags";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("meta");
-  return { title: t("dailyTitle") };
+  return pageMetadata({
+    title: t("dailyTitle"),
+    description: t("dailyDescription"),
+    path: "/daily",
+  });
 }
 
 async function Daily() {

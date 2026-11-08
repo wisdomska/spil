@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { pageMetadata } from "@/lib/seo";
 import { InfoPage, PageTitle, Section } from "@/components/site/InfoPage";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("pages.safetyPage");
-  return { title: t("title"), description: t("description") };
+  return pageMetadata({ title: t("title"), description: t("description"), path: "/safety" });
 }
 
 /** SPIL-06: how SPIL keeps play kind and private, and who can play. */
