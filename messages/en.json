@@ -157,30 +157,49 @@
     },
     "roomsThisWeek": "{n, number} rooms spilled this week",
     "spuzl": {
-      "kicker": "Also by Senya",
+      "kicker": "From the same studio",
+      "title": "Rather solve than spill?",
       "tagline": "Tiny puzzles. Big brain energy.",
-      "body": "A free puzzle games app: logic grids, word games, quick reflex runs and classic board games, right in your browser. Puzzles never run out, and a daily streak, badges and a weekly league keep you coming back.",
+      "body": "SPUZL is a free puzzle games app. Logic grids, word games, quick reflex runs and classic board games like oware and draughts, right in your browser. Puzzles never run out: clear one a day to grow your streak, earn Sparks for hats for Spuz, and climb your weekly league.",
       "cta": "Play SPUZL",
       "newTab": "(opens in a new tab)",
-      "guest": "Play as a guest. No sign-up, no download.",
+      "guest": "Play as a guest. Sign in later to keep your streak on any phone.",
+      "stats": "SPUZL in numbers",
       "statGames": "29",
       "statGamesLabel": "games",
-      "statWorlds": "8",
+      "statWorlds": "4",
       "statWorldsLabel": "worlds",
       "statFree": "Free",
-      "statFreeLabel": "to play",
-      "worldsTitle": "Eight worlds to wander",
+      "statFreeLabel": "no ads",
+      "boardLabel": "A solved Crownfall puzzle",
+      "boardName": "Crownfall",
+      "boardSize": "4 × 4",
+      "boardRules": [
+        "One crown per row and column",
+        "One crown per colour",
+        "Crowns never touch, even corners"
+      ],
+      "worldsTitle": "Four worlds to wander",
+      "worldCount": "{n} games",
       "worlds": {
-        "logic": "Logic Lab",
-        "line": "Line Lane",
-        "shape": "Shape Shed",
-        "words": "Word Woods",
-        "clues": "Clue Cave",
-        "reflex": "Reflex Rink",
-        "rage": "Rage Ridge",
-        "board": "Board Bay"
+        "puzzles": {
+          "title": "Puzzles",
+          "body": "Logic grids, paths and sliding jams"
+        },
+        "words": {
+          "title": "Words & Quiz",
+          "body": "Word games and quick trivia"
+        },
+        "arcade": {
+          "title": "Arcade",
+          "body": "Memory, rhythm, reflex and action"
+        },
+        "board": {
+          "title": "Board Games",
+          "body": "Classic board games"
+        }
       },
-      "board": "Board Bay has chess, draughts, oware, ludo and Four Up.",
+      "friendsTitle": "Better with your people",
       "duel": {
         "title": "Duel",
         "body": "Race a friend on the same puzzle, best of three, live."
@@ -192,7 +211,9 @@
       "leagues": {
         "title": "Leagues",
         "body": "Join a league of 30 every Monday. The top 7 move up."
-      }
+      },
+      "offline": "Works on any phone, and offline once it is on your home screen.",
+      "allGames": "See every game"
     },
     "allGames": "See all 10 games",
     "faqLink": "Questions? Read the FAQ"
