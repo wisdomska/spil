@@ -6,7 +6,7 @@ import { Grain } from "@/components/brand/Grain";
 import { Telemetry } from "@/components/site/Telemetry";
 import { Providers } from "./providers";
 import { BASE_SCOPE, pickMessages } from "@/lib/i18n/pick";
-import { INDEXABLE, SITE_URL } from "@/lib/seo";
+import { INDEXABLE, SITE_URL, siteVerification } from "@/lib/seo";
 import { THEME_COLOR } from "@/lib/theme-color";
 import "./globals.css";
 
@@ -22,6 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
     category: "games",
     // Only production is indexed; staging and previews would compete with it.
     robots: INDEXABLE ? { index: true, follow: true } : { index: false, follow: false },
+    verification: siteVerification(),
     openGraph: { type: "website", siteName: "SPIL", images: ["/og"] },
     twitter: { card: "summary_large_image" },
     formatDetection: { telephone: false },

@@ -11,6 +11,22 @@ export const SITE_URL = (
  */
 export const INDEXABLE = process.env.APP_ENV === "production";
 
+/**
+ * Search Console and Bing Webmaster Tools ownership tags, production only. Set the codes those
+ * tools give in the Vercel production env (GOOGLE_SITE_VERIFICATION, BING_SITE_VERIFICATION) and
+ * redeploy. Leave the tags in place after verifying, or ownership lapses.
+ */
+export function siteVerification(): Metadata["verification"] {
+  if (!INDEXABLE) return undefined;
+  const google = process.env.GOOGLE_SITE_VERIFICATION?.trim();
+  const bing = process.env.BING_SITE_VERIFICATION?.trim();
+  if (!google && !bing) return undefined;
+  return {
+    ...(google ? { google } : {}),
+    ...(bing ? { other: { "msvalidate.01": bing } } : {}),
+  };
+}
+
 export const absolute = (path: string) => `${SITE_URL}${path === "/" ? "" : path}`;
 
 /** Title, description, canonical link and social cards for one public page. */

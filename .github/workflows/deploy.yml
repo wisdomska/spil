@@ -96,6 +96,10 @@ jobs:
             echo "$robots" | grep -qx "Disallow: /" || { echo "::error::staging robots.txt allows crawling"; exit 1; }
             echo "$home" | grep -q 'name="robots" content="noindex' || { echo "::error::staging is indexable"; exit 1; }
           fi
+      # Bing and the other IndexNow engines hear about every page as soon as production changes.
+      - name: Send the sitemap to IndexNow
+        if: github.ref_name == 'main'
+        run: node scripts/indexnow.mjs "$SITE"
       # Production has Turnstile, which is built to stop a headless browser creating rooms, so the
       # full game runs on staging only.
       - run: pnpm exec playwright install --with-deps chromium
