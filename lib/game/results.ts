@@ -40,6 +40,19 @@ export interface GuessPoints {
 /** Yes counts for a question are only shown when this many players answered it. */
 export const MIN_ANSWERS_FOR_STATS = 3;
 
+/**
+ * In a room this small, a count where everyone said the same ("3 of 3 said yes") tells the
+ * room how each person answered, so it is hidden too (UX audit 2026-11-09).
+ */
+export const SMALL_ROOM_FOR_STATS = 4;
+
+/** The yes count to show, or null when showing it would give someone's answer away. */
+export function shownYesCount(yes: number, answered: number, min = MIN_ANSWERS_FOR_STATS) {
+  if (answered < min) return null;
+  if (answered <= SMALL_ROOM_FOR_STATS && (yes === 0 || yes === answered)) return null;
+  return yes;
+}
+
 export interface ResultsQuestion {
   id: string;
   text: string;
@@ -91,7 +104,10 @@ export interface ResultRow {
 export interface QuestionStat {
   questionId: string;
   text: string;
-  /** Null when fewer than MIN_ANSWERS_FOR_STATS answered: a count would expose someone. */
+  /**
+   * Null when fewer than MIN_ANSWERS_FOR_STATS answered, or when a small room answered as one:
+   * either way the count would expose someone.
+   */
   yes: number | null;
   answered: number;
   /** Nicknames of players with Spill Mode on who said yes. */
@@ -324,7 +340,7 @@ export function computeResults(input: ResultsInput): Results {
         stat: {
           questionId: q.id,
           text: q.text,
-          yes: answered >= min ? yesSayers.length : null,
+          yes: shownYesCount(yesSayers.length, answered, min),
           answered,
           spillNames: yesSayers.filter((a) => a.p.player.spillMode).map((a) => a.p.player.nickname),
         },

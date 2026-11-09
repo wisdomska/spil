@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   MIN_ANSWERS_FOR_STATS,
+  shownYesCount,
   computeResults,
   countAnswers,
   rankByGuessing,
@@ -302,7 +303,8 @@ describe("question stats", () => {
     // Still listed so players see what was asked, but the count is withheld.
     expect(stats).toHaveLength(10);
     expect(stats.find((s) => s.questionId === "q0")).toMatchObject({ yes: null, answered: 2 });
-    expect(stats.at(-1)?.questionId).toBe("q0");
+    // Withheld counts go last, in the order asked (q2 is withheld too: all four said yes).
+    expect(stats.slice(-2).map((s) => s.questionId)).toEqual(["q0", "q2"]);
   });
 
   it("can relax the threshold (prototype behaviour)", () => {
@@ -324,13 +326,12 @@ describe("question stats", () => {
 
   it("counts yes and answered, sorted by yes share then draw order", () => {
     const stats = computeResults(room()).questionStats;
-    expect(stats[0]).toMatchObject({ questionId: "q0", yes: 4, answered: 4 });
+    expect(stats[0]).toMatchObject({ questionId: "q1", yes: 3, answered: 4 });
     expect(stats.map((s) => (s.yes ?? 0) / s.answered)).toEqual(
       [...stats.map((s) => (s.yes ?? 0) / s.answered)].sort((a, b) => b - a),
     );
+    // q0 and q2 were yes from all four, so their counts are withheld and they go last.
     expect(stats.map((s) => s.questionId)).toEqual([
-      "q0",
-      "q2",
       "q1",
       "q4",
       "q6",
@@ -339,8 +340,19 @@ describe("question stats", () => {
       "q7",
       "q8",
       "q9",
+      "q0",
+      "q2",
     ]);
-    expect(stats[0]!.text).toBe("question 0?");
+    expect(stats[0]!.text).toBe("question 1?");
+  });
+
+  it("withholds a count a small room gave as one, since it shows everyone's answer", () => {
+    expect(shownYesCount(3, 3)).toBeNull();
+    expect(shownYesCount(0, 4)).toBeNull();
+    expect(shownYesCount(2, 4)).toBe(2);
+    expect(shownYesCount(5, 5)).toBe(5);
+    expect(shownYesCount(0, 6)).toBe(0);
+    expect(shownYesCount(2, 2)).toBeNull();
   });
 
   it("spillNames lists only Spill Mode players who said yes", () => {

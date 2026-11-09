@@ -55,6 +55,10 @@ test("the room votes out the player who had different questions", async ({ brows
   // Everyone sees the real questions and the numbers, then votes.
   for (const p of phones)
     await expect(p.page.getByText("Find the imposter.")).toBeVisible({ timeout: 15_000 });
+  // The vote and Lock in sit together in the bar at the bottom, in view without scrolling.
+  await expect(
+    crew[0]!.page.getByRole("radiogroup", { name: "Who's the imposter?" }),
+  ).toBeInViewport();
   await expect(crew[0]!.page.getByText(firsts[odd]!)).toHaveCount(0);
   for (const c of crew) {
     await c.page.getByRole("radio", { name: new RegExp(imposter.name) }).click();

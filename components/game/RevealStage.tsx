@@ -279,8 +279,26 @@ export function RevealStage({
   return (
     <div className="mx-auto box-border flex min-h-[100dvh] w-full max-w-[560px] flex-col gap-[18px] overflow-x-clip px-5 pt-[18px] pb-[calc(96px+env(safe-area-inset-bottom))]">
       <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] whitespace-pre text-text-muted">
-          {counter}
+        <span className="grid gap-2">
+          <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] whitespace-pre text-text-muted">
+            {counter}
+          </span>
+          {/* The counter restarts per section (reveal, awards); this shows the whole way through. */}
+          <span
+            role="progressbar"
+            aria-label={t("progress")}
+            aria-valuemin={1}
+            aria-valuemax={slides.length}
+            aria-valuenow={Math.min(reveal.index, slides.length - 1) + 1}
+            className="block h-[3px] w-28 overflow-hidden rounded-pill bg-line"
+          >
+            <span
+              className="block h-full rounded-pill bg-text-muted transition-[width] duration-300 ease-out"
+              style={{
+                width: `${((Math.min(reveal.index, slides.length - 1) + 1) / slides.length) * 100}%`,
+              }}
+            />
+          </span>
         </span>
         <div className={cn("flex items-center gap-1.5", display && "hidden")}>
           <button

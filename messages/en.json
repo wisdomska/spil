@@ -454,7 +454,6 @@
     "suspectKicker": "WHO HAD DIFFERENT QUESTIONS?",
     "suspectTitle": "Find the imposter.",
     "suspectBody": "Everyone answered these. One of you was asked something else, and may not know it.",
-    "suspectAria": "Your vote for the imposter",
     "suspectLock": "Lock in my vote",
     "spotCount": "Card {n} of {total}",
     "spotTitle": "Spot {name}'s spill.",
@@ -465,7 +464,8 @@
     "whoCount": "Answer {n} of {total}",
     "whoAria": "Who wrote this answer?",
     "whoNoneTitle": "No answers to guess.",
-    "whoNoneBody": "Nobody else wrote an answer this round. The reveal starts when the others lock in."
+    "whoNoneBody": "Nobody else wrote an answer this round. The reveal starts when the others lock in.",
+    "suspectPick": "Who's the imposter?"
   },
   "ready": {
     "title": "Everyone's guessed.",
@@ -545,7 +545,8 @@
     "hiddenAnswer": "Hidden after a report",
     "announceSaid": "Answers revealed for: {text}",
     "reactLabel": "React",
-    "reactWith": "React with {emoji}"
+    "reactWith": "React with {emoji}",
+    "progress": "How far through the reveal"
   },
   "results": {
     "headline": "{label, select, fresh {You're <em>Fresh Out The Box</em>.} innocent {You're <em>Mostly Innocent</em>.} around {You've <em>Been Around</em>.} main {You're a <em>Main Character</em>.} other {You're a <em>Legendary Menace</em>.}}",
@@ -563,8 +564,8 @@
     "winner": "{name} won the round with {points} Mind Reader points.",
     "winnerYou": "You won the round with {points} Mind Reader points.",
     "winnerTie": "{names} tied for the win with {points} Mind Reader points.",
-    "statsNote": "Every question from this round. Yes counts show once 3 or more people answered. Names only appear for players who switched on Spill Mode.",
-    "statsHidden": "Count hidden: fewer than 3 answered",
+    "statsNote": "Every question from this round. A yes count shows once 3 or more answered, but not when a room of 4 or fewer all answered the same, since that would show each person's answer. Names only appear for players who switched on Spill Mode.",
+    "statsHidden": "Count hidden to keep answers private",
     "awardsNone": "Awards start at 3 players. Bring more friends next round.",
     "statsCount": "{yes} of {n} said yes",
     "spillYes": "Spill Mode yes: {names}",

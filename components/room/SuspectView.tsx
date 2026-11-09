@@ -96,33 +96,42 @@ export function SuspectView({ state, onDone }: Props) {
           </section>
         ))}
       </div>
-      <div role="radiogroup" aria-label={t("suspectAria")} className="grid gap-2.5 sm:grid-cols-2">
-        {others.map((p) => {
-          const on = pick === p.id;
-          return (
-            <button
-              key={p.id}
-              type="button"
-              role="radio"
-              aria-checked={on}
-              onClick={() => setPick(p.id)}
-              className={cn(
-                "flex min-h-16 items-center gap-3 rounded-card border-[1.5px] px-3.5 py-2.5 text-left active:scale-[.98]",
-                on
-                  ? "border-accent bg-accent-soft text-text"
-                  : "border-line bg-surface text-text hover:bg-surface-raised",
-              )}
-            >
-              <Avatar n={p.avatar} size={40} decorative />
-              <span className="min-w-0 flex-1 truncate font-display text-[19px] leading-none font-bold">
-                {p.nickname}
-              </span>
-              {on && <CheckIcon size={20} aria-hidden className="shrink-0 text-accent-ink" />}
-            </button>
-          );
-        })}
-      </div>
-      <div className="sticky bottom-0 z-[5] -mx-5 mt-auto border-t border-line bg-surface/90 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] backdrop-blur-[14px] lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+      {/* The vote sits in the bar at the bottom, next to Lock in: players read the answers above
+          and pick without scrolling past the whole board (UX audit 2026-11-09). */}
+      <div className="sticky bottom-0 z-[5] -mx-5 mt-auto grid gap-3 border-t border-line bg-surface/90 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] backdrop-blur-[14px] lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+        <span id="suspect-pick" className="text-[14px] leading-none font-semibold">
+          {t("suspectPick")}
+        </span>
+        <div
+          role="radiogroup"
+          aria-labelledby="suspect-pick"
+          className="-mx-4 flex [scrollbar-width:none] gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:px-0"
+        >
+          {others.map((p) => {
+            const on = pick === p.id;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                onClick={() => setPick(p.id)}
+                className={cn(
+                  "flex min-h-12 shrink-0 items-center gap-2 rounded-pill border-[1.5px] py-1.5 pr-3.5 pl-1.5 text-left active:scale-[.97]",
+                  on
+                    ? "border-accent bg-accent-soft text-text"
+                    : "border-line bg-surface text-text hover:bg-surface-raised",
+                )}
+              >
+                <Avatar n={p.avatar} size={32} decorative />
+                <span className="max-w-[9rem] truncate text-[15px] leading-tight font-semibold">
+                  {p.nickname}
+                </span>
+                {on && <CheckIcon size={18} aria-hidden className="shrink-0 text-accent-ink" />}
+              </button>
+            );
+          })}
+        </div>
         <Button block softDisabled={!pick} loading={busy} onClick={lock}>
           {t("suspectLock")}
         </Button>
