@@ -6,6 +6,8 @@ import {
   SignOutIcon,
   CaretDownIcon,
   GearSixIcon,
+  HashIcon,
+  PlusCircleIcon,
   ListIcon,
   MedalIcon,
   QuestionIcon,
@@ -16,6 +18,7 @@ import {
 import type { Icon } from "@phosphor-icons/react";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -23,15 +26,23 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { Avatar, AVATAR_COUNT } from "@/components/brand/Avatar";
+import { useToast } from "@/components/ui/Toast";
 import { clearAccount, useDeviceAccount } from "@/lib/account/device";
 import { useAccountsReady } from "@/lib/account/ready";
 import { api } from "@/lib/api/client";
 import { cn } from "@/lib/cn";
 import { parseProfile, profileSnapshot, subscribeProfile } from "@/lib/profile/device";
 
-type Item = { href: string; key: "badges" | "crews" | "daily" | "howTo" | "settings"; Icon: Icon };
+type Item = {
+  href: string;
+  key: "start" | "join" | "badges" | "crews" | "daily" | "howTo" | "settings";
+  Icon: Icon;
+};
 
+// Start and Join come first: on inner pages this menu is the only way back to a game.
 const ITEMS: Item[] = [
+  { href: "/create", key: "start", Icon: PlusCircleIcon },
+  { href: "/join", key: "join", Icon: HashIcon },
   { href: "/badges", key: "badges", Icon: MedalIcon },
   { href: "/crews", key: "crews", Icon: UsersThreeIcon },
   { href: "/daily", key: "daily", Icon: CalendarCheckIcon },
@@ -66,6 +77,8 @@ export function ProfileMenu() {
   // Signed in: always offer Sign out. Otherwise only once accounts are switched on.
   const showAccount = useAccountsReady() || Boolean(account);
   const router = useRouter();
+  const qc = useQueryClient();
+  const toast = useToast();
 
   // Saving is offered until this phone signs in; then the menu offers Sign out.
   const signOut = async () => {
@@ -76,6 +89,9 @@ export function ProfileMenu() {
       // Signed out locally either way; the server session expires on its own.
     }
     clearAccount();
+    // The profile page reads the account from this query; without this it kept "Signed in as".
+    qc.setQueryData(["account"], { account: null });
+    toast(t("signedOut"));
     router.refresh();
   };
   const accountRow = account

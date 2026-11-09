@@ -69,6 +69,7 @@ function Shell({
  */
 export function SignInPage() {
   const t = useTranslations("account");
+  const tt = useTranslations("toast");
   const router = useRouter();
   const qc = useQueryClient();
   const toast = useToast();
@@ -86,13 +87,16 @@ export function SignInPage() {
   });
 
   const submit = async () => {
-    if (busy || !username.trim() || !password) return;
+    if (busy) return;
+    // An empty form used to do nothing at all; say what is missing instead.
+    if (!username.trim() || !password) return setErr(t("errors.missing"));
     setBusy(true);
     setErr(null);
     try {
       const captchaToken = await getToken();
       if (captchaToken === undefined) {
         showChallenge();
+        toast(tt("botCheck"), "err");
         return;
       }
       const res = await api<Signed>("POST", "/account/sign-in", {
@@ -164,13 +168,13 @@ export function SignInPage() {
       <div className="grid justify-items-start gap-3">
         <Link
           href="/recover"
-          className="text-[15px] leading-[1.4] font-semibold text-accent-ink underline underline-offset-4 hover:text-text"
+          className="inline-flex min-h-11 items-center text-[15px] leading-[1.4] font-semibold text-accent-ink underline underline-offset-4 hover:text-text"
         >
           {t("forgot")}
         </Link>
         <Link
           href="/profile#account"
-          className="text-[15px] leading-[1.4] font-semibold text-text-muted underline underline-offset-4 hover:text-text"
+          className="inline-flex min-h-11 items-center text-[15px] leading-[1.4] font-semibold text-text-muted underline underline-offset-4 hover:text-text"
         >
           {t("noAccount")}
         </Link>

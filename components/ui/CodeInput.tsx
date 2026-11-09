@@ -13,6 +13,25 @@ export function cleanCode(raw: string) {
     .slice(0, 4);
 }
 
+const isCode = (s: string) => s.length === 4 && [...s].every((ch) => CODE_ALPHABET.includes(ch));
+
+/**
+ * The room code inside whatever was pasted: an invite link (/r/ABCD or ?code=ABCD), a message
+ * with the code in it ("Join my SPIL room ABCD"), or the code itself. Null when there is none.
+ */
+export function codeIn(raw: string): string | null {
+  const link =
+    raw.match(/\/r\/([A-Za-z0-9]{4})(?![A-Za-z0-9])/) ?? raw.match(/[?&]code=([A-Za-z0-9]{4})\b/);
+  if (link) {
+    const code = (link[1] ?? "").toUpperCase();
+    return isCode(code) ? code : null;
+  }
+  const whole = raw.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (isCode(whole)) return whole;
+  const words = raw.split(/\s+/).map((w) => w.toUpperCase().replace(/[^A-Z0-9]/g, ""));
+  return words.reverse().find(isCode) ?? null;
+}
+
 type CodeInputProps = {
   id: string;
   value: string;
@@ -56,13 +75,16 @@ export function CodeInput({
       <input
         id={id}
         value={value}
-        onChange={(e) => onChange(cleanCode(e.target.value))}
+        // No maxLength: a pasted invite link must arrive whole so the code can be found in it.
+        onChange={(e) => {
+          const raw = e.target.value;
+          onChange(raw.length > 5 ? (codeIn(raw) ?? cleanCode(raw)) : cleanCode(raw));
+        }}
         onKeyDown={(e) => {
           if (e.key === "Enter" && value.length === 4) onSubmit?.();
         }}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        maxLength={4}
         inputMode="text"
         autoComplete="one-time-code"
         autoCapitalize="characters"

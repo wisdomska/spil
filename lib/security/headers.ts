@@ -2,7 +2,8 @@
 // docs/DECISIONS.md for why the CSP allows inline scripts instead of per-request nonces.
 
 const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const supabaseWs = supabase.replace(/^https:/, "wss:");
+// http becomes ws for a local Supabase, https becomes wss everywhere else.
+const supabaseWs = supabase.replace(/^http/, "ws");
 const posthog = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://eu.i.posthog.com";
 const isDev = process.env.NODE_ENV !== "production";
 // Vercel injects its feedback toolbar into preview deployments (staging, PR previews), never

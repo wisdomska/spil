@@ -104,11 +104,11 @@ export function RoomShell({ state, online, offline, statusFor, order, onLeave, c
                   />
                 )}
               </span>
-              <span className="flex-1 text-[15px] leading-none font-semibold">
+              <span className="min-w-0 flex-1 truncate py-0.5 text-[15px] leading-tight font-semibold">
                 {p.id === state.me.id ? c("youSuffix", { name: p.nickname }) : p.nickname}
               </span>
               {offline?.has(p.id) && <OfflineChip />}
-              <span className="font-mono text-[13px] leading-none font-medium text-text-muted">
+              <span className="shrink-0 font-mono text-[13px] leading-none font-medium text-text-muted">
                 {statusFor(p.id)}
               </span>
             </div>

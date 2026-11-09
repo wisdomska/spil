@@ -24,7 +24,7 @@ test("18+ host and 15-year-old guest (SPIL-02)", async ({ browser }) => {
 
   // The host is asked first, then sees adult packs last under their own heading.
   await host.page.goto("/create");
-  await expect(host.page.getByText("STEP 1 OF 2")).toBeVisible();
+  await expect(host.page.getByText("BEFORE YOU START")).toBeVisible();
   await passAgeGate(host.page, 30);
   await expect(host.page.getByText("Playing as 18+")).toBeVisible();
   await expect(host.page.getByRole("button", { name: "Not you?" })).toBeVisible();

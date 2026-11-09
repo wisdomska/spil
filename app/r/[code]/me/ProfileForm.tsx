@@ -43,6 +43,8 @@ export function ProfileForm({ code, initialRoom }: { code: string; initialRoom?:
   const [avatar, setAvatar] = useState(() => saved?.avatar ?? fallbackAvatar);
   const [nickErr, setNickErr] = useState<string | null>(null);
   const [roomErr, setRoomErr] = useState<ErrorVariant | null>(null);
+  // When Join was refused because the game started: cleared once a newer read shows the lobby.
+  const [startedAt, setStartedAt] = useState(0);
   const [busy, setBusy] = useBusy();
   const { band: stored, locked, setAge, clearAge } = useDeviceAge();
   const band = playableBand(stored);
@@ -53,6 +55,9 @@ export function ProfileForm({ code, initialRoom }: { code: string; initialRoom?:
     // SPIL-19: the server already read it; this refetch only adds "joined" for this device.
     initialData: initialRoom,
     retry: false,
+    // A game in progress: keep checking, so this phone opens the form as soon as the room is
+    // back in the lobby for the rematch (same code, same link).
+    refetchInterval: (q) => (q.state.data && q.state.data.status !== "lobby" ? 3000 : false),
   });
 
   // Already in this room on this device: go straight back to it.
@@ -66,7 +71,12 @@ export function ProfileForm({ code, initialRoom }: { code: string; initialRoom?:
       : room.error
         ? "notfound"
         : null;
-  const shownError = roomErr ?? loadError ?? null;
+  // Say "game in progress" before the form, not after someone has filled it in.
+  const inProgress = Boolean(room.data && !room.data.joined && room.data.status !== "lobby");
+  const shownError =
+    (roomErr === "started" && !inProgress && room.dataUpdatedAt > startedAt ? null : roomErr) ??
+    loadError ??
+    (inProgress ? "started" : null);
   if (shownError) return <ErrorScreen variant={shownError} maxPlayers={room.data?.maxPlayers} />;
   if (stored === "under_13") return <ErrorScreen variant="tooYoung" />;
 
@@ -115,6 +125,11 @@ export function ProfileForm({ code, initialRoom }: { code: string; initialRoom?:
       if (c === "NAME_INVALID") return setNickErr(t("errInvalid"));
       if (c === "AGE_RESTRICTED") return setRoomErr("ageRestricted");
       if (c === "AGE_TOO_YOUNG") return setRoomErr("tooYoung");
+      if (c === "GAME_STARTED") {
+        setStartedAt(Date.now());
+        void room.refetch();
+        return setRoomErr("started");
+      }
       if (ROOM_ERRORS[c]) return setRoomErr(ROOM_ERRORS[c]!);
       if (c === "NOT_IN_ROOM") return setRoomErr("removed");
       setRoomErr("server");

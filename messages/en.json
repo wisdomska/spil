@@ -50,10 +50,11 @@
     "prompts": "{count} prompts",
     "scenarios": "{count} scenarios",
     "open": "{count} prompts",
-    "satOut": "Sat out"
+    "satOut": "Sat out",
+    "voting": "Voting"
   },
   "age": {
-    "kickerHost": "STEP 1 OF 2",
+    "kickerHost": "BEFORE YOU START",
     "kickerGuest": "BEFORE YOU JOIN",
     "title": "How old are you?",
     "helper": "We use this to show packs that fit you. We only keep your age group, never your exact age.",
@@ -176,8 +177,9 @@
     "invalid": "No room with that code. Check it with your host.",
     "expired": "This room has dried up. Start a fresh one.",
     "full": "This room is full. {max} players max.",
-    "started": "This game already started. Ask the host for the rematch link.",
-    "badChars": "Room codes never use O, I, 0 or 1. Check the code with your host."
+    "started": "This game already started. Keep this link: you're in for the rematch.",
+    "badChars": "Room codes never use O, I, 0 or 1. Check the code with your host.",
+    "pasteNothing": "No room code on your clipboard. Type the 4 characters from your host's invite."
   },
   "packs": {
     "title": "Pick your poison.",
@@ -412,7 +414,13 @@
     "forceRowNone": "{answered}/{total}",
     "stillGoing": "They're still going…",
     "skipToReveal": "Skip to the reveal",
-    "nudgeAgain": "Nudge again in {s}s"
+    "nudgeAgain": "Nudge again in {s}s",
+    "bodyResults": "Everyone answers in private. The results unlock when the last person finishes.",
+    "bodyToVote": "Everyone answers in private. The vote for the imposter starts when the last person finishes.",
+    "bodyToCards": "Everyone answers in private. Then you build your card of two truths and a spill.",
+    "bodyToWho": "Everyone writes in private. Guessing who wrote what starts when the last person finishes.",
+    "bodyVoting": "Everyone votes in private. The imposter is revealed when the last person locks in.",
+    "bodySpotting": "Everyone spots the spills in private. The reveal unlocks when the last person locks in."
   },
   "guess": {
     "count": "Guess {n} of {total}",
@@ -673,7 +681,9 @@
         "reason": "At least one guess was more than 15 off. Rematch?"
       }
     },
-    "changeGame": "Change game or pack"
+    "changeGame": "Change game or pack",
+    "crownedNoneKicker": "NOT YOUR ROUND",
+    "rankedBy": "Ranked by points this round"
   },
   "share": {
     "title": "Your card",
@@ -742,7 +752,7 @@
     "started": {
       "sticker": "Too late",
       "title": "This game already started.",
-      "body": "Catch the rematch. Ask the host to send you the new link."
+      "body": "Same link, next round. Keep this page open and you're in as soon as the host starts the rematch."
     },
     "offline": {
       "sticker": "No signal",
@@ -1449,7 +1459,9 @@
     "share": "{share}% of SPIL said yes, out of {total} answers so far.",
     "tooFew": "The share shows once 10 people have answered. Check back later.",
     "streak": "{days, plural, one {# day in a row} other {# days in a row}}",
-    "privacy": "Your answer is never shown to anyone. The streak lives on this device only."
+    "privacy": "Your answer is never shown to anyone. Your streak is kept on this phone, or in your account if you save your progress.",
+    "tomorrow": "A new question lands tomorrow.",
+    "startGame": "Play a game with friends"
   },
   "crews": {
     "kicker": "CREW",
@@ -1591,7 +1603,7 @@
     "playAgainBody": "{game} · {pack} · {n} questions",
     "gameLine": "Game:",
     "changeGame": "Change game",
-    "storyVote": "Story vote at the end",
+    "storyVote": "Spill or Skip: story vote at the end",
     "storyVoteBody": "After the reveal, the room picks one yes they want the story behind. Anyone can pass. Needs 3 or more players."
   },
   "menu": {
@@ -1601,6 +1613,8 @@
     "close": "Close the menu",
     "guest": "Guest",
     "onThisPhone": "Change your name and face",
+    "start": "Start a game",
+    "join": "Join with a code",
     "badges": "Your badges",
     "crews": "Your crews",
     "daily": "Today's Spill",
@@ -1608,7 +1622,8 @@
     "settings": "Profile settings",
     "save": "Save your progress",
     "signOut": "Sign out",
-    "signedInAs": "Signed in as {username}"
+    "signedInAs": "Signed in as {username}",
+    "signedOut": "Signed out. This phone plays as a guest now."
   },
   "profilePage": {
     "title": "Your profile",
@@ -1619,7 +1634,8 @@
     "forgotten": "Forgotten. You'll pick a name and face in your next room.",
     "metaTitle": "Your profile",
     "placeholder": "The name you play under",
-    "help": "2 to 16 characters. Everyone in your rooms sees this."
+    "help": "2 to 16 characters. Everyone in your rooms sees this.",
+    "deviceNote": "Your name and face stay on this phone."
   },
   "account": {
     "title": "Save your progress",
@@ -1645,7 +1661,8 @@
       "credentials": "That username and password do not match.",
       "recovery": "That username and recovery code do not match.",
       "exists": "This phone is already signed in to an account.",
-      "confirm": "Type your username exactly to confirm."
+      "confirm": "Type your username exactly to confirm.",
+      "missing": "Type your username and password."
     },
     "codeTitle": "Your recovery code",
     "codeBody": "Write this down or screenshot it. It is the only way back in if you forget your password, and we can't show it again.",

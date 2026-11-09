@@ -246,7 +246,7 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
           <button
             type="button"
             onClick={() => router.push(withParams({ game: null }), { scroll: true })}
-            className="border-0 bg-transparent p-0 text-[15px] leading-[1.4] font-semibold text-accent-ink underline underline-offset-4 hover:text-text"
+            className="inline-flex min-h-11 items-center border-0 bg-transparent p-0 text-[15px] leading-[1.4] font-semibold text-accent-ink underline underline-offset-4 hover:text-text"
           >
             {ts("changeGame")}
           </button>

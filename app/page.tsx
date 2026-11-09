@@ -97,13 +97,13 @@ export default async function Landing() {
             <div className="flex flex-wrap gap-x-6 gap-y-2">
               <Link
                 href="/games"
-                className="text-[16px] leading-[1.4] font-semibold text-accent-ink underline underline-offset-4 hover:text-text"
+                className="inline-flex min-h-11 items-center text-[16px] leading-[1.4] font-semibold text-accent-ink underline underline-offset-4 hover:text-text"
               >
                 {t("allGames")}
               </Link>
               <Link
                 href="/faq"
-                className="text-[16px] leading-[1.4] font-semibold text-text-muted underline underline-offset-4 hover:text-text"
+                className="inline-flex min-h-11 items-center text-[16px] leading-[1.4] font-semibold text-text-muted underline underline-offset-4 hover:text-text"
               >
                 {t("faqLink")}
               </Link>

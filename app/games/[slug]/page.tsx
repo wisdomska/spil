@@ -81,7 +81,10 @@ export default async function GameDetailPage({ params }: PageProps<"/games/[slug
   return (
     <InfoPage tab="games">
       <p className="m-0 font-mono text-[13px] leading-none font-semibold tracking-[.06em] text-accent-ink uppercase">
-        <Link href="/games" className="text-accent-ink no-underline hover:underline">
+        <Link
+          href="/games"
+          className="inline-flex min-h-11 items-center text-accent-ink no-underline hover:underline"
+        >
           {t("indexTitle")}
         </Link>
       </p>
@@ -107,7 +110,7 @@ export default async function GameDetailPage({ params }: PageProps<"/games/[slug
       <h2 className="m-0 mt-4 font-display text-[26px] leading-[1.1] font-extrabold">
         {t("howTitle")}
       </h2>
-      <ol className="m-0 grid gap-3 pl-6">
+      <ol className="m-0 grid list-decimal gap-3 pl-6 marker:font-semibold marker:text-text-muted">
         {steps.map((s) => (
           <li key={s}>{s}</li>
         ))}

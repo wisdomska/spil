@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { SavePrompt } from "@/components/account/SavePrompt";
@@ -117,7 +118,11 @@ export function DailySpill({ ageLockHours }: { ageLockHours: number }) {
       )}
 
       {d?.mine && (
-        <div className="grid grid-cols-[minmax(0,1fr)_120px] items-end gap-5">
+        <div
+          className={
+            d.share === null ? "grid gap-5" : "grid grid-cols-[minmax(0,1fr)_120px] items-end gap-5"
+          }
+        >
           <div className="grid gap-2">
             <p className="m-0 text-[17px] leading-[1.45] font-semibold">
               {t(d.mine === "yes" ? "youYes" : "youNo")}
@@ -135,6 +140,17 @@ export function DailySpill({ ageLockHours }: { ageLockHours: number }) {
       {days > 0 && (
         <p className="m-0 font-mono text-[15px] leading-none font-medium">
           {t("streak", { days })}
+        </p>
+      )}
+      {d?.mine && (
+        <p className="m-0 text-[15px] leading-[1.45] font-medium">
+          {t("tomorrow")}{" "}
+          <Link
+            href="/create"
+            className="inline-flex min-h-11 items-center font-semibold text-accent-ink underline underline-offset-4 hover:text-text"
+          >
+            {t("startGame")}
+          </Link>
         </p>
       )}
       {days >= 3 && <SavePrompt reason="streak" days={days} />}

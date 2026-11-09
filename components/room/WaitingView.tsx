@@ -8,6 +8,7 @@ import { Vessel } from "@/components/brand/Vessel";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import type { RoomState, StatePlayer } from "@/lib/api/types";
+import { hasImposter, picksTruths, skipsGuessing, writesAnswers } from "@/lib/game";
 import { OfflineChip } from "./OfflineChip";
 import { SkipToReveal } from "./SkipToReveal";
 
@@ -51,7 +52,12 @@ export function WaitingView({
     (p) => p.status === "active" || (guessing && p.status === "sat_out"),
   );
   const done = (p: StatePlayer) => (guessing ? p.guessesSubmitted : p.answersSubmitted);
-  const progress = (p: StatePlayer) => (guessing ? c("guessing") : `${p.answered}/${total}`);
+  const progress = (p: StatePlayer) =>
+    guessing
+      ? hasImposter(state.room.mode)
+        ? c("voting")
+        : c("guessing")
+      : `${p.answered}/${total}`;
   const unfinished = active.filter((p) => !done(p));
   const doneN = active.length - unfinished.length;
   const names = unfinished.map((p) => p.nickname);
@@ -84,7 +90,7 @@ export function WaitingView({
   // Answered in the last 5 s: hold for 3 s from opening the sheet, or from that answer.
   const holding = sheet && now - latest < RECENT_MS && now < Math.max(openedAt, latest) + HOLD_MS;
   const forceRow = (p: StatePlayer) => {
-    if (guessing) return c("guessing");
+    if (guessing) return hasImposter(state.room.mode) ? c("voting") : c("guessing");
     if (!p.lastAnswerAt) return t("forceRowNone", { answered: p.answered, total });
     const seconds = Math.max(0, Math.round((now - Date.parse(p.lastAnswerAt)) / 1000));
     return t("forceRow", { answered: p.answered, total, seconds });
@@ -107,7 +113,7 @@ export function WaitingView({
           {title}
         </h1>
         <p className="m-0 text-[16px] leading-[1.5] text-text-muted">
-          {guessing ? t("bodyGuessing") : t("body")}
+          {t(waitingBody(state.room.mode, guessing))}
         </p>
       </div>
       <ul className="m-0 grid list-none p-0">
@@ -116,15 +122,15 @@ export function WaitingView({
           return (
             <li key={p.id} className="flex items-center gap-3 border-b border-line py-[9px]">
               <Avatar n={p.avatar} size={36} label={p.nickname} />
-              <span className="flex-1 text-[16px] leading-none font-semibold">
+              <span className="min-w-0 flex-1 truncate py-0.5 text-[16px] leading-tight font-semibold">
                 {p.id === state.me.id ? c("youSuffix", { name: p.nickname }) : p.nickname}
               </span>
               {offline?.has(p.id) && <OfflineChip />}
               <span
                 className={
                   d
-                    ? "flex items-center gap-1.5 text-[14px] leading-none font-semibold text-text"
-                    : "flex items-center gap-1.5 font-mono text-[14px] leading-none font-medium text-text-muted"
+                    ? "flex shrink-0 items-center gap-1.5 text-[14px] leading-none font-semibold text-text"
+                    : "flex shrink-0 items-center gap-1.5 font-mono text-[14px] leading-none font-medium text-text-muted"
                 }
               >
                 {d ? (
@@ -185,9 +191,11 @@ export function WaitingView({
           {unfinished.map((p) => (
             <div key={p.id} className="flex items-center gap-3 border-b border-line py-2.5">
               <Avatar n={p.avatar} size={36} label={p.nickname} />
-              <span className="flex-1 text-[16px] leading-none font-semibold">{p.nickname}</span>
+              <span className="min-w-0 flex-1 truncate py-0.5 text-[16px] leading-tight font-semibold">
+                {p.nickname}
+              </span>
               {offline?.has(p.id) && <OfflineChip />}
-              <span className="font-mono text-[13px] leading-none font-medium text-text-muted">
+              <span className="shrink-0 font-mono text-[13px] leading-none font-medium text-text-muted">
                 {forceRow(p)}
               </span>
             </div>
@@ -211,4 +219,18 @@ export function WaitingView({
       </Sheet>
     </div>
   );
+}
+
+/** What happens next, in each game's own words: not every game has a guessing phase. */
+function waitingBody(mode: RoomState["room"]["mode"], guessing: boolean) {
+  if (guessing) {
+    if (hasImposter(mode)) return "bodyVoting" as const;
+    if (picksTruths(mode)) return "bodySpotting" as const;
+    return "bodyGuessing" as const;
+  }
+  if (skipsGuessing(mode)) return "bodyResults" as const;
+  if (hasImposter(mode)) return "bodyToVote" as const;
+  if (picksTruths(mode)) return "bodyToCards" as const;
+  if (writesAnswers(mode)) return "bodyToWho" as const;
+  return "body" as const;
 }

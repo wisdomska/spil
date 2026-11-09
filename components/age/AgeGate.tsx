@@ -48,7 +48,7 @@ export function AgeGate({ who, onAge }: Props) {
           type="text"
           inputMode="numeric"
           pattern="[0-9]*"
-          maxLength={2}
+          maxLength={3}
           autoComplete="off"
           // One field, one job: focus it so the keyboard path is Type, Enter.
           autoFocus
@@ -56,7 +56,7 @@ export function AgeGate({ who, onAge }: Props) {
           aria-invalid={error || undefined}
           aria-describedby={error ? "spil-age-err" : undefined}
           onChange={(e) => {
-            setValue(e.target.value.replace(/\D/g, "").slice(0, 2));
+            setValue(e.target.value.replace(/\D/g, "").slice(0, 3));
             setError(false);
           }}
           onKeyDown={(e) => e.key === "Enter" && submit()}

@@ -76,7 +76,7 @@ test("games with several packs open a pack step that Back returns from", async (
 
   // The story vote switch turns the classic into Spill or Skip.
   await page.getByRole("button", { name: /^Spill Score/ }).click();
-  const story = page.getByRole("switch", { name: /Story vote at the end/ });
+  const story = page.getByRole("switch", { name: /story vote at the end/i });
   await story.click();
   await page.waitForURL(/game=spill_or_skip/);
   await expect(story).toBeChecked();

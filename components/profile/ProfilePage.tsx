@@ -147,7 +147,7 @@ function ProfileForm() {
         )}
         <span className="flex items-center gap-2 text-[14px] leading-[1.4] font-medium text-text-muted">
           <LockSimpleIcon size={18} aria-hidden />
-          {tp("noSignup")}
+          {t("deviceNote")}
         </span>
       </div>
     </>

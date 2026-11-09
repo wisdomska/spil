@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { CODE_ALPHABET, CodeInput, cleanCode } from "@/components/ui/CodeInput";
+import { CODE_ALPHABET, CodeInput, cleanCode, codeIn } from "@/components/ui/CodeInput";
 import { api, ClientApiError } from "@/lib/api/client";
 import type { PublicRoom } from "@/lib/api/types";
 import { track } from "@/lib/analytics/posthog";
@@ -20,6 +20,7 @@ export function JoinForm() {
   const router = useRouter();
   const params = useSearchParams();
   const [code, setCode] = useState(() => cleanCode(params.get("code") ?? ""));
+  const [pasteMiss, setPasteMiss] = useState(false);
   const [error, setError] = useState<JoinError | null>(null);
   const [max, setMax] = useState(12);
   const [busy, setBusy] = useState(false);
@@ -56,15 +57,17 @@ export function JoinForm() {
 
   // Four characters a code can never have: say why instead of a silently disabled button.
   const badChars = !error && code.length === 4 && !ready;
-  const message = badChars
-    ? t("badChars")
-    : error === "full"
-      ? t("full", { max })
-      : error === "offline"
-        ? c("tryAgain")
-        : error
-          ? t(error)
-          : null;
+  const message = pasteMiss
+    ? t("pasteNothing")
+    : badChars
+      ? t("badChars")
+      : error === "full"
+        ? t("full", { max })
+        : error === "offline"
+          ? c("tryAgain")
+          : error
+            ? t(error)
+            : null;
 
   return (
     <>
@@ -78,6 +81,7 @@ export function JoinForm() {
           onChange={(v) => {
             setCode(v);
             setError(null);
+            setPasteMiss(false);
           }}
           onSubmit={submit}
           invalid={Boolean(error) || badChars}
@@ -99,10 +103,17 @@ export function JoinForm() {
             try {
               text = (await navigator.clipboard.readText()) ?? "";
             } catch {
-              // clipboard blocked; nothing to paste
+              // clipboard blocked: say so below instead of wiping the boxes
             }
-            setCode(cleanCode(text));
+            // Only replace what was typed when the clipboard really holds a code or an invite.
+            const found = codeIn(text);
             setError(null);
+            if (found) {
+              setCode(found);
+              setPasteMiss(false);
+            } else {
+              setPasteMiss(true);
+            }
           }}
           className="-ml-2 flex h-12 items-center gap-2 justify-self-start rounded-pill border-0 bg-transparent px-4 text-[15px] leading-none font-semibold whitespace-nowrap text-text hover:bg-surface-raised"
         >

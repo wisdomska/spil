@@ -188,14 +188,14 @@ function SaveProgress({
         </form>
       ) : (
         <div className="grid gap-2.5">
-          <Button block onClick={() => setOpen(true)}>
+          <Button variant="secondary" block onClick={() => setOpen(true)}>
             {t("start")}
           </Button>
         </div>
       )}
       <Link
         href="/sign-in"
-        className="w-fit text-[15px] leading-[1.4] font-semibold text-text-muted underline underline-offset-4 hover:text-text"
+        className="inline-flex min-h-11 w-fit items-center text-[15px] leading-[1.4] font-semibold text-text-muted underline underline-offset-4 hover:text-text"
       >
         {t("haveAccount")}
       </Link>

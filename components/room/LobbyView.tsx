@@ -154,7 +154,7 @@ export function LobbyView({
                 }}
               >
                 <Avatar n={p.avatar} size={40} label={p.nickname} frame={p.frame} />
-                <span className="font-display text-[18px] leading-none font-bold">
+                <span className="min-w-0 font-display text-[18px] leading-[1.1] font-bold [overflow-wrap:anywhere]">
                   {p.nickname}
                 </span>
                 {p.isHost && <CrownSimpleIcon size={18} aria-label={c("host")} />}

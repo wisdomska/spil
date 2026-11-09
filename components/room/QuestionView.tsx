@@ -156,8 +156,11 @@ export function QuestionView({ state, onDone, flags = false, preview }: Props) {
         commit(current.id, value);
         const next = queued.current;
         queued.current = null;
-        // Only if a card is still open: never answer the same card twice.
-        if (next && questions.some((qq) => !(qq.id in latestAnswers()))) answerRef.current(next);
+        // Only while two or more cards are still open. Answering the last card locks the round
+        // in, so it always takes a fresh tap on a card the player can see: a double tap near the
+        // end must never submit an answer nobody read.
+        const open = questions.filter((qq) => !(qq.id in latestAnswers())).length;
+        if (next && open >= 2) answerRef.current(next);
       },
     });
   };

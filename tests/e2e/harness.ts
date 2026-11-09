@@ -85,7 +85,7 @@ export async function pickGame(page: Page, mode?: string) {
     { timeout: 30_000 },
   );
   if (/\/r\/[A-Z0-9]{4}\/me$/.test(new URL(page.url()).pathname)) return true;
-  if (story) await page.getByRole("switch", { name: /Story vote at the end/ }).click();
+  if (story) await page.getByRole("switch", { name: /story vote at the end/i }).click();
   return false;
 }
 

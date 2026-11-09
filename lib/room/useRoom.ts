@@ -11,14 +11,23 @@ export const roomKey = (code: string) => ["room", code] as const;
 
 /**
  * The room's state. Realtime invalidates it on every event; when realtime is not live (or
- * polling_only is on) it polls every 5 s. It also refetches every 30 s as the heartbeat the
+ * polling_only is on) it polls every 2 s on the lobby and waiting screens and 5 s otherwise. It also refetches every 30 s as the heartbeat the
  * server uses for host handover.
  */
 export function useRoomState(code: string, live: { current: boolean }) {
   return useQuery({
     queryKey: roomKey(code),
     queryFn: () => api<RoomState>("GET", `/rooms/${code}/state`),
-    refetchInterval: () => (live.current ? 30_000 : 5_000),
+    // Without realtime, the lobby and the waiting screens poll faster: otherwise every phone lags
+    // seconds behind the host (new players, who is done, moving on).
+    refetchInterval: (q) => {
+      if (live.current) return 30_000;
+      const status = q.state.data?.room.status;
+      const waiting = status === "lobby" || status === "answering" || status === "guessing";
+      const visible = typeof document === "undefined" || document.visibilityState === "visible";
+      return waiting && visible ? 2_000 : 5_000;
+    },
+    refetchOnWindowFocus: true,
     refetchIntervalInBackground: true,
     retry: (count, error) =>
       count < 3 && !(error instanceof ClientApiError && error.status >= 400 && error.status < 500),

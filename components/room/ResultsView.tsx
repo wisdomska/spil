@@ -275,6 +275,12 @@ export function ResultsView({
         }
       >
         <TabPanel value="scores" className="outline-none">
+          {anyGuesses && (
+            <p className="m-0 flex items-center justify-between gap-3 pt-3 pb-1 font-mono text-[12px] leading-none font-medium tracking-wide text-text-muted uppercase">
+              <span>{t("rankedBy")}</span>
+              <span>{t("pts")}</span>
+            </p>
+          )}
           <ol className="m-0 grid list-none p-0">
             {rows.map((r, i) => (
               <li
@@ -305,7 +311,7 @@ export function ResultsView({
                 </span>
                 <div className="grid min-w-0 flex-1 gap-2">
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="font-display text-[19px] leading-none font-bold">
+                    <span className="max-w-full font-display text-[19px] leading-[1.1] font-bold [overflow-wrap:anywhere]">
                       {r.nickname}
                     </span>
                     {!noSpill && (
@@ -477,7 +483,9 @@ export function ResultsView({
         />
       )}
 
-      <div className="flex gap-2.5 pb-2">
+      {/* Share and Rematch stay in reach at the bottom of the screen, under the crew card and
+          Spill Mode, instead of a long scroll down on a phone. */}
+      <div className="sticky bottom-0 z-[var(--z-sticky)] -mx-5 flex gap-2.5 border-t border-line bg-bg px-5 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:-mx-8 lg:px-8">
         {!noSpill && (
           <button
             type="button"
@@ -501,7 +509,7 @@ export function ResultsView({
       {state.me.isHost && (
         <Link
           href={`/create?room=${state.room.code}&mode=rematch&current=${state.room.mode}&pack=${state.room.pack.id}`}
-          className="-mt-3 w-fit self-center text-[15px] leading-[1.4] font-semibold text-text-muted underline underline-offset-4 hover:text-text"
+          className="-mt-3 inline-flex min-h-11 w-fit items-center self-center text-[15px] leading-[1.4] font-semibold text-text-muted underline underline-offset-4 hover:text-text"
         >
           {t("changeGame")}
         </Link>
@@ -644,7 +652,7 @@ function CrownedHeader({
     <div className="grid grid-cols-[minmax(0,1fr)_108px] items-end gap-[18px]">
       <div className="grid gap-2.5">
         <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] text-text-muted">
-          {t("crownedKicker")}
+          {crowned ? t("crownedKicker") : t("crownedNoneKicker")}
         </span>
         <h1 className="m-0 font-display text-[30px] leading-[1.02] font-extrabold tracking-display text-balance">
           {crowned ? crowned.text : t("crownedNone")}
