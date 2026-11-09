@@ -296,7 +296,7 @@ function SetupCard({
                   aria-disabled={busy || undefined}
                   onClick={() => !on && !busy && onLength?.(n)}
                   className={cn(
-                    "h-10 min-w-11 rounded-pill border-[1.5px] px-3 text-[14px] leading-none font-semibold tabular-nums",
+                    "h-11 min-w-11 rounded-pill border-[1.5px] px-3 text-[14px] leading-none font-semibold tabular-nums",
                     on
                       ? "border-accent bg-accent-soft text-accent-ink"
                       : "border-line-strong bg-transparent text-text hover:border-text",

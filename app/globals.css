@@ -34,6 +34,13 @@ body {
 }
 
 @layer base {
+  /* Player names can be 16 characters with no spaces; a heading breaks one rather than run off
+     the screen. break-word only steps in when a word cannot fit the line. */
+  h1,
+  h2,
+  h3 {
+    overflow-wrap: break-word;
+  }
   button {
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;

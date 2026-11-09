@@ -47,7 +47,11 @@ export function GuessVessel({
 }: Props) {
   const reduced = useReducedMotion() ?? false;
   const wide = useMedia("(min-width: 640px)");
-  const height = wide ? 400 : 380;
+  // On phones the vessel gives up height on short screens, so the minus and plus row stays above
+  // the Lock it in bar instead of hiding behind it.
+  const short = useMedia("(max-height: 900px)");
+  const tiny = useMedia("(max-height: 700px)");
+  const height = wide ? 400 : tiny ? 260 : short ? 300 : 380;
   const shown = value ?? 50;
   const sticker = labelFor(shown).name as LabelName;
 
@@ -106,7 +110,7 @@ export function GuessVessel({
             className="pointer-events-none absolute right-[-8px]"
             style={{
               ...labelStickerStyle(sticker, 4, 16),
-              top: `${100 - shown}%`,
+              top: `${stickerTop(shown)}%`,
               transform: "translateY(-50%)",
             }}
           >
@@ -138,4 +142,15 @@ export function GuessVessel({
       </div>
     </div>
   );
+}
+
+/**
+ * The label sticker follows the liquid level but steps out of the band where the big number
+ * sits, so it never covers a digit.
+ */
+function stickerTop(level: number) {
+  const top = 100 - level;
+  const band = 19;
+  if (top <= 50 - band || top >= 50 + band) return top;
+  return top < 50 ? 50 - band : 50 + band;
 }
