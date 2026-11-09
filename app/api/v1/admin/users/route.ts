@@ -5,12 +5,12 @@ import { requireAdmin } from "@/lib/admin/server";
 import type { AdminUser, AdminUserSummary } from "@/lib/admin/types";
 import { getAdminClient } from "@/lib/supabase/admin";
 
-const FILTERS = ["all", "new", "active"] as const;
+const FILTERS = ["all", "accounts", "guests", "new", "active"] as const;
 
 /**
- * GET /admin/users: player accounts, newest first, one page at a time
- * `{ rows, total, page, size, summary }`. `filter` is all, new (joined in the last 7 days) or
- * active (seen in the last 7 days); `q` searches usernames. The summary also counts guests.
+ * GET /admin/users: accounts and guests who played, newest first, one page at a time
+ * `{ rows, total, page, size, summary }`. `filter` is all, accounts, guests, new (joined in the
+ * last 7 days) or active (seen in the last 7 days); `q` searches usernames and guest names.
  * Read only, and never an email address.
  */
 export const GET = route(

@@ -20,12 +20,13 @@ import {
 import { cn } from "@/lib/cn";
 import type { AdminUser, AdminUserSummary } from "@/lib/admin/types";
 
-type Chip = "all" | "new" | "active";
-const CHIPS = ["all", "new", "active"] as const;
+type Chip = "all" | "accounts" | "guests" | "new" | "active";
+const CHIPS = ["all", "accounts", "guests", "new", "active"] as const;
 
 /**
- * Users (owner request 2026-11-05): player accounts with their stats and when they were last
- * seen, and how many guests play without one. Read only; no email addresses exist to show.
+ * Users (owner requests 2026-11-05 and 2026-11-09): accounts and guests who played, with their
+ * stats and when they were last seen. Guests show the name they last played under and a Guest
+ * tag. Read only; no email addresses exist to show.
  */
 export function UsersSection() {
   const t = useTranslations("admin.users");
@@ -60,7 +61,7 @@ export function UsersSection() {
         {
           label: t("tiles.guests"),
           value: s.guests,
-          note: t("tiles.guestsNote", { n: s.newGuests }),
+          note: t("tiles.guestsNote", { n: s.newGuests, visits: s.visitors }),
         },
       ]
     : [];
@@ -124,7 +125,21 @@ export function UsersSection() {
         >
           {data.rows.map((u) => (
             <Tr key={u.userId}>
-              <Td bold>{u.username}</Td>
+              <Td bold>
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className={cn("truncate", !u.username && "font-normal text-text-muted")}>
+                    {u.username ?? t("noName")}
+                  </span>
+                  {u.kind === "guest" && (
+                    <span
+                      title={t("guestTagHint")}
+                      className="shrink-0 rounded-pill border border-line-strong px-2 py-0.5 font-mono text-[11px] leading-none font-semibold tracking-wide text-text-muted uppercase"
+                    >
+                      {t("guestTag")}
+                    </span>
+                  )}
+                </span>
+              </Td>
               <Td mono right>
                 {u.games}
               </Td>

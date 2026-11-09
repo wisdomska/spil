@@ -1033,7 +1033,7 @@
       "advanced": "Room {code} moved on."
     },
     "users": {
-      "searchPh": "Search by username",
+      "searchPh": "Search names",
       "summary": "Players at a glance",
       "tiles": {
         "accounts": "Accounts",
@@ -1042,16 +1042,18 @@
         "newNote": "accounts in the last 7 days",
         "active": "Active this week",
         "activeNote": "accounts seen in the last 7 days",
-        "guests": "Guest players",
-        "guestsNote": "{n} new this week"
+        "guests": "Guests who played",
+        "guestsNote": "{n} new this week, {visits} visits in all"
       },
       "chips": {
-        "all": "All accounts",
+        "all": "Everyone",
+        "accounts": "Accounts",
+        "guests": "Guests",
         "new": "New this week",
         "active": "Active this week"
       },
       "cols": {
-        "username": "Username",
+        "username": "Player",
         "games": "Games",
         "wins": "Wins",
         "points": "Points",
@@ -1060,8 +1062,11 @@
         "lastSeen": "Last seen"
       },
       "never": "Not yet",
-      "empty": "No accounts yet. Players save their progress from the menu or their profile.",
-      "noMatch": "No accounts match."
+      "empty": "No players yet.",
+      "noMatch": "No players match.",
+      "guestTag": "Guest",
+      "guestTagHint": "Plays without an account. One guest is one phone and browser.",
+      "noName": "No name yet"
     },
     "packs": {
       "new": "New pack",

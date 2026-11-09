@@ -43,7 +43,10 @@ export type AdminRoom = {
 /** A player account (owner request 2026-11-05). Never carries an email address. */
 export type AdminUser = {
   userId: string;
-  username: string;
+  /** An account (username and password) or a guest who played without one. */
+  kind: "account" | "guest";
+  /** The account's username, or the name a guest last played under (null if none yet). */
+  username: string | null;
   createdAt: string;
   /** Last sign-in or session refresh. */
   lastSeen: string | null;
@@ -57,8 +60,11 @@ export type AdminUserSummary = {
   accounts: number;
   newAccounts: number;
   activeAccounts: number;
+  /** Guests who joined a room or answered Today's Spill. */
   guests: number;
   newGuests: number;
+  /** Every guest session, including visitors who never played. */
+  visitors: number;
 };
 
 export type AdminPack = {
