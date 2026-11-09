@@ -158,62 +158,10 @@
     "roomsThisWeek": "{n, number} rooms spilled this week",
     "spuzl": {
       "kicker": "From the same studio",
-      "title": "Rather solve than spill?",
-      "tagline": "Tiny puzzles. Big brain energy.",
-      "body": "SPUZL is a free puzzle games app. Logic grids, word games, quick reflex runs and classic board games like oware and draughts, right in your browser. Puzzles never run out: clear one a day to grow your streak, earn Sparks for hats for Spuz, and climb your weekly league.",
+      "title": "Prefer puzzles?",
+      "body": "SPUZL is our puzzle games app: logic grids, word games, quick reflex runs and board games like oware and draughts. Free in your browser, no download.",
       "cta": "Play SPUZL",
-      "newTab": "(opens in a new tab)",
-      "guest": "Play as a guest. Sign in later to keep your streak on any phone.",
-      "stats": "SPUZL in numbers",
-      "statGames": "29",
-      "statGamesLabel": "games",
-      "statWorlds": "4",
-      "statWorldsLabel": "worlds",
-      "statFree": "Free",
-      "statFreeLabel": "no ads",
-      "boardLabel": "A solved Crownfall puzzle",
-      "boardName": "Crownfall",
-      "boardSize": "4 × 4",
-      "boardRules": [
-        "One crown per row and column",
-        "One crown per colour",
-        "Crowns never touch, even corners"
-      ],
-      "worldsTitle": "Four worlds to wander",
-      "worldCount": "{n} games",
-      "worlds": {
-        "puzzles": {
-          "title": "Puzzles",
-          "body": "Logic grids, paths and sliding jams"
-        },
-        "words": {
-          "title": "Words & Quiz",
-          "body": "Word games and quick trivia"
-        },
-        "arcade": {
-          "title": "Arcade",
-          "body": "Memory, rhythm, reflex and action"
-        },
-        "board": {
-          "title": "Board Games",
-          "body": "Classic board games"
-        }
-      },
-      "friendsTitle": "Better with your people",
-      "duel": {
-        "title": "Duel",
-        "body": "Race a friend on the same puzzle, best of three, live."
-      },
-      "party": {
-        "title": "Party",
-        "body": "Open a room, share the code and race up to eight phones at once."
-      },
-      "leagues": {
-        "title": "Leagues",
-        "body": "Join a league of 30 every Monday. The top 7 move up."
-      },
-      "offline": "Works on any phone, and offline once it is on your home screen.",
-      "allGames": "See every game"
+      "newTab": "(opens in a new tab)"
     },
     "allGames": "See all 10 games",
     "faqLink": "Questions? Read the FAQ"
