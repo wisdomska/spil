@@ -2,7 +2,7 @@
   "meta": {
     "title": "SPIL: party games you play on your phones",
     "titleTemplate": "{page} · SPIL",
-    "description": "Free party games for friends, played on your phones in the browser. Answer “Have you ever…” questions in private, guess each other's score, then watch the scores spill. No app, no signup.",
+    "description": "Free party games you play on your phones. Answer “Have you ever” questions in private, guess each other's score, watch it spill. No app, no signup.",
     "roomTitle": "Join room {code} on SPIL",
     "roomDescription": "{host} is playing {pack}. Tap to join with a nickname. No signup.",
     "tvTitle": "SPIL on the big screen: {code}",
@@ -1716,7 +1716,7 @@
     "indexTitle": "Party games on SPIL",
     "indexMetaTitle": "10 party games to play on your phones",
     "indexLede": "Ten party games for friends, all free and all in your browser. Everyone joins on their own phone with a four character code. Pick a game, share the link, and play.",
-    "indexDescription": "Ten free party games to play on your phones: Spill Score, Most Likely To, Hot Takes, Two Truths and a Spill, Imposter, Who Said That?, Rank the Room and more. No app, no signup.",
+    "indexDescription": "Ten free party games for your phones: Spill Score, Most Likely To, Hot Takes, Imposter, Two Truths and a Spill and more. No app, no signup.",
     "players": "{min, plural, one {1 to 12 players} other {# to 12 players}}",
     "ageAll": "13 and older",
     "age18": "18 and older",
@@ -1739,7 +1739,8 @@
           "Your Spill Score is the share of questions you said yes to, from 0 to 100. Drag the liquid to guess each friend's score.",
           "The reveal pours the scores in from lowest to highest. The closer your guesses, the more Mind Reader points you earn, and labels and awards land at the end."
         ],
-        "extra": "Pick from 14 question packs, from Classic and Campus Life to SHS Days and Detty December, with 18+ packs for adult rooms. You can even play it solo."
+        "extra": "Pick from 14 question packs, from Classic and Campus Life to SHS Days and Detty December, with 18+ packs for adult rooms. You can even play it solo.",
+        "meta": "Spill Score is the “Have you ever” party game with scores. Answer in private, guess each other's score from 0 to 100, then watch it spill. Free."
       },
       "room_percentage": {
         "slug": "room-percentage",
@@ -1750,7 +1751,8 @@
           "For each question, guess what percentage of the room said yes.",
           "The reveal shows the real share for each question. The closer your guess, the more points you score."
         ],
-        "extra": "Needs at least 3 players, so no single answer can be worked out."
+        "extra": "Needs at least 3 players, so no single answer can be worked out.",
+        "meta": "Room Percentage: answer yes or no in private, then guess what share of the room said yes. A free party game for 3 to 12 phones, no app."
       },
       "hot_takes": {
         "slug": "hot-takes",
@@ -1761,7 +1763,8 @@
           "Guess the room's average rating for each one.",
           "The reveal shows the real average. The closer your guess, the more points you earn."
         ],
-        "extra": "Needs at least 3 players, so nobody's rating can be worked out from the average."
+        "extra": "Needs at least 3 players, so nobody's rating can be worked out from the average.",
+        "meta": "Hot Takes: rate spicy opinions from 0 to 100 in private, then guess the room's average. A free party game for 3 to 12 phones, no app."
       },
       "most_likely": {
         "slug": "most-likely-to",
@@ -1772,7 +1775,8 @@
           "Everyone secretly votes for one other player. Votes stay anonymous.",
           "The results show how many votes each person got, prompt by prompt."
         ],
-        "extra": "Needs at least 3 players. Nobody can vote for themselves, and nobody sees who voted for whom."
+        "extra": "Needs at least 3 players. Nobody can vote for themselves, and nobody sees who voted for whom.",
+        "meta": "Most Likely To on your phones: vote in secret for who in the room would do it, then see who got the votes. Free, 3 to 12 players, no app."
       },
       "red_green": {
         "slug": "red-flag-green-flag",
@@ -1783,7 +1787,8 @@
           "Swipe green if it's fine by you, red if it's a red flag. Swipes stay private.",
           "The results show how the room split on every scenario."
         ],
-        "extra": "Needs at least 3 players, so a split never gives one person's swipe away."
+        "extra": "Needs at least 3 players, so a split never gives one person's swipe away.",
+        "meta": "Red Flag, Green Flag: swipe friendship and crush scenarios green or red, then see how the room split. Free party game, no app or signup."
       },
       "rank_room": {
         "slug": "rank-the-room",
@@ -1794,7 +1799,8 @@
           "Put every player in order, from most to least likely. Your order stays private.",
           "The room's average order is revealed, and you score points for how close your order was."
         ],
-        "extra": "Needs at least 3 players."
+        "extra": "Needs at least 3 players.",
+        "meta": "Rank the Room: put your friends in order on silly prompts, then see the room's order. A free party game for 3 to 12 phones, no app."
       },
       "imposter": {
         "slug": "imposter",
@@ -1805,7 +1811,8 @@
           "All the answers are shown. Spot the ones that don't fit.",
           "Vote for who you think the imposter is. The reveal names them."
         ],
-        "extra": "Needs at least 3 players."
+        "extra": "Needs at least 3 players.",
+        "meta": "Imposter: one player secretly gets different questions. Everyone's answers are shown; find the imposter. Free party game for 3 to 12 phones."
       },
       "two_truths": {
         "slug": "two-truths-and-a-spill",
@@ -1816,7 +1823,8 @@
           "Make your card: two things you have done and one you haven't, picked from your answers.",
           "Spot the lie on everyone else's card. You score for spotting lies and for fooling people."
         ],
-        "extra": "Needs at least 3 players."
+        "extra": "Needs at least 3 players.",
+        "meta": "Two Truths and a Spill: answer yes or no, then show two truths and one lie from your own answers. Spot everyone's lie. Free, no app."
       },
       "who_said": {
         "slug": "who-said-that",
@@ -1827,7 +1835,8 @@
           "Answers are shown without names. Guess who wrote each one.",
           "The reveal shows who said what and who guessed best."
         ],
-        "extra": "18+ only, with at least 3 players. Answers go through a word filter, and anyone can report an answer."
+        "extra": "18+ only, with at least 3 players. Answers go through a word filter, and anyone can report an answer.",
+        "meta": "Who Said That? Write short answers in private, then guess who wrote what. A free 18+ party game for 3 to 12 phones, no app or signup."
       },
       "spill_or_skip": {
         "slug": "spill-or-skip",
@@ -1838,7 +1847,8 @@
           "Players who switch on Spill Mode make their yes answers pickable. The room votes for the one they want to hear about.",
           "The picked player tells the story, or passes. Nobody has to share."
         ],
-        "extra": "Needs at least 3 players. It's the story vote switch when you set up Spill Score."
+        "extra": "Needs at least 3 players. It's the story vote switch when you set up Spill Score.",
+        "meta": "Spill or Skip: play the “Have you ever” game, then vote for the one story you want to hear. Anyone can pass. Free party game, no app."
       }
     }
   },

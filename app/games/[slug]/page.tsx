@@ -57,7 +57,8 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]">): 
   const name = tm(`${page.mode}.name`);
   return pageMetadata({
     title: `${name}: ${t(`modes.${page.mode}.tagline`)}`,
-    description: t(`modes.${page.mode}.lede`),
+    // Search snippets stop near 155 characters; the page itself keeps the longer lede.
+    description: t(`modes.${page.mode}.meta`),
     path: `/games/${page.slug}`,
   });
 }
