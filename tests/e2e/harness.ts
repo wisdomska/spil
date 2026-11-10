@@ -29,7 +29,7 @@ export async function phone(browser: Browser, size: keyof typeof VIEWPORT = "gue
 export async function passAgeGate(page: Page, age = 25) {
   const heading = page.getByRole("heading", { name: "How old are you?" });
   const after = page.getByRole("heading", {
-    name: /What should we call you\?|What are we playing\?|Pick your poison\.|SPIL is for ages 13|18\+ pack/,
+    name: /What should we call you\?|What are we playing\?|Pick your poison\.|Set up your game\.|SPIL is for ages 13|18\+ pack/,
   });
   await heading.or(after).first().waitFor({ timeout: 30_000 });
   if (!(await heading.isVisible())) return;
@@ -91,7 +91,9 @@ export async function pickGame(page: Page, mode?: string) {
 
 /** Step 2 of game setup: the pack, the length and Continue. */
 export async function pickPack(page: Page, { pack, count }: { pack?: string; count?: number }) {
-  await expect(page.getByRole("heading", { name: "Pick your poison." })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: /^(Pick your poison\.|Set up your game\.)$/ }),
+  ).toBeVisible();
   if (pack)
     await page
       .getByRole("radiogroup", { name: "Question pack" })

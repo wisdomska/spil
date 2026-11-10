@@ -21,6 +21,7 @@ import {
   defaultCount,
   FEATURED_MODE,
   isMode,
+  MODE_RULES,
   packsForMode,
   parseSetupMode,
   STORY_VOTE_MODE,
@@ -84,6 +85,10 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
   // In a room, the packs it may play say how old its youngest player is (never who).
   const floor = inRoom ? Math.max(13, ...(packs ?? []).map((p) => p.minAge)) : hostFloor;
   const game = parseSetupMode(params.get("game"), floor);
+  // A link to a game this phone cannot play (an 18+ game for a younger player): say why, on the
+  // game list, instead of dropping them there with no word.
+  const asked = params.get("game");
+  const blocked = !game && isMode(asked) ? asked : null;
 
   const withParams = (patch: Record<string, string | null>) => {
     const next = new URLSearchParams(params.toString());
@@ -202,6 +207,16 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
           {!inRoom && <PlayingAs band={band} locked={locked} onNotYou={clearAge} />}
         </div>
         <p className="m-0 text-[17px] leading-[1.5] text-pretty text-text-muted">{ts("lede")}</p>
+        {blocked && packs && (
+          <p
+            role="status"
+            className="m-0 rounded-input border border-line bg-surface px-4 py-3 text-[15px] leading-[1.45]"
+          >
+            {MODE_RULES[blocked].adultOnly
+              ? ts("blockedAdult", { game: tm(`${blocked}.name`) })
+              : ts("blockedOther", { game: tm(`${blocked}.name`) })}
+          </p>
+        )}
         {hidden}
         {packs ? (
           <GameStep
@@ -235,7 +250,8 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
     <main className="mx-auto box-border flex w-full max-w-[880px] flex-1 flex-col gap-5 px-5 pt-4">
       <div className="grid gap-3">
         <h1 className="m-0 font-display text-display-l font-extrabold tracking-display">
-          {t("title")}
+          {/* One pack: nothing to pick, so the step reads as setting up the game. */}
+          {fit.length === 1 ? t("titleOne") : t("title")}
         </h1>
         <p className="m-0 flex flex-wrap items-center gap-x-2 gap-y-1 text-[15px] leading-[1.4]">
           <span className="text-text-muted">{ts("gameLine")}</span>

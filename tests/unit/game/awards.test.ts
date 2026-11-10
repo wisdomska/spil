@@ -210,3 +210,31 @@ describe("pickAwards", () => {
     expect(pickAwards([...cs].reverse())).toEqual(pickAwards(cs));
   });
 });
+
+describe("Saint of the Room (UX audit 2026-11-09)", () => {
+  it("is skipped when everyone scored the same", () => {
+    const cs = [cand("ama"), cand("kofi"), cand("yaw")];
+    expect(winner(cs, "saint_of_the_room")).toBeUndefined();
+  });
+
+  it("keeps the saint or liar line for a low score", () => {
+    const cs = [
+      cand("ama", { score: 20 }),
+      cand("kofi", { score: 70 }),
+      cand("yaw", { score: 90 }),
+    ];
+    const saint = pickAwards(cs).find((a) => a.award === "saint_of_the_room");
+    expect(saint?.playerId).toBe("ama");
+    expect(saint?.reason).toContain("saint or a very good liar");
+  });
+
+  it("says lowest score in the room when even the lowest is high", () => {
+    const cs = [
+      cand("ama", { score: 60 }),
+      cand("kofi", { score: 80 }),
+      cand("yaw", { score: 90 }),
+    ];
+    const saint = pickAwards(cs).find((a) => a.award === "saint_of_the_room");
+    expect(saint?.reason).toBe("Lowest score in the room, at 60. The cleanest record here.");
+  });
+});

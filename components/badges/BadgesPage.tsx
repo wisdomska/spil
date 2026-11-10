@@ -2,6 +2,7 @@
 
 import { CheckIcon, LockSimpleIcon } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { SavePrompt } from "@/components/account/SavePrompt";
 import { Avatar } from "@/components/brand/Avatar";
@@ -74,6 +75,18 @@ export function BadgesPage() {
         </p>
       </div>
       {earned > 0 && <SavePrompt reason="badge" />}
+      {/* Nothing earned yet: the way to the first badge comes before the list of locked ones. */}
+      {earned === 0 && (
+        <div className="grid justify-items-start gap-3 rounded-card border border-line bg-surface p-5">
+          <p className="m-0 text-[16px] leading-[1.45] font-semibold">{t("emptyTitle")}</p>
+          <Link
+            href="/create"
+            className="flex h-12 items-center justify-center rounded-pill bg-accent px-6 text-[16px] leading-none font-semibold text-on-accent no-underline hover:text-on-accent active:scale-[.97]"
+          >
+            {t("emptyCta")}
+          </Link>
+        </div>
+      )}
 
       <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 p-0">
         {b.achievements.map((a) => (

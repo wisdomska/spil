@@ -142,7 +142,16 @@ export function pickAwards(candidates: readonly AwardCandidate[]): AwardResult[]
 
   const winners: Record<AwardId, [AwardCandidate, string] | null> = {
     top_spiller: [top, `Highest score in the room. ${top.score} out of 100.`],
-    saint_of_the_room: [saint, `Scored ${saint.score}. Either a saint or a very good liar.`],
+    // No saint when everyone scored the same; and "saint or liar" only fits a low score.
+    saint_of_the_room:
+      saint.score < top.score
+        ? [
+            saint,
+            saint.score < 50
+              ? `Scored ${saint.score}. Either a saint or a very good liar.`
+              : `Lowest score in the room, at ${saint.score}. The cleanest record here.`,
+          ]
+        : null,
     mind_reader: [mind, `Most Mind Reader points in the room: ${mind.mindReader}.`],
     dark_horse: dark && [
       dark,

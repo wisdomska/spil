@@ -204,7 +204,8 @@
     "sectionAdult": "After dark · 18+",
     "someHidden": "Some packs are hidden for this room.",
     "premium": "Premium",
-    "premiumSoon": "Premium packs are coming soon."
+    "premiumSoon": "Premium packs are coming soon.",
+    "titleOne": "Set up your game."
   },
   "packInfo": {
     "purity": {
@@ -1519,7 +1520,7 @@
     "framesTitle": "Avatar frames",
     "looksTitle": "Card looks",
     "unlockWith": "Earn {badge}",
-    "deviceNote": "Badges live with this device, no sign up. Frames show on your avatar in rooms; looks colour your share card.",
+    "deviceNote": "Badges stay with this phone, or with your account if you save your progress. Frames show on your avatar in rooms; looks colour your share card.",
     "frames": {
       "none": "No frame",
       "ring": "Ring",
@@ -1585,7 +1586,9 @@
         "name": "Daily Habit",
         "body": "Answer 7 Daily Spills."
       }
-    }
+    },
+    "emptyTitle": "No badges yet. Finish your first round to earn First Spill.",
+    "emptyCta": "Start a game"
   },
   "setup": {
     "title": "What are we playing?",
@@ -1601,7 +1604,7 @@
     "minPlayers": "{n}+ players",
     "adult": "18+",
     "current": "Playing now",
-    "start": "Start",
+    "start": "Start now",
     "packs": "{n} packs",
     "unavailable": "No packs right now",
     "starting": "Starting {game}",
@@ -1610,7 +1613,9 @@
     "gameLine": "Game:",
     "changeGame": "Change game",
     "storyVote": "Spill or Skip: story vote at the end",
-    "storyVoteBody": "After the reveal, the room picks one yes they want the story behind. Anyone can pass. Needs 3 or more players."
+    "storyVoteBody": "After the reveal, the room picks one yes they want the story behind. Anyone can pass. Needs 3 or more players.",
+    "blockedAdult": "{game} is only for rooms where everyone is 18 or older. Pick another game.",
+    "blockedOther": "{game} is not available right now. Pick another game."
   },
   "menu": {
     "open": "Menu",
@@ -1704,7 +1709,8 @@
     "promptAction": "Save it",
     "promptDismiss": "Not now",
     "metaSignIn": "Sign in",
-    "metaRecover": "Recover your account"
+    "metaRecover": "Recover your account",
+    "codeSaveFirst": "Save the code somewhere first, then tick the box. It will not be shown again."
   },
   "games": {
     "indexTitle": "Party games on SPIL",

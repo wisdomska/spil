@@ -2,7 +2,7 @@
 
 import { CheckIcon, CopyIcon, KeyIcon } from "@phosphor-icons/react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 
 /** The one-time recovery code: shown once, copied or written down, then confirmed. */
@@ -10,6 +10,14 @@ export function RecoveryCode({ code, onDone }: { code: string; onDone: () => voi
   const t = useTranslations("account");
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [nudge, setNudge] = useState(false);
+  // The code is shown once: leaving before Done asks first, since it cannot be shown again.
+  useEffect(() => {
+    if (saved) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [saved]);
   return (
     <section
       aria-labelledby="recovery-title"
@@ -46,12 +54,20 @@ export function RecoveryCode({ code, onDone }: { code: string; onDone: () => voi
         <input
           type="checkbox"
           checked={saved}
-          onChange={(e) => setSaved(e.target.checked)}
+          onChange={(e) => {
+            setSaved(e.target.checked);
+            setNudge(false);
+          }}
           className="size-5 shrink-0 accent-accent"
         />
         {t("codeSaved")}
       </label>
-      <Button block softDisabled={!saved} onClick={() => saved && onDone()}>
+      {nudge && (
+        <p role="alert" className="m-0 text-[14px] leading-[1.4] font-medium text-error">
+          {t("codeSaveFirst")}
+        </p>
+      )}
+      <Button block softDisabled={!saved} onClick={() => (saved ? onDone() : setNudge(true))}>
         {t("done")}
       </Button>
     </section>

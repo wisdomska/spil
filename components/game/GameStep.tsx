@@ -131,20 +131,16 @@ export function GameStep({
     </span>
   );
 
-  /** The tile's call to action: a filled Start for one tap, an outlined pack count otherwise. */
+  /** The tile's call to action: Start now for one tap, the pack count otherwise. */
   const cta = (mode: Mode, m: ReturnType<typeof meta>, onPaper = false) => (
     <span
       id={`game-${mode}-cta`}
       className={cn(
         "inline-flex h-10 items-center justify-center gap-2 rounded-pill text-[15px] leading-none font-bold whitespace-nowrap transition-[scale] duration-150 ease-out group-active:scale-95",
         onPaper ? "px-4" : "w-full px-3",
-        m.off
-          ? "border-[1.5px] border-line text-text-muted"
-          : m.path.kind === "start"
-            ? "bg-accent text-on-accent"
-            : onPaper
-              ? "bg-tile-on-paper text-tile-paper"
-              : "border-[1.5px] border-line-strong text-text",
+        // One style for every playable game, featured or not (UX audit 2026-11-09): the label
+        // says what happens, Start now for one tap, the pack count when there is a choice.
+        m.off ? "border-[1.5px] border-line text-text-muted" : "bg-accent text-on-accent",
       )}
     >
       {m.isStarting ? (
@@ -314,7 +310,8 @@ export function GameStep({
             <span className="text-[13px] leading-none font-semibold text-accent-ink">
               {t("playAgain")}
             </span>
-            <span className="truncate text-[15px] leading-[1.2] font-semibold">
+            {/* Wraps instead of cutting off "10 questions" on a phone. */}
+            <span className="text-[15px] leading-[1.3] font-semibold text-pretty">
               {t("playAgainBody", {
                 game: tm(`${playAgain.mode}.name`),
                 pack: playAgain.packName,

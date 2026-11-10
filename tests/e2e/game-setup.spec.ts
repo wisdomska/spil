@@ -99,3 +99,23 @@ test("games with several packs open a pack step that Back returns from", async (
   await expect(guest.page.getByRole("region", { name: "Game setup" })).toHaveCount(0);
   for (const p of [host, guest]) await p.context.close();
 });
+
+// UX audit 2026-11-09: a game page link to a one-pack game reads as setting it up, and a link to
+// an 18+ game on a younger phone says why it is not offered.
+test("game page links: one pack reads Set up your game, an 18+ game says why", async ({
+  browser,
+}) => {
+  const adult = await phone(browser, "host");
+  await adult.page.goto("/create?game=hot_takes");
+  await passAgeGate(adult.page);
+  await expect(adult.page.getByRole("heading", { name: "Set up your game." })).toBeVisible();
+
+  const teen = await phone(browser, "guest");
+  await teen.page.goto("/create?game=who_said");
+  await passAgeGate(teen.page, 15);
+  await expect(teen.page.getByRole("heading", { name: "What are we playing?" })).toBeVisible();
+  await expect(
+    teen.page.getByText(/Who Said That\? is only for rooms where everyone is 18/),
+  ).toBeVisible();
+  for (const p of [adult, teen]) await p.context.close();
+});

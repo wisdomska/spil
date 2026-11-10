@@ -227,6 +227,9 @@ export function PackPicker({
                       <button
                         type="button"
                         aria-label={t("previewAria", { pack: p.name })}
+                        // Only the chosen pack's buttons take Tab (arrow keys move between packs),
+                        // so the keyboard reaches the length and Continue without 13 stops.
+                        tabIndex={sel ? 0 : -1}
                         onClick={() => setPreview(p)}
                         className={cn(
                           "flex h-11 items-center gap-1.5 rounded-pill border bg-transparent px-3 text-[14px] leading-none font-semibold whitespace-nowrap",
@@ -239,6 +242,7 @@ export function PackPicker({
                         <button
                           type="button"
                           aria-label={t("howPackWorks", { pack: p.name })}
+                          tabIndex={sel ? 0 : -1}
                           onClick={() => setInfo(p.id)}
                           className={cn(
                             "grid size-11 place-items-center rounded-pill border bg-transparent",
