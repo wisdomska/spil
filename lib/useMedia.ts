@@ -16,3 +16,6 @@ export function useMedia(query: string, serverValue = false) {
 }
 
 export const useIsDesktop = () => useMedia("(min-width: 1024px)");
+
+/** Wide screens (1280 px and up): room screens use two columns beside the sidebar. */
+export const useIsWide = () => useMedia("(min-width: 1280px)");

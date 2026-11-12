@@ -64,7 +64,8 @@ export function LobbyView({
   const [showQr, setShowQr] = useState(false);
 
   return (
-    <div className="flex flex-1 flex-col gap-[26px]">
+    // Wide screens: invite and players on the left, the game setup and Start on the right.
+    <div className="flex flex-1 flex-col gap-[26px] xl:grid xl:grid-cols-2 xl:content-start xl:items-start xl:gap-x-14 xl:gap-y-10">
       <div className="grid gap-2.5">
         <span className="text-[14px] leading-none font-semibold text-text-muted lg:hidden">
           {tr("code")}
@@ -177,7 +178,7 @@ export function LobbyView({
         {n === 1 && <p className="m-0 text-[17px] leading-[1.5] text-text-muted">{t("alone")}</p>}
       </div>
 
-      <div className="mt-auto grid gap-2.5">
+      <div className="mt-auto grid gap-2.5 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:mt-0 xl:rounded-card xl:border xl:border-line xl:bg-surface xl:p-6">
         {isHost ? (
           <>
             <SetupCard state={state} onLength={onLength} busy={lengthBusy} />

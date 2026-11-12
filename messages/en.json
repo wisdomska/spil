@@ -389,7 +389,9 @@
     "saidNo": "You said No",
     "saidGreen": "You said Green flag",
     "saidRed": "You said Red flag",
-    "saidSkipped": "Skipped"
+    "saidSkipped": "Skipped",
+    "keys": "or the arrow keys to answer",
+    "keysFlags": "or the arrow keys: N red, Y green"
   },
   "report": {
     "title": "Report this question",

@@ -121,41 +121,46 @@ export function PercentGuessView({
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-[18px]">
-      <span className="font-mono text-[14px] leading-none font-medium text-text-muted">
-        {t(average ? "avgCount" : "percentCount", {
-          n: (qi % questions.length) + 1,
-          total: questions.length,
-        })}
-      </span>
-      <div className="grid gap-2.5">
-        <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] text-text-muted uppercase">
-          {average ? t("avgAsk") : t("percentAsk")}
+    // Wide screens: the question on the left, the vessel and Lock it in on the right.
+    <div className="flex flex-1 flex-col gap-[18px] xl:grid xl:grid-cols-[minmax(0,1fr)_420px] xl:items-center xl:gap-14">
+      <div className="contents xl:flex xl:flex-col xl:gap-5">
+        <span className="font-mono text-[14px] leading-none font-medium text-text-muted">
+          {t(average ? "avgCount" : "percentCount", {
+            n: (qi % questions.length) + 1,
+            total: questions.length,
+          })}
         </span>
-        <h1 className="m-0 font-display text-[30px] leading-[1.05] font-extrabold tracking-[-.02em] text-balance">
-          {question.text}
-        </h1>
+        <div className="grid gap-2.5">
+          <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] text-text-muted uppercase">
+            {average ? t("avgAsk") : t("percentAsk")}
+          </span>
+          <h1 className="m-0 font-display text-[30px] leading-[1.05] font-extrabold tracking-[-.02em] text-balance xl:text-[44px]">
+            {question.text}
+          </h1>
+        </div>
       </div>
-      <GuessVessel
-        key={question.id}
-        value={value}
-        onChange={setValue}
-        showLabel={false}
-        unit={average ? "" : "%"}
-        label={t(average ? "avgAria" : "percentAria", { question: question.text })}
-        valueText={(v) => t(average ? "avgValueText" : "percentValueText", { value: v })}
-        emptyText={t("noGuess")}
-        hint={t("drag")}
-        lowerLabel={t("lower")}
-        raiseLabel={t("raise")}
-        lowCaption={average ? tq("rateLow") : t("nobody")}
-        highCaption={average ? tq("rateHigh") : t("everyone")}
-      />
-      {/* The vessel is tall on phones, so Lock it in stays on screen (and dragging never scrolls). */}
-      <div className="sticky bottom-0 z-[5] -mx-5 mt-auto border-t border-line bg-surface/90 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] backdrop-blur-[14px] lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
-        <Button block softDisabled={value === null} loading={busy} onClick={lock}>
-          {t("lock")}
-        </Button>
+      <div className="contents xl:flex xl:flex-col xl:gap-4">
+        <GuessVessel
+          key={question.id}
+          value={value}
+          onChange={setValue}
+          showLabel={false}
+          unit={average ? "" : "%"}
+          label={t(average ? "avgAria" : "percentAria", { question: question.text })}
+          valueText={(v) => t(average ? "avgValueText" : "percentValueText", { value: v })}
+          emptyText={t("noGuess")}
+          hint={t("drag")}
+          lowerLabel={t("lower")}
+          raiseLabel={t("raise")}
+          lowCaption={average ? tq("rateLow") : t("nobody")}
+          highCaption={average ? tq("rateHigh") : t("everyone")}
+        />
+        {/* The vessel is tall on phones, so Lock it in stays on screen (and dragging never scrolls). */}
+        <div className="sticky bottom-0 z-[5] -mx-5 mt-auto border-t border-line bg-surface/90 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] backdrop-blur-[14px] lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+          <Button block softDisabled={value === null} loading={busy} onClick={lock}>
+            {t("lock")}
+          </Button>
+        </div>
       </div>
     </div>
   );

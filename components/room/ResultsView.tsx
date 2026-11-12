@@ -150,117 +150,123 @@ export function ResultsView({
     band === "well" ? t("verdictWell") : band === "little" ? t("verdictLittle") : t("verdictNone");
   const myLabel = meRow ? tl(labelKeyFor(meRow.label)) : "";
 
+  // Wide screens: your verdict and the actions on the left, the tabs on the right.
   return (
-    <div className="flex flex-col gap-[22px]">
-      {said ? (
-        <WhoHeader spotted={results.spotted?.[state.me.id]} points={meRow?.mindReader ?? 0} />
-      ) : truths ? (
-        <CardHeader
-          card={results.cards?.find((c) => c.playerId === state.me.id)}
-          points={meRow?.mindReader ?? 0}
-        />
-      ) : imposter && results.imposter ? (
-        <ImposterHeader
-          outcome={results.imposter}
-          meId={state.me.id}
-          points={meRow?.mindReader ?? 0}
-          name={(id) => rows.find((r) => r.playerId === id)?.nickname ?? ""}
-        />
-      ) : rank ? (
-        <BestHeader
-          best={results.best?.[state.me.id]}
-          points={meRow?.mindReader ?? 0}
-          anyGuesses={anyGuesses}
-        />
-      ) : flags ? (
-        <LoneHeader
-          lone={results.lone?.[state.me.id]}
-          points={meRow?.mindReader ?? 0}
-          anyGuesses={anyGuesses}
-        />
-      ) : likely ? (
-        <CrownedHeader
-          crowned={results.crowned?.[state.me.id]}
-          points={meRow?.mindReader ?? 0}
-          anyGuesses={anyGuesses}
-        />
-      ) : hot ? (
-        <HotTakeHeader
-          take={results.hottest?.[state.me.id]}
-          points={meRow?.mindReader ?? 0}
-          anyGuesses={anyGuesses}
-        />
-      ) : (
-        <div className="grid grid-cols-[minmax(0,1fr)_108px] items-end gap-[18px]">
-          <div className="grid gap-2.5">
-            <h1 className="m-0 font-display text-[36px] leading-[.98] font-extrabold tracking-display text-balance">
-              {t.rich("headline", {
-                label: meRow ? labelKeyFor(meRow.label) : "menace",
-                em: (chunks) => (
-                  <span className="text-accent-ink" style={{ fontStretch: "75%" }}>
-                    {chunks}
-                  </span>
-                ),
-              })}
-            </h1>
-            <p className="m-0 text-[16px] leading-[1.45] text-text-muted">
-              {pct
-                ? anyGuesses
-                  ? t("linePercent", { score, points: meRow?.mindReader ?? 0 })
-                  : t("lineSolo", { score })
-                : solo
-                  ? t("lineSolo", { score })
-                  : t("line", { score, guess, verdict })}
-            </p>
+    <div className="flex flex-col gap-[22px] xl:grid xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)] xl:grid-rows-[auto_1fr] xl:items-start xl:gap-x-14 xl:gap-y-8">
+      <div className="contents xl:col-start-1 xl:row-start-1 xl:flex xl:flex-col xl:gap-[22px]">
+        {said ? (
+          <WhoHeader spotted={results.spotted?.[state.me.id]} points={meRow?.mindReader ?? 0} />
+        ) : truths ? (
+          <CardHeader
+            card={results.cards?.find((c) => c.playerId === state.me.id)}
+            points={meRow?.mindReader ?? 0}
+          />
+        ) : imposter && results.imposter ? (
+          <ImposterHeader
+            outcome={results.imposter}
+            meId={state.me.id}
+            points={meRow?.mindReader ?? 0}
+            name={(id) => rows.find((r) => r.playerId === id)?.nickname ?? ""}
+          />
+        ) : rank ? (
+          <BestHeader
+            best={results.best?.[state.me.id]}
+            points={meRow?.mindReader ?? 0}
+            anyGuesses={anyGuesses}
+          />
+        ) : flags ? (
+          <LoneHeader
+            lone={results.lone?.[state.me.id]}
+            points={meRow?.mindReader ?? 0}
+            anyGuesses={anyGuesses}
+          />
+        ) : likely ? (
+          <CrownedHeader
+            crowned={results.crowned?.[state.me.id]}
+            points={meRow?.mindReader ?? 0}
+            anyGuesses={anyGuesses}
+          />
+        ) : hot ? (
+          <HotTakeHeader
+            take={results.hottest?.[state.me.id]}
+            points={meRow?.mindReader ?? 0}
+            anyGuesses={anyGuesses}
+          />
+        ) : (
+          <div className="grid grid-cols-[minmax(0,1fr)_108px] items-end gap-[18px]">
+            <div className="grid gap-2.5">
+              <h1 className="m-0 font-display text-[36px] leading-[.98] font-extrabold tracking-display text-balance">
+                {t.rich("headline", {
+                  label: meRow ? labelKeyFor(meRow.label) : "menace",
+                  em: (chunks) => (
+                    <span className="text-accent-ink" style={{ fontStretch: "75%" }}>
+                      {chunks}
+                    </span>
+                  ),
+                })}
+              </h1>
+              <p className="m-0 text-[16px] leading-[1.45] text-text-muted">
+                {pct
+                  ? anyGuesses
+                    ? t("linePercent", { score, points: meRow?.mindReader ?? 0 })
+                    : t("lineSolo", { score })
+                  : solo
+                    ? t("lineSolo", { score })
+                    : t("line", { score, guess, verdict })}
+              </p>
+            </div>
+            <div className="relative">
+              <Vessel level={score} num={score} height={136} fontSize={56} radius={18} />
+              <span
+                className="absolute bottom-[-12px] left-[-14px] inline-flex rounded-pill border-[3px] border-sticker-edge bg-accent px-2.5 py-[7px] font-display text-[13px] leading-none font-extrabold whitespace-nowrap text-on-accent"
+                style={{
+                  boxShadow: "0 0 0 1.5px var(--sticker-ring)",
+                  fontStretch: "80%",
+                  rotate: "-4deg",
+                }}
+              >
+                {myLabel}
+              </span>
+            </div>
           </div>
-          <div className="relative">
-            <Vessel level={score} num={score} height={136} fontSize={56} radius={18} />
-            <span
-              className="absolute bottom-[-12px] left-[-14px] inline-flex rounded-pill border-[3px] border-sticker-edge bg-accent px-2.5 py-[7px] font-display text-[13px] leading-none font-extrabold whitespace-nowrap text-on-accent"
-              style={{
-                boxShadow: "0 0 0 1.5px var(--sticker-ring)",
-                fontStretch: "80%",
-                rotate: "-4deg",
-              }}
-            >
-              {myLabel}
-            </span>
-          </div>
-        </div>
-      )}
+        )}
 
-      {anyGuesses && winners.length > 0 && (
-        <p className="m-0 flex items-center gap-2.5 rounded-card border border-line bg-surface px-4 py-3 text-[15px] leading-[1.4] font-semibold">
-          <TrophyIcon aria-hidden size={20} className="shrink-0 text-accent-ink" />
-          {winners.length > 1
-            ? t("winnerTie", {
-                names: winners.map((w) => w.nickname).join(", "),
-                points: winners[0]!.mindReader,
-              })
-            : winners[0]!.playerId === state.me.id
-              ? t("winnerYou", { points: winners[0]!.mindReader })
-              : t("winner", { name: winners[0]!.nickname, points: winners[0]!.mindReader })}
-        </p>
-      )}
+        {anyGuesses && winners.length > 0 && (
+          <p className="m-0 flex items-center gap-2.5 rounded-card border border-line bg-surface px-4 py-3 text-[15px] leading-[1.4] font-semibold">
+            <TrophyIcon aria-hidden size={20} className="shrink-0 text-accent-ink" />
+            {winners.length > 1
+              ? t("winnerTie", {
+                  names: winners.map((w) => w.nickname).join(", "),
+                  points: winners[0]!.mindReader,
+                })
+              : winners[0]!.playerId === state.me.id
+                ? t("winnerYou", { points: winners[0]!.mindReader })
+                : t("winner", { name: winners[0]!.nickname, points: winners[0]!.mindReader })}
+          </p>
+        )}
 
-      {state.room.mode === "spill_or_skip" && results.spill && (
-        <SpillPanel
-          spill={results.spill}
-          meId={state.me.id}
-          code={state.room.code}
-          name={(id) => rows.find((r) => r.playerId === id)?.nickname ?? ""}
-        />
-      )}
+        {state.room.mode === "spill_or_skip" && results.spill && (
+          <SpillPanel
+            spill={results.spill}
+            meId={state.me.id}
+            code={state.room.code}
+            name={(id) => rows.find((r) => r.playerId === id)?.nickname ?? ""}
+          />
+        )}
 
-      {state.series && (
-        <SeriesStrip series={state.series} onReset={state.me.isHost ? onResetSeries : undefined} />
-      )}
+        {state.series && (
+          <SeriesStrip
+            series={state.series}
+            onReset={state.me.isHost ? onResetSeries : undefined}
+          />
+        )}
+      </div>
 
       <SegmentedTabs
         label={t("tabs")}
         value={tab}
         onValueChange={setTab}
-        className="mt-1.5"
+        className="mt-1.5 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:mt-0"
         items={
           duoRoom
             ? [
@@ -452,121 +458,129 @@ export function ResultsView({
         </TabPanel>
       </SegmentedTabs>
 
-      <CrewPanel state={state} />
+      <div className="contents xl:col-start-1 xl:row-start-2 xl:flex xl:flex-col xl:gap-[22px]">
+        <CrewPanel state={state} />
 
-      <Sheet
-        open={confirmSpill}
-        onOpenChange={setConfirmSpill}
-        title={t("spillConfirmTitle")}
-        description={t("spillConfirmBody")}
-        initialFocus={keepPrivate}
-      >
-        <Button
-          onClick={() => {
-            setConfirmSpill(false);
-            setSpill(true);
-          }}
+        <Sheet
+          open={confirmSpill}
+          onOpenChange={setConfirmSpill}
+          title={t("spillConfirmTitle")}
+          description={t("spillConfirmBody")}
+          initialFocus={keepPrivate}
         >
-          {t("spillConfirmYes")}
-        </Button>
-        <Button ref={keepPrivate} variant="secondary" onClick={() => setConfirmSpill(false)}>
-          {t("spillConfirmNo")}
-        </Button>
-      </Sheet>
-
-      {!noSpill && (
-        <SwitchRow
-          checked={state.me.spillMode}
-          onCheckedChange={(on) => (on ? setConfirmSpill(true) : setSpill(false))}
-          title={t("spillMode")}
-          description={state.me.spillMode ? t("spillOnCopy") : t("spillOffCopy")}
-        />
-      )}
-
-      {/* Share and Rematch stay in reach at the bottom of the screen, under the crew card and
-          Spill Mode, instead of a long scroll down on a phone. */}
-      <div className="sticky bottom-0 z-[var(--z-sticky)] -mx-5 flex gap-2.5 border-t border-line bg-bg px-5 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:-mx-8 lg:px-8">
-        {!noSpill && (
-          <button
-            type="button"
-            onClick={() => setShare(true)}
-            className="flex h-14 min-w-0 flex-1 basis-0 items-center justify-center gap-2 rounded-pill border-[1.5px] border-text bg-transparent text-[17px] leading-none font-semibold text-text hover:bg-surface-raised"
+          <Button
+            onClick={() => {
+              setConfirmSpill(false);
+              setSpill(true);
+            }}
           >
-            {t("share")}
-          </button>
-        )}
-        {state.me.isHost ? (
-          <Button className="min-w-0 flex-1 basis-0 px-4" loading={rematching} onClick={onRematch}>
-            {t("rematch")}
+            {t("spillConfirmYes")}
           </Button>
-        ) : (
-          <span className="flex min-h-14 min-w-0 flex-1 basis-0 items-center justify-center gap-2 rounded-pill border border-dashed border-line-strong px-3 text-center text-[14px] leading-[1.3] font-medium text-text-muted">
-            <HourglassMediumIcon size={18} aria-hidden />
-            {t("guestRematch", { host: host?.nickname ?? "" })}
-          </span>
-        )}
-      </div>
-      {state.me.isHost && (
-        <Link
-          href={`/create?room=${state.room.code}&mode=rematch&current=${state.room.mode}&pack=${state.room.pack.id}`}
-          className="-mt-3 inline-flex min-h-11 w-fit items-center self-center text-[15px] leading-[1.4] font-semibold text-text-muted underline underline-offset-4 hover:text-text"
-        >
-          {t("changeGame")}
-        </Link>
-      )}
+          <Button ref={keepPrivate} variant="secondary" onClick={() => setConfirmSpill(false)}>
+            {t("spillConfirmNo")}
+          </Button>
+        </Sheet>
 
-      <ShareSheet
-        open={share}
-        onOpenChange={setShare}
-        room={state.room.code}
-        pack={state.room.pack.name}
-        name={state.me.nickname}
-        avatar={state.me.avatar}
-        look={state.me.look}
-        score={score}
-        award={myAward?.award}
-        board={board}
-        duo={
-          duoRoom && duo
-            ? {
-                pct: duo.pct,
-                award: t(`duoAwards.${duo.award}.name`),
-                players: results.rows.map((r) => ({
-                  name: r.nickname,
-                  avatar: r.avatar,
-                  score: r.score,
-                })),
-              }
-            : undefined
-        }
-        boardAward={mind && mindName ? { award: "mind_reader", name: mindName } : undefined}
-        hideName={state.me.hideNameOnCard}
-        onHideName={onHideName}
-      />
-      <Sheet open={explain} onOpenChange={setExplain} title={t("howPoints")}>
-        <table className="w-full border-collapse text-[15px] leading-[1.4]">
-          <tbody>
-            {[
-              [t("pointsExact"), "10"],
-              [t("pointsWithin", { n: 5 }), "7"],
-              [t("pointsWithin", { n: 10 }), "5"],
-              [t("pointsWithin", { n: 20 }), "2"],
-              [t("pointsMore", { n: 20 }), "0"],
-              [t("pointsClosest"), "+3"],
-            ].map(([label, points]) => (
-              <tr key={label} className="border-b border-line">
-                <th scope="row" className="py-2.5 text-left font-semibold">
-                  {label}
-                </th>
-                <td className="py-2.5 text-right font-mono font-semibold tabular-nums">{points}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <p className="m-0 text-[14px] leading-[1.45] text-text-muted">
-          {pct ? t("pointsNotePercent") : t("pointsNote")}
-        </p>
-      </Sheet>
+        {!noSpill && (
+          <SwitchRow
+            checked={state.me.spillMode}
+            onCheckedChange={(on) => (on ? setConfirmSpill(true) : setSpill(false))}
+            title={t("spillMode")}
+            description={state.me.spillMode ? t("spillOnCopy") : t("spillOffCopy")}
+          />
+        )}
+
+        {/* Share and Rematch stay in reach at the bottom of the screen, under the crew card and
+          Spill Mode, instead of a long scroll down on a phone. */}
+        <div className="sticky bottom-0 z-[var(--z-sticky)] -mx-5 flex gap-2.5 border-t border-line bg-bg px-5 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:-mx-8 lg:px-8 xl:static xl:-order-2 xl:mx-0 xl:border-0 xl:bg-transparent xl:p-0">
+          {!noSpill && (
+            <button
+              type="button"
+              onClick={() => setShare(true)}
+              className="flex h-14 min-w-0 flex-1 basis-0 items-center justify-center gap-2 rounded-pill border-[1.5px] border-text bg-transparent text-[17px] leading-none font-semibold text-text hover:bg-surface-raised"
+            >
+              {t("share")}
+            </button>
+          )}
+          {state.me.isHost ? (
+            <Button
+              className="min-w-0 flex-1 basis-0 px-4"
+              loading={rematching}
+              onClick={onRematch}
+            >
+              {t("rematch")}
+            </Button>
+          ) : (
+            <span className="flex min-h-14 min-w-0 flex-1 basis-0 items-center justify-center gap-2 rounded-pill border border-dashed border-line-strong px-3 text-center text-[14px] leading-[1.3] font-medium text-text-muted">
+              <HourglassMediumIcon size={18} aria-hidden />
+              {t("guestRematch", { host: host?.nickname ?? "" })}
+            </span>
+          )}
+        </div>
+        {state.me.isHost && (
+          <Link
+            href={`/create?room=${state.room.code}&mode=rematch&current=${state.room.mode}&pack=${state.room.pack.id}`}
+            className="-mt-3 inline-flex min-h-11 w-fit items-center self-center text-[15px] leading-[1.4] font-semibold text-text-muted underline underline-offset-4 hover:text-text xl:-order-1 xl:-mt-2"
+          >
+            {t("changeGame")}
+          </Link>
+        )}
+
+        <ShareSheet
+          open={share}
+          onOpenChange={setShare}
+          room={state.room.code}
+          pack={state.room.pack.name}
+          name={state.me.nickname}
+          avatar={state.me.avatar}
+          look={state.me.look}
+          score={score}
+          award={myAward?.award}
+          board={board}
+          duo={
+            duoRoom && duo
+              ? {
+                  pct: duo.pct,
+                  award: t(`duoAwards.${duo.award}.name`),
+                  players: results.rows.map((r) => ({
+                    name: r.nickname,
+                    avatar: r.avatar,
+                    score: r.score,
+                  })),
+                }
+              : undefined
+          }
+          boardAward={mind && mindName ? { award: "mind_reader", name: mindName } : undefined}
+          hideName={state.me.hideNameOnCard}
+          onHideName={onHideName}
+        />
+        <Sheet open={explain} onOpenChange={setExplain} title={t("howPoints")}>
+          <table className="w-full border-collapse text-[15px] leading-[1.4]">
+            <tbody>
+              {[
+                [t("pointsExact"), "10"],
+                [t("pointsWithin", { n: 5 }), "7"],
+                [t("pointsWithin", { n: 10 }), "5"],
+                [t("pointsWithin", { n: 20 }), "2"],
+                [t("pointsMore", { n: 20 }), "0"],
+                [t("pointsClosest"), "+3"],
+              ].map(([label, points]) => (
+                <tr key={label} className="border-b border-line">
+                  <th scope="row" className="py-2.5 text-left font-semibold">
+                    {label}
+                  </th>
+                  <td className="py-2.5 text-right font-mono font-semibold tabular-nums">
+                    {points}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="m-0 text-[14px] leading-[1.45] text-text-muted">
+            {pct ? t("pointsNotePercent") : t("pointsNote")}
+          </p>
+        </Sheet>
+      </div>
     </div>
   );
 }

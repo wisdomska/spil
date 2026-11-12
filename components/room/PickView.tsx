@@ -75,7 +75,7 @@ export function PickView({ state, onDone }: Props) {
     "flex min-h-14 w-full items-center gap-3 rounded-card border-[1.5px] px-4 py-3 text-left text-[16px] leading-[1.3] font-semibold active:scale-[.99]";
 
   return (
-    <div className="flex flex-1 flex-col gap-[18px]">
+    <div className="flex flex-1 flex-col gap-[18px] xl:mx-auto xl:w-full xl:max-w-[720px]">
       <div className="grid gap-2.5">
         <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] text-text-muted">
           {t("pickKicker")}

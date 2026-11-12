@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import type { RoomState, StatePlayer } from "@/lib/api/types";
 import { hasImposter, picksTruths, skipsGuessing, writesAnswers } from "@/lib/game";
+import { useIsWide } from "@/lib/useMedia";
 import { OfflineChip } from "./OfflineChip";
 import { SkipToReveal } from "./SkipToReveal";
 
@@ -43,6 +44,7 @@ export function WaitingView({
   initialSheet = false,
 }: Props) {
   const t = useTranslations("waiting");
+  const wide = useIsWide();
   const c = useTranslations("common");
   const [sheet, setSheet] = useState(initialSheet);
   const guessing = state.room.status === "guessing";
@@ -97,15 +99,18 @@ export function WaitingView({
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-[22px]">
-      <Vessel
-        level={(doneN / Math.max(1, active.length)) * 100}
-        num={`${doneN}/${Math.max(1, active.length)}`}
-        height={190}
-        fontSize={64}
-        transition="transform 1.4s cubic-bezier(.2,.9,.3,1)"
-      />
-      <div className="grid gap-2.5">
+    // Wide screens: the vessel and what we wait for on the left, who is done on the right.
+    <div className="flex flex-1 flex-col gap-[22px] xl:grid xl:grid-cols-2 xl:content-start xl:items-start xl:gap-x-14">
+      <div className="xl:col-start-1 xl:row-start-1">
+        <Vessel
+          level={(doneN / Math.max(1, active.length)) * 100}
+          num={`${doneN}/${Math.max(1, active.length)}`}
+          height={wide ? 300 : 190}
+          fontSize={wide ? 96 : 64}
+          transition="transform 1.4s cubic-bezier(.2,.9,.3,1)"
+        />
+      </div>
+      <div className="grid gap-2.5 xl:col-start-1 xl:row-start-2">
         <h1
           aria-live="polite"
           className="m-0 font-display text-display-m leading-[.98] font-extrabold tracking-display text-balance"
@@ -116,7 +121,7 @@ export function WaitingView({
           {t(waitingBody(state.room.mode, guessing))}
         </p>
       </div>
-      <ul className="m-0 grid list-none p-0">
+      <ul className="m-0 grid list-none p-0 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:rounded-card xl:border xl:border-line xl:bg-surface xl:px-5 xl:py-2">
         {active.map((p) => {
           const d = done(p);
           return (
@@ -145,7 +150,7 @@ export function WaitingView({
         })}
       </ul>
       {state.me.isHost && unfinished.length > 0 && (
-        <div className="mt-auto flex flex-wrap gap-2.5">
+        <div className="mt-auto flex flex-wrap gap-2.5 xl:col-start-2 xl:mt-0">
           {guessing && (
             <div className="w-full">
               <SkipToReveal state={state} onSkip={onSkip} skipping={skipping} />

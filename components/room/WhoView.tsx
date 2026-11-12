@@ -91,7 +91,7 @@ export function WhoView({ state, onDone, onSkip, skipping }: Props) {
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-[18px]">
+    <div className="flex flex-1 flex-col gap-[18px] xl:mx-auto xl:w-full xl:max-w-[720px]">
       <span className="font-mono text-[14px] leading-none font-medium text-text-muted">
         {t("whoCount", { n: ai + 1, total: items.length })}
       </span>

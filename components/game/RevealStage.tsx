@@ -281,7 +281,8 @@ export function RevealStage({
         : t("counter", { n: slide.group + 1, total: groups.length });
 
   return (
-    <div className="mx-auto box-border flex min-h-[100dvh] w-full max-w-[560px] flex-col gap-[18px] overflow-x-clip px-5 pt-[18px] pb-[calc(96px+env(safe-area-inset-bottom))]">
+    // Wide screens: the player reveal uses two columns; other slides stay a centred column.
+    <div className="mx-auto box-border flex min-h-[100dvh] w-full max-w-[560px] flex-col gap-[18px] overflow-x-clip px-5 pt-[18px] pb-[calc(96px+env(safe-area-inset-bottom))] xl:max-w-[1080px] xl:gap-8 xl:px-10 xl:pt-10 xl:pb-[180px] 2xl:max-w-[1240px]">
       <div className="flex items-center justify-between gap-2">
         <span className="grid gap-2">
           <span className="font-mono text-[13px] leading-none font-medium tracking-[.06em] whitespace-pre text-text-muted">
@@ -349,7 +350,7 @@ export function RevealStage({
           <p
             aria-live="polite"
             className={cn(
-              "m-0 font-display text-display-m leading-[1] font-extrabold tracking-display text-balance",
+              "m-0 font-display text-display-m leading-[1] font-extrabold tracking-display text-balance xl:text-[80px]",
               fade,
             )}
           >
@@ -359,7 +360,7 @@ export function RevealStage({
       )}
 
       {group && step !== "beat" && (
-        <div className="flex flex-1 flex-col gap-[18px]">
+        <div className="flex flex-1 flex-col gap-[18px] xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:content-center xl:items-center xl:gap-x-16">
           <span
             key={stamped ? "rank" : "next"}
             className={cn(
@@ -371,7 +372,7 @@ export function RevealStage({
           </span>
           <div
             className={cn(
-              "flex gap-3",
+              "flex gap-3 xl:col-start-1 xl:row-start-2",
               group.rows.length > 2 && "-mx-5 snap-x snap-mandatory overflow-x-auto px-5 pb-6",
             )}
           >
@@ -394,7 +395,12 @@ export function RevealStage({
             ))}
           </div>
           {step === "verdict" && (
-            <div className={cn("grid gap-3", fade || "animate-[rise_300ms_var(--ease-out)_both]")}>
+            <div
+              className={cn(
+                "grid gap-3 xl:col-start-2 xl:row-start-2 xl:gap-5 xl:[&_p]:text-[28px] xl:[&_p]:leading-[1.25]",
+                fade || "animate-[rise_300ms_var(--ease-out)_both]",
+              )}
+            >
               {group.rows
                 .filter((r) => (r.guessedBy ?? 0) > 0)
                 .map((r) => {
@@ -437,89 +443,99 @@ export function RevealStage({
         </div>
       )}
 
-      {question && (
-        <QuestionSlide
-          question={question}
-          rows={rows}
-          count={count}
-          pct={pct}
-          step={step}
-          stamped={stamped}
-          reduced={reduced}
-          height={desktop ? 360 : vh(300)}
-          kicker={
-            stamped ? t(average ? "average" : "saidYes", { n: question.actual }) : t("nextUp")
-          }
-          guessText={(value, points) =>
-            t(average ? "avgGuessPoints" : "guessPoints", { value, points })
-          }
-          closest={t("closest")}
-          bullseye={t("bullseye")}
-          none={t("noGuesses")}
-          announce={
-            stamped
-              ? t(average ? "announceAverage" : "announceQuestion", { n: question.actual })
-              : ""
-          }
-        />
-      )}
+      <div className="contents xl:mx-auto xl:flex xl:w-full xl:max-w-[640px] xl:flex-1 xl:flex-col xl:gap-[18px]">
+        {question && (
+          <QuestionSlide
+            question={question}
+            rows={rows}
+            count={count}
+            pct={pct}
+            step={step}
+            stamped={stamped}
+            reduced={reduced}
+            height={desktop ? 360 : vh(300)}
+            kicker={
+              stamped ? t(average ? "average" : "saidYes", { n: question.actual }) : t("nextUp")
+            }
+            guessText={(value, points) =>
+              t(average ? "avgGuessPoints" : "guessPoints", { value, points })
+            }
+            closest={t("closest")}
+            bullseye={t("bullseye")}
+            none={t("noGuesses")}
+            announce={
+              stamped
+                ? t(average ? "announceAverage" : "announceQuestion", { n: question.actual })
+                : ""
+            }
+          />
+        )}
 
-      {prompt && (
-        <LikelySlide
-          prompt={prompt}
-          rows={rows}
-          count={count}
-          pct={pct}
-          step={step}
-          stamped={stamped}
-          reduced={reduced}
-          height={desktop ? 300 : vh(220)}
-        />
-      )}
+        {prompt && (
+          <LikelySlide
+            prompt={prompt}
+            rows={rows}
+            count={count}
+            pct={pct}
+            step={step}
+            stamped={stamped}
+            reduced={reduced}
+            height={desktop ? 300 : vh(220)}
+          />
+        )}
 
-      {saidQ && <SaidSlide q={saidQ} rows={rows} stamped={stamped} step={step} reduced={reduced} />}
+        {saidQ && (
+          <SaidSlide q={saidQ} rows={rows} stamped={stamped} step={step} reduced={reduced} />
+        )}
 
-      {card && (
-        <CardSlide card={card} rows={rows} step={step} stamped={stamped} reduced={reduced} />
-      )}
+        {card && (
+          <CardSlide card={card} rows={rows} step={step} stamped={stamped} reduced={reduced} />
+        )}
 
-      {imposter && imposterStep !== null && (
-        <ImposterSlide
-          outcome={imposter}
-          which={imposterStep === 0 ? "vote" : "reveal"}
-          rows={rows}
-          stamped={stamped}
-          showing={step === "fill" || stamped}
-          reduced={reduced}
-        />
-      )}
+        {imposter && imposterStep !== null && (
+          <ImposterSlide
+            outcome={imposter}
+            which={imposterStep === 0 ? "vote" : "reveal"}
+            rows={rows}
+            stamped={stamped}
+            showing={step === "fill" || stamped}
+            reduced={reduced}
+          />
+        )}
 
-      {ordered && (
-        <RankSlide ordered={ordered} rows={rows} step={step} stamped={stamped} reduced={reduced} />
-      )}
+        {ordered && (
+          <RankSlide
+            ordered={ordered}
+            rows={rows}
+            step={step}
+            stamped={stamped}
+            reduced={reduced}
+          />
+        )}
 
-      {scenario && (
-        <FlagSlide
-          scenario={scenario}
-          count={count}
-          pct={pct}
-          step={step}
-          stamped={stamped}
-          reduced={reduced}
-          height={desktop ? 320 : vh(260)}
-        />
-      )}
+        {scenario && (
+          <FlagSlide
+            scenario={scenario}
+            count={count}
+            pct={pct}
+            step={step}
+            stamped={stamped}
+            reduced={reduced}
+            height={desktop ? 320 : vh(260)}
+          />
+        )}
 
-      {slide.kind === "award" && (
-        <AwardSlide
-          award={awards[slide.award]}
-          index={slide.award}
-          rows={rows}
-          elapsed={elapsed}
-          reduced={reduced}
-          name={(a) => ta(AWARD_KEY[a])}
-        />
-      )}
+        {slide.kind === "award" && (
+          <AwardSlide
+            award={awards[slide.award]}
+            index={slide.award}
+            rows={rows}
+            elapsed={elapsed}
+            reduced={reduced}
+            name={(a) => ta(AWARD_KEY[a])}
+          />
+        )}
+      </div>
 
       {reactions.length > 0 && (
         <div aria-hidden className="pointer-events-none fixed inset-x-0 bottom-28 z-[6] h-0">
@@ -544,7 +560,7 @@ export function RevealStage({
           display && "hidden",
         )}
       >
-        <div className="mx-auto grid max-w-[520px] gap-2.5">
+        <div className="mx-auto grid max-w-[520px] gap-2.5 xl:max-w-[1000px] xl:grid-cols-[minmax(0,1fr)_360px] xl:items-center xl:gap-10">
           {onReact && (
             <div role="group" aria-label={t("reactLabel")} className="flex justify-between gap-1">
               {REACTIONS.map((emoji) => (
@@ -1354,7 +1370,10 @@ function AwardSlide({
   const winner = award ? rows.find((r) => r.playerId === award.playerId) : undefined;
   if (!award || !winner || elapsed < REVEAL_MS.awardBeat) return <div className="flex-1" />;
   return (
-    <div aria-live="polite" className="flex flex-1 flex-col justify-center gap-6 pb-10">
+    <div
+      aria-live="polite"
+      className="flex flex-1 flex-col justify-center gap-6 pb-10 xl:items-center xl:text-center"
+    >
       <AwardSticker
         key={index}
         award={award.award}

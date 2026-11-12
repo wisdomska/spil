@@ -116,7 +116,7 @@ export function RankView({ state, onDone }: Props) {
     "grid size-11 shrink-0 place-items-center rounded-pill border-0 bg-transparent text-[18px] text-text hover:bg-surface disabled:pointer-events-none disabled:opacity-30";
 
   return (
-    <div className="flex flex-1 flex-col gap-[18px]">
+    <div className="flex flex-1 flex-col gap-[18px] xl:mx-auto xl:w-full xl:max-w-[720px]">
       <div className="flex items-center gap-2">
         <button
           type="button"

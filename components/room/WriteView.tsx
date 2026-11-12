@@ -81,7 +81,7 @@ export function WriteView({ state, onDone }: Props) {
   const id = `write-${q.id}`;
 
   return (
-    <div className="flex flex-1 flex-col gap-[18px]">
+    <div className="flex flex-1 flex-col gap-[18px] xl:mx-auto xl:w-full xl:max-w-[720px]">
       <div className="flex items-center gap-2">
         <button
           type="button"

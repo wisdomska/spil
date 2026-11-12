@@ -106,39 +106,44 @@ export function GuessView({ state, onDone, onSkip, skipping, initialValue = null
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-[18px]">
-      <span className="font-mono text-[14px] leading-none font-medium text-text-muted">
-        {t("count", { n: (gi % targets.length) + 1, total: targets.length })}
-      </span>
-      <Avatar n={target.avatar} size={104} label={target.nickname} />
-      <h1 className="m-0 font-display text-display-m leading-[.98] font-extrabold tracking-display text-balance">
-        {t.rich("title", {
-          name: target.nickname,
-          em: (chunks) => (
-            <span className="text-accent-ink" style={{ fontStretch: "75%" }}>
-              {chunks}
-            </span>
-          ),
-        })}
-      </h1>
-      <GuessVessel
-        key={target.id}
-        value={value}
-        onChange={setValue}
-        label={t("aria", { name: target.nickname })}
-        valueText={(v, label) => t("valueText", { value: v, label })}
-        emptyText={t("noGuess")}
-        hint={t("drag")}
-        lowerLabel={t("lower")}
-        raiseLabel={t("raise")}
-        lowCaption={t("saint")}
-        highCaption={t("menace")}
-      />
-      {/* The vessel is tall on phones, so Lock it in stays on screen (and dragging never scrolls). */}
-      <div className="sticky bottom-0 z-[5] -mx-5 mt-auto border-t border-line bg-surface/90 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] backdrop-blur-[14px] lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
-        <Button block softDisabled={value === null} loading={busy} onClick={lock}>
-          {t("lock")}
-        </Button>
+    // Wide screens: who you are guessing on the left, the vessel and Lock it in on the right.
+    <div className="flex flex-1 flex-col gap-[18px] xl:grid xl:grid-cols-[minmax(0,1fr)_420px] xl:items-center xl:gap-14">
+      <div className="contents xl:flex xl:flex-col xl:gap-5">
+        <span className="font-mono text-[14px] leading-none font-medium text-text-muted">
+          {t("count", { n: (gi % targets.length) + 1, total: targets.length })}
+        </span>
+        <Avatar n={target.avatar} size={104} label={target.nickname} />
+        <h1 className="m-0 font-display text-display-m leading-[.98] font-extrabold tracking-display text-balance xl:text-[56px]">
+          {t.rich("title", {
+            name: target.nickname,
+            em: (chunks) => (
+              <span className="text-accent-ink" style={{ fontStretch: "75%" }}>
+                {chunks}
+              </span>
+            ),
+          })}
+        </h1>
+      </div>
+      <div className="contents xl:flex xl:flex-col xl:gap-4">
+        <GuessVessel
+          key={target.id}
+          value={value}
+          onChange={setValue}
+          label={t("aria", { name: target.nickname })}
+          valueText={(v, label) => t("valueText", { value: v, label })}
+          emptyText={t("noGuess")}
+          hint={t("drag")}
+          lowerLabel={t("lower")}
+          raiseLabel={t("raise")}
+          lowCaption={t("saint")}
+          highCaption={t("menace")}
+        />
+        {/* The vessel is tall on phones, so Lock it in stays on screen (and dragging never scrolls). */}
+        <div className="sticky bottom-0 z-[5] -mx-5 mt-auto border-t border-line bg-surface/90 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] backdrop-blur-[14px] lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+          <Button block softDisabled={value === null} loading={busy} onClick={lock}>
+            {t("lock")}
+          </Button>
+        </div>
       </div>
     </div>
   );

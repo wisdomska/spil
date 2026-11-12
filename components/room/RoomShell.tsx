@@ -159,7 +159,9 @@ export function RoomShell({ state, online, offline, statusFor, order, onLeave, c
             </button>
           </div>
         </div>
-        <div className="box-border flex w-full max-w-[520px] flex-1 flex-col px-5 pt-2 pb-6 lg:px-8 lg:pt-12 lg:pb-10">
+        {/* 520 px on phones and small laptops; from 1280 px each screen lays itself out in two
+            columns (or a wider single one) across up to 1120 px beside the sidebar. */}
+        <div className="box-border flex w-full max-w-[520px] flex-1 flex-col px-5 pt-2 pb-6 lg:px-8 lg:pt-12 lg:pb-10 xl:max-w-[1120px] xl:px-12 2xl:max-w-[1280px]">
           {children}
         </div>
       </main>

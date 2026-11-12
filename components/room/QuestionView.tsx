@@ -223,7 +223,8 @@ export function QuestionView({ state, onDone, flags = false, preview }: Props) {
     "flex h-16 flex-1 items-center justify-center gap-2 rounded-pill border-[1.5px] text-[18px] leading-none font-bold not-aria-disabled:active:scale-[.97] hover:brightness-[1.08]";
 
   return (
-    <div className="flex flex-1 flex-col gap-[18px]">
+    // Wide screens: one bigger card in the middle, with the keyboard keys spelled out.
+    <div className="flex flex-1 flex-col gap-[18px] xl:mx-auto xl:w-full xl:max-w-[760px]">
       {(preview?.offline ?? offline) && (
         <div
           role="status"
@@ -268,7 +269,7 @@ export function QuestionView({ state, onDone, flags = false, preview }: Props) {
         </button>
       </div>
 
-      <div className="relative mt-1 mb-3.5 max-h-[430px] min-h-[330px] flex-1">
+      <div className="relative mt-1 mb-3.5 max-h-[430px] min-h-[330px] flex-1 xl:max-h-[520px] xl:min-h-[440px]">
         <div
           aria-hidden
           className="absolute inset-0 rounded-card border border-line bg-surface"
@@ -314,7 +315,7 @@ export function QuestionView({ state, onDone, flags = false, preview }: Props) {
                 </span>
               )}
             </span>
-            <span className="font-display text-question leading-[1.05] font-extrabold tracking-[-.02em] text-pretty">
+            <span className="font-display text-question leading-[1.05] font-extrabold tracking-[-.02em] text-pretty xl:text-[46px]">
               {q.text}
             </span>
           </div>
@@ -361,6 +362,15 @@ export function QuestionView({ state, onDone, flags = false, preview }: Props) {
         <span className="flex items-center gap-1.5 text-[14px] leading-[1.3] font-medium text-text-muted">
           <LockSimpleIcon size={16} aria-hidden className="shrink-0" />
           {t("fixHint")}
+        </span>
+        <span className="hidden items-center gap-1.5 text-[14px] leading-none font-medium text-text-muted lg:flex">
+          <kbd className="rounded-[6px] border border-line-strong px-1.5 py-1 font-mono text-[12px]">
+            N
+          </kbd>
+          <kbd className="rounded-[6px] border border-line-strong px-1.5 py-1 font-mono text-[12px]">
+            Y
+          </kbd>
+          {t(flags ? "keysFlags" : "keys")}
         </span>
         {(preview?.saving ?? (saving || offline)) && (
           <span

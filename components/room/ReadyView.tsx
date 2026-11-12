@@ -23,7 +23,7 @@ export function ReadyView({
   // Solo: nobody guessed, so the copy talks about the score instead.
   const solo = players.length === 1;
   return (
-    <div className="flex flex-1 flex-col justify-center gap-5">
+    <div className="flex flex-1 flex-col justify-center gap-5 xl:mx-auto xl:w-full xl:max-w-[720px]">
       <div className="flex flex-wrap gap-x-2.5 gap-y-3.5 p-1.5">
         {players.map((p, i) => {
           const you = p.id === state.me.id;
@@ -45,7 +45,7 @@ export function ReadyView({
           );
         })}
       </div>
-      <h1 className="m-0 font-display text-display-l font-extrabold tracking-display">
+      <h1 className="m-0 font-display text-display-l font-extrabold tracking-display xl:text-[76px]">
         {solo ? t("soloTitle") : t("title")}{" "}
         <span className="text-accent-ink" style={{ fontStretch: "75%" }}>
           {solo ? t("soloEmphasis") : t("titleEmphasis")}
