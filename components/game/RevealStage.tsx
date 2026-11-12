@@ -36,7 +36,7 @@ import {
   type RankQuestion,
 } from "@/lib/game";
 import { playSound, primeSound, useSoundSetting } from "@/lib/sound";
-import { useIsDesktop } from "@/lib/useMedia";
+import { useIsDesktop, useMedia } from "@/lib/useMedia";
 
 type Props = {
   rows: ResultRow[];
@@ -113,6 +113,10 @@ export function RevealStage({
   const ta = useTranslations("awards");
   const reduced = useReducedMotion() ?? false;
   const desktop = useIsDesktop();
+  // Phones with little height (an iPhone shows about 660 px): shorter vessels, so the label
+  // sticker under the level stays above the reactions and Next bar.
+  const short = useMedia("(max-height: 760px)");
+  const vh = (tall: number) => (short ? Math.round(tall * 0.72) : tall);
   const sound = useSoundSetting();
   const groups = useMemo(() => spillGroups(rows), [rows]);
   const slides = useMemo(
@@ -383,7 +387,7 @@ export function RevealStage({
                 reduced={reduced}
                 compact={group.rows.length > 1}
                 many={group.rows.length > 2}
-                height={group.rows.length > 1 ? (desktop ? 360 : 300) : desktop ? 400 : 360}
+                height={group.rows.length > 1 ? (desktop ? 360 : vh(300)) : desktop ? 400 : vh(360)}
                 label={tl(labelKeyFor(r.label))}
                 guessTag={t("roomGuessed", { guess: r.avgGuessAbout })}
               />
@@ -442,7 +446,7 @@ export function RevealStage({
           step={step}
           stamped={stamped}
           reduced={reduced}
-          height={desktop ? 360 : 300}
+          height={desktop ? 360 : vh(300)}
           kicker={
             stamped ? t(average ? "average" : "saidYes", { n: question.actual }) : t("nextUp")
           }
@@ -469,7 +473,7 @@ export function RevealStage({
           step={step}
           stamped={stamped}
           reduced={reduced}
-          height={desktop ? 300 : 220}
+          height={desktop ? 300 : vh(220)}
         />
       )}
 
@@ -502,7 +506,7 @@ export function RevealStage({
           step={step}
           stamped={stamped}
           reduced={reduced}
-          height={desktop ? 320 : 260}
+          height={desktop ? 320 : vh(260)}
         />
       )}
 
