@@ -642,7 +642,9 @@ function PlayerVessel({
           {row.nickname}
         </span>
       </div>
-      <div className="relative">
+      {/* Room below for the label sticker, which hangs off the vessel's bottom edge, so it never
+          covers the verdict line under it. */}
+      <div className={cn("relative", compact ? "mb-3" : "mb-6")}>
         <Vessel
           level={step === "fill" || stamped ? count : 0}
           num={step === "fill" || stamped ? num : ""}
