@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { connection, NextResponse } from "next/server";
 import { getSettings } from "@/lib/flags";
 
 /**
@@ -6,6 +6,8 @@ import { getSettings } from "@/lib/flags";
  * when it is off. Cached 30 seconds at the edge so a busy night stays cheap.
  */
 export async function GET() {
+  // Read per request, never at build time (the build has no database).
+  await connection();
   const s = await getSettings();
   return NextResponse.json(
     { text: s.noticeOn ? s.notice.trim() : "" },
