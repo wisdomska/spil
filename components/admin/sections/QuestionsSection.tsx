@@ -5,7 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useMe } from "@/components/admin/ConsoleShell";
-import { ErrorLine, FieldRow, Select, TextArea } from "@/components/admin/fields";
+import { ErrorLine, FieldRow, TextArea } from "@/components/admin/fields";
+import { Select } from "@/components/ui/Select";
 import {
   ActionsTd,
   adminApi,
@@ -209,19 +210,16 @@ export function QuestionsSection() {
         <Select
           aria-label={t("statusFilter")}
           value={status}
-          onChange={(e) => {
-            setStatus(e.target.value as "all" | QStatus);
+          onValueChange={(v) => {
+            setStatus(v as "all" | QStatus);
             paging.reset();
           }}
-          className="w-full sm:w-[150px]"
-        >
-          <option value="all">{t("allStatuses")}</option>
-          {STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {ts(s)}
-            </option>
-          ))}
-        </Select>
+          className="w-full sm:w-[160px]"
+          options={[
+            { value: "all", label: t("allStatuses") },
+            ...STATUSES.map((s) => ({ value: s, label: ts(s) })),
+          ]}
+        />
         <OutlineButton onClick={exportCsv}>{tc("exportCsv")}</OutlineButton>
         {canWrite && (
           <>
@@ -342,27 +340,17 @@ export function QuestionsSection() {
           <Select
             id="qn-pack"
             value={form.packId}
-            onChange={(e) => setForm((f) => ({ ...f, packId: e.target.value }))}
-          >
-            {packList.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </Select>
+            onValueChange={(v) => setForm((f) => ({ ...f, packId: v }))}
+            options={packList.map((p) => ({ value: p.id, label: p.name }))}
+          />
         </FieldRow>
         <FieldRow id="qn-status" label={t("status")}>
           <Select
             id="qn-status"
             value={form.status}
-            onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as QStatus }))}
-          >
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {ts(s)}
-              </option>
-            ))}
-          </Select>
+            onValueChange={(v) => setForm((f) => ({ ...f, status: v as QStatus }))}
+            options={STATUSES.map((s) => ({ value: s, label: ts(s) }))}
+          />
         </FieldRow>
         {editing?.id && (
           <SwitchRow
@@ -462,14 +450,9 @@ function ImportDialog({ open, onClose }: { open: boolean; onClose: () => void })
         <Select
           id="qn-default"
           value={status}
-          onChange={(e) => setStatus(e.target.value as QStatus)}
-        >
-          {STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {ts(s)}
-            </option>
-          ))}
-        </Select>
+          onValueChange={(v) => setStatus(v as QStatus)}
+          options={STATUSES.map((s) => ({ value: s, label: ts(s) }))}
+        />
       </FieldRow>
       <ErrorLine>{error}</ErrorLine>
       {rowErrors.length > 0 && (

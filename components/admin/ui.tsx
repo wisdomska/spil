@@ -16,9 +16,10 @@ import {
   TrophyIcon,
   UsersThreeIcon,
   XCircleIcon,
+  XIcon,
   type Icon,
 } from "@phosphor-icons/react";
-import { CaretDownIcon, CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
+import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -35,12 +36,14 @@ import {
   type PageSize,
 } from "@/lib/admin/paging";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import { Sheet } from "@/components/ui/Sheet";
 import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import { api, ClientApiError } from "@/lib/api/client";
 import { cn } from "@/lib/cn";
 import { ErrorLine } from "./fields";
+import { Tooltip } from "@/components/ui/Tooltip";
 
 // ---------------------------------------------------------------------------
 // Data
@@ -247,7 +250,7 @@ export function SearchBox({
 }) {
   const t = useTranslations("admin.common");
   return (
-    <label className="box-border flex h-12 w-full items-center gap-2 rounded-input border-[1.5px] border-line-strong bg-surface px-3.5 text-text-muted focus-within:border-accent focus-within:shadow-[0_0_0_3px_var(--accent-soft)] hover:border-text-muted sm:w-[260px]">
+    <div className="box-border flex h-12 w-full items-center gap-2 rounded-input border-[1.5px] border-line-strong bg-surface pr-1.5 pl-3.5 text-text-muted focus-within:border-accent focus-within:shadow-[0_0_0_3px_var(--accent-soft)] hover:border-text-muted sm:w-[260px]">
       <MagnifyingGlassIcon aria-hidden size={18} className="shrink-0" />
       <input
         type="search"
@@ -255,9 +258,20 @@ export function SearchBox({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => e.key === "Escape" && value && onChange("")}
         className="h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] text-text shadow-none outline-none focus:shadow-none"
       />
-    </label>
+      {value && (
+        <button
+          type="button"
+          aria-label={t("clearSearch")}
+          onClick={() => onChange("")}
+          className="grid size-9 shrink-0 place-items-center rounded-pill border-0 bg-transparent text-text-muted hover:bg-surface-raised hover:text-text"
+        >
+          <XIcon aria-hidden size={16} />
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -496,27 +510,17 @@ export function Pagination({
           {total === 0 ? t("rangeNone") : t("range", { from, to, total })}
         </span>
         {onSize && (
-          <label className="flex items-center gap-2 text-[13px] leading-none text-text-muted">
-            {t("rowsPerPage")}
-            <span className="relative">
-              <select
-                value={size}
-                onChange={(e) => onSize(parseSize(e.target.value))}
-                className="h-9 cursor-pointer appearance-none rounded-pill border border-line bg-transparent pr-8 pl-3 font-mono text-[13px] font-semibold text-text hover:bg-surface-raised"
-              >
-                {PAGE_SIZES.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-              <CaretDownIcon
-                aria-hidden
-                size={12}
-                className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2"
-              />
-            </span>
-          </label>
+          <div className="flex items-center gap-2 text-[13px] leading-none text-text-muted">
+            <span aria-hidden>{t("rowsPerPage")}</span>
+            <Select
+              size="sm"
+              value={String(size)}
+              onValueChange={(v) => onSize(parseSize(v))}
+              aria-label={t("rowsPerPage")}
+              className="w-auto"
+              options={PAGE_SIZES.map((s) => ({ value: String(s), label: String(s) }))}
+            />
+          </div>
         )}
       </div>
       {pages > 1 && (
@@ -615,22 +619,23 @@ export function RowAction({
   danger?: boolean;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      title={label}
-      className={cn(
-        "relative ml-1 inline-grid size-10 place-items-center rounded-pill border-[1.5px] bg-transparent align-middle text-[13px] leading-none font-semibold after:absolute after:-inset-1 after:content-[''] hover:bg-surface-raised active:scale-[.97]",
-        "min-[1100px]:ml-1.5 min-[1100px]:inline-flex min-[1100px]:h-9 min-[1100px]:w-auto min-[1100px]:px-3.5",
-        danger ? "border-error text-error" : "border-line text-text",
-      )}
-    >
-      <IconCmp aria-hidden size={18} className="min-[1100px]:hidden" />
-      <span aria-hidden className="hidden min-[1100px]:inline">
-        {label}
-      </span>
-    </button>
+    <Tooltip content={label}>
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label={label}
+        className={cn(
+          "relative ml-1 inline-grid size-10 place-items-center rounded-pill border-[1.5px] bg-transparent align-middle text-[13px] leading-none font-semibold after:absolute after:-inset-1 after:content-[''] hover:bg-surface-raised active:scale-[.97]",
+          "min-[1100px]:ml-1.5 min-[1100px]:inline-flex min-[1100px]:h-9 min-[1100px]:w-auto min-[1100px]:px-3.5",
+          danger ? "border-error text-error" : "border-line text-text",
+        )}
+      >
+        <IconCmp aria-hidden size={18} className="min-[1100px]:hidden" />
+        <span aria-hidden className="hidden min-[1100px]:inline">
+          {label}
+        </span>
+      </button>
+    </Tooltip>
   );
 }
 

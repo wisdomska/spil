@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { initials, useMe } from "@/components/admin/ConsoleShell";
-import { ErrorLine, FieldRow, Input, Select, NumberInput } from "@/components/admin/fields";
+import { ErrorLine, FieldRow, Input, NumberInput } from "@/components/admin/fields";
+import { Select } from "@/components/ui/Select";
 import {
   adminApi,
   ConfirmDialog,
@@ -324,16 +325,11 @@ function Accounts({ me }: { me: Me }) {
                   <Select
                     aria-label={t("roleFor", { name: a.name })}
                     value={a.role}
-                    onChange={(e) => changeRole(a, e.target.value as AdminRole)}
+                    onValueChange={(v) => changeRole(a, v as AdminRole)}
                     className="min-w-[150px] flex-1 sm:flex-none"
                     disabled={a.role === "owner" && ownerCount <= 1}
-                  >
-                    {ROLES.map((r) => (
-                      <option key={r} value={r}>
-                        {tr(r)}
-                      </option>
-                    ))}
-                  </Select>
+                    options={ROLES.map((r) => ({ value: r, label: tr(r) }))}
+                  />
                   <OutlineButton
                     onClick={() =>
                       setConfirm({
@@ -413,15 +409,10 @@ function Accounts({ me }: { me: Me }) {
             <FieldRow id="ac-role" label={t("role")}>
               <Select
                 id="ac-role"
-                value={form.role}
-                onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
-              >
-                {ROLES.map((r) => (
-                  <option key={r} value={r}>
-                    {tr(r)}
-                  </option>
-                ))}
-              </Select>
+                value={form.role ?? "moderator"}
+                onValueChange={(v) => setForm((f) => ({ ...f, role: v }))}
+                options={ROLES.map((r) => ({ value: r, label: tr(r) }))}
+              />
             </FieldRow>
           </>
         )}

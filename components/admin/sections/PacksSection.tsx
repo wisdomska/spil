@@ -4,7 +4,8 @@ import { ListBulletsIcon, PencilSimpleIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { FieldRow, Input, Select, TextArea, NumberInput } from "@/components/admin/fields";
+import { FieldRow, Input, TextArea, NumberInput } from "@/components/admin/fields";
+import { Select } from "@/components/ui/Select";
 import {
   ActionsTd,
   adminApi,
@@ -100,6 +101,12 @@ export function PacksSection() {
         : blank,
     );
   };
+  const pick =
+    <K extends keyof Form>(k: K) =>
+    (value: string) => {
+      setForm((f) => ({ ...f, [k]: value }));
+      setError(null);
+    };
   const set =
     <K extends keyof Form>(k: K) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -258,89 +265,95 @@ export function PacksSection() {
             >
               <PackGlyph icon={form.icon} size={22} />
             </span>
-            <Select id="pk-icon" value={form.icon} onChange={set("icon")} className="flex-1">
-              {ICON_NAMES.map((k) => (
-                <option key={k} value={k}>
-                  {iconLabel(k)}
-                </option>
-              ))}
-            </Select>
+            <Select
+              id="pk-icon"
+              value={form.icon}
+              onValueChange={pick("icon")}
+              className="flex-1"
+              options={ICON_NAMES.map((k) => ({ value: k, label: iconLabel(k) }))}
+            />
           </div>
         </FieldRow>
         <div className="grid gap-4 sm:grid-cols-2">
           <FieldRow id="pk-tone" label={t("tone")}>
-            <Select id="pk-tone" value={form.tone} onChange={set("tone")}>
-              {(["accent", "raised", "inverse"] as const).map((v) => (
-                <option key={v} value={v}>
-                  {t(`tones.${v}`)}
-                </option>
-              ))}
-            </Select>
+            <Select
+              id="pk-tone"
+              value={form.tone}
+              onValueChange={pick("tone")}
+              options={(["accent", "raised", "inverse"] as const).map((v) => ({
+                value: v,
+                label: t(`tones.${v}`),
+              }))}
+            />
           </FieldRow>
           <FieldRow id="pk-region" label={t("region")}>
-            <Select id="pk-region" value={form.region} onChange={set("region")}>
-              <option value="">{t("regions.all")}</option>
-              <option value="GH">{t("regions.GH")}</option>
-              <option value="NG">{t("regions.NG")}</option>
-            </Select>
+            <Select
+              id="pk-region"
+              value={form.region}
+              onValueChange={pick("region")}
+              options={[
+                { value: "", label: t("regions.all") },
+                { value: "GH", label: t("regions.GH") },
+                { value: "NG", label: t("regions.NG") },
+              ]}
+            />
           </FieldRow>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <FieldRow id="pk-section" label={t("section")}>
-            <Select id="pk-section" value={form.section} onChange={set("section")}>
-              {(["everyday", "life", "after_dark"] as const).map((v) => (
-                <option key={v} value={v}>
-                  {t(`sections.${v}`)}
-                </option>
-              ))}
-            </Select>
+            <Select
+              id="pk-section"
+              value={form.section}
+              onValueChange={pick("section")}
+              options={(["everyday", "life", "after_dark"] as const).map((v) => ({
+                value: v,
+                label: t(`sections.${v}`),
+              }))}
+            />
           </FieldRow>
           <FieldRow id="pk-spice" label={t("spice")} hint={t("spiceHint")}>
-            <Select id="pk-spice" value={form.spice} onChange={set("spice")}>
-              {["1", "2", "3", "4", "5"].map((v) => (
-                <option key={v} value={v}>
-                  {v}
-                </option>
-              ))}
-            </Select>
+            <Select
+              id="pk-spice"
+              value={form.spice}
+              onValueChange={pick("spice")}
+              options={["1", "2", "3", "4", "5"].map((v) => ({ value: v, label: v }))}
+            />
           </FieldRow>
         </div>
         <FieldRow id="pk-premium" label={t("premium")} hint={t("premiumHint")}>
-          <Select id="pk-premium" value={form.premium} onChange={set("premium")}>
-            <option value="free">{t("premiumFree")}</option>
-            <option value="premium">{t("premiumOn")}</option>
-          </Select>
+          <Select
+            id="pk-premium"
+            value={form.premium}
+            onValueChange={pick("premium")}
+            options={[
+              { value: "free", label: t("premiumFree") },
+              { value: "premium", label: t("premiumOn") },
+            ]}
+          />
         </FieldRow>
         <FieldRow id="pk-min-age" label={t("minAgeLabel")} hint={t("minAgeHint")}>
           <Select
             id="pk-min-age"
             value={String(form.minAge)}
-            onChange={(e) => {
-              setForm((f) => ({ ...f, minAge: Number(e.target.value) as AdminPack["minAge"] }));
+            onValueChange={(v) => {
+              setForm((f) => ({ ...f, minAge: Number(v) as AdminPack["minAge"] }));
               setError(null);
             }}
-          >
-            {MIN_AGES.map((v) => (
-              <option key={v} value={v}>
-                {t(`minAges.${v}`)}
-              </option>
-            ))}
-          </Select>
+            options={MIN_AGES.map((v) => ({ value: String(v), label: t(`minAges.${v}`) }))}
+          />
         </FieldRow>
         <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
           <FieldRow id="pk-status" label={t("status")} hint={t("statusHint")}>
             <Select
               id="pk-status"
               value={form.status}
-              onChange={set("status")}
+              onValueChange={pick("status")}
               aria-describedby="pk-status-hint"
-            >
-              {(["live", "draft", "hidden"] as const).map((v) => (
-                <option key={v} value={v}>
-                  {ts(v)}
-                </option>
-              ))}
-            </Select>
+              options={(["live", "draft", "hidden"] as const).map((v) => ({
+                value: v,
+                label: ts(v),
+              }))}
+            />
           </FieldRow>
           <FieldRow id="pk-order" label={t("order")}>
             <NumberInput

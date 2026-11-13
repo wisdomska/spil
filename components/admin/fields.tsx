@@ -1,6 +1,6 @@
 "use client";
 
-import { CaretDownIcon, MinusIcon, PlusIcon, WarningCircleIcon } from "@phosphor-icons/react";
+import { MinusIcon, PlusIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { forwardRef } from "react";
 import { cn } from "@/lib/cn";
 
@@ -134,25 +134,6 @@ export const TextArea = forwardRef<
     />
   );
 });
-
-export function Select({
-  className,
-  children,
-  ...rest
-}: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  return (
-    <span className={cn("relative block", className)}>
-      <select className={cn(FIELD, "h-12 cursor-pointer appearance-none pr-10")} {...rest}>
-        {children}
-      </select>
-      <CaretDownIcon
-        aria-hidden
-        size={16}
-        className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-text-muted"
-      />
-    </span>
-  );
-}
 
 /** Inline error under a form (design role="alert" line with the warning icon). */
 export function ErrorLine({ children }: { children: React.ReactNode }) {

@@ -26,6 +26,7 @@ import {
   type ConfirmState,
 } from "@/components/admin/ui";
 import type { AdminRoom } from "@/lib/admin/types";
+import { Tooltip } from "@/components/ui/Tooltip";
 
 type Chip = "all" | "active" | "stuck" | "finished" | "closed";
 const CHIPS = ["all", "active", "stuck", "finished", "closed"] as const;
@@ -105,12 +106,15 @@ export function RoomsSection() {
               <Td nowrap>
                 <StatusLabel status={r.status} />
                 {r.stuck && (
-                  <span
-                    title={t("stuckHint")}
-                    className="ml-2 rounded-pill bg-surface-raised px-2 py-1 align-middle text-[12px] leading-none font-semibold text-text-muted"
-                  >
-                    {t("stuck")}
-                  </span>
+                  <Tooltip content={t("stuckHint")}>
+                    <span
+                      tabIndex={0}
+                      aria-description={t("stuckHint")}
+                      className="ml-2 rounded-pill bg-surface-raised px-2 py-1 align-middle text-[12px] leading-none font-semibold text-text-muted"
+                    >
+                      {t("stuck")}
+                    </span>
+                  </Tooltip>
                 )}
               </Td>
               <Td muted nowrap noPhone>

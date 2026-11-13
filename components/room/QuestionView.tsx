@@ -253,7 +253,6 @@ export function QuestionView({ state, onDone, flags = false, preview }: Props) {
         <button
           type="button"
           aria-disabled={noSkips || undefined}
-          title={noSkips ? t("skipLimit") : undefined}
           onClick={() => answer("skip", true)}
           className="h-12 rounded-pill border-0 bg-transparent px-3 text-[15px] leading-none font-semibold whitespace-nowrap text-text not-aria-disabled:hover:bg-surface-raised aria-disabled:text-text-muted"
         >

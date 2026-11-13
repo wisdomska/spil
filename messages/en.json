@@ -960,7 +960,8 @@
       "pageLabel": "Page {page}",
       "pageOf": "Page {page} of {pages}",
       "decrease": "Lower {field}",
-      "increase": "Raise {field}"
+      "increase": "Raise {field}",
+      "clearSearch": "Clear search"
     },
     "status": {
       "live": "Live",

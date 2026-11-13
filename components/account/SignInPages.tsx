@@ -14,6 +14,7 @@ import { useTurnstile } from "@/components/ui/Turnstile";
 import { saveAccount } from "@/lib/account/device";
 import { passwordProblem } from "@/lib/account/rules";
 import { api, ClientApiError } from "@/lib/api/client";
+import { Checkbox } from "@/components/ui/Checkbox";
 
 type Signed = { account: { username: string } };
 
@@ -151,12 +152,7 @@ export function SignInPage() {
         />
         {guest.data?.progress && (
           <label className="flex min-h-12 cursor-pointer items-center gap-3 text-[15px] leading-[1.35] font-semibold">
-            <input
-              type="checkbox"
-              checked={merge}
-              onChange={(e) => setMerge(e.target.checked)}
-              className="size-5 shrink-0 accent-accent"
-            />
+            <Checkbox checked={merge} onCheckedChange={setMerge} />
             {t("merge")}
           </label>
         )}

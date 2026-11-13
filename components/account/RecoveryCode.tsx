@@ -4,6 +4,7 @@ import { CheckIcon, CopyIcon, KeyIcon } from "@phosphor-icons/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
 
 /** The one-time recovery code: shown once, copied or written down, then confirmed. */
 export function RecoveryCode({ code, onDone }: { code: string; onDone: () => void }) {
@@ -51,14 +52,12 @@ export function RecoveryCode({ code, onDone }: { code: string; onDone: () => voi
         {copied ? t("copied") : t("copy")}
       </Button>
       <label className="flex min-h-12 cursor-pointer items-center gap-3 text-[15px] leading-[1.35] font-semibold">
-        <input
-          type="checkbox"
+        <Checkbox
           checked={saved}
-          onChange={(e) => {
-            setSaved(e.target.checked);
+          onCheckedChange={(c) => {
+            setSaved(c);
             setNudge(false);
           }}
-          className="size-5 shrink-0 accent-accent"
         />
         {t("codeSaved")}
       </label>

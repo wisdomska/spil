@@ -19,6 +19,7 @@ import {
 } from "@/components/admin/ui";
 import { cn } from "@/lib/cn";
 import type { AdminUser, AdminUserSummary } from "@/lib/admin/types";
+import { Tooltip } from "@/components/ui/Tooltip";
 
 type Chip = "all" | "accounts" | "guests" | "new" | "active";
 const CHIPS = ["all", "accounts", "guests", "new", "active"] as const;
@@ -131,12 +132,15 @@ export function UsersSection() {
                     {u.username ?? t("noName")}
                   </span>
                   {u.kind === "guest" && (
-                    <span
-                      title={t("guestTagHint")}
-                      className="shrink-0 rounded-pill border border-line-strong px-2 py-0.5 font-mono text-[11px] leading-none font-semibold tracking-wide text-text-muted uppercase"
-                    >
-                      {t("guestTag")}
-                    </span>
+                    <Tooltip content={t("guestTagHint")}>
+                      <span
+                        tabIndex={0}
+                        aria-description={t("guestTagHint")}
+                        className="shrink-0 rounded-pill border border-line-strong px-2 py-0.5 font-mono text-[11px] leading-none font-semibold tracking-wide text-text-muted uppercase"
+                      >
+                        {t("guestTag")}
+                      </span>
+                    </Tooltip>
                   )}
                 </span>
               </Td>
