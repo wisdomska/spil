@@ -18,6 +18,8 @@ const MATRIX: Record<Permission, Record<AdminRole, boolean>> = {
   "rooms.close": { owner: true, content_lead: false, moderator: true },
   "rooms.advance": { owner: true, content_lead: false, moderator: true },
   "users.read": { owner: true, content_lead: false, moderator: true },
+  "users.act": { owner: true, content_lead: false, moderator: true },
+  "users.delete": { owner: true, content_lead: false, moderator: false },
   "packs.read": { owner: true, content_lead: true, moderator: true },
   "packs.write": { owner: true, content_lead: true, moderator: false },
   "questions.read": { owner: true, content_lead: true, moderator: true },

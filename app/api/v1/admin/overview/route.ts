@@ -1,7 +1,8 @@
 import { ApiError } from "@/lib/api/errors";
 import { route } from "@/lib/api/handler";
 import { getCounts } from "@/lib/admin/queries";
-import { requireAdmin } from "@/lib/admin/server";
+import { fetchAll, requireAdmin } from "@/lib/admin/server";
+import { getSettings } from "@/lib/flags";
 import { fillDays, isoDay, totalsSince } from "@/lib/admin/stats";
 import type { Overview } from "@/lib/admin/types";
 import { getAdminClient } from "@/lib/supabase/admin";
@@ -12,21 +13,28 @@ export const GET = route(async (request): Promise<Overview> => {
   const db = getAdminClient();
   const now = new Date();
   const weekStart = isoDay(now, 6);
-  const [stats, plays, packs, reports, counts, captcha] = await Promise.all([
-    db
-      .from("stats_daily")
-      .select("day, games_started, games_finished, joins")
-      .gte("day", isoDay(now, 29))
-      .order("day", { ascending: false }),
-    db.from("pack_plays").select("pack_id, started").gte("day", weekStart),
-    db.from("packs").select("id, name").is("room_id", null).order("sort_order").order("name"),
-    db.from("reports").select("question_id").eq("status", "open").not("question_id", "is", null),
-    getCounts(),
-    db
-      .from("captcha_events")
-      .select("id", { count: "exact", head: true })
-      .gte("created_at", new Date(now.getTime() - 7 * 86_400_000).toISOString()),
-  ]);
+  const weekAgo = new Date(now.getTime() - 7 * 86_400_000).toISOString();
+  const [stats, plays, packs, reports, counts, captcha, rooms, summary, settings] =
+    await Promise.all([
+      db
+        .from("stats_daily")
+        .select("day, games_started, games_finished, joins")
+        .gte("day", isoDay(now, 29))
+        .order("day", { ascending: false }),
+      db.from("pack_plays").select("pack_id, started").gte("day", weekStart),
+      db.from("packs").select("id, name").is("room_id", null).order("sort_order").order("name"),
+      db.from("reports").select("question_id").eq("status", "open").not("question_id", "is", null),
+      getCounts(),
+      db
+        .from("captcha_events")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", weekAgo),
+      fetchAll<{ mode: string }>((from, to) =>
+        db.from("rooms").select("mode").gte("created_at", weekAgo).range(from, to),
+      ),
+      db.rpc("admin_user_summary"),
+      getSettings(),
+    ]);
   if (stats.error || plays.error || packs.error || reports.error || captcha.error)
     throw new ApiError("INTERNAL");
 
@@ -63,7 +71,18 @@ export const GET = route(async (request): Promise<Overview> => {
     : { data: [] as Array<{ id: string; text: string }> };
   const textOf = new Map((texts.data ?? []).map((q) => [q.id, q.text]));
 
+  const byMode = new Map<string, number>();
+  for (const r of rooms) byMode.set(r.mode, (byMode.get(r.mode) ?? 0) + 1);
+  const people = (summary.data ?? {}) as { playingNow?: number; banned?: number };
+
   return {
+    modePlays: [...byMode.entries()]
+      .map(([mode, started]) => ({ mode, started }))
+      .sort((a, b) => b.started - a.started),
+    playingNow: people.playingNow ?? 0,
+    banned: people.banned ?? 0,
+    noticeOn: settings.noticeOn && settings.notice.trim().length > 0,
+    gamesOff: settings.disabledModes.length,
     today: totalsSince(days, isoDay(now)),
     week: totalsSince(days, weekStart),
     liveRooms: counts.liveRooms,

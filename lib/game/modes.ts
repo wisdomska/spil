@@ -52,8 +52,14 @@ export function modeMinPlayers(mode: Mode, adminMin: number): number {
 }
 
 /** Modes a room can pick: built, and adult-only ones only when everyone is 18 or older. */
-export function availableModes(floor: number): Mode[] {
-  return MODES.filter((m) => MODE_RULES[m].available && (!MODE_RULES[m].adultOnly || floor >= 18));
+/**
+ * Games this host may start: built, adult-only ones for 18+ hosts only, and not switched off in
+ * the admin console (`off`, owner request 2026-11-12).
+ */
+export function availableModes(floor: number, off: readonly string[] = []): Mode[] {
+  return MODES.filter(
+    (m) => MODE_RULES[m].available && (!MODE_RULES[m].adultOnly || floor >= 18) && !off.includes(m),
+  );
 }
 
 /** Whether the guessing phase is about questions (each player guesses the room) not players. */

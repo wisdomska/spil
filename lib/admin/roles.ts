@@ -11,6 +11,8 @@ export type Permission =
   | "rooms.close"
   | "rooms.advance"
   | "users.read"
+  | "users.act"
+  | "users.delete"
   | "packs.read"
   | "packs.write"
   | "questions.read"
@@ -38,6 +40,10 @@ export const PERMISSIONS: Record<Permission, readonly AdminRole[]> = {
   "rooms.advance": OWNER_MOD,
   // Usernames, stats and when someone was last seen; never an email or what they answered.
   "users.read": OWNER_MOD,
+  // Ban, unban, remove from rooms, sign out everywhere, rename (owner request 2026-11-12).
+  "users.act": OWNER_MOD,
+  // Deleting a person and everything they made cannot be undone: owners only.
+  "users.delete": OWNER,
   // Moderators read packs only to filter questions; they never edit them.
   "packs.read": ALL,
   "packs.write": OWNER_LEAD,

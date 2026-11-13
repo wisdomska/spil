@@ -41,6 +41,8 @@ export type PlayAgain = { mode: Mode; packId: string; packName: string; count: n
 type Props = {
   packs: SetupPack[];
   floor: number;
+  /** Games switched off in the admin console; they are left out. */
+  off?: readonly string[];
   /** A game that starts in one tap is being created: show its spinner, hold the others. */
   starting: Mode | null;
   /** In a room: the game it plays now (marked as current). */
@@ -76,6 +78,7 @@ const POUR_LEVEL = 62;
 export function GameStep({
   packs,
   floor,
+  off = [],
   starting,
   current,
   playAgain,
@@ -84,7 +87,7 @@ export function GameStep({
 }: Props) {
   const t = useTranslations("setup");
   const tm = useTranslations("modes");
-  const { featured, groups } = setupModes(floor);
+  const { featured, groups } = setupModes(floor, off);
   const busy = starting !== null;
   // The glass fills once the page is in, so the pour is seen.
   const [poured, setPoured] = useState(0);

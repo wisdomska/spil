@@ -4,6 +4,7 @@ import { getMessages, getTranslations } from "next-intl/server";
 import { fontVariables } from "./fonts";
 import { Grain } from "@/components/brand/Grain";
 import { Telemetry } from "@/components/site/Telemetry";
+import { NoticeBanner } from "@/components/site/NoticeBanner";
 import { Providers } from "./providers";
 import { BASE_SCOPE, pickMessages } from "@/lib/i18n/pick";
 import { INDEXABLE, SITE_URL, siteVerification } from "@/lib/seo";
@@ -45,7 +46,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" data-theme="dark" className={fontVariables}>
       <body>
         <NextIntlClientProvider messages={messages}>
-          <Providers>{children}</Providers>
+          <Providers>
+            <NoticeBanner />
+            {children}
+          </Providers>
         </NextIntlClientProvider>
         <Grain />
         <Telemetry />

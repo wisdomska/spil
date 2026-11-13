@@ -23,8 +23,16 @@ export type Overview = {
   captchaFailures: number;
   packPlays: Array<{ packId: string; name: string; started: number }>;
   flagged: Array<{ questionId: string; text: string; count: number }>;
-  /** Last 30 days, newest first, for the CSV export. */
+  /** Last 30 days, newest first, for the CSV export and the trend chart. */
   days: DayStats[];
+  /** Rooms started in the last 7 days, per game, most played first. */
+  modePlays: Array<{ mode: string; started: number }>;
+  /** People in a live room seen in the last five minutes, and current bans. */
+  playingNow: number;
+  banned: number;
+  /** Live switches an admin should know are on. */
+  noticeOn: boolean;
+  gamesOff: number;
 };
 
 export type AdminRoom = {
@@ -54,6 +62,48 @@ export type AdminUser = {
   wins: number;
   points: number;
   crews: number;
+  banned: boolean;
+  /** When a timed ban ends; null with banned true means until an admin lifts it. */
+  bannedUntil: string | null;
+};
+
+/** One person in full (admin_user_detail). Never an email address or what they answered. */
+export type AdminUserDetail = {
+  userId: string;
+  kind: "account" | "guest";
+  username: string | null;
+  createdAt: string;
+  lastSeen: string | null;
+  /** Phones and browsers signed in right now. */
+  sessions: number;
+  ageBand: string | null;
+  stats: {
+    games: number;
+    wins: number;
+    points: number;
+    hosted: number;
+    bullseyes: number;
+    modes: string[];
+  } | null;
+  dailyAnswers: number;
+  nicknames: string[];
+  rooms: Array<{
+    roomId: string;
+    code: string;
+    mode: string;
+    status: string;
+    playerId: string;
+    playerStatus: string;
+    nickname: string;
+    isHost: boolean;
+    joinedAt: string;
+  }>;
+  liveRooms: number;
+  crews: Array<{ crewId: string; name: string; nickname: string }>;
+  reportsAgainst: Array<{ id: string; reason: string; status: string; createdAt: string }>;
+  reportsAgainstTotal: number;
+  reportsBy: number;
+  ban: { reason: string; by: string; at: string; until: string | null } | null;
 };
 
 export type AdminUserSummary = {
@@ -65,6 +115,9 @@ export type AdminUserSummary = {
   newGuests: number;
   /** Every guest session, including visitors who never played. */
   visitors: number;
+  banned: number;
+  /** People in a live room seen in the last five minutes. */
+  playingNow: number;
 };
 
 export type AdminPack = {
@@ -152,6 +205,10 @@ export type SettingsPayload = {
   };
   flags: Record<string, boolean>;
   canResetData: boolean;
+  /** The notice shown to players while on. */
+  notice: { text: string; on: boolean };
+  /** Games switched off for new rooms. */
+  disabledModes: string[];
 };
 
 export type ImportSummary = {

@@ -1,10 +1,11 @@
 "use client";
 
+import { MegaphoneSimpleIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { initials, useMe } from "@/components/admin/ConsoleShell";
-import { ErrorLine, FieldRow, Input, NumberInput } from "@/components/admin/fields";
+import { ErrorLine, FieldRow, Input, NumberInput, TextArea } from "@/components/admin/fields";
 import { Select } from "@/components/ui/Select";
 import {
   adminApi,
@@ -22,6 +23,8 @@ import { Button } from "@/components/ui/Button";
 import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
 import { SwitchRow } from "@/components/ui/Switch";
 import { can, ROLES, type AdminRole } from "@/lib/admin/roles";
+import { cn } from "@/lib/cn";
+import { MODE_RULES, MODES } from "@/lib/game";
 import { FLAG_KEYS, PASSWORD_MIN } from "@/lib/admin/schemas";
 import type { AdminAccount, Me, SettingsPayload } from "@/lib/admin/types";
 
@@ -160,6 +163,9 @@ function GameSettings() {
         })}
       </Panel>
 
+      <NoticeCard notice={q.data.notice} />
+      <GamesCard disabled={q.data.disabledModes} />
+
       {q.data.canResetData && (
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-card border border-error px-6 py-5">
           <div className="grid min-w-0 flex-[1_1_240px] gap-1.5">
@@ -186,6 +192,118 @@ function GameSettings() {
       )}
       <ConfirmDialog state={confirm} setState={setConfirm} />
     </>
+  );
+}
+
+/**
+ * The one-line notice above every player page (owner request 2026-11-12): maintenance, an event,
+ * a known issue. A live preview shows exactly what players will see.
+ */
+function NoticeCard({ notice }: { notice: SettingsPayload["notice"] }) {
+  const t = useTranslations("admin.settings");
+  const run = useAdminAction();
+  const [text, setText] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const value = text ?? notice.text;
+  const save = async (on: boolean) => {
+    if (on && !value.trim()) return setError(t("noticeEmpty"));
+    setBusy(true);
+    const res = await run(() => adminApi("PUT", "/settings/notice", { text: value.trim(), on }), {
+      ok: on ? t("noticeOnDone") : t("noticeOffDone"),
+    });
+    setBusy(false);
+    if (!res.code) setText(null);
+  };
+  return (
+    <Panel className="grid gap-4 p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="m-0 text-[17px] leading-none font-bold">{t("noticeTitle")}</h2>
+        <span
+          className={cn(
+            "rounded-pill border px-2.5 py-1 text-[12px] leading-none font-semibold",
+            notice.on
+              ? "border-accent bg-accent-soft text-accent-ink"
+              : "border-line text-text-muted",
+          )}
+        >
+          {notice.on ? t("noticeLive") : t("noticeOff")}
+        </span>
+      </div>
+      <FieldRow id="set-notice" label={t("noticeLabel")} hint={t("noticeHint")}>
+        <TextArea
+          id="set-notice"
+          rows={2}
+          maxLength={200}
+          value={value}
+          placeholder={t("noticePh")}
+          aria-describedby="set-notice-hint"
+          onChange={(e) => {
+            setText(e.target.value);
+            setError(null);
+          }}
+        />
+      </FieldRow>
+      {value.trim() && (
+        <div className="grid gap-2">
+          <span className="text-[13px] leading-none font-medium text-text-muted">
+            {t("noticePreview")}
+          </span>
+          <div className="flex items-center gap-3 rounded-input border border-line bg-surface-raised px-4 py-2.5 text-[14px] leading-[1.4] font-medium">
+            <MegaphoneSimpleIcon aria-hidden size={18} className="shrink-0 text-accent-ink" />
+            {value.trim()}
+          </div>
+        </div>
+      )}
+      <ErrorLine>{error}</ErrorLine>
+      <div className="flex flex-wrap gap-2.5">
+        <Button size="md" loading={busy} className="px-[22px]" onClick={() => save(true)}>
+          {notice.on ? t("noticeUpdate") : t("noticeShow")}
+        </Button>
+        {notice.on && <OutlineButton onClick={() => save(false)}>{t("noticeHide")}</OutlineButton>}
+      </div>
+    </Panel>
+  );
+}
+
+/** Switch single games off for new rooms (owner request 2026-11-12). One game always stays on. */
+function GamesCard({ disabled }: { disabled: string[] }) {
+  const t = useTranslations("admin.settings");
+  const tm = useTranslations("modes");
+  const run = useAdminAction();
+  const live = MODES.filter((m) => MODE_RULES[m].available);
+  const onCount = live.filter((m) => !disabled.includes(m)).length;
+  return (
+    <Panel className="grid gap-3 p-6">
+      <div className="mb-1 grid gap-1.5">
+        <h2 className="m-0 text-[17px] leading-none font-bold">{t("gamesTitle")}</h2>
+        <p className="m-0 text-[14px] leading-[1.45] text-text-muted">
+          {t("gamesBody", { on: onCount, total: live.length })}
+        </p>
+      </div>
+      {live.map((m) => {
+        const on = !disabled.includes(m);
+        return (
+          <SwitchRow
+            key={m}
+            look="plain"
+            className="-mx-2 w-[calc(100%+16px)]"
+            checked={on}
+            title={tm(`${m}.name`)}
+            description={MODE_RULES[m].adultOnly ? t("gamesAdult") : undefined}
+            onCheckedChange={(next) => {
+              if (!next && onCount <= 1) return;
+              const list = next ? disabled.filter((d) => d !== m) : [...disabled, m];
+              void run(() => adminApi("PUT", "/settings/games", { disabled: list }), {
+                ok: next
+                  ? t("gameOn", { game: tm(`${m}.name`) })
+                  : t("gameOff", { game: tm(`${m}.name`) }),
+              });
+            }}
+          />
+        );
+      })}
+    </Panel>
   );
 }
 

@@ -30,6 +30,7 @@ async function Picker() {
         packs={packs}
         questionsPerGame={settings.questionsPerGame}
         ageLockHours={settings.ageLockHours}
+        disabledModes={settings.disabledModes}
       />
     </IntlScope>
   );

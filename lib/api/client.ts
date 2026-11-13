@@ -56,6 +56,11 @@ export async function api<T>(method: string, path: string, body?: unknown): Prom
   const data = text ? (JSON.parse(text) as T | ApiErrorBody) : ({} as T);
   if (!res.ok) {
     const error = (data as ApiErrorBody).error;
+    // A banned player sees one clear page instead of an error on every tap.
+    if (error?.code === "BANNED" && !path.startsWith("/admin") && typeof window !== "undefined")
+      // A full page load on purpose: it drops every cached room and query for this phone.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      window.location.href = "/banned";
     throw new ClientApiError(error?.code ?? "INTERNAL", error?.message ?? "", res.status);
   }
   return data as T;

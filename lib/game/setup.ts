@@ -48,11 +48,14 @@ export function setupPath(packs: readonly SetupPack[], mode: Mode): SetupPath {
 }
 
 /** The games shown in step 1 for this age floor, in page order (featured first). */
-export function setupModes(floor: number): {
+export function setupModes(
+  floor: number,
+  off: readonly string[] = [],
+): {
   featured: Mode | null;
   groups: Array<{ id: ModeGroupId; modes: Mode[] }>;
 } {
-  const allowed = new Set(availableModes(floor));
+  const allowed = new Set(availableModes(floor, off));
   return {
     featured: allowed.has(FEATURED_MODE) ? FEATURED_MODE : null,
     groups: MODE_GROUPS.map((g) => ({
@@ -63,8 +66,12 @@ export function setupModes(floor: number): {
 }
 
 /** Reads a game from the URL; only games this player may play count. */
-export function parseSetupMode(raw: string | null, floor: number): Mode | null {
-  return raw && (availableModes(floor) as string[]).includes(raw) ? (raw as Mode) : null;
+export function parseSetupMode(
+  raw: string | null,
+  floor: number,
+  off: readonly string[] = [],
+): Mode | null {
+  return raw && (availableModes(floor, off) as string[]).includes(raw) ? (raw as Mode) : null;
 }
 
 /** SPIL-08: 5 · 10 · 15 · 20 · All. */

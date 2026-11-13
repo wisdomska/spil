@@ -19,7 +19,13 @@ import {
   XIcon,
   type Icon,
 } from "@phosphor-icons/react";
-import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
+import {
+  CaretDownIcon,
+  CaretLeftIcon,
+  CaretRightIcon,
+  CaretUpDownIcon,
+  CaretUpIcon,
+} from "@phosphor-icons/react";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -363,6 +369,11 @@ export type Col = {
   right?: boolean;
   wide?: boolean;
   noPhone?: boolean;
+  /** Sortable column: the current direction (or none) and what a click does. */
+  sort?: "ascending" | "descending" | "none";
+  onSort?: () => void;
+  /** Replaces the label in the header cell (the select-all checkbox). The label stays for screen readers. */
+  node?: React.ReactNode;
 };
 
 export function DataTable({
@@ -416,14 +427,41 @@ export function DataTable({
                 key={i}
                 scope="col"
                 style={{ width: c.width }}
+                aria-sort={c.onSort ? (c.sort ?? "none") : undefined}
                 className={cn(
                   "sticky top-0 z-[1] bg-surface-raised px-2.5 py-3 font-mono text-[12px] leading-none font-semibold whitespace-nowrap text-text-muted min-[1100px]:px-3.5",
                   c.right ? "text-right" : "text-left",
                   c.wide && WIDE,
                   c.noPhone && NO_PHONE,
+                  c.onSort && "py-1.5",
                 )}
               >
-                {c.label}
+                {c.node ? (
+                  <>
+                    <span className="sr-only">{c.label}</span>
+                    {c.node}
+                  </>
+                ) : c.onSort ? (
+                  <button
+                    type="button"
+                    onClick={c.onSort}
+                    className={cn(
+                      "-mx-2 inline-flex h-9 items-center gap-1 rounded-pill border-0 bg-transparent px-2 font-mono text-[12px] leading-none font-semibold whitespace-nowrap hover:bg-surface hover:text-text",
+                      c.sort && c.sort !== "none" ? "text-accent-ink" : "text-text-muted",
+                    )}
+                  >
+                    {c.label}
+                    {c.sort === "ascending" ? (
+                      <CaretUpIcon aria-hidden size={12} weight="bold" />
+                    ) : c.sort === "descending" ? (
+                      <CaretDownIcon aria-hidden size={12} weight="bold" />
+                    ) : (
+                      <CaretUpDownIcon aria-hidden size={12} className="opacity-50" />
+                    )}
+                  </button>
+                ) : (
+                  c.label
+                )}
               </th>
             ))}
             <th scope="col" className="sticky top-0 z-[1] w-px bg-surface-raised">
@@ -551,9 +589,14 @@ export function Pagination({
   );
 }
 
-export function Tr({ children }: { children: React.ReactNode }) {
+export function Tr({ children, selected }: { children: React.ReactNode; selected?: boolean }) {
   return (
-    <tr className="border-t border-line transition-colors duration-[120ms] hover:bg-accent-soft">
+    <tr
+      className={cn(
+        "border-t border-line transition-colors duration-[120ms] hover:bg-accent-soft",
+        selected && "bg-accent-soft",
+      )}
+    >
       {children}
     </tr>
   );
@@ -724,6 +767,8 @@ export function FormDialog({
   busy,
   onDelete,
   submitLabel,
+  danger,
+  submitDisabled,
   children,
 }: {
   open: boolean;
@@ -734,6 +779,10 @@ export function FormDialog({
   busy?: boolean;
   onDelete?: () => void;
   submitLabel?: string;
+  /** The submit button is destructive (ban, delete). */
+  danger?: boolean;
+  /** Typed confirmations keep the button off until the text matches. */
+  submitDisabled?: boolean;
   children: React.ReactNode;
 }) {
   const t = useTranslations("admin.common");
@@ -749,7 +798,7 @@ export function FormDialog({
         noValidate
         onSubmit={(e) => {
           e.preventDefault();
-          if (!busy) onSubmit();
+          if (!busy && !submitDisabled) onSubmit();
         }}
         className="grid gap-4"
       >
@@ -765,7 +814,14 @@ export function FormDialog({
           <Button variant="ghost" size="md" onClick={onClose}>
             {t("cancel")}
           </Button>
-          <Button type="submit" size="md" loading={busy} className="px-[22px]">
+          <Button
+            type="submit"
+            size="md"
+            loading={busy}
+            variant={danger ? "destructive" : "primary"}
+            softDisabled={submitDisabled}
+            className="px-[22px]"
+          >
             {submitLabel ?? t("save")}
           </Button>
         </div>

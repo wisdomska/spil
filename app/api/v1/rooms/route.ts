@@ -1,4 +1,5 @@
 import { requireUser } from "@/lib/api/auth";
+import { getSettings } from "@/lib/flags";
 import { ApiError, fromDbError } from "@/lib/api/errors";
 import { clientIp, readBody, route } from "@/lib/api/handler";
 import { isCrewMember } from "@/lib/api/crews";
@@ -22,6 +23,9 @@ export const POST = route(async (request) => {
   if (body.crewId && !(await isCrewMember(body.crewId, userId))) throw new ApiError("NOT_FOUND");
   const rule = MODE_RULES[body.mode];
   if (!rule.available || (rule.adultOnly && floor < 18)) throw new ApiError("MODE_UNAVAILABLE");
+  // Games switched off in the admin console (owner request 2026-11-12).
+  if ((await getSettings()).disabledModes.includes(body.mode))
+    throw new ApiError("MODE_UNAVAILABLE");
   await rateLimit("roomCreate", userId);
   await verifyTurnstile(body.captchaToken, clientIp(request), "create_room", request);
   const pack = await requireLivePack(body.packId, floor, modeFormat(body.mode));

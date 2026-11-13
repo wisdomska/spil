@@ -24,15 +24,18 @@ async function read(): Promise<SettingsPayload["settings"]> {
 /** GET /admin/settings: game settings and feature flags (read fresh, not from the cache). */
 export const GET = route(async (request): Promise<SettingsPayload> => {
   const me = await requireAdmin(request, "account.self");
-  const [settings, flags] = await Promise.all([
+  const [settings, flags, extra] = await Promise.all([
     read(),
     getAdminClient().from("feature_flags").select("key, enabled").order("key"),
+    getAdminClient().from("settings").select("notice, notice_on, disabled_modes").maybeSingle(),
   ]);
-  if (flags.error) throw new ApiError("INTERNAL");
+  if (flags.error || extra.error) throw new ApiError("INTERNAL");
   return {
     settings,
     flags: Object.fromEntries((flags.data ?? []).map((f) => [f.key, f.enabled])),
     canResetData: !IS_PROD && me.role === "owner",
+    notice: { text: extra.data?.notice ?? "", on: extra.data?.notice_on ?? false },
+    disabledModes: extra.data?.disabled_modes ?? [],
   };
 });
 

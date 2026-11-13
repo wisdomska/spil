@@ -22,7 +22,8 @@ export type ErrorVariant =
   | "server"
   | "notFoundPage"
   | "tooYoung"
-  | "ageRestricted";
+  | "ageRestricted"
+  | "banned";
 
 type Action = { label: string; href?: string; onClick?: () => void };
 
@@ -73,6 +74,7 @@ export function ErrorScreen({
     // SPIL-02: no retry; the age stays locked on this device for a day.
     tooYoung: { cta: home },
     ageRestricted: { cta: start, alt: home },
+    banned: { cta: { label: c("contactUs"), href: "/contact" }, alt: home },
   };
   const { cta, alt, accent } = map[variant];
   const waking = variant === "waking";

@@ -3,8 +3,8 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(18);
 
-select ok(not has_function_privilege('authenticated', 'public.admin_accounts(text, text, int, int)', 'execute'), 'players cannot list accounts');
-select ok(not has_function_privilege('anon', 'public.admin_accounts(text, text, int, int)', 'execute'), 'visitors cannot list accounts');
+select ok(not has_function_privilege('authenticated', 'public.admin_accounts(text, text, int, int, text)', 'execute'), 'players cannot list accounts');
+select ok(not has_function_privilege('anon', 'public.admin_accounts(text, text, int, int, text)', 'execute'), 'visitors cannot list accounts');
 select ok(not has_function_privilege('authenticated', 'public.admin_user_summary()', 'execute'), 'players cannot read the summary');
 
 insert into auth.users (id, instance_id, aud, role, email, is_anonymous, created_at, last_sign_in_at)

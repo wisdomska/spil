@@ -1132,25 +1132,34 @@ export type Database = {
       settings: {
         Row: {
           age_lock_hours: number;
+          disabled_modes: string[];
           id: boolean;
           max_players: number;
           min_players: number;
+          notice: string;
+          notice_on: boolean;
           questions_per_game: number;
           updated_at: string;
         };
         Insert: {
           age_lock_hours?: number;
+          disabled_modes?: string[];
           id?: boolean;
           max_players?: number;
           min_players?: number;
+          notice?: string;
+          notice_on?: boolean;
           questions_per_game?: number;
           updated_at?: string;
         };
         Update: {
           age_lock_hours?: number;
+          disabled_modes?: string[];
           id?: boolean;
           max_players?: number;
           min_players?: number;
+          notice?: string;
+          notice_on?: boolean;
           questions_per_game?: number;
           updated_at?: string;
         };
@@ -1247,6 +1256,33 @@ export type Database = {
           },
         ];
       };
+      user_bans: {
+        Row: {
+          banned_by: string | null;
+          banned_by_name: string;
+          created_at: string;
+          expires_at: string | null;
+          reason: string;
+          user_id: string;
+        };
+        Insert: {
+          banned_by?: string | null;
+          banned_by_name?: string;
+          created_at?: string;
+          expires_at?: string | null;
+          reason?: string;
+          user_id: string;
+        };
+        Update: {
+          banned_by?: string | null;
+          banned_by_name?: string;
+          created_at?: string;
+          expires_at?: string | null;
+          reason?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       players_public: {
@@ -1276,9 +1312,17 @@ export type Database = {
     };
     Functions: {
       admin_accounts: {
-        Args: { p_filter: string; p_limit: number; p_offset: number; p_query: string };
+        Args: {
+          p_filter: string;
+          p_limit: number;
+          p_offset: number;
+          p_query: string;
+          p_sort?: string;
+        };
         Returns: Json;
       };
+      admin_revoke_sessions: { Args: { p_user: string }; Returns: number };
+      admin_user_detail: { Args: { p_user: string }; Returns: Json };
       admin_user_summary: { Args: never; Returns: Json };
       advance_room: {
         Args: {

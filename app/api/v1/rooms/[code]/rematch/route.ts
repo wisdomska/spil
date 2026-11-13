@@ -1,4 +1,5 @@
 import { codeOf, requireUser, type CodeParams } from "@/lib/api/auth";
+import { getSettings } from "@/lib/flags";
 import { ApiError, fromDbError } from "@/lib/api/errors";
 import { readBody, route } from "@/lib/api/handler";
 import { isOwnCustom } from "@/lib/api/customPacks";
@@ -34,6 +35,13 @@ export const POST = route<CodeParams>(async (request, ctx) => {
   const mode = body.mode ?? roomMode(room.room);
   const rule = MODE_RULES[mode];
   if (!rule.available || (rule.adultOnly && floor < 18)) throw new ApiError("MODE_UNAVAILABLE");
+  // Switching to a game switched off in the admin console; a room already playing it may finish.
+  if (
+    body.mode &&
+    body.mode !== roomMode(room.room) &&
+    (await getSettings()).disabledModes.includes(body.mode)
+  )
+    throw new ApiError("MODE_UNAVAILABLE");
   // Custom packs (Batch 3): a rematch keeps the room's own questions, which are yes or no.
   if (isOwnCustom(room.room, packId)) {
     if (modeFormat(mode) !== "yes_no") throw new ApiError("MODE_UNAVAILABLE");

@@ -37,6 +37,8 @@ type Props = {
   packs: Pack[];
   questionsPerGame: number;
   ageLockHours: number;
+  /** Games switched off in the admin console. */
+  disabledModes?: readonly string[];
 };
 
 /**
@@ -46,7 +48,12 @@ type Props = {
  * steps change an existing room's game and pack, limited to what its youngest player may play.
  * The pack step lives at ?game=<mode>, so Back returns to the games.
  */
-export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: Props) {
+export function CreateRoom({
+  packs: everyone,
+  questionsPerGame,
+  ageLockHours,
+  disabledModes = [],
+}: Props) {
   const t = useTranslations("packs");
   const ts = useTranslations("setup");
   const tm = useTranslations("modes");
@@ -84,7 +91,7 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
   const packs = inRoom ? forRoom.data?.packs : hostFloor > 13 ? forBand.data : everyone;
   // In a room, the packs it may play say how old its youngest player is (never who).
   const floor = inRoom ? Math.max(13, ...(packs ?? []).map((p) => p.minAge)) : hostFloor;
-  const game = parseSetupMode(params.get("game"), floor);
+  const game = parseSetupMode(params.get("game"), floor, disabledModes);
   // A link to a game this phone cannot play (an 18+ game for a younger player): say why, on the
   // game list, instead of dropping them there with no word.
   const asked = params.get("game");
@@ -180,7 +187,10 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
   // "Play again" only when that game and pack can still be played here.
   const again = last && packs?.find((p) => p.id === last.packId && !p.locked);
   const playAgain: PlayAgain | null =
-    last && again && parseSetupMode(last.mode, floor) && packsForMode([again], last.mode).length
+    last &&
+    again &&
+    parseSetupMode(last.mode, floor, disabledModes) &&
+    packsForMode([again], last.mode).length
       ? { ...last, packName: again.name }
       : null;
 
@@ -222,6 +232,7 @@ export function CreateRoom({ packs: everyone, questionsPerGame, ageLockHours }: 
           <GameStep
             packs={packs}
             floor={floor}
+            off={disabledModes}
             starting={starting}
             current={current}
             playAgain={playAgain}

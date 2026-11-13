@@ -10,6 +10,7 @@ import {
   roomFloor,
   roomMode,
 } from "@/lib/api/rooms";
+import { getSettings } from "@/lib/flags";
 import { ApiError } from "@/lib/api/errors";
 import { MODE_RULES, modeFormat } from "@/lib/game";
 import { getAdminClient } from "@/lib/supabase/admin";
@@ -31,6 +32,13 @@ export const PATCH = route<CodeParams>(async (request, ctx) => {
   const mode = body.mode ?? roomMode(room.room);
   const rule = MODE_RULES[mode];
   if (!rule.available || (rule.adultOnly && floor < 18)) throw new ApiError("MODE_UNAVAILABLE");
+  // Switching to a game switched off in the admin console; a room already playing it may finish.
+  if (
+    body.mode &&
+    body.mode !== roomMode(room.room) &&
+    (await getSettings()).disabledModes.includes(body.mode)
+  )
+    throw new ApiError("MODE_UNAVAILABLE");
   const pack = await requireLivePack(body.packId, floor, modeFormat(mode));
 
   const { error } = await getAdminClient()

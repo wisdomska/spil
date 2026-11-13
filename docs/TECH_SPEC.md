@@ -719,14 +719,17 @@ Matches `design/SPIL Admin.dc.html`. Utilitarian, same tokens, both themes.
 
 | Section | Features | Roles |
 |---|---|---|
-| Overview | games started/finished today and 7 days, joins, completion rate, games started per pack (chart), "Needs a look" (open reports, new messages), Export CSV | all |
+| Overview | playing now, games started/finished today and 7 days, joins, completion rate, banned players, 30 day trend (chart), games started per game and per pack, "Switched on right now" strip (notice, games off, bans), "Needs a look" (open reports, new messages), Export CSV | all |
 | Rooms | live rooms list (code, pack, status, players, age), close room | owner, moderator |
+| Users | accounts and guests who played; filter (all, accounts, guests, new, active, banned), search, sort by name, games, points, joined or last seen, Export CSV; a detail panel per person (stats, names used, recent rooms, crews, reports about and by them, ban); actions on one or many (up to 100): ban for 1, 7 or 30 days or until lifted, lift ban, remove from live rooms, sign out everywhere, rename; delete with typed confirmation (owner only). Never an email address or an answer. | owner, moderator |
 | Packs | list, create, edit (name, blurb, icon, tone, adult + heat, region, status, order), delete | owner, content_lead |
 | Questions | filter by pack/status, edit text, status live/draft/hidden, yes rate and answered counts, bulk CSV import/export | owner, content_lead (moderator: hide only) |
 | Reports | open/actioned/dismissed, hide question, remove player, dismiss | owner, moderator |
 | Inbox | contact messages, mark read, archive | owner, moderator |
 | Audit log | every admin action (who, action, target, time), last 300 visible, all stored | all (read) |
-| Settings | questions per game, max players, min players, feature flags; admin accounts (add with temporary password, change role, remove, reset password); edit my details; change my password | owner (own details: everyone) |
+| Settings | questions per game, max players, min players, feature flags; a one-line notice shown above every player page; games switched off for new rooms (rooms playing one finish it, one game always stays on); admin accounts (add with temporary password, change role, remove, reset password); edit my details; change my password | owner (own details: everyone) |
+
+Bans live in `user_bans` (server only, RLS with no policies). `requireUser` refuses a banned player with `403 BANNED`, read from a 15 second cache per instance, and the client sends them to `/banned`. Every native dropdown, checkbox, dialog and tooltip is one of the branded components in `components/ui` (Select, Checkbox, Switch, Sheet, Tooltip); `tests/unit/branded-controls.test.ts` fails on a browser default control anywhere else.
 
 "Reset all data" from the prototype is **dev/staging only**. Every write inserts into `audit_log`. Initial owner is created by a one-off script from env `INITIAL_OWNER_EMAIL` (not hard-coded).
 

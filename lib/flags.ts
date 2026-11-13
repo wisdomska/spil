@@ -11,6 +11,11 @@ export type Settings = {
   minPlayers: number;
   /** Hours a minor's age stays locked on their device (SPIL-02). */
   ageLockHours: number;
+  /** A short notice shown to every player while on (maintenance, events). */
+  notice: string;
+  noticeOn: boolean;
+  /** Games switched off from the admin console. */
+  disabledModes: string[];
 };
 
 // Settings and flags change rarely (admin edits); a short in-memory cache saves two queries on
@@ -28,13 +33,18 @@ export async function getSettings(): Promise<Settings> {
   if (settingsCache && Date.now() - settingsCache.at < TTL_MS) return settingsCache.value;
   const { data } = await getAdminClient()
     .from("settings")
-    .select("questions_per_game, max_players, min_players, age_lock_hours")
+    .select(
+      "questions_per_game, max_players, min_players, age_lock_hours, notice, notice_on, disabled_modes",
+    )
     .maybeSingle();
   const value = {
     questionsPerGame: data?.questions_per_game ?? 10,
     maxPlayers: data?.max_players ?? 12,
     minPlayers: data?.min_players ?? 1,
     ageLockHours: data?.age_lock_hours ?? 24,
+    notice: data?.notice ?? "",
+    noticeOn: data?.notice_on ?? false,
+    disabledModes: data?.disabled_modes ?? [],
   };
   settingsCache = { at: Date.now(), value };
   return value;

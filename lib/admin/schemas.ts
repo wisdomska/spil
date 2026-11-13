@@ -2,6 +2,7 @@
 import { z } from "zod";
 import { ROLES } from "./roles";
 import { Q_STATUSES } from "./questions";
+import { mode } from "@/lib/validation/schemas";
 
 export const PASSWORD_MIN = 10;
 
@@ -81,6 +82,47 @@ export const reportAction = z.object({
   action: z.enum(["dismiss", "hide_question", "remove_player"]),
 });
 
+/** Admin actions on one person (owner request 2026-11-12). */
+export const USER_ACTIONS = ["ban", "unban", "kick", "signout", "rename", "delete"] as const;
+export const BAN_DAYS = [1, 7, 30] as const;
+const banFields = {
+  reason: z.string().trim().max(300).default(""),
+  /** Days the ban lasts; null bans until an admin lifts it. */
+  days: z.union([z.literal(1), z.literal(7), z.literal(30), z.null()]).default(null),
+};
+export const userAction = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("ban"), ...banFields }),
+  z.object({ action: z.literal("unban") }),
+  z.object({ action: z.literal("kick") }),
+  z.object({ action: z.literal("signout") }),
+  z.object({ action: z.literal("rename"), name: z.string().trim().min(1).max(20) }),
+  z.object({ action: z.literal("delete"), confirm: z.string() }),
+]);
+export const bulkUserAction = z.discriminatedUnion("action", [
+  z.object({
+    action: z.literal("ban"),
+    ids: z.array(z.string().uuid()).min(1).max(100),
+    ...banFields,
+  }),
+  z.object({ action: z.literal("unban"), ids: z.array(z.string().uuid()).min(1).max(100) }),
+  z.object({ action: z.literal("kick"), ids: z.array(z.string().uuid()).min(1).max(100) }),
+  z.object({ action: z.literal("signout"), ids: z.array(z.string().uuid()).min(1).max(100) }),
+]);
+
+export const USER_SORTS = [
+  "joined_desc",
+  "joined_asc",
+  "seen_desc",
+  "seen_asc",
+  "games_desc",
+  "games_asc",
+  "points_desc",
+  "points_asc",
+  "name_asc",
+  "name_desc",
+] as const;
+export type UserSort = (typeof USER_SORTS)[number];
+
 export const patchMessage = z.object({ status: z.enum(["new", "read", "archived"]) });
 
 export const patchSettings = z
@@ -95,6 +137,16 @@ export const patchSettings = z
     message: "Maximum players must be at least the minimum.",
     path: ["maxPlayers"],
   });
+
+/** The player notice (owner request 2026-11-12). Turning it on needs some text. */
+export const putNotice = z
+  .object({ text: z.string().trim().max(200), on: z.boolean() })
+  .refine((n) => !n.on || n.text.length > 0, {
+    message: "Write the notice first.",
+    path: ["text"],
+  });
+
+export const putGames = z.object({ disabled: z.array(mode).max(20) });
 
 export const FLAG_KEYS = [
   "polling_only",

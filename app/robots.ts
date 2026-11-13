@@ -6,6 +6,7 @@ const PRIVATE = [
   "/admin",
   "/api/",
   "/r/",
+  "/banned",
   "/crew/",
   "/crews",
   "/badges",
