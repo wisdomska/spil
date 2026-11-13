@@ -16,7 +16,7 @@ export const POST = route(async (request) => {
   const supabase = await getServerClient();
   const { data, error } = await supabase.auth.signInWithPassword(body);
   if (error || !data.user) throw new ApiError("INVALID_CREDENTIALS");
-  const admin = await findAdmin(data.user.id);
+  const admin = await findAdmin(data.user.id, { fresh: true });
   if (!admin) {
     await supabase.auth.signOut({ scope: "local" });
     throw new ApiError("INVALID_CREDENTIALS");

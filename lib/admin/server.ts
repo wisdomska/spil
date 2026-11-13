@@ -12,7 +12,8 @@ import type { Me } from "./types";
  * 2026-11-13: the console was slow). Every admin request checks the allow-list first, which was
  * a database round trip before the real query on each call. Only positive answers are kept, and
  * any change to the admins table on this instance clears the cache at once; another instance can
- * take up to 30 seconds to notice a removed admin.
+ * take up to 30 seconds to notice a removed admin. Signing in and opening a console page always
+ * read the allow-list fresh (`fresh`), so the cache only speeds up a page's API calls.
  */
 const ADMIN_TTL_MS = 30_000;
 const adminCache = new Map<string, { at: number; me: Me }>();
@@ -22,8 +23,11 @@ export function invalidateAdminCache() {
 }
 
 /** The admins row for a user id, read with the service role (the allow-list is authoritative). */
-export async function findAdmin(userId: string): Promise<Me | null> {
-  const hit = adminCache.get(userId);
+export async function findAdmin(
+  userId: string,
+  { fresh = false }: { fresh?: boolean } = {},
+): Promise<Me | null> {
+  const hit = fresh ? undefined : adminCache.get(userId);
   if (hit && Date.now() - hit.at < ADMIN_TTL_MS) return hit.me;
   const me = await readAdmin(userId);
   if (me) adminCache.set(userId, { at: Date.now(), me });

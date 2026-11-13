@@ -14,7 +14,7 @@ import { getUserId } from "@/lib/supabase/server";
  */
 async function Gate({ children }: { children: React.ReactNode }) {
   const userId = await getUserId();
-  const me = userId ? await findAdmin(userId) : null;
+  const me = userId ? await findAdmin(userId, { fresh: true }) : null;
   if (!me) redirect("/admin/login");
   // SPIL-07: the console's strings only reach a signed-in admin.
   return (
