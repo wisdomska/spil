@@ -1540,7 +1540,7 @@
       "noticeLive": "Showing now",
       "noticeOff": "Off",
       "noticeLabel": "Notice",
-      "noticeHint": "One line above every player page, up to 200 characters. Players can hide it until it changes.",
+      "noticeHint": "One line above every player page, up to 200 characters, live within a minute. Players can hide it until it changes.",
       "noticePh": "SPIL is being updated tonight at 22:00. Games may pause for a minute.",
       "noticePreview": "What players see",
       "noticeShow": "Show to players",
@@ -1550,7 +1550,7 @@
       "noticeOnDone": "Players can see the notice.",
       "noticeOffDone": "The notice is off.",
       "gamesTitle": "Games",
-      "gamesBody": "{on} of {total} games are on. A game you switch off disappears from Start a game; rooms already playing it can finish. One game always stays on.",
+      "gamesBody": "{on} of {total} games are on. A game you switch off disappears from Start a game within 15 seconds; rooms already playing it can finish. One game always stays on.",
       "gamesAdult": "18+ only: shows when everyone in the room is 18 or older.",
       "gameOn": "{game} is on.",
       "gameOff": "{game} is off for new rooms."

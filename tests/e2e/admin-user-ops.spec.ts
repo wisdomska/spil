@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { adminLogin, createRoom, passAgeGate, phone } from "./harness";
+import { adminLogin, createRoom, passAgeGate, phone, pickGame, pickPack } from "./harness";
 
 // Admin console overhaul (owner request 2026-11-12): acting on players, switching games off, the
 // player notice, and branded controls with no browser default dropdowns.
@@ -41,7 +41,8 @@ test("an admin bans a guest, the guest is benched, and the ban lifts", async ({
   // The guest was taken out of the room, and their next request lands on the banned page.
   await guest.page.goto("/create");
   await passAgeGate(guest.page);
-  await guest.page.getByRole("button", { name: /^Spill Score/ }).click();
+  // Spill Score has several packs: choosing one creates the room, which the API refuses.
+  if (!(await pickGame(guest.page))) await pickPack(guest.page, { pack: "classic", count: 10 });
   await expect(guest.page).toHaveURL(/\/banned$/, { timeout: 15_000 });
   await expect(
     guest.page.getByRole("heading", { name: /can't play SPIL right now/ }),
@@ -111,7 +112,12 @@ test("switching a game off hides it from Start a game, and the notice reaches pl
     await passAgeGate(player.page);
     await expect(player.page.getByRole("status").filter({ hasText: notice })).toBeVisible();
     await expect(player.page.getByRole("button", { name: /^Spill Score/ })).toBeVisible();
-    await expect(player.page.getByRole("button", { name: /^Hot Takes/ })).toHaveCount(0);
+    // Pages read settings through a 15 second cache, so the change can take that long to show.
+    await expect(async () => {
+      await player.page.reload();
+      await expect(player.page.getByRole("button", { name: /^Spill Score/ })).toBeVisible();
+      await expect(player.page.getByRole("button", { name: /^Hot Takes/ })).toHaveCount(0);
+    }).toPass({ timeout: 40_000, intervals: [2_000, 5_000] });
   } finally {
     await page.goto("/admin/settings");
     await page.getByRole("switch", { name: /^Hot Takes/ }).click();
