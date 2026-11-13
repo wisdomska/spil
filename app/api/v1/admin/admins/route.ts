@@ -1,7 +1,7 @@
 import { ApiError } from "@/lib/api/errors";
 import { readBody, route } from "@/lib/api/handler";
 import { addAdmin } from "@/lib/admin/schemas";
-import { audit, requireAdmin } from "@/lib/admin/server";
+import { audit, invalidateAdminCache, requireAdmin } from "@/lib/admin/server";
 import type { AdminAccount } from "@/lib/admin/types";
 import { getAdminClient } from "@/lib/supabase/admin";
 
@@ -28,6 +28,7 @@ export const GET = route(async (request): Promise<AdminAccount[]> => {
  */
 export const POST = route(async (request) => {
   const me = await requireAdmin(request, "admins.manage");
+  invalidateAdminCache();
   const body = await readBody(request, addAdmin);
   const db = getAdminClient();
   const taken = await db.from("admins").select("user_id").eq("email", body.email).maybeSingle();

@@ -41,6 +41,8 @@ import {
   type Paged,
   type PageSize,
 } from "@/lib/admin/paging";
+import type { Section } from "@/lib/admin/roles";
+import { DEFAULT_VIEWS, pageQuery } from "@/lib/admin/views";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { Sheet } from "@/components/ui/Sheet";
@@ -69,8 +71,46 @@ export function useAdminQuery<T>(path: string, enabled = true) {
         throw e;
       }
     },
+    staleTime: STALE_MS,
     refetchInterval: 30_000,
   });
+}
+
+/**
+ * Console data counts as fresh for 20 seconds: going back to a section shows what it had at
+ * once instead of a skeleton and a second request (owner request 2026-11-13). Lists still
+ * refresh every 30 seconds while open, and every write refreshes everything.
+ */
+const STALE_MS = 20_000;
+
+/**
+ * Loads each section's default view in the background once the console is up, so the first
+ * click on any section shows data straight away. Runs after the page's own data, in idle time,
+ * only for sections this admin can open.
+ */
+export function usePrefetchSections(sections: readonly Section[]) {
+  const client = useQueryClient();
+  useEffect(() => {
+    const run = () => {
+      for (const s of sections)
+        for (const v of DEFAULT_VIEWS[s])
+          void client.prefetchQuery({
+            queryKey: v.key,
+            queryFn: () => api("GET", `/admin${v.url}`),
+            staleTime: STALE_MS,
+          });
+    };
+    const w = window as Window & {
+      requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    if (w.requestIdleCallback) {
+      const id = w.requestIdleCallback(run, { timeout: 2500 });
+      return () => w.cancelIdleCallback?.(id);
+    }
+    const id = setTimeout(run, 1200);
+    return () => clearTimeout(id);
+  }, [client, sections]);
 }
 
 /**
@@ -79,11 +119,7 @@ export function useAdminQuery<T>(path: string, enabled = true) {
  */
 export function useAdminPage<T>(path: string, params: Record<string, string | number | undefined>) {
   const router = useRouter();
-  const qs = new URLSearchParams(
-    Object.entries(params)
-      .filter(([, v]) => v !== undefined && v !== "")
-      .map(([k, v]) => [k, String(v)]),
-  ).toString();
+  const qs = pageQuery(params);
   return useQuery<Paged<T>, ClientApiError>({
     queryKey: ["admin", path, qs],
     queryFn: async () => {
@@ -95,6 +131,7 @@ export function useAdminPage<T>(path: string, params: Record<string, string | nu
       }
     },
     placeholderData: keepPreviousData,
+    staleTime: STALE_MS,
     refetchInterval: 30_000,
   });
 }

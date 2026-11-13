@@ -1,7 +1,7 @@
 import { ApiError } from "@/lib/api/errors";
 import { readBody, route } from "@/lib/api/handler";
 import { passwordMatches } from "@/lib/admin/passwords";
-import { audit, isUniqueViolation, requireAdmin } from "@/lib/admin/server";
+import { audit, invalidateAdminCache, isUniqueViolation, requireAdmin } from "@/lib/admin/server";
 import { patchMe } from "@/lib/admin/schemas";
 import { rateLimit } from "@/lib/ratelimit";
 import { getAdminClient } from "@/lib/supabase/admin";
@@ -31,6 +31,7 @@ export const PATCH = route(async (request) => {
     .from("admins")
     .update({ name: body.name, email: body.email })
     .eq("user_id", me.userId);
+  invalidateAdminCache();
   if (isUniqueViolation(error)) throw new ApiError("EMAIL_TAKEN");
   if (error) throw new ApiError("INTERNAL");
   const next = { ...me, name: body.name, email: body.email };

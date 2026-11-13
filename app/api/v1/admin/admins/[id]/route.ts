@@ -2,7 +2,7 @@ import { ApiError } from "@/lib/api/errors";
 import { readBody, route } from "@/lib/api/handler";
 import { checkAdminChange, isRole } from "@/lib/admin/roles";
 import { patchAdmin } from "@/lib/admin/schemas";
-import { audit, requireAdmin } from "@/lib/admin/server";
+import { audit, invalidateAdminCache, requireAdmin } from "@/lib/admin/server";
 import { getAdminClient } from "@/lib/supabase/admin";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -33,6 +33,7 @@ export const PATCH = route<Ctx>(async (request, { params }) => {
   guard(checkAdminChange(me, target, admins, { role }));
   if (target.role === role) return {};
   const { error } = await getAdminClient().from("admins").update({ role }).eq("user_id", id);
+  invalidateAdminCache();
   if (error) throw new ApiError("INTERNAL");
   await audit(me, "admin_role_changed", target.email, { role: target.role }, { role });
   return {};
@@ -48,6 +49,7 @@ export const DELETE = route<Ctx>(async (request, { params }) => {
   guard(checkAdminChange(me, target, admins, { remove: true }));
   const db = getAdminClient();
   const { error } = await db.from("admins").delete().eq("user_id", id);
+  invalidateAdminCache();
   if (error) throw new ApiError("INTERNAL");
   // Admin accounts exist only for the console, so the auth user goes too (ends their sessions).
   await db.auth.admin.deleteUser(id);

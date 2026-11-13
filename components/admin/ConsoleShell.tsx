@@ -17,7 +17,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { IconButton } from "@/components/ui/IconButton";
 import { Sheet } from "@/components/ui/Sheet";
@@ -25,7 +25,7 @@ import { sectionsFor, type Section } from "@/lib/admin/roles";
 import type { Counts, Me } from "@/lib/admin/types";
 import { api } from "@/lib/api/client";
 import { cn } from "@/lib/cn";
-import { useAdminQuery } from "./ui";
+import { useAdminQuery, usePrefetchSections } from "./ui";
 
 const MeContext = createContext<Me | null>(null);
 
@@ -163,6 +163,8 @@ function Brand({ size }: { size: number }) {
 export function ConsoleShell({ me, children }: { me: Me; children: React.ReactNode }) {
   const t = useTranslations("admin.nav");
   const [menu, setMenu] = useState(false);
+  const sections = useMemo(() => sectionsFor(me.role), [me.role]);
+  usePrefetchSections(sections);
   return (
     <MeContext value={me}>
       <div className="flex min-h-[100dvh] bg-bg text-text lg:h-[100dvh] lg:overflow-hidden">

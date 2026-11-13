@@ -7,8 +7,31 @@ import type { AuditAction } from "./audit-actions";
 import { can, isRole, type Permission } from "./roles";
 import type { Me } from "./types";
 
+/**
+ * Signed-in admins this server instance has already looked up, for 30 seconds (owner request
+ * 2026-11-13: the console was slow). Every admin request checks the allow-list first, which was
+ * a database round trip before the real query on each call. Only positive answers are kept, and
+ * any change to the admins table on this instance clears the cache at once; another instance can
+ * take up to 30 seconds to notice a removed admin.
+ */
+const ADMIN_TTL_MS = 30_000;
+const adminCache = new Map<string, { at: number; me: Me }>();
+
+export function invalidateAdminCache() {
+  adminCache.clear();
+}
+
 /** The admins row for a user id, read with the service role (the allow-list is authoritative). */
 export async function findAdmin(userId: string): Promise<Me | null> {
+  const hit = adminCache.get(userId);
+  if (hit && Date.now() - hit.at < ADMIN_TTL_MS) return hit.me;
+  const me = await readAdmin(userId);
+  if (me) adminCache.set(userId, { at: Date.now(), me });
+  else adminCache.delete(userId);
+  return me;
+}
+
+async function readAdmin(userId: string): Promise<Me | null> {
   const { data, error } = await getAdminClient()
     .from("admins")
     .select("user_id, name, email, role")
