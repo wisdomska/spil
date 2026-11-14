@@ -7,5 +7,12 @@
       "schedule": "0 3 * * *"
     }
   ],
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "git": {
+    "deploymentEnabled": {
+      "feat/**": false,
+      "fix/**": false,
+      "chore/**": false
+    }
+  }
 }

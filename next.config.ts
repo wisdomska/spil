@@ -19,6 +19,13 @@ const nextConfig: NextConfig = {
     "/og": ["./assets/fonts/**"],
     "/og/r/[code]": ["./assets/fonts/**"],
   },
+  // Deployment storage (owner request 2026-11-14): the share-card routes pulled in sharp and
+  // its native image library, about 20 MB per function and over half of all function output.
+  // next/og only uses sharp when it happens to load and otherwise renders the PNG with its own
+  // bundled resvg, so the cards come out the same without it.
+  outputFileTracingExcludes: {
+    "*": ["**/node_modules/sharp/**", "**/node_modules/@img/**"],
+  },
   experimental: {
     optimizePackageImports: ["@phosphor-icons/react"],
   },
