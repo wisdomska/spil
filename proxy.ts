@@ -61,7 +61,10 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Only where a session matters: rooms, the API and the admin console. Static pages (landing,
-  // join, create, info) skip the proxy entirely so the CDN serves them without a function call.
-  matcher: ["/r/:path*", "/api/v1/:path*", "/admin", "/admin/:path*"],
+  // Only pages where a session matters: rooms and the admin console. Static pages (landing,
+  // join, create, info) skip the proxy so the CDN serves them without a function call. API
+  // routes skip it too (owner request 2026-11-18, Vercel CPU): each one reads and, when it has
+  // expired, refreshes the session itself (getUserId), so the proxy only doubled the function
+  // calls behind every room poll.
+  matcher: ["/r/:path*", "/admin", "/admin/:path*"],
 };

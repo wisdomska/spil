@@ -188,11 +188,17 @@ const toPhase = (p: PlayerRow) => ({
   lastSeenAt: p.last_seen_at,
 });
 
+const HEARTBEAT_WRITE_MS = 15_000;
+
 /** Heartbeat plus host handover when the host left or went quiet for 10 minutes. */
 export async function heartbeat(ctx: Ctx) {
   const now = new Date().toISOString();
-  await db().from("players").update({ last_seen_at: now }).eq("id", ctx.me.id);
-  ctx.me.last_seen_at = now;
+  // Written at most every 15 s: host handover waits 10 minutes of silence, and every poll used
+  // to write a row (owner request 2026-11-18, Vercel CPU).
+  if (Date.now() - Date.parse(ctx.me.last_seen_at) >= HEARTBEAT_WRITE_MS) {
+    await db().from("players").update({ last_seen_at: now }).eq("id", ctx.me.id);
+    ctx.me.last_seen_at = now;
+  }
   const humans = ctx.players.filter((p) => !p.is_bot);
   const creator = humans.find((p) => p.user_id === ctx.room.created_by);
   const host = nextHost(humans.map(toPhase), ctx.room.host_player_id, now, creator?.id);

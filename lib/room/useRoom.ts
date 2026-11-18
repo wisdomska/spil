@@ -21,14 +21,18 @@ export function useRoomState(code: string, live: { current: boolean }) {
     // Without realtime, the lobby and the waiting screens poll faster: otherwise every phone lags
     // seconds behind the host (new players, who is done, moving on).
     refetchInterval: (q) => {
-      if (live.current) return 30_000;
       const status = q.state.data?.room.status;
+      // A closed room never changes again (owner request 2026-11-18, Vercel CPU).
+      if (status === "closed") return false;
+      if (live.current) return 30_000;
       const waiting = status === "lobby" || status === "answering" || status === "guessing";
       const visible = typeof document === "undefined" || document.visibilityState === "visible";
       return waiting && visible ? 2_000 : 5_000;
     },
+    // A hidden tab stops polling and refetches the moment it is shown again, so a phone left in
+    // a pocket or a forgotten tab no longer calls the server every few seconds for nothing.
     refetchOnWindowFocus: true,
-    refetchIntervalInBackground: true,
+    refetchIntervalInBackground: false,
     retry: (count, error) =>
       count < 3 && !(error instanceof ClientApiError && error.status >= 400 && error.status < 500),
   });
