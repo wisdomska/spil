@@ -120,7 +120,11 @@ export default async function Landing() {
               "@context": "https://schema.org",
               "@type": "WebSite",
               name: "SPIL",
+              // "spil" alone is also a common Danish word and several apps are called Spill;
+              // the alternate names tie the brand to this site (Google's site name signal).
+              alternateName: ["SPIL Party", "SPIL party games", "spil-party"],
               url: absolute("/"),
+              publisher: { "@type": "Person", name: "Senya", url: "https://wisdomska.site" },
               description: m("description"),
               inLanguage: "en",
             },
@@ -128,6 +132,7 @@ export default async function Landing() {
               "@context": "https://schema.org",
               "@type": ["WebApplication", "VideoGame"],
               name: "SPIL",
+              alternateName: ["SPIL Party", "SPIL party games"],
               url: absolute("/"),
               description: m("description"),
               applicationCategory: "GameApplication",
