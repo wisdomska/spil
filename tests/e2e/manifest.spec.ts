@@ -13,7 +13,8 @@ test("web app manifest is installable", async ({ page, request }) => {
   expect(manifest).toMatchObject({
     name: "SPIL",
     short_name: "SPIL",
-    start_url: "/",
+    // Opened from the home screen it is tagged, so the landing page can open the game picker.
+    start_url: "/?source=pwa",
     display: "standalone",
   });
   const sizes = manifest.icons.map(
