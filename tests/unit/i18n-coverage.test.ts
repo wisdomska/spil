@@ -28,6 +28,7 @@ const ENTRIES: Record<Scope | "base", string[]> = {
   daily: ["components/daily/DailySpill.tsx"],
   crews: ["components/crews/CrewPage.tsx", "components/crews/CrewsPages.tsx"],
   badges: ["components/badges/BadgesPage.tsx"],
+  install: ["components/pwa/InstallGuide.tsx"],
   contact: ["app/contact/ContactForm.tsx"],
   adminAuth: ["components/admin/LoginForm.tsx", "components/admin/ResetForm.tsx"],
   admin: ["components/admin/ConsoleShell.tsx"],

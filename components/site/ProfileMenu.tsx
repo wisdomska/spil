@@ -2,6 +2,7 @@
 
 import {
   CalendarCheckIcon,
+  DeviceMobileIcon,
   CloudCheckIcon,
   SignOutIcon,
   CaretDownIcon,
@@ -35,7 +36,7 @@ import { parseProfile, profileSnapshot, subscribeProfile } from "@/lib/profile/d
 
 type Item = {
   href: string;
-  key: "start" | "join" | "badges" | "crews" | "daily" | "howTo" | "settings";
+  key: "start" | "join" | "badges" | "crews" | "daily" | "howTo" | "install" | "settings";
   Icon: Icon;
 };
 
@@ -47,6 +48,8 @@ const ITEMS: Item[] = [
   { href: "/crews", key: "crews", Icon: UsersThreeIcon },
   { href: "/daily", key: "daily", Icon: CalendarCheckIcon },
   { href: "/how-to-play", key: "howTo", Icon: QuestionIcon },
+  // Install the app and turn on notifications (owner request 2026-11-23).
+  { href: "/install", key: "install", Icon: DeviceMobileIcon },
   { href: "/profile", key: "settings", Icon: GearSixIcon },
 ];
 

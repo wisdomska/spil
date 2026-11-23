@@ -12,7 +12,18 @@ const nextConfig: NextConfig = {
   // Lets a second local build (for example a Lighthouse run) sit beside the one being served.
   distDir: process.env.NEXT_DIST_DIR ?? ".next",
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // The service worker is checked for updates on every visit: never cached by the CDN or
+      // the browser, so a new version reaches phones straight away.
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+        ],
+      },
+    ];
   },
   // OG image routes read their fonts from assets/fonts at runtime.
   outputFileTracingIncludes: {

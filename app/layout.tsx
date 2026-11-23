@@ -4,10 +4,12 @@ import { getMessages, getTranslations } from "next-intl/server";
 import { fontVariables } from "./fonts";
 import { Grain } from "@/components/brand/Grain";
 import { Telemetry } from "@/components/site/Telemetry";
+import { PwaClient } from "@/components/pwa/PwaClient";
 import { NoticeBanner } from "@/components/site/NoticeBanner";
 import { Providers } from "./providers";
 import { BASE_SCOPE, pickMessages } from "@/lib/i18n/pick";
 import { INDEXABLE, SITE_URL, siteVerification } from "@/lib/seo";
+import { SPLASH_SCREENS, splashFile, splashMedia } from "@/lib/pwa/splash";
 import { THEME_COLOR } from "@/lib/theme-color";
 import "./globals.css";
 
@@ -27,6 +29,14 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: { type: "website", siteName: "SPIL", images: ["/og"] },
     twitter: { card: "summary_large_image" },
     formatDetection: { telephone: false },
+    // Installed on an iPhone: full screen, the SPIL name under the icon, the status bar over our
+    // dark background, and a launch screen instead of a white flash (owner request 2026-11-23).
+    appleWebApp: {
+      capable: true,
+      title: "SPIL",
+      statusBarStyle: "black-translucent",
+      startupImage: SPLASH_SCREENS.map((s) => ({ url: splashFile(s), media: splashMedia(s) })),
+    },
   };
 }
 
@@ -48,6 +58,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <NextIntlClientProvider messages={messages}>
           <Providers>
             <NoticeBanner />
+            <PwaClient />
             {children}
           </Providers>
         </NextIntlClientProvider>

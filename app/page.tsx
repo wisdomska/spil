@@ -12,6 +12,7 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 import { IntlScope } from "@/components/site/IntlScope";
 import { JsonLd } from "@/components/site/JsonLd";
 import { absolute, pageMetadata } from "@/lib/seo";
+import { InstalledRedirect } from "@/components/pwa/InstalledRedirect";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("meta");
@@ -114,6 +115,7 @@ export default async function Landing() {
 
           <SpuzlSection />
         </main>
+        <InstalledRedirect />
         <JsonLd
           data={[
             {

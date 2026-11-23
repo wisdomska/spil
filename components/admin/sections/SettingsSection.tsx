@@ -21,6 +21,7 @@ import {
 } from "@/components/admin/ui";
 import { Button } from "@/components/ui/Button";
 import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
+import { useToast } from "@/components/ui/Toast";
 import { SwitchRow } from "@/components/ui/Switch";
 import { can, ROLES, type AdminRole } from "@/lib/admin/roles";
 import { cn } from "@/lib/cn";
@@ -38,6 +39,7 @@ export function SettingsSection() {
     <div className="mx-auto grid w-full max-w-[760px] gap-[22px]">
       <PageHeader title={tn("settings")} />
       {owner && <GameSettings />}
+      <PushCard />
       <Accounts me={me} />
     </div>
   );
@@ -303,6 +305,57 @@ function GamesCard({ disabled }: { disabled: string[] }) {
           />
         );
       })}
+    </Panel>
+  );
+}
+
+/**
+ * Push notifications (owner request 2026-11-23): whether the VAPID keys are set, and a test
+ * notification to this admin's own devices, to check the whole path end to end.
+ */
+function PushCard() {
+  const t = useTranslations("admin.settings");
+  const q = useAdminQuery<{ configured: boolean }>("/push-test");
+  const run = useAdminAction();
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  if (!q.data) return null;
+  return (
+    <Panel className="grid gap-3 p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="m-0 text-[17px] leading-none font-bold">{t("pushTitle")}</h2>
+        <span
+          className={cn(
+            "rounded-pill border px-2.5 py-1 text-[12px] leading-none font-semibold",
+            q.data.configured
+              ? "border-accent bg-accent-soft text-accent-ink"
+              : "border-line text-text-muted",
+          )}
+        >
+          {q.data.configured ? t("pushReady") : t("pushMissing")}
+        </span>
+      </div>
+      <p className="m-0 text-[14px] leading-[1.45] text-text-muted">
+        {q.data.configured ? t("pushBody") : t("pushSetup")}
+      </p>
+      {q.data.configured && (
+        <div>
+          <OutlineButton
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              const r = await run(() =>
+                adminApi<{ sent: number; devices: number }>("POST", "/push-test"),
+              );
+              setBusy(false);
+              if (r.data)
+                toast(r.data.devices ? t("pushSent", { n: r.data.sent }) : t("pushNoDevices"));
+            }}
+          >
+            {t("pushTest")}
+          </OutlineButton>
+        </div>
+      )}
     </Panel>
   );
 }

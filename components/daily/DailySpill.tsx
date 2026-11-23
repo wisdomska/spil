@@ -14,6 +14,7 @@ import { playableBand, useDeviceAge } from "@/lib/age/device";
 import type { DailyState } from "@/lib/api/daily";
 import { api, ensureSession } from "@/lib/api/client";
 import { nextStreak, type Streak } from "@/lib/game";
+import { PushAsk } from "@/components/pwa/PushAsk";
 
 const STREAK_KEY = "spil:daily-streak";
 
@@ -153,6 +154,7 @@ export function DailySpill({ ageLockHours }: { ageLockHours: number }) {
           </Link>
         </p>
       )}
+      {d?.mine && <PushAsk moment="daily" />}
       {days >= 3 && <SavePrompt reason="streak" days={days} />}
       <p className="m-0 mt-auto text-[13px] leading-[1.45] text-text-muted">{t("privacy")}</p>
     </main>

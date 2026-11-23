@@ -62,6 +62,7 @@ import { getAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/lib/supabase/database.types";
 import { framesFor, myBadges } from "./achievements";
 import { crewName, isCrewMember, recordCrewRound } from "./crews";
+import { notifyRoomTransition } from "@/lib/push/server";
 import { customAllowed } from "./customPacks";
 import { ApiError, fromDbError } from "./errors";
 import type { PackSummary, RoomState, StatePlayer, TvState } from "./types";
@@ -737,6 +738,7 @@ export async function advancePhaseIfReady(room: RoomRow, players: PlayerRow[]): 
   // Another request may have advanced it first; that is fine.
   if (error && error.message !== "WRONG_PHASE") throw fromDbError(error);
   const next = (data as RoomRow | null) ?? room;
+  if (next.status !== room.status) notifyRoomTransition(room, room.status, next.status);
   // A fresh guessing phase may already be decided (nobody has anyone to guess about).
   if (next.status === "guessing" && next.status !== room.status)
     return advancePhaseIfReady(next, await loadPlayers(room.id));
@@ -775,6 +777,7 @@ export async function forceAdvance(room: RoomRow): Promise<boolean> {
     p_to: FORCE_NEXT[room.status],
   });
   if (error && error.message !== "WRONG_PHASE") throw fromDbError(error);
+  if (data) notifyRoomTransition(room, room.status, (data as RoomRow).status);
   if (data && (data as RoomRow).status === "guessing") {
     const next = await advancePhaseIfReady(data as RoomRow, await loadPlayers(room.id));
     if (next.status === "guessing") await autoplayBots(next);

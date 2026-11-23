@@ -1,5 +1,6 @@
 import { codeOf, requireUser, type CodeParams } from "@/lib/api/auth";
 import { getSettings } from "@/lib/flags";
+import { notifyRoomTransition } from "@/lib/push/server";
 import { ApiError, fromDbError } from "@/lib/api/errors";
 import { readBody, route } from "@/lib/api/handler";
 import { isOwnCustom } from "@/lib/api/customPacks";
@@ -78,5 +79,6 @@ export const POST = route<CodeParams>(async (request, ctx) => {
     p_to: "lobby",
   });
   if (advanceError && advanceError.message !== "WRONG_PHASE") throw fromDbError(advanceError);
+  if (!advanceError) notifyRoomTransition(room.room, "revealed", "lobby", userId);
   return freshState(code, userId);
 });

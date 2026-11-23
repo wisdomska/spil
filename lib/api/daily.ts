@@ -17,7 +17,7 @@ export type DailyState = {
   streak: number;
 };
 
-async function todaysQuestion(day: string) {
+export async function todaysQuestion(day: string) {
   const { data, error } = await getAdminClient()
     .from("questions")
     .select("id, text")

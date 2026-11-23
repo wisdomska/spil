@@ -53,7 +53,8 @@
     "satOut": "Sat out",
     "voting": "Voting",
     "contactUs": "Contact us",
-    "hideNotice": "Hide this notice"
+    "hideNotice": "Hide this notice",
+    "todaysSpill": "Today's Spill"
   },
   "age": {
     "kickerHost": "BEFORE YOU START",
@@ -1553,7 +1554,15 @@
       "gamesBody": "{on} of {total} games are on. A game you switch off disappears from Start a game within 15 seconds; rooms already playing it can finish. One game always stays on.",
       "gamesAdult": "18+ only: shows when everyone in the room is 18 or older.",
       "gameOn": "{game} is on.",
-      "gameOff": "{game} is off for new rooms."
+      "gameOff": "{game} is off for new rooms.",
+      "pushTitle": "Push notifications",
+      "pushReady": "Set up",
+      "pushMissing": "Not set up",
+      "pushBody": "Players who allow it get game updates and the Today's Spill reminder. Send a test to the devices you turned notifications on for.",
+      "pushSetup": "Add NEXT_PUBLIC_VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in Vercel (generate them with npx web-push generate-vapid-keys), then redeploy. Until then SPIL never offers notifications.",
+      "pushTest": "Send me a test",
+      "pushSent": "{n, plural, =0 {Nothing delivered. Check this device's notification settings.} one {Sent to # device.} other {Sent to # devices.}}",
+      "pushNoDevices": "Turn on notifications on this device first: Get the app in the SPIL menu."
     }
   },
   "modes": {
@@ -1791,7 +1800,8 @@
     "save": "Save your progress",
     "signOut": "Sign out",
     "signedInAs": "Signed in as {username}",
-    "signedOut": "Signed out. This phone plays as a guest now."
+    "signedOut": "Signed out. This phone plays as a guest now.",
+    "install": "Get the app"
   },
   "profilePage": {
     "title": "Your profile",
@@ -2060,5 +2070,74 @@
         "a": "One “Have you ever…” question a day for everyone. Answer in a tap, see how many people said yes once enough have answered, and build a daily streak."
       }
     ]
+  },
+  "push": {
+    "roomTitle": "SPIL · Room {code}",
+    "started": "Game on. Answer in private.",
+    "guessing": "Everyone answered. Time to guess.",
+    "ready": "Lights down. The reveal is ready.",
+    "rematch": "Rematch! Same room, new round.",
+    "dailyTitle": "Today's Spill is up",
+    "dailyBody": "Have you ever {text}",
+    "testTitle": "SPIL test notification",
+    "testBody": "Notifications reach this device."
+  },
+  "pwa": {
+    "title": "Put SPIL on your home screen",
+    "lede": "It opens full screen like an app, and it can buzz you when the game moves on. Takes 20 seconds.",
+    "device": "Your device",
+    "iphone": "iPhone",
+    "android": "Android",
+    "computer": "Computer",
+    "stepsLabel": "How to install",
+    "steps": {
+      "iphone": [
+        "Open SPIL in Safari",
+        "Tap Share, then Add to Home Screen",
+        "Open SPIL from your home screen"
+      ],
+      "android": [
+        "Open SPIL in Chrome",
+        "Tap the three dots, then Install app",
+        "Open SPIL from your home screen"
+      ],
+      "computer": [
+        "Open SPIL in Chrome or Edge",
+        "Click the install icon at the end of the address bar",
+        "Open SPIL like any other app"
+      ]
+    },
+    "hint": {
+      "iphone": "Share, then Add to Home Screen",
+      "android": "Menu, then Install app",
+      "computer": "Address bar, then Install"
+    },
+    "note": {
+      "iphone": "Notifications need iOS 16.4 or later.",
+      "android": "Works in Chrome, Edge and Samsung Internet.",
+      "computer": "Works in Chrome and Edge. Safari on a Mac: File, then Add to Dock."
+    },
+    "installNow": "Install now",
+    "installedTitle": "SPIL is on your home screen.",
+    "installedBody": "Open it from there next time. It starts on the game picker.",
+    "notifyTitle": "Notifications",
+    "notifyBody": "A buzz when the game moves on while you're away from the screen, and a daily nudge for Today's Spill. Nothing else.",
+    "notifyOn": "Turn on notifications",
+    "notifyOff": "Turn off on this phone",
+    "notifyBlocked": "Notifications are blocked for SPIL in this browser's settings.",
+    "notifyNeedsInstall": "On iPhone, notifications work once SPIL is on your home screen.",
+    "notifyEnabled": "Notifications are on.",
+    "notifyDisabled": "Notifications are off on this phone.",
+    "notifyFailed": "Couldn't turn notifications on. Try again.",
+    "gameUpdates": "Game updates",
+    "gameUpdatesBody": "The game started, everyone answered, the reveal is ready, a rematch.",
+    "daily": "Today's Spill reminder",
+    "dailyBody": "Once a day, if you haven't answered yet.",
+    "askWaitingTitle": "Get a buzz when everyone's done?",
+    "askWaitingBody": "Put your phone down. We'll tell you when it's time to guess.",
+    "askDailyTitle": "Get tomorrow's question?",
+    "askDailyBody": "One reminder a day, only if you haven't answered.",
+    "askYes": "Turn on",
+    "askLater": "Not now"
   }
 }

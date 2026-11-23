@@ -7,6 +7,7 @@ const PRIVATE = [
   "/api/",
   "/r/",
   "/banned",
+  "/offline",
   "/crew/",
   "/crews",
   "/badges",

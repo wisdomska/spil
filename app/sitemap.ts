@@ -20,6 +20,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...GAME_PAGES.map((g) => page(`/games/${g.slug}`, 0.8, "monthly")),
     page("/how-to-play", 0.8, "monthly"),
     page("/faq", 0.7, "monthly"),
+    page("/install", 0.5, "monthly"),
     page("/daily", 0.6, "daily"),
     page("/create", 0.6, "monthly"),
     page("/join", 0.5, "monthly"),

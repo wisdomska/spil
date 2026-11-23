@@ -12,6 +12,7 @@ import { useDeviceAge } from "@/lib/age/device";
 import { cn } from "@/lib/cn";
 import { offeredAvatars, randomAvatar } from "@/lib/game";
 import { clearProfile, readProfile, saveProfile } from "@/lib/profile/device";
+import { PushSettings } from "@/components/pwa/PushSettings";
 
 const noop = () => () => {};
 
@@ -39,6 +40,7 @@ export function ProfilePage() {
         <>
           <ProfileForm />
           <AccountSection />
+          <PushSettings from="profile" />
         </>
       ) : (
         <SkeletonGroup label={t("title")} className="gap-4">

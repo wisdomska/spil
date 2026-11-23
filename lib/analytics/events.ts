@@ -16,6 +16,9 @@ export type AnalyticsEvents = {
   rematch_started: { packChanged: boolean };
   question_reported: { reason: string };
   error_shown: { variant: string };
+  // Installed app and notifications (owner request 2026-11-23).
+  pwa_installed: { platform: "ios" | "android" | "desktop" };
+  push_enabled: { from: "waiting" | "daily" | "profile" | "install" };
 };
 
 export type AnalyticsEvent = keyof AnalyticsEvents;

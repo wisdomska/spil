@@ -12,6 +12,7 @@ import { hasImposter, picksTruths, skipsGuessing, writesAnswers } from "@/lib/ga
 import { useIsWide } from "@/lib/useMedia";
 import { OfflineChip } from "./OfflineChip";
 import { SkipToReveal } from "./SkipToReveal";
+import { PushAsk } from "@/components/pwa/PushAsk";
 
 /** An answer this recent holds the force button for HOLD_MS, so the host does not cut them off. */
 const RECENT_MS = 5000;
@@ -121,6 +122,11 @@ export function WaitingView({
           {t(waitingBody(state.room.mode, guessing))}
         </p>
       </div>
+      {unfinished.length > 0 && (
+        <div className="xl:col-start-1">
+          <PushAsk moment="waiting" />
+        </div>
+      )}
       <ul className="m-0 grid list-none p-0 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:rounded-card xl:border xl:border-line xl:bg-surface xl:px-5 xl:py-2">
         {active.map((p) => {
           const d = done(p);

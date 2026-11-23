@@ -1,4 +1,5 @@
 import { codeOf, requireUser, type CodeParams } from "@/lib/api/auth";
+import { notifyRoomTransition } from "@/lib/push/server";
 import { ApiError, fromDbError } from "@/lib/api/errors";
 import { route } from "@/lib/api/handler";
 import {
@@ -52,6 +53,8 @@ export const POST = route<CodeParams>(async (request, ctx) => {
       : (room.room.question_count ?? settings.questionsPerGame),
   });
   if (error) throw fromDbError(error);
+  // Players who are not looking at the room get a buzz that the game started.
+  notifyRoomTransition(room.room, "lobby", "answering", userId);
 
   const started = await findRoom(code);
   // Imposter: one active player, picked at random and told nothing; only the reveal shows it.

@@ -5,6 +5,10 @@
     {
       "path": "/api/cron/expire",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/daily-push",
+      "schedule": "7 17 * * *"
     }
   ],
   "framework": "nextjs",
