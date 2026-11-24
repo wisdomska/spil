@@ -13,7 +13,9 @@ import { Skeleton, SkeletonGroup } from "@/components/ui/Skeleton";
 import { api } from "@/lib/api/client";
 import type { Pack, PackSection } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
-import { countOptions, defaultCount, type AgeBand } from "@/lib/game";
+import { countOptions, defaultCount, defaultEdition, type AgeBand, type Edition } from "@/lib/game";
+import { readEdition } from "@/lib/setup/lastGame";
+import { EditionChips } from "./EditionChips";
 import { useIsDesktop } from "@/lib/useMedia";
 
 const PACK_INFO = new Set(["purity"]);
@@ -33,7 +35,9 @@ type PackPickerProps = {
   initialCount?: number;
   cta: (packName: string) => string;
   busy?: boolean;
-  onContinue: (packId: string, questionCount: number) => void;
+  onContinue: (packId: string, questionCount: number, edition: Edition) => void;
+  /** Where the host is (ISO country from the edge), for the best-fit edition. */
+  country?: string | null;
   /** Shown above the Continue button (the visible bot check, SPIL-05). */
   aboveCta?: React.ReactNode;
   /** Shown under the Continue button: why the last try failed (SPIL-05). */
@@ -56,6 +60,7 @@ export function PackPicker({
   onContinue,
   aboveCta,
   error,
+  country,
 }: PackPickerProps) {
   const t = useTranslations("packs");
   const ti = useTranslations("packInfo.purity");
@@ -68,7 +73,13 @@ export function PackPicker({
   const ordered = sections.flatMap((s) => s.packs);
   const [selected, setSelected] = useState(initialPack ?? ordered[0]?.id ?? "");
   const pack = ordered.find((p) => p.id === selected) ?? ordered[0];
-  const total = pack?.questionCount ?? 0;
+  // Editions: the host's pick, else their last one, else their country; optional to touch.
+  const [pickedEdition, setPickedEdition] = useState<Edition | null>(null);
+  // Mounts only after the age check on the phone, so storage is there to read.
+  const [savedEdition] = useState(readEdition);
+  const editions = pack?.editions ?? [];
+  const edition = defaultEdition(editions, pickedEdition ?? savedEdition, country);
+  const total = pack?.editionCounts?.[edition] ?? pack?.questionCount ?? 0;
   const [chosen, setChosen] = useState<number | null>(initialCount ?? null);
   const options = countOptions(total);
   const count = chosen && options.includes(chosen) ? chosen : defaultCount(total, questionsPerGame);
@@ -296,11 +307,17 @@ export function PackPicker({
               </RadioGroup.Item>
             ))}
           </RadioGroup.Root>
+          <EditionChips
+            available={editions}
+            value={edition}
+            onChange={setPickedEdition}
+            className="mt-1"
+          />
         </div>
         <div className="mt-3 grid gap-3 lg:mt-0 lg:w-88">
           {aboveCta}
           <div>
-            <Button block loading={busy} onClick={() => onContinue(pack.id, count)}>
+            <Button block loading={busy} onClick={() => onContinue(pack.id, count, edition)}>
               {cta(pack.name)}
             </Button>
             <InlineError>{error}</InlineError>

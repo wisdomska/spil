@@ -40,7 +40,9 @@ export const POST = route(async (request) => {
     fresh.push(t);
   }
   if (!fresh.length) throw new ApiError("DUPLICATE");
-  await insertQuestions(fresh.map((text) => ({ packId: pack.id, text, status: body.status })));
+  await insertQuestions(
+    fresh.map((text) => ({ packId: pack.id, text, status: body.status, region: body.region })),
+  );
   if (fresh.length === 1)
     await audit(me, "question_added", fresh[0]!, null, {
       pack: pack.id,

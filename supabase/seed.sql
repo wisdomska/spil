@@ -451,3 +451,27 @@ insert into public.questions (pack_id, text) values
   ('purity', 'lied about your age to get in somewhere?'),
   ('purity', 'got a tattoo or piercing your parents don''t know about?'),
   ('purity', 'cried during or after sex?');
+
+-- Editions (migration 20261125000100): the same local tags as on the live bank.
+update public.questions q
+set region = v.region
+from (values
+  ('afterdark', 'kissed someone you barely knew during Detty December?', 'WA'),
+  ('campus', 'bought a lecturer''s handout only because it might be on the exam?', 'WA'),
+  ('campus', 'hidden a squatter from the porter during room inspection?', 'WA'),
+  ('campus', 'gone to a hall week party the night before a paper?', 'GH'),
+  ('campus', 'survived on gari and groundnuts for a whole week?', 'WA'),
+  ('church_kid', 'danced harder than everyone at thanksgiving?', 'WA'),
+  ('church_kid', 'joined an all-night service and slept through most of it?', 'WA'),
+  ('classic', 'dodged paying your full trotro or danfo fare?', 'WA'),
+  ('classic', 'eaten the meat from the stew pot before dinner was served?', 'WA'),
+  ('detty_december', 'danced at an owambe until your feet hurt?', 'NG'),
+  ('detty_december', 'eaten jollof at four different places in one week?', 'WA'),
+  ('exam_season', 'forgotten your index number in the exam hall?', 'WA'),
+  ('hot_takes', 'Jollof tastes better the next day.', 'WA'),
+  ('hot_takes', 'Ketchup on jollof is a crime.', 'WA'),
+  ('imposter', 'How much do you like jollof?', 'WA'),
+  ('roadtrip', 'packed shito or gari in your luggage for a trip abroad?', 'WA'),
+  ('work', 'called in sick to go to a wedding or owambe?', 'NG')
+) as v(pack_id, text, region)
+where q.pack_id = v.pack_id and q.text = v.text;

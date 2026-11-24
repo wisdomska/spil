@@ -1,7 +1,7 @@
 import "server-only";
 import { ApiError } from "@/lib/api/errors";
 import { getAdminClient } from "@/lib/supabase/admin";
-import { dedupeKey, type QStatus } from "./questions";
+import { dedupeKey, type QRegion, type QStatus } from "./questions";
 import { fetchAll } from "./server";
 import type { AdminQuestion } from "./types";
 
@@ -11,6 +11,7 @@ type Row = {
   text: string;
   status: QStatus;
   is_sample: boolean;
+  region: string | null;
   yes_count: number;
   answered_count: number;
   report_count: number;
@@ -23,6 +24,7 @@ const toQuestion = (q: Row): AdminQuestion => ({
   text: q.text,
   status: q.status,
   isSample: q.is_sample,
+  region: (q.region as QRegion | null) ?? null,
   yes: q.yes_count,
   answered: q.answered_count,
   reports: q.report_count,
@@ -40,7 +42,7 @@ export async function listQuestions(filter: { packId?: string; status?: QStatus 
     let q = db
       .from("questions")
       .select(
-        "id, pack_id, text, status, is_sample, yes_count, answered_count, report_count, updated_at, packs!inner(room_id)",
+        "id, pack_id, text, status, is_sample, region, yes_count, answered_count, report_count, updated_at, packs!inner(room_id)",
       )
       .is("packs.room_id", null)
       .order("updated_at", { ascending: false })
@@ -56,7 +58,7 @@ export async function findQuestion(id: string) {
   const { data } = await getAdminClient()
     .from("questions")
     .select(
-      "id, pack_id, text, status, is_sample, yes_count, answered_count, report_count, updated_at",
+      "id, pack_id, text, status, is_sample, region, yes_count, answered_count, report_count, updated_at",
     )
     .eq("id", id)
     .maybeSingle();
@@ -87,7 +89,13 @@ export function hasDuplicate(
 
 /** Inserts in chunks so a large import stays under request size limits. */
 export async function insertQuestions(
-  rows: Array<{ packId: string; text: string; status: QStatus; isSample?: boolean }>,
+  rows: Array<{
+    packId: string;
+    text: string;
+    status: QStatus;
+    isSample?: boolean;
+    region?: QRegion | null;
+  }>,
 ) {
   const db = getAdminClient();
   for (let i = 0; i < rows.length; i += 500) {
@@ -97,6 +105,7 @@ export async function insertQuestions(
         text: r.text,
         status: r.status,
         is_sample: r.isSample ?? false,
+        region: r.region ?? null,
       })),
     );
     if (error) throw new ApiError("INTERNAL");

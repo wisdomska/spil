@@ -16,7 +16,8 @@ import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { useToast } from "@/components/ui/Toast";
 import type { RoomState } from "@/lib/api/types";
-import { countOptions, rotationFor } from "@/lib/game";
+import { countOptions, rotationFor, type Edition } from "@/lib/game";
+import { EditionChips } from "@/components/game/EditionChips";
 import { cn } from "@/lib/cn";
 import { CustomQuestions } from "./CustomQuestions";
 import { InviteSheet } from "./InviteSheet";
@@ -32,6 +33,8 @@ type Props = {
   onAddTest: () => void;
   /** Two-step setup: the host changes the length here. */
   onLength?: (questionCount: number) => void;
+  /** Editions: the host changes which local questions the room plays. */
+  onEdition?: (edition: Edition) => void;
   lengthBusy?: boolean;
 };
 
@@ -42,6 +45,7 @@ export function LobbyView({
   onKick,
   onAddTest,
   onLength,
+  onEdition,
   lengthBusy,
 }: Props) {
   const t = useTranslations("lobby");
@@ -181,7 +185,7 @@ export function LobbyView({
       <div className="mt-auto grid gap-2.5 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:mt-0 xl:rounded-card xl:border xl:border-line xl:bg-surface xl:p-6">
         {isHost ? (
           <>
-            <SetupCard state={state} onLength={onLength} busy={lengthBusy} />
+            <SetupCard state={state} onLength={onLength} onEdition={onEdition} busy={lengthBusy} />
             <span className="flex items-center gap-2 text-[15px] leading-[1.4] font-medium text-text-muted">
               {canStart ? (
                 <CheckCircleIcon size={18} aria-hidden />
@@ -243,10 +247,12 @@ export function LobbyView({
 function SetupCard({
   state,
   onLength,
+  onEdition,
   busy,
 }: {
   state: RoomState;
   onLength?: (n: number) => void;
+  onEdition?: (edition: Edition) => void;
   busy?: boolean;
 }) {
   const t = useTranslations("lobby");
@@ -310,6 +316,14 @@ function SetupCard({
             })}
           </div>
         </div>
+      )}
+      {onEdition && !custom && (
+        <EditionChips
+          available={room.packEditions ?? []}
+          value={room.edition ?? "global"}
+          onChange={onEdition}
+          busy={busy}
+        />
       )}
     </section>
   );

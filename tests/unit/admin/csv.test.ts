@@ -102,8 +102,14 @@ describe("question import", () => {
     expect(r.errors).toEqual([]);
     expect(r.duplicates).toBe(2);
     expect(r.rows).toEqual([
-      { packId: "work", text: "faked a sick day?", status: "draft", isSample: false },
-      { packId: "classic", text: "danced on a table?", status: "hidden", isSample: false },
+      { packId: "work", text: "faked a sick day?", status: "draft", isSample: false, region: null },
+      {
+        packId: "classic",
+        text: "danced on a table?",
+        status: "hidden",
+        isSample: false,
+        region: null,
+      },
     ]);
   });
 
@@ -118,6 +124,7 @@ describe("question import", () => {
         text: "sent a reply-all by mistake?",
         status: "live",
         isSample: true,
+        region: "WA",
         answered: 4,
         yes: 1,
         reports: 0,
@@ -128,7 +135,13 @@ describe("question import", () => {
     const r = parseQuestionImport(exported, packs, []);
     expect(r.errors).toEqual([]);
     expect(r.rows).toEqual([
-      { packId: "work", text: "sent a reply-all by mistake?", status: "live", isSample: true },
+      {
+        packId: "work",
+        text: "sent a reply-all by mistake?",
+        status: "live",
+        isSample: true,
+        region: "WA",
+      },
     ]);
   });
 
@@ -140,6 +153,17 @@ describe("question import", () => {
     ].join("\r\n");
     const r = parseQuestionImport(csv, packs, []);
     expect(r.errors).toEqual([{ line: 3, error: "bad_is_sample" }]);
+  });
+
+  it("reads region and rejects anything but GH, NG, WA or blank (editions)", () => {
+    const csv = [
+      "pack_id,question,region",
+      "work,faked a sick day?,gh",
+      "work,quit by text?,US",
+    ].join("\n");
+    const r = parseQuestionImport(csv, packs, []);
+    expect(r.rows.map((x) => x.region)).toEqual(["GH"]);
+    expect(r.errors).toEqual([{ line: 3, error: "bad_region" }]);
   });
 
   it("reports bad rows with their line numbers", () => {

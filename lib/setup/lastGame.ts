@@ -1,4 +1,4 @@
-import { isMode, type Mode } from "@/lib/game";
+import { isEdition, isMode, type Edition, type Mode } from "@/lib/game";
 
 /**
  * The last game this phone set up (two-step setup), so a returning host can start it again in
@@ -34,5 +34,25 @@ export function saveLastGame(game: LastGame) {
     localStorage.setItem(KEY, JSON.stringify(game));
   } catch {
     // storage blocked: no "Play again" next time
+  }
+}
+
+/** The edition this phone picked last (owner request 2026-11-24), localStorage "spil.edition". */
+const EDITION_KEY = "spil.edition";
+
+export function readEdition(): Edition | null {
+  try {
+    const v = localStorage.getItem(EDITION_KEY);
+    return isEdition(v) ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveEdition(edition: Edition) {
+  try {
+    localStorage.setItem(EDITION_KEY, edition);
+  } catch {
+    // storage blocked: the country decides next time
   }
 }

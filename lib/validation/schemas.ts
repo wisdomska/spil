@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { EDITIONS } from "@/lib/game/editions";
 
 export const packId = z.string().trim().min(1).max(40);
 export const code = z
@@ -30,6 +31,9 @@ export const mode = z.enum([
   "spill_or_skip",
 ]);
 
+/** Editions (owner request 2026-11-24). */
+export const edition = z.enum(EDITIONS);
+
 export const createRoom = z.object({
   ageBand,
   /** Crews (Batch 3): start the room as this crew (the host must be a member). */
@@ -37,6 +41,8 @@ export const createRoom = z.object({
   mode: mode.default("classic"),
   packId,
   questionCount: z.number().int().min(1).max(100).optional(),
+  /** Which local questions to play; without it the server picks from where the host is. */
+  edition: edition.optional(),
   captchaToken: z.string().optional(),
 });
 
@@ -51,6 +57,7 @@ export const setPack = z.object({
   questionCount: z.number().int().min(1).max(100).optional(),
   /** Change the game too, from the lobby (two-step setup). */
   mode: mode.optional(),
+  edition: edition.optional(),
 });
 
 export const answerValue = z.enum(["yes", "no", "skip"]);
@@ -195,6 +202,7 @@ export const rematch = z.object({
   /** Change the game for the next round (two-step setup). */
   mode: mode.optional(),
   questionCount: z.number().int().min(1).max(100).optional(),
+  edition: edition.optional(),
 });
 
 export const testPlayers = z.object({ count: z.number().int().min(1).max(11) });

@@ -4,7 +4,7 @@ import { ApiError, fromDbError } from "@/lib/api/errors";
 import { clientIp, readBody, route } from "@/lib/api/handler";
 import { isCrewMember } from "@/lib/api/crews";
 import { requireLivePack } from "@/lib/api/packs";
-import { bandFloor, generateCode, MODE_RULES, modeFormat } from "@/lib/game";
+import { bandFloor, editionForCountry, generateCode, MODE_RULES, modeFormat } from "@/lib/game";
 import { rateLimit } from "@/lib/ratelimit";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { verifyTurnstile } from "@/lib/turnstile";
@@ -46,6 +46,8 @@ export const POST = route(async (request) => {
         min_age: pack.minAge,
         mode: body.mode,
         crew_id: body.crewId ?? null,
+        // No choice sent (one-tap games, older phones): the edition where the host is.
+        edition: body.edition ?? editionForCountry(request.headers.get("x-vercel-ip-country")),
       });
     if (!error) return { code };
     if (error.code !== "23505") throw fromDbError(error);

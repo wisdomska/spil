@@ -61,6 +61,7 @@ export const POST = route<CodeParams>(async (request, ctx) => {
         question_count: body.questionCount
           ? Math.min(body.questionCount, pack.questionCount)
           : room.room.question_count,
+        ...(body.edition ? { edition: body.edition } : {}),
       })
       .eq("id", room.room.id);
     if (error) throw fromDbError(error);

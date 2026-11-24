@@ -36,8 +36,17 @@ import { yesRate, type QStatus } from "@/lib/admin/questions";
 import { can } from "@/lib/admin/roles";
 import type { AdminPack, AdminQuestion, ImportSummary } from "@/lib/admin/types";
 
-type Form = { text: string; packId: string; status: QStatus; isSample: boolean };
+type Region = "GH" | "NG" | "WA";
+type Form = {
+  text: string;
+  packId: string;
+  status: QStatus;
+  isSample: boolean;
+  region: Region | null;
+};
 const STATUSES = ["live", "draft", "hidden"] as const;
+/** Editions (owner request 2026-11-24): who a question is written for. */
+const REGIONS = ["GH", "NG", "WA"] as const;
 
 export function QuestionsSection() {
   const t = useTranslations("admin.questions");
@@ -54,6 +63,7 @@ export function QuestionsSection() {
   const paging = usePaging();
   const [pack, setPack] = useState(params.get("pack") ?? "all");
   const [status, setStatus] = useState<"all" | QStatus>("all");
+  const [region, setRegion] = useState<"all" | "none" | Region>("all");
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<{ id: string | null } | null>(null);
   const [form, setForm] = useState<Form>({
@@ -61,6 +71,7 @@ export function QuestionsSection() {
     packId: "",
     status: "live",
     isSample: false,
+    region: null,
   });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -74,6 +85,7 @@ export function QuestionsSection() {
     (x) =>
       (pack === "all" || x.packId === pack) &&
       (status === "all" || x.status === status) &&
+      (region === "all" || (region === "none" ? x.region === null : x.region === region)) &&
       (!sq || x.text.toLowerCase().includes(sq)),
   );
   const shown = paging.slice(rows);
@@ -88,12 +100,19 @@ export function QuestionsSection() {
     setEditing({ id: x?.id ?? null });
     setForm(
       x
-        ? { text: x.text, packId: x.packId, status: x.status, isSample: x.isSample }
+        ? {
+            text: x.text,
+            packId: x.packId,
+            status: x.status,
+            isSample: x.isSample,
+            region: x.region,
+          }
         : {
             text: "",
             packId: pack !== "all" ? pack : (packList[0]?.id ?? ""),
             status: "live",
             isSample: false,
+            region: null,
           },
     );
   };
@@ -115,6 +134,7 @@ export function QuestionsSection() {
             packId: form.packId,
             status: form.status,
             isSample: form.isSample,
+            region: form.region,
           }),
         { ok: t("saved"), quiet: true, errors: textErrors },
       );
@@ -124,6 +144,7 @@ export function QuestionsSection() {
           adminApi<{ added: number; duplicates: number }>("POST", "/questions", {
             packId: form.packId,
             status: form.status,
+            region: form.region,
             texts: lines,
           }),
         { quiet: true, errors: textErrors },
@@ -220,6 +241,20 @@ export function QuestionsSection() {
             ...STATUSES.map((s) => ({ value: s, label: ts(s) })),
           ]}
         />
+        <Select
+          aria-label={t("regionFilter")}
+          value={region}
+          onValueChange={(v) => {
+            setRegion(v as "all" | "none" | Region);
+            paging.reset();
+          }}
+          className="w-full sm:w-[180px]"
+          options={[
+            { value: "all", label: t("regionAll") },
+            { value: "none", label: t("regionNone") },
+            ...REGIONS.map((r) => ({ value: r, label: t(`region${r}`) })),
+          ]}
+        />
         <OutlineButton onClick={exportCsv}>{tc("exportCsv")}</OutlineButton>
         {canWrite && (
           <>
@@ -271,6 +306,11 @@ export function QuestionsSection() {
                   {x.isSample && (
                     <span className="ml-2 rounded-pill bg-surface-raised px-2 py-1 align-middle text-[12px] leading-none font-semibold whitespace-nowrap text-text-muted">
                       {t("sampleTag")}
+                    </span>
+                  )}
+                  {x.region && (
+                    <span className="ml-2 rounded-pill bg-accent-soft px-2 py-1 align-middle text-[12px] leading-none font-semibold whitespace-nowrap text-accent-ink">
+                      {t(`region${x.region}`)}
                     </span>
                   )}
                   <span className="mt-1.5 block text-[13px] text-text-muted sm:hidden">
@@ -350,6 +390,19 @@ export function QuestionsSection() {
             value={form.status}
             onValueChange={(v) => setForm((f) => ({ ...f, status: v as QStatus }))}
             options={STATUSES.map((s) => ({ value: s, label: ts(s) }))}
+          />
+        </FieldRow>
+        <FieldRow id="qn-region" label={t("region")} hint={t("regionHint")}>
+          <Select
+            id="qn-region"
+            value={form.region ?? "none"}
+            onValueChange={(v) =>
+              setForm((f) => ({ ...f, region: v === "none" ? null : (v as Region) }))
+            }
+            options={[
+              { value: "none", label: t("regionNone") },
+              ...REGIONS.map((r) => ({ value: r, label: t(`region${r}`) })),
+            ]}
           />
         </FieldRow>
         {editing?.id && (

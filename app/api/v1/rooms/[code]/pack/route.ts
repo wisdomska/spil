@@ -48,6 +48,7 @@ export const PATCH = route<CodeParams>(async (request, ctx) => {
       pack_id: pack.id,
       min_age: pack.minAge,
       question_count: body.questionCount ? Math.min(body.questionCount, pack.questionCount) : null,
+      ...(body.edition ? { edition: body.edition } : {}),
     })
     .eq("id", room.room.id);
   if (error) throw fromDbError(error);

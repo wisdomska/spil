@@ -19,6 +19,7 @@ import { track } from "@/lib/analytics/posthog";
 import {
   bandFloor,
   defaultCount,
+  defaultEdition,
   FEATURED_MODE,
   isMode,
   MODE_RULES,
@@ -26,10 +27,11 @@ import {
   parseSetupMode,
   STORY_VOTE_MODE,
   withStoryVote,
+  type Edition,
   type Mode,
   type SetupPath,
 } from "@/lib/game";
-import { readLastGame, saveLastGame } from "@/lib/setup/lastGame";
+import { readEdition, readLastGame, saveEdition, saveLastGame } from "@/lib/setup/lastGame";
 import { useBusy } from "@/lib/useBusy";
 
 type Props = {
@@ -39,6 +41,8 @@ type Props = {
   ageLockHours: number;
   /** Games switched off in the admin console. */
   disabledModes?: readonly string[];
+  /** Where the host is (ISO country from the edge), for the best-fit edition. */
+  country?: string | null;
 };
 
 /**
@@ -53,6 +57,7 @@ export function CreateRoom({
   questionsPerGame,
   ageLockHours,
   disabledModes = [],
+  country = null,
 }: Props) {
   const t = useTranslations("packs");
   const ts = useTranslations("setup");
@@ -114,7 +119,10 @@ export function CreateRoom({
     setStarting(null);
   };
 
-  const go = async (mode: Mode, packId: string, questionCount: number) => {
+  /** No edition: a one-tap game, which plays the best fit for this phone. */
+  const go = async (mode: Mode, packId: string, questionCount: number, picked?: Edition) => {
+    const pack = packs?.find((p) => p.id === packId);
+    const edition = picked ?? defaultEdition(pack?.editions ?? [], readEdition(), country);
     if (!band) return;
     setError(null);
     setBusy(true);
@@ -123,8 +131,9 @@ export function CreateRoom({
         if (flow === "rematch")
           track("rematch_started", { packChanged: packId !== params.get("pack") });
         if (flow === "pack")
-          await api("PATCH", `/rooms/${room}/pack`, { packId, questionCount, mode });
-        else await api("POST", `/rooms/${room}/rematch`, { packId, questionCount, mode });
+          await api("PATCH", `/rooms/${room}/pack`, { packId, questionCount, mode, edition });
+        else await api("POST", `/rooms/${room}/rematch`, { packId, questionCount, mode, edition });
+        if (picked) saveEdition(picked);
         router.push(`/r/${room}`);
         return;
       }
@@ -143,9 +152,11 @@ export function CreateRoom({
         crewId: params.get("crew") ?? undefined,
         packId,
         questionCount,
+        edition,
         captchaToken: captchaToken || undefined,
       });
       saveLastGame({ mode, packId, count: questionCount });
+      if (picked) saveEdition(picked);
       track("room_created", { pack: packId, questionCount, mode });
       router.push(`/r/${code}/me`);
     } catch (e) {
@@ -299,7 +310,8 @@ export function CreateRoom({
           initialPack={fit.some((p) => p.id === initialPack) ? initialPack : undefined}
           cta={(name) => t("continue", { pack: name })}
           busy={busy}
-          onContinue={(packId, count) => go(game, packId, count)}
+          country={country}
+          onContinue={(packId, count, edition) => go(game, packId, count, edition)}
           aboveCta={challenge}
           error={error}
         />

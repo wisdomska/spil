@@ -1,6 +1,12 @@
 import "server-only";
 import { getFlags } from "@/lib/flags";
-import { packsForFloor, type MinAge, type PackFormat } from "@/lib/game";
+import {
+  editionCounts,
+  packEditions,
+  packsForFloor,
+  type MinAge,
+  type PackFormat,
+} from "@/lib/game";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { ApiError, fromDbError } from "./errors";
 import type { Pack, PackSection } from "./types";
@@ -10,12 +16,16 @@ async function allLivePacks(paymentsOn: boolean): Promise<Pack[]> {
   const db = getAdminClient();
   const [packs, questions] = await Promise.all([
     db.from("packs").select("*").eq("status", "live").order("sort_order").order("name"),
-    db.from("questions").select("pack_id").eq("status", "live"),
+    db.from("questions").select("pack_id, region").eq("status", "live"),
   ]);
   if (packs.error) throw fromDbError(packs.error);
   if (questions.error) throw fromDbError(questions.error);
   const counts = new Map<string, number>();
-  for (const q of questions.data ?? []) counts.set(q.pack_id, (counts.get(q.pack_id) ?? 0) + 1);
+  const regions = new Map<string, (string | null)[]>();
+  for (const q of questions.data ?? []) {
+    counts.set(q.pack_id, (counts.get(q.pack_id) ?? 0) + 1);
+    regions.set(q.pack_id, [...(regions.get(q.pack_id) ?? []), q.region]);
+  }
   return (packs.data ?? [])
     .filter((p) => (counts.get(p.id) ?? 0) > 0)
     .map((p) => ({
@@ -34,6 +44,9 @@ async function allLivePacks(paymentsOn: boolean): Promise<Pack[]> {
       format: p.format as PackFormat,
       locked: p.premium && paymentsOn,
       questionCount: counts.get(p.id) ?? 0,
+      // A pack that is local as a whole plays the same in every edition.
+      editions: p.region ? [] : packEditions(regions.get(p.id) ?? []),
+      editionCounts: editionCounts(regions.get(p.id) ?? []),
     }));
 }
 

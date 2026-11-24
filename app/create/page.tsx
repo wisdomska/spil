@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { pageMetadata } from "@/lib/seo";
+import { headers } from "next/headers";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { IntlScope } from "@/components/site/IntlScope";
@@ -23,7 +24,7 @@ async function Picker() {
   // 13+ packs are rendered here; older bands fetch theirs after the age screen (SPIL-02), so an
   // under-18 player's page never carries an adult pack.
   await connection();
-  const [packs, settings] = await Promise.all([livePacks(13), getSettings()]);
+  const [packs, settings, h] = await Promise.all([livePacks(13), getSettings(), headers()]);
   return (
     <IntlScope scope="create">
       <CreateRoom
@@ -31,6 +32,7 @@ async function Picker() {
         questionsPerGame={settings.questionsPerGame}
         ageLockHours={settings.ageLockHours}
         disabledModes={settings.disabledModes}
+        country={h.get("x-vercel-ip-country")}
       />
     </IntlScope>
   );

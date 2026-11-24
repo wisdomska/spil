@@ -1,7 +1,7 @@
 // Response shapes of /api/v1/admin, shared by the route handlers and the console.
 import type { AdminRole } from "./roles";
 import type { DayStats } from "./stats";
-import type { QStatus } from "./questions";
+import type { QRegion, QStatus } from "./questions";
 
 export type Me = { userId: string; name: string; email: string; role: AdminRole };
 
@@ -148,6 +148,8 @@ export type AdminQuestion = {
   status: QStatus;
   /** SPIL-08: shown in the pack preview. */
   isSample: boolean;
+  /** Editions: null for everyone, else the place it is written for. */
+  region: QRegion | null;
   yes: number;
   answered: number;
   reports: number;

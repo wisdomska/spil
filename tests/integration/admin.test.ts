@@ -289,7 +289,7 @@ d("admin content", () => {
     expect(res.headers.get("content-type")).toContain("text/csv");
     const csv = await res.text();
     expect(csv.split("\r\n")[0]).toBe(
-      "pack_id,pack,question,status,is_sample,min_age,section,spice,answered,yes_rate,reports",
+      "pack_id,pack,question,status,is_sample,region,min_age,section,spice,answered,yes_rate,reports",
     );
     expect(csv).toContain('Have you ever renamed a variable to ""x""?');
     const again = await lead.call("POST", "/admin/questions/import", { csv });

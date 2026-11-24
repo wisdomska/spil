@@ -9,11 +9,18 @@ import { getAdminClient } from "@/lib/supabase/admin";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-const snap = (q: { packId: string; text: string; status: string; isSample: boolean }) => ({
+const snap = (q: {
+  packId: string;
+  text: string;
+  status: string;
+  isSample: boolean;
+  region: string | null;
+}) => ({
   pack: q.packId,
   text: q.text,
   status: q.status,
   preview: q.isSample,
+  region: q.region,
 });
 
 /** PATCH /admin/questions/:id: edit text, pack, status or preview mark. Moderators may only hide. */
@@ -28,6 +35,7 @@ export const PATCH = route<Ctx>(async (request, { params }) => {
     text: body.text !== undefined ? normalizeQuestion(body.text) : before.text,
     status: body.status ?? before.status,
     isSample: body.isSample ?? before.isSample,
+    region: body.region !== undefined ? body.region : before.region,
   };
   if (body.text !== undefined) {
     const problem = checkQuestion(next.text);
@@ -47,11 +55,15 @@ export const PATCH = route<Ctx>(async (request, { params }) => {
       text: next.text,
       status: next.status,
       is_sample: next.isSample,
+      region: next.region,
     })
     .eq("id", id);
   if (error) throw new ApiError("INTERNAL");
   const onlyStatus =
-    body.text === undefined && body.packId === undefined && body.isSample === undefined;
+    body.text === undefined &&
+    body.packId === undefined &&
+    body.isSample === undefined &&
+    body.region === undefined;
   const action = !onlyStatus
     ? "question_edited"
     : next.status === "hidden"

@@ -37,7 +37,7 @@ const SAVE_PROMPT = [
 /** Client namespaces per route. The admin console alone gets "admin", after its session check. */
 export const SCOPES = {
   landing: ["landing", "awards", "card"],
-  create: ["age", "packs", "packInfo", "question", "modes", "setup"],
+  create: ["age", "packs", "packInfo", "question", "modes", "setup", "editions"],
   join: ["join"],
   profile: ["profile", "age"],
   profilePage: ["profilePage", "profile", "account", "pwa"],
@@ -59,6 +59,7 @@ export const SCOPES = {
     "awards",
     "modes",
     "crews",
+    "editions",
     "landing.headline",
     "landing.headlineEmphasis",
     // The "get a buzz" ask on the waiting screen (owner request 2026-11-23).

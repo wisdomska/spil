@@ -2,6 +2,8 @@
 import type {
   AnswerValue,
   AwardId,
+  Edition,
+  LocalEdition,
   LabelId,
   MinAge,
   Mode,
@@ -54,6 +56,10 @@ export type Pack = PackSummary & {
   tone: PackTone;
   region: string | null;
   questionCount: number;
+  /** The local editions this pack has questions for; empty when it plays the same everywhere. */
+  editions: LocalEdition[];
+  /** How many questions each edition plays, for the length choice. */
+  editionCounts?: Record<Edition, number>;
   sortOrder: number;
   /** Statements for Hot Takes, yes or no questions for every other mode. */
   format: PackFormat;
@@ -138,6 +144,8 @@ export type RoomState = {
     round: number;
     pack: PackSummary;
     questionCount: number;
+    /** Which local questions this room plays (owner request 2026-11-24). */
+    edition?: Edition;
     revealedAt?: string;
     /** SPIL-11: the slide every phone shows, when it began, and how many there are. */
     reveal?: { index: number; at: string; total: number };
@@ -156,6 +164,8 @@ export type RoomState = {
     customAllowed: boolean;
     /** Lobby, host only: how many questions the pack has, for the length choice. */
     packQuestions?: number;
+    /** Lobby, host only: the local editions the pack has questions for. */
+    packEditions?: LocalEdition[];
     /** Crews (Batch 3): the crew this room plays as. */
     crew?: { id: string; name: string; member: boolean };
   };

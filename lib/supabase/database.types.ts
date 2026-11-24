@@ -849,6 +849,7 @@ export type Database = {
           id: string;
           is_sample: boolean;
           pack_id: string;
+          region: string | null;
           report_count: number;
           status: Database["public"]["Enums"]["q_status"];
           text: string;
@@ -861,6 +862,7 @@ export type Database = {
           id?: string;
           is_sample?: boolean;
           pack_id: string;
+          region?: string | null;
           report_count?: number;
           status?: Database["public"]["Enums"]["q_status"];
           text: string;
@@ -873,6 +875,7 @@ export type Database = {
           id?: string;
           is_sample?: boolean;
           pack_id?: string;
+          region?: string | null;
           report_count?: number;
           status?: Database["public"]["Enums"]["q_status"];
           text?: string;
@@ -1086,6 +1089,7 @@ export type Database = {
           created_by: string;
           crew_id: string | null;
           expires_at: string;
+          edition: string;
           final_round: number;
           guessing_at: string | null;
           host_player_id: string | null;
@@ -1111,6 +1115,7 @@ export type Database = {
           created_by: string;
           crew_id?: string | null;
           expires_at?: string;
+          edition?: string;
           final_round?: number;
           guessing_at?: string | null;
           host_player_id?: string | null;
@@ -1136,6 +1141,7 @@ export type Database = {
           created_by?: string;
           crew_id?: string | null;
           expires_at?: string;
+          edition?: string;
           final_round?: number;
           guessing_at?: string | null;
           host_player_id?: string | null;

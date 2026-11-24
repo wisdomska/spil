@@ -60,6 +60,7 @@ export const packBody = z.object({
 export const addQuestions = z.object({
   packId: z.string().trim().min(1).max(40),
   status: qStatus,
+  region: z.enum(["GH", "NG", "WA"]).nullable().optional(),
   texts: z.array(z.string().max(400)).min(1).max(200),
 });
 
@@ -70,6 +71,8 @@ export const patchQuestion = z
     status: qStatus.optional(),
     /** SPIL-08: use as a pack preview question. */
     isSample: z.boolean().optional(),
+    /** Editions: null for everyone. */
+    region: z.enum(["GH", "NG", "WA"]).nullable().optional(),
   })
   .refine((v) => Object.values(v).some((x) => x !== undefined), "Nothing to change.");
 

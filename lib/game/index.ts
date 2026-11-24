@@ -27,3 +27,4 @@ export * from "./socialProof";
 export * from "./duo";
 export * from "./avatars";
 export * from "./setup";
+export * from "./editions";

@@ -110,6 +110,7 @@ export type QuestionPatch = {
   packId?: string;
   status?: "live" | "draft" | "hidden";
   isSample?: boolean;
+  region?: string | null;
 };
 
 /** Moderators may only set a question to hidden; owners and content leads may change anything. */
@@ -120,6 +121,7 @@ export function canPatchQuestion(role: AdminRole | null | undefined, patch: Ques
     patch.text === undefined &&
     patch.packId === undefined &&
     patch.isSample === undefined &&
+    patch.region === undefined &&
     patch.status === "hidden"
   );
 }

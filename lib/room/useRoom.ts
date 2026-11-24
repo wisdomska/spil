@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ClientApiError } from "@/lib/api/client";
 import type { RoomState } from "@/lib/api/types";
-import type { AnswerValue } from "@/lib/game";
+import type { AnswerValue, Edition } from "@/lib/game";
 import { BACKOFF_MS, useAnswerQueue } from "./answerQueue";
 
 export const roomKey = (code: string) => ["room", code] as const;
@@ -82,9 +82,10 @@ export function useRoomActions(code: string) {
   // SPIL-18: one-tap rematch with the same pack, and the host's series reset.
   const rematch = useMutation({ mutationFn: () => call("POST", "/rematch", {}) });
   const resetSeries = useMutation({ mutationFn: () => call("POST", "/series/reset") });
-  // Two-step setup: the host changes the length from the lobby.
+  // Two-step setup: the host changes the length or the edition from the lobby.
   const setLength = useMutation({
-    mutationFn: (v: { packId: string; questionCount: number }) => call("PATCH", "/pack", v),
+    mutationFn: (v: { packId: string; questionCount: number; edition?: Edition }) =>
+      call("PATCH", "/pack", v),
   });
   const addTestPlayers = useMutation({
     mutationFn: (count: number) => call("POST", "/test-players", { count }),

@@ -6,6 +6,9 @@ export const QUESTION_MAX = 120;
 export const IMPORT_MAX_ROWS = 2000;
 export const Q_STATUSES = ["live", "draft", "hidden"] as const;
 export type QStatus = (typeof Q_STATUSES)[number];
+/** Editions: the place a question is written for; blank is everyone. WA plays in both. */
+export const Q_REGIONS = ["GH", "NG", "WA"] as const;
+export type QRegion = (typeof Q_REGIONS)[number];
 
 /** Stored text never carries "Have you ever" and always ends with a question mark. */
 export function normalizeQuestion(input: string): string {
@@ -36,13 +39,20 @@ export type ImportError =
   | "unknown_pack"
   | "bad_status"
   | "bad_is_sample"
+  | "bad_region"
   | "too_short"
   | "too_long"
   | "too_many_rows"
   | "empty";
 
 export type ImportResult = {
-  rows: Array<{ packId: string; text: string; status: QStatus; isSample: boolean }>;
+  rows: Array<{
+    packId: string;
+    text: string;
+    status: QStatus;
+    isSample: boolean;
+    region: QRegion | null;
+  }>;
   duplicates: number;
   errors: Array<{ line: number; error: ImportError }>;
 };
@@ -71,6 +81,7 @@ export function parseQuestionImport(
   const packCol = header.indexOf("pack");
   const statusCol = header.indexOf("status");
   const sampleCol = header.indexOf("is_sample");
+  const regionCol = header.indexOf("region");
   if (qCol < 0) result.errors.push({ line: 1, error: "no_question_column" });
   if (idCol < 0 && packCol < 0) result.errors.push({ line: 1, error: "no_pack_column" });
   if (result.errors.length) return result;
@@ -105,7 +116,11 @@ export function parseQuestionImport(
     const isSample = ["true", "yes", "1"].includes(rawSample);
     if (rawSample && !isSample && !["false", "no", "0"].includes(rawSample))
       return result.errors.push({ line, error: "bad_is_sample" });
-    result.rows.push({ packId, text, status, isSample });
+    const rawRegion = cell(regionCol).toUpperCase();
+    if (rawRegion && !(Q_REGIONS as readonly string[]).includes(rawRegion))
+      return result.errors.push({ line, error: "bad_region" });
+    const region = (rawRegion || null) as QRegion | null;
+    result.rows.push({ packId, text, status, isSample, region });
   });
   return result;
 }
@@ -120,6 +135,7 @@ export type ExportQuestion = {
   text: string;
   status: QStatus;
   isSample: boolean;
+  region: QRegion | null;
   answered: number;
   yes: number;
   reports: number;
@@ -131,6 +147,7 @@ export const EXPORT_HEADER = [
   "question",
   "status",
   "is_sample",
+  "region",
   "min_age",
   "section",
   "spice",
@@ -144,7 +161,7 @@ export function yesRate(yes: number, answered: number): number | null {
   return answered > 0 ? Math.round((yes / answered) * 100) : null;
 }
 
-/** The export is also a valid import file (pack_id, question, status and is_sample columns). */
+/** The export is also a valid import file (pack_id, question, status, is_sample and region). */
 export function questionsToCsv(list: ReadonlyArray<ExportQuestion>) {
   return toCsv(
     EXPORT_HEADER,
@@ -156,6 +173,7 @@ export function questionsToCsv(list: ReadonlyArray<ExportQuestion>) {
         `Have you ever ${q.text}`,
         q.status,
         q.isSample ? "true" : "false",
+        q.region ?? "",
         q.minAge,
         q.section,
         q.spice,

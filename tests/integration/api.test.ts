@@ -1247,7 +1247,11 @@ d("two-step setup", () => {
     const room = await fullRoom(2);
     const [host, guest] = room.players as [Player, Player];
     const hostState = await host.call("GET", `/rooms/${room.roomCode}/state`);
-    expect(hostState.body.room.packQuestions).toBe(30);
+    // Editions: a room made without a choice outside Ghana and Nigeria plays the global edition,
+    // which leaves out Classic's two local questions (trotro fare, stew pot).
+    expect(hostState.body.room.edition).toBe("global");
+    expect(hostState.body.room.packQuestions).toBe(28);
+    expect(hostState.body.room.packEditions).toEqual(["GH", "NG"]);
     const guestState = await guest.call("GET", `/rooms/${room.roomCode}/state`);
     expect(guestState.body.room.packQuestions).toBeUndefined();
   });

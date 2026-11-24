@@ -17,6 +17,7 @@ import { useOffline } from "@/lib/realtime/useOffline";
 import { useRoomChannel } from "@/lib/realtime/useRoomChannel";
 import { useAnswerQueue } from "@/lib/room/answerQueue";
 import { roomKey, useRoomActions, useRoomState } from "@/lib/room/useRoom";
+import { saveEdition } from "@/lib/setup/lastGame";
 import { GuessView } from "./GuessView";
 import { LoadingRetry } from "./LoadingRetry";
 import { LobbyView } from "./LobbyView";
@@ -348,6 +349,14 @@ export function RoomApp({ code }: { code: string }) {
                 { onError: fail },
               )
             }
+            onEdition={(edition) => {
+              saveEdition(edition);
+              actions.setLength.mutate(
+                // The length stays as it is; the pack route keeps it only when it is sent.
+                { packId: state.room.pack.id, questionCount: state.room.questionCount, edition },
+                { onError: fail },
+              );
+            }}
           />
         )}
         {screen === "question" && (hot || imposter) && (

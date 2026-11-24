@@ -56,6 +56,9 @@ import {
   type PlayerStatus,
   type ResultsPlayer,
   type RoomStatus,
+  editionPlays,
+  isEdition,
+  packEditions,
 } from "@/lib/game";
 import { getFlags, getSettings } from "@/lib/flags";
 import { getAdminClient } from "@/lib/supabase/admin";
@@ -1089,6 +1092,7 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
       round: room.round,
       pack: packSummary(pack),
       mode: roomMode(room),
+      edition: isEdition(room.edition) ? room.edition : "global",
       // Who Said That? plays at most 5 prompts.
       questionCount: writesAnswers(roomMode(room))
         ? Math.min(room.question_count ?? settings.questionsPerGame, MAX_WRITTEN_PROMPTS)
@@ -1335,13 +1339,16 @@ export async function buildState(ctx: Ctx): Promise<RoomState> {
 
   // Two-step setup: the host can change the length in the lobby, up to the pack's size.
   if (room.status === "lobby" && me.id === room.host_player_id) {
-    let q = db()
-      .from("questions")
-      .select("id", { count: "exact", head: true })
-      .eq("pack_id", room.pack_id);
+    let q = db().from("questions").select("region").eq("pack_id", room.pack_id);
     // A room's own custom questions are hidden from everyone else but play here.
     if (!room.pack_id.startsWith("custom_")) q = q.eq("status", "live");
-    const { count } = await q;
+    const { data } = await q;
+    const regions = (data ?? []).map((r) => r.region);
+    // Editions: only the questions this room's edition plays count towards "All".
+    const edition = state.room.edition ?? "global";
+    // Like the draw: a pack with nothing for this edition plays every question.
+    const count = regions.filter((r) => editionPlays(edition, r)).length || regions.length;
+    state.room.packEditions = packEditions(regions);
     state.room.packQuestions = writesAnswers(roomMode(room))
       ? Math.min(count ?? 0, MAX_WRITTEN_PROMPTS)
       : (count ?? 0);
