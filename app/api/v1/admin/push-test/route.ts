@@ -8,11 +8,11 @@ import { pushConfigured, sendTest } from "@/lib/push/server";
  */
 export const GET = route(async (request) => {
   await requireAdmin(request, "account.self");
-  return { configured: pushConfigured() };
+  return { configured: await pushConfigured() };
 });
 
 export const POST = route(async (request) => {
   const me = await requireAdmin(request, "account.self");
-  if (!pushConfigured()) return { configured: false, sent: 0, devices: 0 };
+  if (!(await pushConfigured())) return { configured: false, sent: 0, devices: 0 };
   return { configured: true, ...(await sendTest(me.userId)) };
 });

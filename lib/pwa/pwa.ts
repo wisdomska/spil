@@ -4,11 +4,25 @@ import { api } from "@/lib/api/client";
 
 /**
  * Installed app and push helpers (owner request 2026-11-23, modelled on Clink's lib/pwa.ts).
- * Push only exists when the server has a VAPID key; without it everything here reports
- * "unsupported" and the app never offers notifications.
+ * The public push key comes from the server (/api/v1/push/key), which makes its own key pair
+ * when none is set in the environment (owner request 2026-11-24).
  */
 
-export const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
+let publicKey: Promise<string | null> | null = null;
+/** The server's public push key, or null when push is unavailable. Fetched once per page. */
+function vapidPublicKey(): Promise<string | null> {
+  const baked = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  if (baked) return Promise.resolve(baked);
+  publicKey ??= fetch("/api/v1/push/key")
+    .then(async (r) =>
+      r.status === 200 ? ((await r.json()) as { publicKey: string }).publicKey : null,
+    )
+    .catch(() => {
+      publicKey = null;
+      return null;
+    });
+  return publicKey;
+}
 
 /** Opened from the home screen (installed), not in a browser tab. */
 export function isStandalone(): boolean {
@@ -35,7 +49,7 @@ export type PushSupport = "ready" | "needs-install" | "unsupported";
  * (iOS 16.4 and later), so a Safari tab there "needs-install".
  */
 export function pushSupport(): PushSupport {
-  if (typeof window === "undefined" || !VAPID_PUBLIC_KEY) return "unsupported";
+  if (typeof window === "undefined") return "unsupported";
   const capable =
     "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
   if (platform() === "ios" && !isStandalone()) return "needs-install";
@@ -65,6 +79,8 @@ export async function enablePush(
   prefs: Partial<PushPrefs> = {},
 ): Promise<"granted" | "denied" | "unsupported"> {
   if (pushSupport() !== "ready") return "unsupported";
+  const key = await vapidPublicKey();
+  if (!key) return "unsupported";
   const permission = await Notification.requestPermission();
   if (permission !== "granted") return "denied";
   const reg = await navigator.serviceWorker.ready;
@@ -72,7 +88,7 @@ export async function enablePush(
     (await reg.pushManager.getSubscription()) ??
     (await reg.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: keyBytes(VAPID_PUBLIC_KEY),
+      applicationServerKey: keyBytes(key),
     }));
   const json = sub.toJSON();
   await api("POST", "/push", { endpoint: json.endpoint, keys: json.keys, ...prefs });

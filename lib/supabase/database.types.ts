@@ -88,6 +88,24 @@ export type Database = {
           },
         ];
       };
+      app_secrets: {
+        Row: {
+          created_at: string;
+          key: string;
+          value: string;
+        };
+        Insert: {
+          created_at?: string;
+          key: string;
+          value: string;
+        };
+        Update: {
+          created_at?: string;
+          key?: string;
+          value?: string;
+        };
+        Relationships: [];
+      };
       audit_log: {
         Row: {
           action: string;

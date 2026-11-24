@@ -5,25 +5,27 @@ import webpush from "web-push";
 import messages from "@/messages/en.json";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { SITE_URL } from "@/lib/seo";
+import { vapidKeys } from "./keys";
 import { eventForTransition, isGone, roomRecipients, TTL, type RoomEvent } from "./rules";
 
 /**
- * Web Push sender (owner request 2026-11-23, modelled on Clink). Needs the VAPID key pair in
- * NEXT_PUBLIC_VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY; without them nothing is sent and the app
- * never offers notifications. Every send happens after the response has gone out (after()), so
- * a tap is never slower because of it.
+ * Web Push sender (owner request 2026-11-23, modelled on Clink). The VAPID key pair comes from
+ * the environment when set, or is made by the server itself (lib/push/keys.ts). Every send
+ * happens after the response has gone out (after()), so a tap is never slower because of it.
  */
 
 const t = createTranslator({ locale: "en", messages, namespace: "push" });
 
-let configured: boolean | null = null;
-export function pushConfigured(): boolean {
-  if (configured !== null) return configured;
-  const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-  const priv = process.env.VAPID_PRIVATE_KEY;
-  if (!pub || !priv) return (configured = false);
-  webpush.setVapidDetails(process.env.VAPID_SUBJECT || SITE_URL, pub, priv);
-  return (configured = true);
+let configuredWith: string | null = null;
+/** Whether push can be sent: the key pair is available (and loaded into web-push). */
+export async function pushConfigured(): Promise<boolean> {
+  const keys = await vapidKeys();
+  if (!keys) return false;
+  if (configuredWith !== keys.publicKey) {
+    webpush.setVapidDetails(process.env.VAPID_SUBJECT || SITE_URL, keys.publicKey, keys.privateKey);
+    configuredWith = keys.publicKey;
+  }
+  return true;
 }
 
 export type PushPayload = {
@@ -39,7 +41,7 @@ type Sub = { id: string; endpoint: string; p256dh: string; auth: string };
 
 /** Sends to each device; removes the ones the push service says are gone. Returns how many got it. */
 export async function deliver(subs: readonly Sub[], payload: PushPayload, ttl: number) {
-  if (!pushConfigured() || subs.length === 0) return 0;
+  if (subs.length === 0 || !(await pushConfigured())) return 0;
   const db = getAdminClient();
   const body = JSON.stringify(payload);
   const gone: string[] = [];
@@ -87,7 +89,7 @@ export function notifyRoomTransition(
   exceptUserId?: string | null,
 ) {
   const event = eventForTransition(from, to);
-  if (!event || !pushConfigured()) return;
+  if (!event) return;
   const run = () =>
     sendRoomEvent(room, event, exceptUserId).catch((e) => {
       console.error("[push] room event failed", (e as Error).message);
@@ -143,7 +145,7 @@ async function sendRoomEvent(
 
 /** The Today's Spill reminder, to every device that wants it whose person has not answered yet. */
 export async function sendDailyReminder(day: string, questionText: string) {
-  if (!pushConfigured()) return { sent: 0, devices: 0 };
+  if (!(await pushConfigured())) return { sent: 0, devices: 0 };
   const db = getAdminClient();
   const [subs, answered] = await Promise.all([
     db.from("push_subscriptions").select("id, user_id, endpoint, p256dh, auth").eq("daily", true),

@@ -1559,7 +1559,7 @@
       "pushReady": "Set up",
       "pushMissing": "Not set up",
       "pushBody": "Players who allow it get game updates and the Today's Spill reminder. Send a test to the devices you turned notifications on for.",
-      "pushSetup": "Add NEXT_PUBLIC_VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in Vercel (generate them with npx web-push generate-vapid-keys), then redeploy. Until then SPIL never offers notifications.",
+      "pushSetup": "Push keys could not be read. Check that the database is reachable; SPIL makes its own keys on first use.",
       "pushTest": "Send me a test",
       "pushSent": "{n, plural, =0 {Nothing delivered. Check this device's notification settings.} one {Sent to # device.} other {Sent to # devices.}}",
       "pushNoDevices": "Turn on notifications on this device first: Get the app in the SPIL menu."
