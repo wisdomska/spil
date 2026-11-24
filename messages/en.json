@@ -960,11 +960,17 @@
       "rateLimited": "Slow down a little. Try again in a minute.",
       "haveYouEver": "Have you ever {text}",
       "pagination": "Pages",
-      "range": "{from} to {to} of {total}",
+      "range": "Showing {from} to {to} of {total}",
       "rangeNone": "0 of 0",
-      "rowsPerPage": "Rows per page",
+      "rowsPerPage": "Rows",
+      "first": "First",
+      "firstPage": "First page",
+      "previous": "Previous",
       "previousPage": "Previous page",
+      "next": "Next",
       "nextPage": "Next page",
+      "last": "Last",
+      "lastPage": "Last page, {pages}",
       "pageLabel": "Page {page}",
       "pageOf": "Page {page} of {pages}",
       "decrease": "Lower {field}",
@@ -1333,6 +1339,7 @@
         "unknown_pack": "no pack with that id or name",
         "bad_status": "status must be live, draft or hidden",
         "bad_is_sample": "is_sample must be true or false",
+        "bad_region": "region must be GH, NG, WA or blank",
         "too_short": "the question is too short",
         "too_long": "the question is over 120 characters",
         "too_many_rows": "import at most 2,000 rows at a time",
@@ -1340,7 +1347,15 @@
       },
       "sample": "Use as preview",
       "sampleHint": "The pack preview shows up to 3 of these. With none marked, it shows the first 3.",
-      "sampleTag": "Preview"
+      "sampleTag": "Preview",
+      "region": "Edition",
+      "regionHint": "Local questions only play in that edition. Everyone plays in all of them.",
+      "regionFilter": "Edition",
+      "regionAll": "Every edition",
+      "regionNone": "Everyone",
+      "regionGH": "Ghana",
+      "regionNG": "Naija",
+      "regionWA": "Ghana and Naija"
     },
     "reports": {
       "chips": {
@@ -2139,5 +2154,12 @@
     "askDailyBody": "One reminder a day, only if you haven't answered.",
     "askYes": "Turn on",
     "askLater": "Not now"
+  },
+  "editions": {
+    "label": "Edition",
+    "global": "Global",
+    "GH": "Ghana",
+    "NG": "Naija",
+    "hint": "Ghana and Naija add a few questions only locals will get."
   }
 }

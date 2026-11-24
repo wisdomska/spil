@@ -447,81 +447,86 @@ export function DataTable({
     top.current?.scrollIntoView({ block: "nearest" });
   };
   return (
-    <div
-      ref={top}
-      aria-busy={busy || undefined}
-      className={cn(
-        "scroll-mt-4 overflow-auto rounded-card border border-line bg-surface transition-opacity",
-        busy && "opacity-60",
-      )}
-    >
-      <table className="w-full border-collapse text-[14px] leading-[1.35]">
-        <caption className="sr-only">{caption}</caption>
-        <thead>
-          <tr>
-            {cols.map((c, i) => (
-              <th
-                key={i}
-                scope="col"
-                style={{ width: c.width }}
-                aria-sort={c.onSort ? (c.sort ?? "none") : undefined}
-                className={cn(
-                  "sticky top-0 z-[1] bg-surface-raised px-2.5 py-3 font-mono text-[12px] leading-none font-semibold whitespace-nowrap text-text-muted min-[1100px]:px-3.5",
-                  c.right ? "text-right" : "text-left",
-                  c.wide && WIDE,
-                  c.noPhone && NO_PHONE,
-                  c.onSort && "py-1.5",
-                )}
-              >
-                {c.node ? (
-                  <>
-                    <span className="sr-only">{c.label}</span>
-                    {c.node}
-                  </>
-                ) : c.onSort ? (
-                  <button
-                    type="button"
-                    onClick={c.onSort}
-                    className={cn(
-                      "-mx-2 inline-flex h-9 items-center gap-1 rounded-pill border-0 bg-transparent px-2 font-mono text-[12px] leading-none font-semibold whitespace-nowrap hover:bg-surface hover:text-text",
-                      c.sort && c.sort !== "none" ? "text-accent-ink" : "text-text-muted",
-                    )}
-                  >
-                    {c.label}
-                    {c.sort === "ascending" ? (
-                      <CaretUpIcon aria-hidden size={12} weight="bold" />
-                    ) : c.sort === "descending" ? (
-                      <CaretDownIcon aria-hidden size={12} weight="bold" />
-                    ) : (
-                      <CaretUpDownIcon aria-hidden size={12} className="opacity-50" />
-                    )}
-                  </button>
-                ) : (
-                  c.label
-                )}
+    <div>
+      <div
+        ref={top}
+        aria-busy={busy || undefined}
+        className={cn(
+          "scroll-mt-4 overflow-auto rounded-card border border-line bg-surface transition-opacity",
+          busy && "opacity-60",
+        )}
+      >
+        <table className="w-full border-collapse text-[14px] leading-[1.35]">
+          <caption className="sr-only">{caption}</caption>
+          <thead>
+            <tr>
+              {cols.map((c, i) => (
+                <th
+                  key={i}
+                  scope="col"
+                  style={{ width: c.width }}
+                  aria-sort={c.onSort ? (c.sort ?? "none") : undefined}
+                  className={cn(
+                    "sticky top-0 z-[1] bg-surface-raised px-2.5 py-3 font-mono text-[12px] leading-none font-semibold whitespace-nowrap text-text-muted min-[1100px]:px-3.5",
+                    c.right ? "text-right" : "text-left",
+                    c.wide && WIDE,
+                    c.noPhone && NO_PHONE,
+                    c.onSort && "py-1.5",
+                  )}
+                >
+                  {c.node ? (
+                    <>
+                      <span className="sr-only">{c.label}</span>
+                      {c.node}
+                    </>
+                  ) : c.onSort ? (
+                    <button
+                      type="button"
+                      onClick={c.onSort}
+                      className={cn(
+                        "-mx-2 inline-flex h-9 items-center gap-1 rounded-pill border-0 bg-transparent px-2 font-mono text-[12px] leading-none font-semibold whitespace-nowrap hover:bg-surface hover:text-text",
+                        c.sort && c.sort !== "none" ? "text-accent-ink" : "text-text-muted",
+                      )}
+                    >
+                      {c.label}
+                      {c.sort === "ascending" ? (
+                        <CaretUpIcon aria-hidden size={12} weight="bold" />
+                      ) : c.sort === "descending" ? (
+                        <CaretDownIcon aria-hidden size={12} weight="bold" />
+                      ) : (
+                        <CaretUpDownIcon aria-hidden size={12} className="opacity-50" />
+                      )}
+                    </button>
+                  ) : (
+                    c.label
+                  )}
+                </th>
+              ))}
+              <th scope="col" className="sticky top-0 z-[1] w-px bg-surface-raised">
+                <span className="sr-only">{t("actions")}</span>
               </th>
-            ))}
-            <th scope="col" className="sticky top-0 z-[1] w-px bg-surface-raised">
-              <span className="sr-only">{t("actions")}</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>{children}</tbody>
-      </table>
+            </tr>
+          </thead>
+          <tbody>{children}</tbody>
+        </table>
+        {empty && (
+          <div className="px-5 py-10 text-center text-[15px] leading-[1.5] text-text-muted">
+            {emptyText}
+          </div>
+        )}
+      </div>
       {!empty && <Pagination total={total} page={page} size={size} onPage={go} onSize={onSize} />}
-      {empty && (
-        <div className="px-5 py-10 text-center text-[15px] leading-[1.5] text-text-muted">
-          {emptyText}
-        </div>
-      )}
     </div>
   );
 }
 
 /**
- * Table pagination: the row range, rows per page, previous and next, and numbered pages with
- * gaps (1 … 9 10 11 … 19). Phones show fewer numbers (1 … 10 … 19). The current page is marked
- * for screen readers with aria-current.
+ * Table pagination, the same bar as Spuzl's admin (owner request 2026-11-24): "Showing 26 to 50
+ * of 312", rows per page, then First, Previous, numbered pages with gaps (always the first and
+ * last), Next and Last. 44 px targets, real buttons, disabled ends, the current page a solid
+ * accent block. Phones keep Previous and Next as arrows and fewer numbers; First and Last show
+ * from tablet width. Steps back to the last page by itself when the current one no longer
+ * exists (rows resolved or deleted).
  */
 export function Pagination({
   total,
@@ -541,16 +546,23 @@ export function Pagination({
   const current = Math.min(Math.max(1, page), pages);
   const from = total === 0 ? 0 : (current - 1) * size + 1;
   const to = Math.min(total, current * size);
-  const ARROW =
-    "grid size-10 shrink-0 place-items-center rounded-pill border border-line bg-transparent text-[18px] text-text hover:bg-surface-raised disabled:pointer-events-none disabled:opacity-35";
+  const fmt = (n: number) => n.toLocaleString("en-US");
+
+  useEffect(() => {
+    if (total > 0 && page > pages) onPage(pages);
+  }, [total, page, pages, onPage]);
+
+  if (total <= 0) return null;
+  const BTN =
+    "inline-flex h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-input border-0 bg-surface-raised px-4 text-[14px] leading-none font-semibold whitespace-nowrap text-text transition-[transform,background-color] duration-[120ms] hover:bg-line active:scale-[.97] disabled:pointer-events-none disabled:opacity-50";
   const numbers = (items: PageItem[], className: string) => (
-    <ol className={cn("m-0 list-none items-center gap-1 p-0", className)}>
+    <ul className={cn("m-0 list-none items-center gap-1 p-0", className)}>
       {items.map((item, i) =>
         item === "gap" ? (
           <li
             key={`gap-${i}`}
             aria-hidden
-            className="grid size-10 place-items-center font-mono text-[13px] text-text-muted"
+            className="flex h-11 w-6 items-center justify-center font-mono text-[14px] text-text-muted"
           >
             …
           </li>
@@ -562,66 +574,82 @@ export function Pagination({
               aria-current={item === current ? "page" : undefined}
               onClick={() => item !== current && onPage(item)}
               className={cn(
-                "grid h-10 min-w-10 place-items-center rounded-pill border px-2 font-mono text-[13px] leading-none font-semibold tabular-nums",
+                "inline-flex h-11 min-w-11 items-center justify-center rounded-input border-0 px-2 font-mono text-[14px] leading-none font-semibold tabular-nums transition-[transform,background-color] duration-[120ms] active:scale-[.97]",
                 item === current
-                  ? "border-accent bg-accent-soft text-accent-ink"
-                  : "border-transparent text-text hover:bg-surface-raised",
+                  ? "bg-accent text-on-accent"
+                  : "bg-transparent text-text-muted hover:bg-surface-raised hover:text-text",
               )}
             >
-              {item}
+              {fmt(item)}
             </button>
           </li>
         ),
       )}
-    </ol>
+    </ul>
   );
   return (
-    <nav
-      aria-label={t("pagination")}
-      className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-t border-line px-3.5 py-3"
-    >
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <span className="font-mono text-[13px] leading-none text-text-muted tabular-nums">
-          {total === 0 ? t("rangeNone") : t("range", { from, to, total })}
-        </span>
-        {onSize && (
-          <div className="flex items-center gap-2 text-[13px] leading-none text-text-muted">
-            <span aria-hidden>{t("rowsPerPage")}</span>
-            <Select
-              size="sm"
-              value={String(size)}
-              onValueChange={(v) => onSize(parseSize(v))}
-              aria-label={t("rowsPerPage")}
-              className="w-auto"
-              options={PAGE_SIZES.map((s) => ({ value: String(s), label: String(s) }))}
-            />
-          </div>
-        )}
-      </div>
-      {pages > 1 && (
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            aria-label={t("previousPage")}
-            disabled={current <= 1}
-            onClick={() => onPage(current - 1)}
-            className={ARROW}
-          >
-            <CaretLeftIcon aria-hidden />
-          </button>
-          {numbers(pageItems(current, pages, 0), "flex sm:hidden")}
-          {numbers(pageItems(current, pages, 1), "hidden sm:flex")}
-          <button
-            type="button"
-            aria-label={t("nextPage")}
-            disabled={current >= pages}
-            onClick={() => onPage(current + 1)}
-            className={ARROW}
-          >
-            <CaretRightIcon aria-hidden />
-          </button>
+    <nav aria-label={t("pagination")} className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-3">
+      <p
+        className="m-0 font-mono text-[13px] leading-none font-medium text-text-muted tabular-nums"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {t("range", { from: fmt(from), to: fmt(to), total: fmt(total) })}
+      </p>
+      {onSize && (
+        <div className="flex items-center gap-2 text-[13px] leading-none font-semibold text-text-muted">
+          <span aria-hidden>{t("rowsPerPage")}</span>
+          <Select
+            value={String(size)}
+            onValueChange={(v) => onSize(parseSize(v))}
+            aria-label={t("rowsPerPage")}
+            className="h-11 w-20"
+            options={PAGE_SIZES.map((s) => ({ value: String(s), label: String(s) }))}
+          />
         </div>
       )}
+      <div className="ml-auto flex flex-wrap items-center gap-1.5">
+        <button
+          type="button"
+          disabled={current <= 1}
+          onClick={() => onPage(1)}
+          aria-label={t("firstPage")}
+          className={cn(BTN, "max-md:hidden")}
+        >
+          {t("first")}
+        </button>
+        <button
+          type="button"
+          disabled={current <= 1}
+          onClick={() => onPage(current - 1)}
+          aria-label={t("previousPage")}
+          className={BTN}
+        >
+          <CaretLeftIcon aria-hidden size={16} weight="bold" />
+          <span className="max-sm:sr-only">{t("previous")}</span>
+        </button>
+        {numbers(pageItems(current, pages, 0), "flex sm:hidden")}
+        {numbers(pageItems(current, pages, 1), "hidden sm:flex")}
+        <button
+          type="button"
+          disabled={current >= pages}
+          onClick={() => onPage(current + 1)}
+          aria-label={t("nextPage")}
+          className={BTN}
+        >
+          <span className="max-sm:sr-only">{t("next")}</span>
+          <CaretRightIcon aria-hidden size={16} weight="bold" />
+        </button>
+        <button
+          type="button"
+          disabled={current >= pages}
+          onClick={() => onPage(pages)}
+          aria-label={t("lastPage", { pages: fmt(pages) })}
+          className={cn(BTN, "max-md:hidden")}
+        >
+          {t("last")}
+        </button>
+      </div>
     </nav>
   );
 }
